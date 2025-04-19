@@ -33,7 +33,7 @@ const GlossyButton = styled(Button)(({ theme }) => ({
 }));
 
 function LaborOrderContent(props) {
-  const { activity, handleDownloadPDF, handleConfirmExecution } = props;
+  const { activity, fieldName, handleDownloadPDF, handleConfirmExecution } = props;
   const [executionConfirmed, setExecutionConfirmed] = useState(
     activity.estado === "completada" || activity.estado === "ejecutada"
   );
@@ -53,7 +53,7 @@ function LaborOrderContent(props) {
 
   return (
     <>
-      <LaborOrderModal key="order-modal" activity={activity} />
+      <LaborOrderModal key="order-modal" activity={activity} fieldName={fieldName} />
       <GlossyButton
         key="withdrawal-order"
         variant="contained"

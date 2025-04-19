@@ -1093,5 +1093,17 @@
   "warning": "Aviso",
   "added": "Adicionado",
   "notification": "Notificação",
-  "servicePrefix": "Serviço:"
+  "servicePrefix": "Serviço:",
+  "upload_file": "Carregar arquivo",
+  "itemsMarkedAsWithdrawn": "Insumos marcados como retirados",
+  "errorMarkingItemsAsWithdrawn": "Erro ao marcar insumos como retirados",
+  "itemsWillBeMarkedAsWithdrawn": "Insumos serão marcados como retirados",
+  "orderPrinted": "Ordem impressa",
+  "noItemsToWithdraw": "Nenhum insumo a retirar",
+  "retiredSupplies": "Insumos retirados",
+  "itemsAlreadyWithdrawn": "Insumos já retirados",
+  "removedSupplies": "Insumos removidos",
+  "itemsRemovedFromList": "Insumos removidos da lista",
+  "itemRemovedFromList": "Insumo removido da lista",
+  "itemRestoredToList": "Insumo restaurado na lista"
 }

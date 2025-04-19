@@ -1083,7 +1083,20 @@
   "warning": "Warning",
   "added": "Added",
   "notification": "Notification",
-  "servicePrefix": "Service:"
+  "servicePrefix": "Service:",
+  "upload_file": "Upload file",
+  "itemsMarkedAsWithdrawn": "Items marked as withdrawn",
+  "errorMarkingItemsAsWithdrawn": "Error marking items as withdrawn",
+  "itemsWillBeMarkedAsWithdrawn": "Items will be marked as withdrawn",
+  "orderPrinted": "Order printed",
+  "noItemsToWithdraw": "No items to withdraw",
+  "withdrawal_order_created_successfully": "Withdrawal order created successfully",
+  "retiredSupplies": "Retired Supplies",
+  "itemsAlreadyWithdrawn": "Items already withdrawn",
+  "removedSupplies": "Removed Supplies",
+  "itemsRemovedFromList": "Supplies removed from list",
+  "itemRemovedFromList": "Supply removed from list",
+  "itemRestoredToList": "Supply restored to list"
 }
   
 

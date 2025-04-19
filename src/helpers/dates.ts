@@ -12,22 +12,11 @@ export const convertTimestampToDate = (unixTimestamp: number) => {
 }
 
 
-export const getShortDate = (withTime: boolean = false, character= "/") => {
-    let today = new Date();
-
-    let year = today.getFullYear();
-    let month = String(today.getMonth() + 1).padStart(2, '0'); // El mes es 0-indexado, por lo que agregamos 1 y formateamos
-    let day = String(today.getDate()).padStart(2, '0');
-    let hours = today.getHours().toString();
-    let minutes = today.getMinutes().toString();
-    
-    // Asegurarse de que los valores estén en formato de dos dígitos
-    hours = Number(hours) < 10 ? '0' + hours : hours;
-    minutes = Number(minutes) < 10 ? '0' + minutes : minutes;
-
-    let time = `${hours}:${minutes}`
-    // Crear la cadena en el formato "yyyy-MM-dd"
-    let formattedDate = `${year}${character}${month}${character}${day}`;
-
-    return withTime ? formattedDate.concat(" " + time) : formattedDate;
-}
+// helpers/dates.ts
+export const getShortDate = (): string => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Month (01-12)
+    const dd = String(today.getDate()).padStart(2, '0');      // Day (01-31)
+    return `${yyyy}-${mm}-${dd}`;
+};

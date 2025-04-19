@@ -6,15 +6,6 @@ import { useAppSelector } from ".";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 
-// const remoteCouchDBUrl = getEnvVariables().VITE_COUCHDB_URL;
-// const myDBs = {
-//     deposits: "deposits",
-// };
-
-// const DbDeposits = new PouchDB(myDBs.deposits);
-// DbDeposits.sync(`${remoteCouchDBUrl}/${myDBs.deposits}`, { live: true, retry: true, });
-// const syncDb = async () => await DbDeposits.sync(`${remoteCouchDBUrl}/${myDBs.deposits}`, { live: true, retry: true, });
-
 export const useDeposit = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -28,7 +19,6 @@ export const useDeposit = () => {
       const result = await dbContext.deposits.find({
         selector: { accountId: user?.accountId }
       });
-
       setIsLoading(false);
       if (result.docs) {
         const documents: Deposit[] = result.docs.map((row) => row as Deposit);
@@ -44,13 +34,11 @@ export const useDeposit = () => {
     setIsLoading(true);
     try {
       if (!user) throw new Error(t("noUserError"));
-
       const response = await dbContext.deposits.post({
         ...newDeposit,
         accountId: user.accountId
       });
       setIsLoading(false);
-
       if (response.ok) {
         NotificationService.showAdded(newDeposit, t("deposit_label"));
       }
@@ -67,11 +55,9 @@ export const useDeposit = () => {
     try {
       const response = await dbContext.deposits.put(updateDeposit);
       setIsLoading(false);
-
       if (response.ok) {
         NotificationService.showUpdated(updateDeposit, t("deposit_label"));
       }
-
       navigate("/init/overview/deposit");
     } catch (error) {
       console.log(t("errorUpdatingDocument"), error);
@@ -83,16 +69,10 @@ export const useDeposit = () => {
   const deleteDeposit = async (deleteDepositId: string, revDeposit: string) => {
     setIsLoading(true);
     try {
-      // const response = await fieldpartnerAPI.patch(`${controller}/${businessId}`, updateBusiness);
-      const response = await dbContext.deposits.remove(
-        deleteDepositId,
-        revDeposit
-      );
+      const response = await dbContext.deposits.remove(deleteDepositId, revDeposit);
       setIsLoading(false);
-
-      setIsLoading(false);
-
-      if (response.ok) NotificationService.showDeleted({ id: deleteDepositId }, t("deposit_label"));
+      if (response.ok)
+        NotificationService.showDeleted({ id: deleteDepositId }, t("deposit_label"));
       navigate("/init/overview/deposit");
     } catch (error) {
       console.log(t("errorUpdatingDocument"), error);
@@ -107,7 +87,6 @@ export const useDeposit = () => {
       const result = await dbContext.deposits.find({
         selector: { accountId: accountId }
       });
-
       setIsLoading(false);
       if (result.docs) {
         const documents: Deposit[] = result.docs.map((row) => row as Deposit);
@@ -121,6 +100,7 @@ export const useDeposit = () => {
     }
   };
 
+  // This function is defined as getDepositsBySupplyId
   const getDepositsBySupplyId = async (supplyId: string) => {
     setIsLoading(true);
     try {
@@ -136,18 +116,15 @@ export const useDeposit = () => {
           selector: { accountId: accountId }
         })
       ]);
-
       if (promisesResult) {
         const supplyStock = promisesResult[0].docs;
         const deposits = promisesResult[1].docs;
         let depositsOfSupply: Deposit[] = [];
-
         supplyStock.forEach((element) => {
           const depositId = element.depositId;
           const depositFound = deposits.find(d => d._id === depositId);
           if (depositFound) depositsOfSupply.push(depositFound);
         });
-
         setDeposits(depositsOfSupply);
       }
       setIsLoading(false);
@@ -155,7 +132,8 @@ export const useDeposit = () => {
       setIsLoading(false);
       console.error(t("errorLoadingDocuments"), error);
     }
-  }
+  };
+
   const getDepositsByCropId = async (cropId: string) => {
     setIsLoading(true);
     try {
@@ -171,18 +149,15 @@ export const useDeposit = () => {
           selector: { accountId: accountId }
         })
       ]);
-
       if (promisesResult) {
         const stockCrop = promisesResult[0].docs;
         const deposits = promisesResult[1].docs;
         let depositsOfSupply: Deposit[] = [];
-
         stockCrop.forEach((element) => {
           const depositId = element.depositId;
           const depositFound = deposits.find(d => d._id === depositId);
           if (depositFound) depositsOfSupply.push(depositFound);
         });
-
         setDeposits(depositsOfSupply);
       }
       setIsLoading(false);
@@ -190,7 +165,7 @@ export const useDeposit = () => {
       setIsLoading(false);
       console.error(t("errorLoadingDocuments"), error);
     }
-  }
+  };
 
   return {
     deposits,
@@ -202,6 +177,7 @@ export const useDeposit = () => {
     deleteDeposit,
     findDepositsByAccountId,
     getDepositsBySupplyId,
-    getDepositsByCropId
+    getDepositsByCropId,
+    getDepositsBySupply: getDepositsBySupplyId,
   };
 };

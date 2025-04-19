@@ -318,15 +318,15 @@ const PlanificationContent = React.memo(function PlanificationContent({
         <CustomAccordionDetails>
           <Typography>
             {t('fullName')}:{" "}
-            {activity?.contratista?.nombreCompleto || t('notSpecified')}
+            {activity?.detalles?.contratista?.nombreCompleto || t('notSpecified')}
           </Typography>
           <Typography>
             {t('businessName')}:{" "}
-            {activity?.contratista?.razonSocial || t('notSpecified')}
+            {activity?.detalles?.contratista?.razonSocial || t('notSpecified')}
           </Typography>
           <Typography>
             {t('taxId')}:{" "}
-            {activity?.contratista?.cuit || t('notSpecified')}
+            {activity?.detalles?.contratista?.cuit || t('notSpecified')}
           </Typography>
         </CustomAccordionDetails>
       </CustomAccordion>
