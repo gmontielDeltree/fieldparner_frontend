@@ -168,7 +168,7 @@ export const useStockMovement = () => {
                 location
             });
             let existingStock = responseStockSupply ? responseStockSupply[0] : null;
-
+            
             if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
                 if (isIncome) {
                     if (existingStock) {

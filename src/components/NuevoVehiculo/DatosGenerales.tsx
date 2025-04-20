@@ -174,6 +174,11 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
               id="year-select"
               name="modelYear"
               value={modelYear}
+              MenuProps={{
+                PaperProps: {
+                  style: { maxHeight: 248 }//Tamaño para 5 opciones
+                }
+              }}
               label={t("_year")}
               onChange={handleYearChange}
             >

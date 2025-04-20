@@ -36,7 +36,6 @@ const initialState: Vehicle = {
   net: 0,
   fuelType: "",
   fuelCapacity: 0,
-  unitMeasurement: "",
   connectivity: "",
   policyNumber: "",
   insurence: "",
@@ -54,6 +53,7 @@ const initialState: Vehicle = {
   documentVehicleFile: "",
   insurencePolicyFile: "",
 };
+
 
 export const VehiclePage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();

@@ -56,7 +56,6 @@ export interface Vehicle extends Document {
   chassisNumber: string;
   fuelType: string;
   fuelCapacity: number;
-  unitMeasurement: string;
   connectivity?: string;
   owner?: string;
   lastMaintenance?: string;
@@ -458,7 +457,7 @@ export interface DepositDestination {
   depositId: string;
   location: string;
 }
-
+//TODO: refactorizar para que no tenga objetos anidados
 export interface TransformSupply {
   id: string;
   supply: Supply | null;
@@ -554,7 +553,7 @@ export interface Field extends Document {
   // _rev: string;
 }
 
-//Retiros del Deposito e Insumo/Cultivo
+//Retiros del Deposito e Insumo
 export interface WithdrawalsByDepositSupply extends Document {
   accountId: string;
   order: number;
@@ -563,14 +562,15 @@ export interface WithdrawalsByDepositSupply extends Document {
   amount: number;
 }
 
-//Deposito e Insumo/Cultivo de una Orden
+//Deposito e Insumo de una Orden de retiro
 export interface DepositSupplyOrder extends Document {
   order: number;
   accountId: string;
-  deposit: Deposit | null;
+  depositId: string;
   location: string;
-  crop: Crop | null;
-  supply: Supply | null;
+  // crop: Crop | null;
+  cropId?: string;
+  supplyId?: string;
   nroLot: string;
   withdrawalAmount: number;
   originalAmount: number;
@@ -578,6 +578,9 @@ export interface DepositSupplyOrder extends Document {
 
 export interface DepositSupplyOrderItem extends DepositSupplyOrder {
   amount: number;
+  deposit?: Deposit;
+  supply?: Supply;
+  crop?: Crop;
 }
 
 //Orden de retiro
@@ -587,19 +590,22 @@ export interface WithdrawalOrder extends Document {
   creationDate: string;
   order: number;
   reason: string;
-  withdraw?: Business;
-  campaign: Campaign;
+  // withdraw?: Business;
+  withdrawId: string;
+  // campaign: Campaign;
+  campaignId: string;
   field: string;
-  contractor?: Business;
+  contractorId?: string;
   labor?: string;
   laborNro?: string;
-  cropId?: string;
+  // cropId?: string;
   state: OrderStatus;
 }
 
 export interface WithdrawalOrderItem extends WithdrawalOrder {
-  campaign: Campaign;
-  withdraw: Business;
+  campaign?: Campaign;
+  withdraw?: Business;
+  contractor?: Business;
 }
 
 export interface Numerator extends Document {

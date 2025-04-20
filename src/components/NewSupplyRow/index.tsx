@@ -27,18 +27,17 @@ import {
 } from "../Autocomplete";
 
 interface SupplyAndCropProps {
-  supplies: Supply[];
+  supplies?: Supply[];
   deposits: Deposit[];
-  crops: Crop[];
+  crops?: Crop[];
   showDueDate: boolean;
   disabledCrops: boolean;
   addNewSupplyOrCultive: (item: TransformSupply, isCultive: boolean) => void;
-  onChangeSupply: (item: Supply) => void;
-  onChangeCrop: (item: Crop) => void;
+  onChangeSupply?: (item: Supply) => void;
+  onChangeCrop?: (item: Crop) => void;
 }
 
 const today = getShortDate();
-
 const initialStateNewSupply = {
   campaignId: "",
   supplyId: "",
@@ -51,8 +50,8 @@ const initialStateNewSupply = {
 };
 
 export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
-  supplies,
-  crops,
+  supplies = [],
+  crops = [],
   deposits,
   showDueDate = true,
   disabledCrops = false,
@@ -70,7 +69,6 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
     reset,
     setFormulario,
   } = useForm(initialStateNewSupply);
-
   const [isCrop, setIsCrop] = useState(false);
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
@@ -194,6 +192,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
       sx={{ boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)" }}
     >
       {isLoading && <Loading loading={true} />}
+
       {/* 1) Campaign */}
       <Grid item xs={12} sm={3}>
         <AutocompleteCampaign
@@ -247,12 +246,14 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
               value={cropSelected}
               options={crops}
               onChange={(newValue) => {
-                onChangeCrop(newValue || ({} as Crop));
-                setCropSelected(newValue);
-                setFormulario((prev) => ({
-                  ...prev,
-                  cropId: newValue?._id || "",
-                }));
+                if (newValue) {
+                  onChangeCrop?.(newValue);
+                  setCropSelected(newValue);
+                  setFormulario((prev) => ({
+                    ...prev,
+                    cropId: newValue._id || "",
+                  }));
+                }
               }}
               // MUI will compare by _id instead of label => no duplicates
               isOptionEqualToValue={(option, val) => option._id === val?._id}
@@ -261,13 +262,16 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
             <AutocompleteSupply
               value={supplySelected}
               options={supplies}
+              error={false}
               onChange={(newValue) => {
-                onChangeSupply(newValue || ({} as Supply));
-                setSupplySelected(newValue);
-                setFormulario((prev) => ({
-                  ...prev,
-                  supplyId: newValue?._id || "",
-                }));
+                if (newValue) {
+                  onChangeSupply?.(newValue);
+                  setSupplySelected(newValue);
+                  setFormulario((prev) => ({
+                    ...prev,
+                    supplyId: newValue._id || "",
+                  }));
+                }
               }}
               // MUI will compare by _id instead of label => no duplicates
               isOptionEqualToValue={(option, val) => option._id === val?._id}

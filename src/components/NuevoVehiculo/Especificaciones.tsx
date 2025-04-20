@@ -46,7 +46,6 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
   const {
     fuelType,
     fuelCapacity,
-    unitMeasurement,
     connectivity,
     tara,
     gross,
@@ -176,17 +175,6 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
             InputProps={{
               endAdornment: <InputAdornment position="end">L</InputAdornment>,
             }}
-            onChange={handleInputChange}
-            fullWidth
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Unidad de Medidab"
-            variant="outlined"
-            type="text"
-            name="unitMeasurement"
-            value={unitMeasurement}
             onChange={handleInputChange}
             fullWidth
           />

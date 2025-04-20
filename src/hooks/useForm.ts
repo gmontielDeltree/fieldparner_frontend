@@ -30,7 +30,7 @@ export const useForm = <T extends Object>(initialState: T) => {
         });
     };
 
-    const handleYearChange = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    const handleYearChange = ({ target }: SelectChangeEvent) => {
         const { name, value } = target;
 
         if (/^\d*$/.test(value) && value.length <= 4) {

@@ -18,12 +18,12 @@ export const useCampaign = () => {
       if (import.meta.env.PROD) {
         if (!user) throw new Error("User not found");
       }
-
+      // accountId: import.meta.env.PROD
+      // ? user?.accountId
+      // : "ec3590d5c24e5bec5a21299d30013596"
       const result = await dbContext.campaigns.find({
         selector: {
-          accountId: import.meta.env.PROD
-            ? user.accountId
-            : "ec3590d5c24e5bec5a21299d30013596"
+          accountId: user?.accountId
         }
       });
 

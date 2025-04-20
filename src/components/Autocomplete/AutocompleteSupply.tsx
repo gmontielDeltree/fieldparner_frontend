@@ -10,6 +10,9 @@ export type Props = {
     onChange: (supply: Supply | null) => void;
     // Add optional prop to override default comparison if needed
     isOptionEqualToValue?: (option: Supply, value: Supply) => boolean;
+    size?: 'small' | 'medium';
+    error?: boolean;
+    helperText?: string;
 };
 
 export const AutocompleteSupply: React.FC<Props> = ({
@@ -17,6 +20,9 @@ export const AutocompleteSupply: React.FC<Props> = ({
     onChange,
     options,
     isOptionEqualToValue,
+    size = "medium",
+    error = false,
+    helperText = "",
 }) => {
     const { t } = useTranslation();
     const { supplies, getSupplies, isLoading } = useSupply();
@@ -33,6 +39,7 @@ export const AutocompleteSupply: React.FC<Props> = ({
 
     return (
         <Autocomplete
+            size={size}
             loading={isLoading}
             value={value}
             onChange={(_event, newValue) => {
@@ -42,7 +49,12 @@ export const AutocompleteSupply: React.FC<Props> = ({
             getOptionLabel={(option) => option.name}
             isOptionEqualToValue={isOptionEqualToValue ?? defaultCompare}
             renderInput={(params) => (
-                <TextField {...params} label={t("_supplies")} variant="outlined" />
+                <TextField
+                    {...params}
+                    error={error}
+                    helperText={helperText}
+                    label={t("_supplies")}
+                    variant="outlined" />
             )}
             fullWidth
             ListboxProps={{

@@ -1,21 +1,37 @@
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from ".";
 import { dbContext } from "../services";
-import { DepositSupplyOrder, DepositSupplyOrderItem, Numerator, NumeratorType, OrderStatus, StockMovement, TypeMovement, WithdrawalOrder, WithdrawalOrderType, WithdrawalsByDepositSupply } from "../types";
+import {
+    Campaign,
+    DepositSupplyOrder,
+    DepositSupplyOrderItem,
+    Numerator,
+    NumeratorType,
+    OrderStatus,
+    StockMovement,
+    Supply,
+    TypeMovement,
+    WithdrawalOrder,
+    WithdrawalOrderItem,
+    WithdrawalOrderType,
+    WithdrawalsByDepositSupply,
+    Deposit
+} from "../types";
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
 import { Stock } from '../interfaces/stock';
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
+import { Business } from "../interfaces/socialEntity";
 
 export const useOrder = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { user } = useAppSelector(state => state.auth);
     const { withdrawalOrderActive } = useAppSelector(state => state.order);
-    const [orders, setOrders] = useState<WithdrawalOrder[]>([]);
-    const [depositsSuppliesOrder, setDepositsSuppliesOrder] = useState<DepositSupplyOrder[]>([]);
+    const [orders, setOrders] = useState<WithdrawalOrderItem[]>([]);
+    const [depositsSuppliesOrder, setDepositsSuppliesOrder] = useState<DepositSupplyOrderItem[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState({});
     const { t } = useTranslation();
@@ -52,11 +68,34 @@ export const useOrder = () => {
         try {
             if (!user) throw new Error(t("user_not_found"));
 
-            const response = await dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } });
+            // const response = await dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } });
+            const responseAll = await Promise.all([
+                dbContext.withdrawalOrders.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.socialEntities.find({
+                    selector: { accountId: user?.accountId }
+                }),
+                dbContext.campaigns.find({
+                    selector: {
+                        accountId: user?.accountId
+                    }
+                })
+            ]);
 
-            if (response) {
-                const orders = response.docs.map(doc => doc as WithdrawalOrder);
-                setOrders(orders);
+            if (responseAll) {
+                const orders = responseAll[0].docs.map(doc => doc as WithdrawalOrder);
+                const withdraws = responseAll[1].docs.map(doc => doc as Business);
+                const campaigns = responseAll[2].docs.map(doc => doc as Campaign);
+                const orderItems: WithdrawalOrderItem[] = orders.map(o => {
+                    const withdraw = withdraws.find(w => w._id === o.withdrawId);
+                    const campaign = campaigns.find(c => c._id === o.campaignId);
+                    if (!withdraw || !campaign) throw new Error("Business or Campaign not found");
+                    return {
+                        ...o,
+                        withdraw,
+                        campaign,
+                    } as WithdrawalOrderItem;
+                });
+                setOrders(orderItems);
             }
 
             setIsLoading(false);
@@ -95,28 +134,10 @@ export const useOrder = () => {
             };
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
 
-            // Fetch supplies to update reservedStock
-            // const responseSupplies = await dbContext.supplies.find({
-            //     selector: {
-            //         $or: [
-            //             { accountId: user.accountId },
-            //             { isDefault: true }
-            //         ]
-            //     },
-            // });
-            // const suppliesToUpdate = responseSupplies.docs;
-            // newDepositSupplies.forEach(newSupplyOrder => {
-            //     const supply = suppliesToUpdate.find(s => s._id === newSupplyOrder.supply._id);
-            //     if (supply) {
-            //         supply.reservedStock += newSupplyOrder.amount;
-            //     }
-            // });
-
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
                 putLastNumerator(lastNumerator),
-                // dbContext.supplies.bulkDocs(suppliesToUpdate)
             ]);
 
             setIsLoading(false);
@@ -138,7 +159,7 @@ export const useOrder = () => {
         }
     }
 
-    const getOrderWithDepositsAndSuppliesByOrder = async (order: number) => {
+    const getOrderWithDepositsAndSupplies = async (order: number) => {
         setIsLoading(true);
         try {
 
@@ -154,14 +175,51 @@ export const useOrder = () => {
                     selector: {
                         "$and": [{ "accountId": user.accountId }, { "order": order }],
                     }
+                }),
+                dbContext.socialEntities.find({
+                    selector: { accountId: user?.accountId }
+                }),
+                dbContext.campaigns.find({
+                    selector: {
+                        accountId: user?.accountId
+                    }
+                }),
+                dbContext.deposits.find({
+                    selector: { accountId: user?.accountId }
+                }),
+                dbContext.supplies.find({
+                    selector: {
+                        $or: [
+                            { accountId: user?.accountId },
+                            { isDefault: true }
+                        ]
+                    },
                 })
             ]);
-
+            //Campaign y Business
             if (responseAll) {
                 const withdrawalOrder = responseAll[0].docs[0] as WithdrawalOrder;
                 const depositAndSuppliesOrder = responseAll[1].docs.map(doc => doc as DepositSupplyOrder);
-                dispatch(setWithdrawalOrderActive(withdrawalOrder));
-                setDepositsSuppliesOrder(depositAndSuppliesOrder);
+                const campaign = responseAll[3].docs.find(c => c._id === withdrawalOrder.campaignId);
+                const withdraw = responseAll[2].docs.find(b => b._id === withdrawalOrder.withdrawId);
+                const deposits = responseAll[4].docs.map(d => d as Deposit);
+                const supplies = responseAll[5].docs.map(s => s as Supply);
+                if (!withdraw || !campaign) throw new Error("Business or Campaign not found");
+                dispatch(setWithdrawalOrderActive({
+                    ...withdrawalOrder, campaign, withdraw
+                }));
+                setDepositsSuppliesOrder(
+                    depositAndSuppliesOrder.map(d => {
+                        const deposit = deposits.find(de => de._id === d.depositId);
+                        const supply = supplies.find(s => s._id === d.supplyId);
+                        if (!deposit || !supply) throw new Error("Deposit or Supply not found");
+                        return {
+                            ...d,
+                            deposit,
+                            supply,
+                        } as DepositSupplyOrderItem;
+                    })
+                );
             }
 
             setIsLoading(false);
@@ -227,7 +285,7 @@ export const useOrder = () => {
             let newMovements = listWithdrawals.map(w => ({
                 accountId: user.accountId,
                 amount: w.amount,
-                campaignId: withdrawalOrderActive.campaign._id,
+                campaignId: withdrawalOrderActive?.campaign?._id,
                 creationDate: withdrawalDate,
                 depositId: w.deposit?._id,
                 supplyId: w.supply?._id,
@@ -302,7 +360,7 @@ export const useOrder = () => {
                 accountId: user.accountId
             };
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
-
+            
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
@@ -383,8 +441,8 @@ export const useOrder = () => {
                     "$and": [
                         { "accountId": user.accountId },
                         { "field": field },
-                        { "campaign.campaignId": campaignId },
-                        { "contractor._id": contractorId }
+                        { "campaignId": campaignId },
+                        { "contractorId": contractorId }
                     ],
                 },
             });
@@ -415,7 +473,7 @@ export const useOrder = () => {
         createWithdrawalOrder,
         confirmWithdrawalOrder,
         deleteWithdrawalOrder,
-        getOrderWithDepositsAndSuppliesByOrder,
+        getOrderWithDepositsAndSuppliesByOrder: getOrderWithDepositsAndSupplies,
         createLaborOrder,
         confirmLaborOrder,
         getLaborOrder

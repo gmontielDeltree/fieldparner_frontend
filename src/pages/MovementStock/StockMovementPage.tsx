@@ -29,15 +29,15 @@ export const StockMovementPage: React.FC = () => {
   const { t } = useTranslation();
 
   const columns: GridColDef[] = [
-    { field: "date", headerName: t("_date"), width: 150 },
-    { field: "movement", headerName: t("_movement"), width: 120 },
-    { field: "supplyOrCrop", headerName: t("type_supply"), width: 150 },
-    { field: "deposit", headerName: t("_warehouse"), width: 150 },
-    { field: "movementType", headerName: t("movement_type"), width: 150 },
-    { field: "isIncome", headerName: t("income_outcome"), width: 120 },
-    { field: "um", headerName: "UM", width: 150 },
-    { field: "amount", headerName: t("_quantity"), width: 150 },
-    { field: "documentFile", headerName: t("_file"), width: 250 },
+    { field: "date", headerName: t("_date"), width: 150, align: "left" },
+    { field: "movement", headerName: t("_movement"), headerAlign: 'center', width: 150, align: "left" },
+    { field: "supplyOrCrop", headerName: t("type_supply"), headerAlign: 'center', width: 150, align: "left" },
+    { field: "deposit", headerName: t("_warehouse"), headerAlign: 'center', width: 150, align: "left" },
+    { field: "movementType", headerName: t("movement_type"), headerAlign: 'center', width: 150, align: "left" },
+    { field: "isIncome", headerName: t("income_outcome"), width: 150, headerAlign: 'center', align: "left" },
+    { field: "um", headerName: "UM", width: 150, headerAlign: 'center', align: "center" },
+    { field: "amount", headerName: t("_quantity"), width: 150, headerAlign: 'right', align: "right" },
+    { field: "documentFile", headerName: t("_file"), width: 250, headerAlign: 'center', align: "right" },
   ];
 
   const rows = useMemo(() => {
