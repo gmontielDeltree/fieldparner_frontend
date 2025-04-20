@@ -1111,5 +1111,6 @@
   "withdrawal_date": "Fecha de Retiro",
   "order_details": "Detalles de la orden",
   "type": "Tipo",
-  "order": "Orden"
+  "order": "Orden",
+  "noRetiredSupplies": "No hay insumos retirados"
 }

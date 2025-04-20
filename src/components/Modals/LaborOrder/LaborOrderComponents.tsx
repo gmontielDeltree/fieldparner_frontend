@@ -1,454 +1,458 @@
-import React, { useEffect, useState } from 'react';
-import LaborOrderDoc from './LaborOrderPDF';
+import React from 'react';
 import {
-    Dialog,
-    DialogContent,
-    DialogActions,
-    Button,
     IconButton,
-    Paper,
-    Box,
     Typography,
-    Grid,
-    TextField,
-    Divider,
     Chip,
-    Fade,
     useTheme,
     alpha,
+    Tooltip,
     Card,
     CardContent,
     Stack,
-    Avatar
+    Avatar,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    ListItemAvatar,
+    Paper,
+    Collapse,
+    Box,
+    Button
 } from '@mui/material';
 import {
-    Close as CloseIcon,
-    Assignment as AssignmentIcon,
-    Print as PrintIcon,
-    Inventory2Rounded as InventoryIcon,
-    CalendarToday as CalendarIcon,
-    BusinessRounded as BusinessIcon,
+    Remove as DeleteIcon,
+    WarehouseRounded as WarehouseIcon,
     Grid4x4Rounded as GridIcon,
-    TerrainRounded as TerrainIcon,
-    CropRounded as CropIcon,
-    StraightenRounded as MeasureIcon
+    CheckCircleOutline as CheckCircleIcon,
+    RemoveCircleOutline as RemoveCircleIcon,
+    ExpandMore as ExpandMoreIcon,
+    ExpandLess as ExpandLessIcon,
+    Restore as RestoreIcon
 } from '@mui/icons-material';
+import { ItemRow, TableCellStyled } from '../..';
 import { useTranslation } from "react-i18next";
-import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useForm, useOrder } from '../../../hooks';
-import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrderItem, DisplayModals, WithdrawalOrder } from '../../../types';
-import { getShortDate } from '../../../helpers/dates';
-import { DataTable, Loading } from '../..';
-import { useLaborOrderPDF } from './LaborOrderPDF';
-import { NotificationService } from "../../../services/notificationService";
-import { RowSupply, InfoCard, SupplyHistory } from './LaborOrderComponents';
-import {
-    initializeOrderData,
-    markItemsAsRetired,
-    processActivityData
-} from './LaborOrderHelpers';
+import { useState } from 'react';
 
-export const LaborOrderModal = ({ activity, fieldName }) => {
+// Props interface for RowSupply component
+interface RowSupplyProps {
+    row: DepositSupplyOrderItem;
+    handleDelete: (item: DepositSupplyOrderItem) => void;
+}
+
+// Modern styled supply row component
+export const RowSupply = ({ row, handleDelete }) => {
     const { t } = useTranslation();
     const theme = useTheme();
-    const dispatch = useAppDispatch();
-
-    const [loading, setLoading] = useState(false);
-    const [withdrawalItems, setWithdrawalItems] = useState<DepositSupplyOrderItem[]>([]);
-    const [activeOrder, setActiveOrder] = useState<WithdrawalOrder | null>(null);
-    const [hasPrinted, setHasPrinted] = useState(false);
-    const [fadeIn, setFadeIn] = useState(false);
-
-    const [retiredSupplies, setRetiredSupplies] = useState<any[]>([]);
-    const [removedSupplies, setRemovedSupplies] = useState<any[]>([]);
-
-    const { user } = useAppSelector((state) => state.auth);
-    const { showModal } = useAppSelector((state) => state.ui);
-    const { selectedCampaign } = useAppSelector((state) => state.campaign);
-    const { lotActive } = useAppSelector((state) => state.map);
-
-    const { getLaborOrder, getOrderWithDepositsAndSuppliesByOrder } = useOrder();
-    const { getBusinesses } = useBusiness();
-    const { getCampaigns } = useCampaign();
-    const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
-    const { pdfInstance, updatePDF } = useLaborOrderPDF(activeOrder, withdrawalItems);
-
-    // Cierra el modal y, si se imprimió, marca en la base
-    const onCloseModal = async () => {
-        if (hasPrinted && activeOrder) {
-            try {
-                await markItemsAsRetired(activity, withdrawalItems, t);
-            } catch (error) {
-                console.error("Error al cerrar el modal:", error);
-            }
-        }
-        dispatch(uiCloseModal());
-        setWithdrawalItems([]);
-        setRemovedSupplies([]);
-        setRetiredSupplies([]);
-        setHasPrinted(false);
-    };
-
-    // Elimina de la lista de retiro
-    const handleDeleteRow = (item: DepositSupplyOrderItem) => {
-        setRemovedSupplies(prev => [...prev, { ...item, removedDate: new Date().toISOString() }]);
-        setWithdrawalItems(prev => prev.filter(x => x._id !== item._id));
-        NotificationService.showInfo(t("itemRemovedFromList"), { name: item.supply.name });
-    };
-
-    // Restaura un insumo eliminado
-    const handleRestoreSupply = (item) => {
-        setWithdrawalItems(prev => [...prev, { ...item, _id: `restored-${Date.now()}-${item._id}` }]);
-        setRemovedSupplies(prev => prev.filter(x => x._id !== item._id));
-        NotificationService.showSuccess(t("itemRestoredToList"), { name: item.supply.name });
-    };
-
-    // Imprime y fija en `activity` las dosis como retiradas
-    const handlePrint = async () => {
-        setHasPrinted(true);
-
-        // 1) Tomo los nombres impresos
-        const printedNames = withdrawalItems.map(item => item.supply.name);
-
-        // 2) Marco en activity.detalles.dosis
-        if (activity?.detalles?.dosis) {
-            activity.detalles.dosis.forEach(dose => {
-                const originalName = dose.insumo?.name || dose.selectedOption?.name;
-                if (printedNames.includes(originalName)) {
-                    dose.retired = true;
-                }
-            });
-        }
-
-        // 3) Actualizo UI de retirados
-        const newlyRetired = withdrawalItems.map(item => ({
-            ...item,
-            retiredDate: new Date().toISOString()
-        }));
-        setRetiredSupplies(prev => [...prev, ...newlyRetired]);
-
-        // 4) Notificación
-        NotificationService.showInfo(
-            t("itemsWillBeMarkedAsWithdrawn"),
-            { order: activeOrder?.order },
-            t("orderPrinted")
-        );
-    };
-
-    // Al abrir el modal inicializamos todo
-    useEffect(() => {
-        const initialize = async () => {
-            if (showModal !== DisplayModals.LaborOrder) return;
-            setRemovedSupplies([]);
-            setRetiredSupplies([]);
-            setWithdrawalItems([]);
-            setHasPrinted(false);
-            setLoading(true);
-
-            try {
-                await Promise.all([getBusinesses(), getCampaigns()]);
-
-                if (selectedCampaign) {
-                    const orderData = await initializeOrderData({
-                        lotActive,
-                        selectedCampaign,
-                        activity,
-                        fieldName,
-                        getLaborOrder,
-                        getOrderWithDepositsAndSuppliesByOrder
-                    });
-                    if (orderData) setActiveOrder(orderData);
-                }
-
-                if (activity?.detalles?.dosis?.length) {
-                    // Preparo items activos
-                    const activeItems = processActivityData(activity, user);
-                    setWithdrawalItems(activeItems);
-
-                    // Ya retirados en DB o tras imprimir
-                    const retiredInActivity = activity.detalles.dosis
-                        .filter(d => d.retired)
-                        .map((dose, idx) => {
-                            const amount = parseFloat(dose.dosificacion || "0");
-                            return {
-                                _id: `retired-${idx}`,
-                                accountId: user?.accountId || "",
-                                deposit: dose.deposito || {},
-                                supply: dose.insumo || dose.selectedOption || {},
-                                location: dose.ubicacion || "",
-                                nroLot: dose.nro_lote || "",
-                                order: 0,
-                                withdrawalAmount: amount,
-                                originalAmount: amount,
-                                amount,
-                                retiredDate: dose.retiredDate || activity.fecha
-                            };
-                        });
-                    setRetiredSupplies(retiredInActivity);
-                }
-
-                setTimeout(() => setFadeIn(true), 100);
-            } catch (err) {
-                console.error("Error initializing LaborOrderModal:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initialize();
-        return () => setFadeIn(false);
-    }, [showModal]);
-
-    // Actualizo el PDF cada vez que cambian los items
-    useEffect(() => {
-        if (activeOrder && withdrawalItems.length) {
-            const orderWithDate = {
-                ...activeOrder,
-                creationDate,
-                fieldName: fieldName || lotActive?.properties?.campo_nombre || lotActive?.properties?.campo_parent_nombre
-            };
-            updatePDF(
-                <LaborOrderDoc withdrawalOrder={orderWithDate} depositAndSupplies={withdrawalItems} />
-            );
-        }
-    }, [activeOrder, withdrawalItems, creationDate, lotActive, fieldName]);
-
-    // Columnas de la tabla
-    const columns: ColumnProps[] = [
-        { text: t("warehouse"), align: "left" },
-        { text: t("supply"), align: "left" },
-        { text: t("measurementUnit"), align: "center" },
-        { text: t("location"), align: "center" },
-        { text: t("amountToWithdraw"), align: "center" },
-        { text: "", align: "right" }
-    ];
 
     return (
-        <Dialog
-            open={showModal === DisplayModals.LaborOrder}
-            maxWidth="lg"
-            fullWidth
-            scroll="paper"
-            onClose={onCloseModal}
-            PaperProps={{ elevation: 12, sx: { borderRadius: 2, overflow: 'hidden' } }}
-            TransitionComponent={Fade}
-            transitionDuration={400}
+        <ItemRow
+            key={row._id}
+            sx={{
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.light, 0.05),
+                    transform: 'translateY(-2px)',
+                    boxShadow: `0 4px 8px -2px ${alpha(theme.palette.common.black, 0.1)}`
+                }
+            }}
         >
-            {/* Header */}
-            <Box sx={{
-                position: 'relative',
-                p: 3,
-                textAlign: 'center',
-                backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                color: 'white'
-            }}>
-                <IconButton
-                    aria-label={t("close")}
-                    onClick={onCloseModal}
+            <TableCellStyled align="left">
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <Avatar
+                        sx={{
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            color: theme.palette.primary.main,
+                            width: 32,
+                            height: 32
+                        }}
+                    >
+                        <WarehouseIcon fontSize="small" />
+                    </Avatar>
+                    <Typography variant="body2" fontWeight="medium">{row.deposit.description}</Typography>
+                </Stack>
+            </TableCellStyled>
+
+            <TableCellStyled align="left">
+                <Typography variant="body2" fontWeight="medium">{row.supply.name}</Typography>
+            </TableCellStyled>
+
+            <TableCellStyled align="center">
+                <Chip
+                    label={row.supply.unitMeasurement}
+                    size="small"
+                    variant="outlined"
                     sx={{
-                        position: "absolute",
-                        right: 8,
-                        top: 8,
-                        color: 'white',
-                        '&:hover': { backgroundColor: alpha('#ffffff', 0.1) }
+                        borderRadius: '4px',
+                        backgroundColor: alpha(theme.palette.info.light, 0.1),
+                        borderColor: theme.palette.info.light,
+                        color: theme.palette.info.dark
+                    }}
+                />
+            </TableCellStyled>
+
+            <TableCellStyled align="center">
+                {row.location ? (
+                    <Chip
+                        label={row.location}
+                        size="small"
+                        sx={{
+                            borderRadius: '4px',
+                            backgroundColor: alpha(theme.palette.success.light, 0.1),
+                            color: theme.palette.success.dark
+                        }}
+                        icon={<GridIcon style={{ fontSize: 14 }} />}
+                    />
+                ) : (
+                    <Typography variant="body2" color="text.secondary">-</Typography>
+                )}
+            </TableCellStyled>
+
+            <TableCellStyled align="center">
+                <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    sx={{
+                        color: theme.palette.primary.main,
+                        backgroundColor: alpha(theme.palette.primary.light, 0.1),
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        display: 'inline-block'
                     }}
                 >
-                    <CloseIcon />
-                </IconButton>
-                <Fade in={fadeIn} timeout={800}>
+                    {row.amount}
+                </Typography>
+            </TableCellStyled>
+
+            <TableCellStyled align="center">
+                <Tooltip title={t("delete")}>
+                    <IconButton
+                        onClick={() => handleDelete(row)}
+                        size="small"
+                        sx={{
+                            color: theme.palette.error.main,
+                            '&:hover': {
+                                backgroundColor: alpha(theme.palette.error.main, 0.1),
+                            }
+                        }}
+                    >
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
+                </Tooltip>
+            </TableCellStyled>
+        </ItemRow>
+    );
+};
+
+// InfoCard component for displaying information in a modern card format
+export const InfoCard = ({ icon, title, value, color = 'primary' }) => {
+    const theme = useTheme();
+    return (
+        <Card
+            variant="outlined"
+            sx={{
+                height: '100%',
+                borderRadius: 2,
+                borderColor: 'transparent',
+                boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}`,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+                    borderColor: alpha(theme.palette[color].main, 0.3),
+                    transform: 'translateY(-2px)'
+                }
+            }}
+        >
+            <CardContent>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Avatar
+                        sx={{
+                            bgcolor: alpha(theme.palette[color].main, 0.1),
+                            color: theme.palette[color].main
+                        }}
+                    >
+                        {icon}
+                    </Avatar>
                     <Box>
-                        <Avatar sx={{ width: 56, height: 56, mx: 'auto', mb: 2, bgcolor: 'white', color: theme.palette.primary.main }}>
-                            <AssignmentIcon fontSize="large" />
-                        </Avatar>
-                        <Typography component="h1" variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
-                            {t("warehouseWithdrawalOrder")}
+                        <Typography color="text.secondary" variant="caption" fontWeight="medium">
+                            {title}
                         </Typography>
-                        {activeOrder && (
-                            <Chip
-                                label={`${t("order")}: ${activeOrder.order.toString().toUpperCase()}`}
-                                color="secondary"
-                                sx={{ borderRadius: '8px', px: 2, fontWeight: 'bold', fontSize: '0.9rem' }}
-                            />
-                        )}
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ lineHeight: 1.2 }}>
+                            {value || '-'}
+                        </Typography>
                     </Box>
-                </Fade>
+                </Stack>
+            </CardContent>
+        </Card>
+    );
+};
+
+// Supply History component to show retired and removed supplies
+export const SupplyHistory = ({
+    retiredSupplies = [],
+    removedSupplies = [],
+    onRestoreSupply
+}) => {
+    const { t } = useTranslation();
+    const theme = useTheme();
+    const [expandRetired, setExpandRetired] = useState(false);
+    const [expandRemoved, setExpandRemoved] = useState(false);
+
+    const toggleRetired = () => setExpandRetired(!expandRetired);
+    const toggleRemoved = () => setExpandRemoved(!expandRemoved);
+
+    // Format date for display
+    const formatDate = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('default', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    };
+
+    return (
+        <Paper
+            variant="outlined"
+            sx={{
+                borderRadius: 2,
+                overflow: 'hidden',
+                boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}`,
+                mb: 3
+            }}
+        >
+            <Box
+                sx={{
+                    p: 2,
+                    borderBottom: expandRetired ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
+                    backgroundColor: alpha(theme.palette.success.light, 0.05),
+                    cursor: 'pointer',
+                    '&:hover': {
+                        backgroundColor: alpha(theme.palette.success.light, 0.1)
+                    },
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}
+                onClick={toggleRetired}
+            >
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Avatar
+                        sx={{
+                            bgcolor: alpha(theme.palette.success.main, 0.1),
+                            color: theme.palette.success.main,
+                            width: 36,
+                            height: 36
+                        }}
+                    >
+                        <CheckCircleIcon />
+                    </Avatar>
+                    <Box>
+                        <Typography variant="subtitle1" fontWeight="bold" color="success.main">
+                            {t("retiredSupplies")}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {retiredSupplies.length} {t("itemsAlreadyWithdrawn")}
+                        </Typography>
+                    </Box>
+                </Stack>
+                {expandRetired ? <ExpandLessIcon color="success" /> : <ExpandMoreIcon color="success" />}
             </Box>
 
-            {/* Body */}
-            <DialogContent sx={{ p: 3 }}>
-                <Loading key="loading-labor" loading={loading} />
-                <Fade in={fadeIn && !loading} timeout={600}>
-                    <Paper variant="outlined" sx={{
-                        my: { xs: 2, md: 3 },
-                        p: { xs: 2, md: 3 },
-                        borderRadius: 2,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
-                    }}>
-                        <Grid container spacing={2} mb={4}>
-                            <Grid item xs={12} sm={4} md={3}>
-                                <InfoCard
-                                    icon={<CropIcon />}
-                                    title={t("crop")}
-                                    value={activity?.tipo?.toString().toUpperCase()}
-                                    color="success"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={3}>
-                                <InfoCard
-                                    icon={<CalendarIcon />}
-                                    title={t("campaign")}
-                                    value={selectedCampaign?.campaignId?.toString().toUpperCase()}
-                                    color="primary"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={3}>
-                                <InfoCard
-                                    icon={<TerrainIcon />}
-                                    title={t("field")}
-                                    value={
-                                        fieldName ||
-                                        lotActive?.properties?.campo_nombre ||
-                                        lotActive?.properties?.campo_parent_nombre ||
-                                        t("noAvailable")
-                                    }
-                                    color="info"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={3}>
-                                <InfoCard
-                                    icon={<GridIcon />}
-                                    title={t("lot")}
-                                    value={lotActive?.properties?.nombre}
-                                    color="secondary"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={3}>
-                                <InfoCard
-                                    icon={<MeasureIcon />}
-                                    title={t("hectares")}
-                                    value={lotActive?.properties?.hectareas}
-                                    color="warning"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4} md={3}>
-                                <InfoCard
-                                    icon={<BusinessIcon />}
-                                    title={t("contractor")}
-                                    value={
-                                        activity?.detalles?.contratista?.nombreCompleto ||
-                                        activity?.contratista?.nombreCompleto ||
-                                        activity?.detalles?.contractor?.razonSocial ||
-                                        "No disponible"
-                                    }
-                                    color="error"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={6} md={6}>
-                                <Card variant="outlined" sx={{ height: '100%', borderRadius: 2, boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}` }}>
-                                    <CardContent>
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
-                                                <CalendarIcon />
-                                            </Avatar>
-                                            <TextField
-                                                variant="outlined"
-                                                type="date"
-                                                label={t("date")}
-                                                name="creationDate"
-                                                value={creationDate}
-                                                onChange={handleInputChange}
-                                                InputProps={{ sx: { borderRadius: 1.5 } }}
-                                                fullWidth
-                                                size="small"
-                                            />
-                                        </Stack>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        </Grid>
-
-                        {(retiredSupplies.length > 0 || removedSupplies.length > 0) && (
-                            <SupplyHistory
-                                retiredSupplies={retiredSupplies}
-                                removedSupplies={removedSupplies}
-                                onRestoreSupply={handleRestoreSupply}
-                            />
-                        )}
-
-                        <Divider sx={{ my: 3, '&::before, &::after': { borderColor: alpha(theme.palette.primary.main, 0.2) } }}>
-                            <Chip label={t("suppliesToWithdraw")} color="primary" icon={<InventoryIcon />} sx={{ px: 1, fontWeight: 'bold' }} />
-                        </Divider>
-
-                        <Box
-                            component={Paper}
-                            sx={{
-                                minHeight: "120px",
-                                maxHeight: "440px",
-                                overflow: "auto",
-                                mb: 5,
-                                borderRadius: 2,
-                                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.04)}`
-                            }}
-                        >
-                            <DataTable
-                                key="datatable-orders"
-                                columns={columns}
-                                isLoading={false}
+            <Collapse in={expandRetired} timeout="auto">
+                <List sx={{ p: 0, maxHeight: 240, overflow: 'auto' }}>
+                    {retiredSupplies.length > 0 ? (
+                        retiredSupplies.map((item, index) => (
+                            <ListItem
+                                key={`retired-${index}`}
+                                divider={index !== retiredSupplies.length - 1}
                                 sx={{
-                                    '& .MuiTableHead-root': { backgroundColor: alpha(theme.palette.primary.main, 0.05) },
-                                    '& .MuiTableHead-root .MuiTableCell-root': { color: theme.palette.primary.main, fontWeight: 'bold' }
+                                    py: 1,
+                                    px: 2,
+                                    backgroundColor: index % 2 === 0 ? alpha(theme.palette.success.light, 0.03) : 'transparent',
+                                    '&:hover': {
+                                        backgroundColor: alpha(theme.palette.success.light, 0.07)
+                                    }
                                 }}
                             >
-                                {withdrawalItems.map((row, index) => (
-                                    <RowSupply key={row._id || `deposit-supply-${index}`} row={row} handleDelete={handleDeleteRow} />
-                                ))}
-                            </DataTable>
-                            {withdrawalItems.length === 0 && (
-                                <Box py={5} textAlign="center" sx={{ backgroundColor: alpha(theme.palette.background.default, 0.5) }}>
-                                    <Box sx={{ display: 'inline-flex', p: 2, borderRadius: '50%', backgroundColor: alpha(theme.palette.warning.light, 0.1), mb: 2 }}>
-                                        <InventoryIcon fontSize="large" sx={{ color: theme.palette.warning.main }} />
-                                    </Box>
-                                    <Typography variant="subtitle1" color="text.secondary">
-                                        {t("noItemsToWithdraw")}
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Box>
-                    </Paper>
-                </Fade>
-            </DialogContent>
+                                <ListItemAvatar>
+                                    <Avatar
+                                        sx={{
+                                            bgcolor: alpha(theme.palette.success.main, 0.1),
+                                            color: theme.palette.success.main,
+                                            width: 32,
+                                            height: 32
+                                        }}
+                                    >
+                                        <CheckCircleIcon fontSize="small" />
+                                    </Avatar>
+                                </ListItemAvatar>
+                                <ListItemText
+                                    primary={
+                                        <Typography variant="body2" fontWeight="medium">
+                                            {item.supply.name}
+                                        </Typography>
+                                    }
+                                    secondary={
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Chip
+                                                label={`${item.amount} ${item.supply.unitMeasurement}`}
+                                                size="small"
+                                                sx={{
+                                                    borderRadius: '4px',
+                                                    backgroundColor: alpha(theme.palette.success.light, 0.1),
+                                                    color: theme.palette.success.dark,
+                                                    height: 20,
+                                                    fontSize: '0.7rem'
+                                                }}
+                                            />
+                                            {item.retiredDate && (
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {formatDate(item.retiredDate)}
+                                                </Typography>
+                                            )}
+                                        </Stack>
+                                    }
+                                />
+                                <Typography variant="caption" color="text.secondary" sx={{ mr: 2 }}>
+                                    {item.deposit.description}
+                                </Typography>
+                            </ListItem>
+                        ))
+                    ) : (
+                        <ListItem sx={{ justifyContent: 'center', py: 3 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                {t("noRetiredSupplies")}
+                            </Typography>
+                        </ListItem>
+                    )}
+                </List>
+            </Collapse>
 
-            {/* Actions */}
-            <DialogActions sx={{ px: 3, pb: 3 }}>
-                <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
-                    <Grid item>
-                        <Button onClick={onCloseModal} variant="outlined" color="inherit" sx={{ borderRadius: 2, px: 3 }}>
-                            {t("cancel")}
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button
-                            variant="contained"
-                            href={pdfInstance.url || "#"}
-                            target="_blank"
-                            download={`order-${activeOrder?.order}.pdf`}
-                            color="primary"
-                            disabled={!activeOrder || withdrawalItems.length === 0}
-                            onClick={handlePrint}
-                            startIcon={<PrintIcon />}
-                            sx={{
-                                borderRadius: 2,
-                                px: 3,
-                                boxShadow: `0 4px 14px ${alpha(theme.palette.primary.main, 0.4)}`,
-                                '&:hover': { boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.5)}` }
-                            }}
-                        >
-                            {t("print")}
-                        </Button>
-                    </Grid>
-                </Grid>
-            </DialogActions>
-        </Dialog>
+            {/* Removed Supplies Section */}
+            <Box
+                sx={{
+                    p: 2,
+                    borderBottom: expandRemoved ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
+                    backgroundColor: alpha(theme.palette.error.light, 0.05),
+                    cursor: 'pointer',
+                    '&:hover': {
+                        backgroundColor: alpha(theme.palette.error.light, 0.1)
+                    },
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                }}
+                onClick={toggleRemoved}
+            >
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                    <Avatar
+                        sx={{
+                            bgcolor: alpha(theme.palette.error.main, 0.1),
+                            color: theme.palette.error.main,
+                            width: 36,
+                            height: 36
+                        }}
+                    >
+                        <RemoveCircleIcon />
+                    </Avatar>
+                    <Box>
+                        <Typography variant="subtitle1" fontWeight="bold" color="error.main">
+                            {t("removedSupplies")}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {removedSupplies.length} {t("itemsRemovedFromList")}
+                        </Typography>
+                    </Box>
+                </Stack>
+                {expandRemoved ? <ExpandLessIcon color="error" /> : <ExpandMoreIcon color="error" />}
+            </Box>
+
+            <Collapse in={expandRemoved} timeout="auto">
+                <List sx={{ p: 0, maxHeight: 240, overflow: 'auto' }}>
+                    {removedSupplies.length > 0 ? (
+                        removedSupplies.map((item, index) => (
+                            <ListItem
+                                key={`removed-${index}`}
+                                divider={index !== removedSupplies.length - 1}
+                                sx={{
+                                    py: 1,
+                                    px: 2,
+                                    backgroundColor: index % 2 === 0 ? alpha(theme.palette.error.light, 0.03) : 'transparent',
+                                    '&:hover': {
+                                        backgroundColor: alpha(theme.palette.error.light, 0.07)
+                                    }
+                                }}
+                            >
+                                <ListItemAvatar>
+                                    <Avatar
+                                        sx={{
+                                            bgcolor: alpha(theme.palette.error.main, 0.1),
+                                            color: theme.palette.error.main,
+                                            width: 32,
+                                            height: 32
+                                        }}
+                                    >
+                                        <RemoveCircleIcon fontSize="small" />
+                                    </Avatar>
+                                </ListItemAvatar>
+                                <ListItemText
+                                    primary={
+                                        <Typography variant="body2" fontWeight="medium">
+                                            {item.supply.name}
+                                        </Typography>
+                                    }
+                                    secondary={
+                                        <Stack direction="row" spacing={1} alignItems="center">
+                                            <Chip
+                                                label={`${item.amount} ${item.supply.unitMeasurement}`}
+                                                size="small"
+                                                sx={{
+                                                    borderRadius: '4px',
+                                                    backgroundColor: alpha(theme.palette.error.light, 0.1),
+                                                    color: theme.palette.error.dark,
+                                                    height: 20,
+                                                    fontSize: '0.7rem'
+                                                }}
+                                            />
+                                            {item.removedDate && (
+                                                <Typography variant="caption" color="text.secondary">
+                                                    {formatDate(item.removedDate)}
+                                                </Typography>
+                                            )}
+                                        </Stack>
+                                    }
+                                />
+                                {onRestoreSupply && (
+                                    <Tooltip title={t("restoreToList")}>
+                                        <IconButton
+                                            size="small"
+                                            onClick={() => onRestoreSupply(item)}
+                                            sx={{
+                                                color: theme.palette.primary.main,
+                                                '&:hover': {
+                                                    backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                                                }
+                                            }}
+                                        >
+                                            <RestoreIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )}
+                            </ListItem>
+                        ))
+                    ) : (
+                        <ListItem sx={{ justifyContent: 'center', py: 3 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                {t("noRemovedSupplies")}
+                            </Typography>
+                        </ListItem>
+                    )}
+                </List>
+            </Collapse>
+        </Paper>
     );
 };

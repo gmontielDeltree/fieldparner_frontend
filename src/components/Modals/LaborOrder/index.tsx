@@ -73,6 +73,16 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
     const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
     const { pdfInstance, updatePDF } = useLaborOrderPDF(activeOrder, withdrawalItems);
 
+    // Debugging function to log state for print button conditions
+    const logPrintButtonState = () => {
+        console.log("Print Button Debug Info:");
+        console.log("- activeOrder:", activeOrder);
+        console.log("- withdrawalItems:", withdrawalItems);
+        console.log("- withdrawalItems length:", withdrawalItems.length);
+        console.log("- PDF instance URL:", pdfInstance?.url);
+        console.log("- Print button should be enabled:", !!(activeOrder && withdrawalItems.length > 0));
+    };
+
     // Cierra el modal y, si se imprimió, marca en la base
     const onCloseModal = async () => {
         if (hasPrinted && activeOrder) {
@@ -91,24 +101,39 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
 
     // Elimina de la lista de retiro
     const handleDeleteRow = (item: DepositSupplyOrderItem) => {
+        console.log("Removing item from withdrawal list:", item);
         setRemovedSupplies(prev => [...prev, { ...item, removedDate: new Date().toISOString() }]);
         setWithdrawalItems(prev => prev.filter(x => x._id !== item._id));
         NotificationService.showInfo(t("itemRemovedFromList"), { name: item.supply.name });
+
+        // Log updated state after a short delay to allow state to update
+        setTimeout(logPrintButtonState, 100);
     };
 
     // Restaura un insumo eliminado
     const handleRestoreSupply = (item) => {
+        console.log("Restoring item to withdrawal list:", item);
         setWithdrawalItems(prev => [...prev, { ...item, _id: `restored-${Date.now()}-${item._id}` }]);
         setRemovedSupplies(prev => prev.filter(x => x._id !== item._id));
         NotificationService.showSuccess(t("itemRestoredToList"), { name: item.supply.name });
+
+        // Log updated state after a short delay to allow state to update
+        setTimeout(logPrintButtonState, 100);
     };
 
     // Imprime y fija en `activity` las dosis como retiradas
     const handlePrint = async () => {
+        console.log("Print button clicked. Current state:", {
+            activeOrder: !!activeOrder,
+            withdrawalItemsCount: withdrawalItems.length,
+            hasPrinted
+        });
+
         setHasPrinted(true);
 
         // 1) Tomo los nombres impresos
         const printedNames = withdrawalItems.map(item => item.supply.name);
+        console.log("Printed supply names:", printedNames);
 
         // 2) Marco en activity.detalles.dosis
         if (activity?.detalles?.dosis) {
@@ -118,6 +143,9 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                     dose.retired = true;
                 }
             });
+            console.log("Updated activity.detalles.dosis:", activity.detalles.dosis);
+        } else {
+            console.warn("activity.detalles.dosis is undefined or null");
         }
 
         // 3) Actualizo UI de retirados
@@ -126,6 +154,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
             retiredDate: new Date().toISOString()
         }));
         setRetiredSupplies(prev => [...prev, ...newlyRetired]);
+        console.log("Updated retired supplies:", [...retiredSupplies, ...newlyRetired]);
 
         // 4) Notificación
         NotificationService.showInfo(
@@ -139,6 +168,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
     useEffect(() => {
         const initialize = async () => {
             if (showModal !== DisplayModals.LaborOrder) return;
+            console.log("Initializing LaborOrderModal");
             setRemovedSupplies([]);
             setRetiredSupplies([]);
             setWithdrawalItems([]);
@@ -146,9 +176,18 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
             setLoading(true);
 
             try {
+                console.log("Fetching business and campaign data");
                 await Promise.all([getBusinesses(), getCampaigns()]);
 
+                console.log("Selected campaign:", selectedCampaign);
                 if (selectedCampaign) {
+                    console.log("Initializing order data with:", {
+                        lotActive,
+                        selectedCampaign,
+                        activity,
+                        fieldName
+                    });
+
                     const orderData = await initializeOrderData({
                         lotActive,
                         selectedCampaign,
@@ -157,12 +196,17 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                         getLaborOrder,
                         getOrderWithDepositsAndSuppliesByOrder
                     });
+
+                    console.log("Order data initialized:", orderData);
                     if (orderData) setActiveOrder(orderData);
                 }
 
+                console.log("Activity details:", activity?.detalles);
                 if (activity?.detalles?.dosis?.length) {
+                    console.log("Processing activity data for user:", user?.id);
                     // Preparo items activos
                     const activeItems = processActivityData(activity, user);
+                    console.log("Active items processed:", activeItems);
                     setWithdrawalItems(activeItems);
 
                     // Ya retirados en DB o tras imprimir
@@ -184,7 +228,10 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                                 retiredDate: dose.retiredDate || activity.fecha
                             };
                         });
+                    console.log("Retrieved retired items:", retiredInActivity);
                     setRetiredSupplies(retiredInActivity);
+                } else {
+                    console.warn("No activity.detalles.dosis data found");
                 }
 
                 setTimeout(() => setFadeIn(true), 100);
@@ -192,6 +239,8 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                 console.error("Error initializing LaborOrderModal:", err);
             } finally {
                 setLoading(false);
+                // Log print button state after initialization
+                setTimeout(logPrintButtonState, 200);
             }
         };
 
@@ -202,15 +251,30 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
     // Actualizo el PDF cada vez que cambian los items
     useEffect(() => {
         if (activeOrder && withdrawalItems.length) {
+            console.log("Updating PDF with:", {
+                order: activeOrder.order,
+                itemCount: withdrawalItems.length,
+                creationDate
+            });
+
             const orderWithDate = {
                 ...activeOrder,
                 creationDate,
                 fieldName: fieldName || lotActive?.properties?.campo_nombre || lotActive?.properties?.campo_parent_nombre
             };
+
             updatePDF(
                 <LaborOrderDoc withdrawalOrder={orderWithDate} depositAndSupplies={withdrawalItems} />
             );
+        } else {
+            console.log("Not updating PDF because conditions not met:", {
+                hasActiveOrder: !!activeOrder,
+                withdrawalItemsCount: withdrawalItems.length
+            });
         }
+
+        // Log print button state after PDF update
+        logPrintButtonState();
     }, [activeOrder, withdrawalItems, creationDate, lotActive, fieldName]);
 
     // Columnas de la tabla
@@ -222,6 +286,16 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
         { text: t("amountToWithdraw"), align: "center" },
         { text: "", align: "right" }
     ];
+
+    // Log every render
+    console.log("LaborOrderModal render state:", {
+        isModalShown: showModal === DisplayModals.LaborOrder,
+        loading,
+        hasActiveOrder: !!activeOrder,
+        withdrawalItemsCount: withdrawalItems.length,
+        hasPrinted,
+        creationDate
+    });
 
     return (
         <Dialog
@@ -430,7 +504,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                     <Grid item>
                         <Button
                             variant="contained"
-                            href={pdfInstance.url || "#"}
+                            href={pdfInstance?.url || "#"}
                             target="_blank"
                             download={`order-${activeOrder?.order}.pdf`}
                             color="primary"

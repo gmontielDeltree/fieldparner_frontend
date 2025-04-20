@@ -15,6 +15,13 @@ export const initializeOrderData = async ({
     getOrderWithDepositsAndSuppliesByOrder
 }) => {
     try {
+        console.log("initializeOrderData called with:", {
+            lotActive,
+            selectedCampaign,
+            activity,
+            fieldName
+        });
+
         const field = lotActive?.properties?.campo_parent_id;
         const campaignId = selectedCampaign.campaignId;
         const contractorId =
@@ -22,8 +29,13 @@ export const initializeOrderData = async ({
             activity?.contratista?._id ||
             null;
 
+        console.log("Extracted values:", { field, campaignId, contractorId });
+
         if (campaignId && contractorId) {
+            console.log("Calling getLaborOrder with:", { field, campaignId, contractorId });
             const order = await getLaborOrder(field, campaignId, contractorId);
+            console.log("getLaborOrder result:", order);
+
             if (order) {
                 // Add field name to the order for display and PDF
                 const orderWithFieldName = {
@@ -38,11 +50,53 @@ export const initializeOrderData = async ({
                 return orderWithFieldName;
             }
         }
-        return null;
+
+        // Create a default order if none exists
+        console.log("Creating default order as fallback");
+        return createDefaultOrder(lotActive, selectedCampaign, activity, fieldName);
     } catch (error) {
         console.error("Error initializing order data:", error);
-        return null;
+        // Create a default order when error occurs
+        console.log("Error occurred, creating default order as fallback");
+        return createDefaultOrder(lotActive, selectedCampaign, activity, fieldName);
     }
+};
+
+/**
+ * Create a default order when no order is found or error occurs
+ * @param {Object} lotActive - Active lot data
+ * @param {Object} selectedCampaign - Selected campaign
+ * @param {Object} activity - Activity data
+ * @param {String} fieldName - Field name
+ * @returns {Object} - Default order object
+ */
+const createDefaultOrder = (lotActive, selectedCampaign, activity, fieldName) => {
+    // Generate a temporary order ID
+    const tempOrderId = `TEMP-${Date.now().toString(36).toUpperCase()}`;
+
+    // Generate field name from available sources
+    const derivedFieldName = fieldName ||
+        lotActive?.properties?.campo_nombre ||
+        lotActive?.properties?.campo_parent_nombre ||
+        "Unknown Field";
+
+    // Get contractor info if available
+    const contractor = activity?.detalles?.contratista ||
+        activity?.contratista ||
+        activity?.detalles?.contractor ||
+        { name: "Unknown Contractor" };
+
+    console.log("Created default order:", tempOrderId);
+
+    return {
+        order: tempOrderId,
+        fieldName: derivedFieldName,
+        fieldId: lotActive?.properties?.campo_parent_id || "unknown-field",
+        campaignId: selectedCampaign?.campaignId || "unknown-campaign",
+        campaign: selectedCampaign?.name || "Unknown Campaign",
+        contractorId: contractor._id || "unknown-contractor",
+        contractor: contractor.name || contractor.nombreCompleto || contractor.razonSocial || "Unknown Contractor"
+    };
 };
 
 /**
@@ -142,6 +196,7 @@ const updateDocumentWithRetiredItems = async (document, withdrawalItems, t) => {
 
         if (doseIndex !== -1 && !updatedDoc.detalles.dosis[doseIndex].retired) {
             updatedDoc.detalles.dosis[doseIndex].retired = true;
+            updatedDoc.detalles.dosis[doseIndex].retiredDate = new Date().toISOString();
             changesApplied = true;
         }
     });

@@ -1106,5 +1106,6 @@
   "withdrawal_date": "Withdrawal Date",
   "order_details": "Order details",
   "type": "Type",
-  "order": "Order"
+  "order": "Order",
+  "noRetiredSupplies": "No retired supplies"
 }
