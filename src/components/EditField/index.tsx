@@ -237,7 +237,11 @@ const EditField: React.FC<EditFieldProps> = ({
         </CardBody>
       </Card>
 
-      <Modal isOpen={deleteModalOpen} toggle={() => setDeleteModalOpen(false)}>
+      <Modal
+        centered
+        isOpen={deleteModalOpen}
+        toggle={() => setDeleteModalOpen(false)}
+      >
         <ModalHeader toggle={() => setDeleteModalOpen(false)}>
           {t('confirmDeletion')}
         </ModalHeader>
@@ -251,14 +255,15 @@ const EditField: React.FC<EditFieldProps> = ({
           <Button
             color="danger"
             onClick={() => {
-              onDelete()
-              setDeleteModalOpen(false)
+              onDelete();
+              setDeleteModalOpen(false);
             }}
           >
             {t('delete')}
           </Button>
         </ModalFooter>
       </Modal>
+
     </>
   )
 }

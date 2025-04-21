@@ -1089,11 +1089,23 @@
   "user_logout_error": "Erro ao desconectar.",
   "confirm_account": "Confirmar conta.",
   "try_again_later": "Por favor, tente novamente mais tarde.",
-  "info": "Informação",
+"info": "Informação",
   "warning": "Aviso",
   "added": "Adicionado",
   "notification": "Notificação",
   "servicePrefix": "Serviço:",
+  "upload_file": "Carregar arquivo",
+  "itemsMarkedAsWithdrawn": "Insumos marcados como retirados",
+  "errorMarkingItemsAsWithdrawn": "Erro ao marcar insumos como retirados",
+  "itemsWillBeMarkedAsWithdrawn": "Insumos serão marcados como retirados",
+  "orderPrinted": "Ordem impressa",
+  "noItemsToWithdraw": "Nenhum insumo a retirar",
+  "retiredSupplies": "Insumos retirados",
+  "itemsAlreadyWithdrawn": "Insumos já retirados",
+  "removedSupplies": "Insumos removidos",
+  "itemsRemovedFromList": "Insumos removidos da lista",
+  "itemRemovedFromList": "Insumo removido da lista",
+  "itemRestoredToList": "Insumo restaurado na lista",
   "title_withdrawal_order": "Nova ordem de retirada",
   "withdrawal_fem": "Retirar",
   "original_quantity": "Quantidade original",
@@ -1103,5 +1115,7 @@
   "withdrawal_date": "Data de retirada",
   "order_details": "Detalhes do pedido",
   "type": "Tipo",
-  "order": "Ordem"
+  "order": "Ordem",
+  "noRetiredSupplies": "Não há insumos retirados"
 }
+

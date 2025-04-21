@@ -432,6 +432,7 @@ const ActivityContent = ({
             <LaborOrderContent
               activity={normalizedActivity}
               lotDoc={lotDoc}
+              fieldName={fieldName}
               handleDownloadPDF={handleDownloadPDF}
               handleConfirmExecution={handleConfirmExecution}
             />

@@ -137,7 +137,7 @@ function ExecutionContent(props) {
                       <Chip
                         icon={<BusinessIcon />}
                         label={`${t('contractor')}: ${execution.contratista
-                          ? execution.contratista.nombreCompleto + "-" + execution.contratista.razonSocial
+                          ? execution.detalles.contratista.nombreCompleto + "-" + execution.detalles.contratista.razonSocial
                           : t('notAvailable')
                           }`}
                         style={{ margin: "5px" }}

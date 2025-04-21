@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { styled } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 const GlossyButton = styled(Button)(({ theme }) => ({
   borderRadius: "20px",
@@ -20,6 +21,7 @@ const GlossyButton = styled(Button)(({ theme }) => ({
 }));
 
 function AttachedContent() {
+  const { t } = useTranslation();
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
   };
@@ -39,7 +41,7 @@ function AttachedContent() {
           component="span"
           startIcon={<CloudUploadIcon />}
         >
-          Subir Archivo
+          {t("upload_file")}
         </GlossyButton>
       </label>
     </>

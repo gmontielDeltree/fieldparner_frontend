@@ -1,577 +1,528 @@
-import Swal from 'sweetalert2';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, Paper, Box, Typography, Grid, TextField, InputAdornment, TableContainer, Divider, Link } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react'
-import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useCrops, useDeposit, useForm, useOrder, useSupply } from '../../../hooks';
-import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, Crop, DepositSupplyOrder, DepositSupplyOrderItem, DisplayModals, OrderStatus, Supply, TipoEntidad, TransformSupply, WithdrawalOrder, WithdrawalOrderItem, WithdrawalOrderType } from '../../../types';
+import React, { useEffect, useState } from 'react';
+import LaborOrderDoc from './LaborOrderPDF';
+import {
+    Dialog,
+    DialogContent,
+    DialogActions,
+    Button,
+    IconButton,
+    Paper,
+    Box,
+    Typography,
+    Grid,
+    TextField,
+    Divider,
+    Chip,
+    Fade,
+    useTheme,
+    alpha,
+    Card,
+    CardContent,
+    Stack,
+    Avatar
+} from '@mui/material';
 import {
     Close as CloseIcon,
     Assignment as AssignmentIcon,
-    Edit as EditIcon,
-    Save as SaveIcon,
-    Delete as DeleteIcon
+    Print as PrintIcon,
+    Inventory2Rounded as InventoryIcon,
+    CalendarToday as CalendarIcon,
+    BusinessRounded as BusinessIcon,
+    Grid4x4Rounded as GridIcon,
+    TerrainRounded as TerrainIcon,
+    CropRounded as CropIcon,
+    StraightenRounded as MeasureIcon
 } from '@mui/icons-material';
-
-import { getShortDate } from '../../../helpers/dates';
-import { DataTable, ItemRow, Loading, NewSupplyCropRow, TableCellStyled } from '../..';
 import { useTranslation } from "react-i18next";
-
+import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useForm, useOrder } from '../../../hooks';
+import { uiCloseModal } from '../../../redux/ui';
+import { ColumnProps, DepositSupplyOrderItem, DisplayModals, WithdrawalOrder } from '../../../types';
+import { getShortDate } from '../../../helpers/dates';
+import { DataTable, Loading } from '../..';
+import { useLaborOrderPDF } from './LaborOrderPDF';
+import { NotificationService } from "../../../services/notificationService";
+import { RowSupply, InfoCard, SupplyHistory } from './LaborOrderComponents';
 import {
-    usePDF,
-    Image,
-    Document,
-    Page,
-    Text,
-    View,
-    StyleSheet,
-} from '@react-pdf/renderer';
-import { Business } from '../../../interfaces/socialEntity';
+    initializeOrderData,
+    markItemsAsRetired,
+    processActivityData
+} from './LaborOrderHelpers';
 
-
-// Estilos para el PDF
-const styles = StyleSheet.create({
-    body: {
-        paddingTop: 35,
-        paddingBottom: 65,
-        paddingHorizontal: 30,
-    },
-    subtitle: {
-        fontSize: 18,
-        margin: 12,
-        fontFamily: 'Helvetica'
-    },
-    text: {
-        margin: 12,
-        fontSize: 18,
-        textAlign: 'justify',
-        fontFamily: 'Courier-Bold'
-    },
-    textDetail: {
-        margin: 12,
-        fontSize: 14,
-        textAlign: 'justify',
-        fontFamily: 'Courier-Bold'
-    },
-    textBody: {
-        margin: 12,
-        fontSize: 14,
-        textAlign: 'justify',
-        fontFamily: 'Times-Roman'
-    },
-    page: {
-        display: "flex",
-        flexDirection: 'row',
-        backgroundColor: '#E4E4E4',
-    },
-    header: {
-        display: "flex",
-        flexDirection: "row",
-        width: "100%",
-        height: "90px"
-    },
-    section: {
-        margin: 1,
-        // flexGrow: 1,
-    },
-    image: {
-        width: "30px",
-        height: "30px",
-        // objectFit: "center",
-        // margin: 2
-    },
-    titleImage: {
-        fontFamily: 'Helvetica',
-        fontSize: 22,
-        color: "#71d076",
-        textAlign: "center",
-        letterSpacing: "3px",
-        // marginTop: 12,
-        marginLeft: 5
-    },
-    titlePrincipal: {
-        marginTop: 25,
-        fontFamily: 'Courier',
-        fontSize: 24,
-        textAlign: "center",
-    },
-});
-
-interface RowSupplyProps {
-    row: DepositSupplyOrderItem;
-    handleEdit: (item: DepositSupplyOrderItem) => void;
-    handleDelete: (item: DepositSupplyOrderItem) => void;
-}
-const RowSupply: React.FC<RowSupplyProps> = ({ row, handleDelete, handleEdit }) => {
+export const LaborOrderModal = ({ activity, fieldName }) => {
     const { t } = useTranslation();
-
-    const { amountValue, handleInputChange } = useForm({ amountValue: row.amount });
-    const [isEdit, setIsEdit] = useState(false);
-
-    const onClickEdit = () => {
-        setIsEdit(true);
-    }
-    const handleSaveEdit = () => {
-        handleEdit({ ...row, amount: Number(amountValue) });
-        setIsEdit(false);
-    }
-    const handleCancelEdit = () => {
-        setIsEdit(false);
-    }
-
-    return (
-        <ItemRow key={row._id}>
-            <TableCellStyled align="left">
-                {row.deposit?.description}
-            </TableCellStyled>
-            <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
-            <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
-            <TableCellStyled align='center'>{row.location || "-"}</TableCellStyled>
-            <TableCellStyled align='center'>{
-                isEdit ? (
-                    <TextField
-                        type="number"
-                        name="amountValue"
-                        size='small'
-                        value={amountValue}
-                        onChange={handleInputChange}
-                    />) : row.amount
-            }</TableCellStyled>
-            <TableCellStyled align='center'>
-                {
-                    isEdit ? (
-                        <>
-                            <IconButton
-                                color="primary"
-                                aria-label={t('save')}
-                                onClick={handleSaveEdit}
-                            >
-                                <SaveIcon />
-                            </IconButton>
-                            <IconButton
-                                color="secondary"
-                                aria-label={t('cancel')}
-                                onClick={handleCancelEdit}
-                            >
-                                <CloseIcon />
-                            </IconButton>
-                        </>
-                    ) :
-                        <>
-                            <IconButton
-                                onClick={onClickEdit}
-                            >
-                                <EditIcon />
-                            </IconButton>
-                            <IconButton
-                                onClick={() => handleDelete(row)}
-                                style={{ fontSize: '1rem' }}
-                            >
-                                <DeleteIcon />
-
-                            </IconButton>
-                        </>
-                }
-            </TableCellStyled>
-        </ItemRow>
-    )
-}
-
-interface LaborOrderDocProps {
-    withdrawalOrder: WithdrawalOrderItem;
-    depositAndSupplies: DepositSupplyOrderItem[];
-}
-
-const LaborOrderDoc: React.FC<LaborOrderDocProps> = ({
-    withdrawalOrder,
-    depositAndSupplies
-}) => {
-    const contractor = withdrawalOrder.contractor;
-    let contractorName = (contractor && contractor.tipoEntidad === TipoEntidad.FISICA) ? contractor.nombreCompleto : contractor?.razonSocial;
-
-    return (
-        <Document title='QTS Agro'>
-            <Page size="A3" style={styles.body}>
-                <View style={styles.header}>
-                    <Image style={styles.image} src={"/assets/images/logos/agrootolss_logo_sol.png"} />
-                    <Text style={styles.titleImage}>QTS Agro</Text>
-                    <Text style={styles.titlePrincipal}>Orden Retiro Nro: {withdrawalOrder.order} </Text>
-                </View>
-                <View style={styles.section}>
-                    <Text style={styles.text}>Fecha: <Text style={styles.textBody}>{withdrawalOrder.creationDate}</Text> - Contratista: <Text style={styles.textBody}>{contractorName || ""}</Text> - Labor: <Text style={styles.textBody}>{withdrawalOrder.labor?.toUpperCase()}</Text></Text>
-                </View>
-                {
-                    depositAndSupplies.map(x => (
-                        <>
-                            <View key={x._id} style={styles.section}>
-                                <Text style={styles.textDetail}>Deposito:<Text style={styles.textBody}>{x.deposit?.description}</Text> Insumo:<Text style={styles.textBody}>{x.supply.name}</Text> UM:<Text style={styles.textBody}>{x.supply.unitMeasurement} </Text> Cantidad a Retirar:<Text style={styles.textBody}>{x.amount}</Text></Text>
-                            </View>
-                            <View style={{ width: "100%", borderBottom: "1px solid black" }} />
-                        </>
-                    ))
-                }
-            </Page>
-        </Document >
-    )
-}
-//TODO: Revisar para crear una orden de retiro para cultivos que tengamos en stock
-export const LaborOrderModal = ({ activity }) => {
-    const { t, i18n } = useTranslation();
-    console.log("activity", activity);
-    const columns: ColumnProps[] = [
-        { text: t('warehouse'), align: "left" },
-        { text: t('supply'), align: "left" },
-        { text: t('measurementUnit'), align: "center" },
-        { text: t('location'), align: "center" },
-        { text: t('amountToWithdraw'), align: "center" },
-        { text: "", align: "right" },
-    ];
-
+    const theme = useTheme();
     const dispatch = useAppDispatch();
-    const [initializeLoading, setinitializeLoading] = useState(false);
-    const [orderActive, setOrderActive] = useState<WithdrawalOrder | null>(null);
-    const { user } = useAppSelector(state => state.auth);
-    const { showModal } = useAppSelector((state) => state.ui);
-    const { selectedCampaign } = useAppSelector(state => state.campaign);
-    const { lotActive } = useAppSelector(state => state.map);
-    console.log('lotActive', lotActive);
-    const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
-    const { isLoading,
-        depositsSuppliesOrder,
-        createLaborOrder,
-        confirmLaborOrder,
-        getLaborOrder,
-        getOrderWithDepositsAndSuppliesByOrder } = useOrder();
-    //Ver de donde obtenemos los insumos y depositos:
-    const { deposits, getDeposits, getDepositsByCropId } = useDeposit();
-    const { dataCrops, getCrops } = useCrops();
-    const { businesses, getBusinesses } = useBusiness();
-    const { campaigns, getCampaigns } = useCampaign();
-    const contractorFromActivity = useMemo(() => {
-        return activity.contratista as Business;
-    }, []);
-    const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
-    const [instance, updateInstance] = usePDF({ document: <></> });
 
-    const onCloseModal = () => {
-        dispatch(uiCloseModal());
-        setListWithdrawals([]);
+    const [loading, setLoading] = useState(false);
+    const [withdrawalItems, setWithdrawalItems] = useState<DepositSupplyOrderItem[]>([]);
+    const [activeOrder, setActiveOrder] = useState<WithdrawalOrder | null>(null);
+    const [hasPrinted, setHasPrinted] = useState(false);
+    const [fadeIn, setFadeIn] = useState(false);
+
+    const [retiredSupplies, setRetiredSupplies] = useState<any[]>([]);
+    const [removedSupplies, setRemovedSupplies] = useState<any[]>([]);
+
+    const { user } = useAppSelector((state) => state.auth);
+    const { showModal } = useAppSelector((state) => state.ui);
+    const { selectedCampaign } = useAppSelector((state) => state.campaign);
+    const { lotActive } = useAppSelector((state) => state.map);
+
+    const { getLaborOrder, getOrderWithDepositsAndSuppliesByOrder } = useOrder();
+    const { getBusinesses } = useBusiness();
+    const { getCampaigns } = useCampaign();
+    const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
+    const { pdfInstance, updatePDF } = useLaborOrderPDF(activeOrder, withdrawalItems);
+
+    // Debugging function to log state for print button conditions
+    const logPrintButtonState = () => {
+        console.log("Print Button Debug Info:");
+        console.log("- activeOrder:", activeOrder);
+        console.log("- withdrawalItems:", withdrawalItems);
+        console.log("- withdrawalItems length:", withdrawalItems.length);
+        console.log("- PDF instance URL:", pdfInstance?.url);
+        console.log("- Print button should be enabled:", !!(activeOrder && withdrawalItems.length > 0));
     };
 
-    const handleAddDepositSupply = (item: TransformSupply, _isCultive: boolean) => {
-        if (!user) return;
-        console.log('item', item)
-        let newDepositSupplyOrders: DepositSupplyOrderItem = {
-            accountId: user.accountId,
-            // deposit: item.deposit ?? undefined,
-            // supply: item.supply ?? undefined,
-            depositId: item.deposit?._id || "",
-            cropId: item.crop?._id || "",
-            location: item.location,
-            nroLot: item.nroLot,
-            order: 0, // El numero lo genera en createWithdrawalOrder()
-            withdrawalAmount: 0,
-            originalAmount: Number(item.amount),
-            amount: Number(item.amount)
-        };
-        setListWithdrawals([newDepositSupplyOrders, ...listWithdrawals]);
-    }
-
-    const generateLaborOrder = async () => {
-        const findCampaing = campaigns.find(x => x.campaignId === selectedCampaign?.campaignId);
-        const findContractor = businesses.find(x => x._id === contractorFromActivity._id);
-        if (!user || !findCampaing || !findContractor) return;
-
-        const newLaborOrder: WithdrawalOrder = {
-            type: WithdrawalOrderType.Labor,
-            // campaign: findCampaing,
-            campaignId: findCampaing.campaignId,
-            creationDate,
-            order: 0,// El numero lo genera en createWithdrawalOrder()
-            contractorId: findContractor._id,
-            reason: "",
-            state: OrderStatus.Pending,
-            accountId: "",
-            withdrawId: "",
-            field: lotActive?.properties?.campo_parent_id || "", //TODO: ver con joaco si el campo_parent_id es el id campo
-            labor: activity.tipo
-        };
-        let newDepositSupplyOrders: DepositSupplyOrder[] = listWithdrawals.map(s => ({
-            accountId: user.accountId,
-            depositId: s.deposit?._id || "",
-            supplyId: s.supply?._id || "",
-            location: s.location,
-            nroLot: s.nroLot,
-            order: 0,
-            withdrawalAmount: 0,
-            originalAmount: Number(s.amount),
-        }));
-        console.log('newLaborOrder', { newLaborOrder, newDepositSupplyOrders })
-        const numberOrder = await createLaborOrder(newLaborOrder, newDepositSupplyOrders);
-
-        if (numberOrder && numberOrder > 0)
-            Swal.fire(t('withdrawalOrder'), t('orderCreatedSuccess', { number: numberOrder }), 'success');
-        else
-            Swal.fire(t('oops'), t('unexpectedError'), 'error');
-
-        onCloseModal();
-    }
-
-    const initConfirmLaborOrder = async () => {
-        confirmLaborOrder(listWithdrawals, creationDate);
-        onCloseModal();
-    }
-
-    const deleteRowSupply = (item: DepositSupplyOrderItem) => {
-        setListWithdrawals(listWithdrawals.filter(x => x._id !== item._id));
-    }
-
-    const editRowSupply = (item: DepositSupplyOrderItem) => {
-        setListWithdrawals(listWithdrawals.map(x => x._id === item._id ? item : x));
-    }
-
-    const onClickCreateOrder = () => {
-        if (orderActive)
-            initConfirmLaborOrder()
-        else
-            generateLaborOrder()
-    }
-
-    // const onChangeSupply = (item: Supply) => {
-    //     if (item._id) getDepositsBySupplyId(item._id);
-    // };
-
-    const onChangeCrop = (item: Crop) => {
-        if (item._id) getDepositsByCropId(item._id);
-    }
-
-    useEffect(() => {
-        const initializeGetOrder = async () => {
-            console.log("start initialize order");
-            setinitializeLoading(true);
-            const responseAll = await Promise.all([
-                getBusinesses(),
-                // getSupplies(),
-                getCrops(),
-                getDeposits(),
-                getCampaigns(),
-            ]);
-
-            if (responseAll) console.log("initialized success.");
-
-            const field = lotActive?.properties?.campo_parent_id as string;
-            const campaignId = selectedCampaign?.campaignId;
-            const contractorId = contractorFromActivity._id;
-            if (!campaignId || !contractorId) return;
-            const order = await getLaborOrder(field, campaignId, contractorId);
-            if (order) {
-                setOrderActive(order);
-                await getOrderWithDepositsAndSuppliesByOrder(order.order);
+    // Cierra el modal y, si se imprimió, marca en la base
+    const onCloseModal = async () => {
+        if (hasPrinted && activeOrder) {
+            try {
+                await markItemsAsRetired(activity, withdrawalItems, t);
+            } catch (error) {
+                console.error("Error al cerrar el modal:", error);
             }
+        }
+        dispatch(uiCloseModal());
+        setWithdrawalItems([]);
+        setRemovedSupplies([]);
+        setRetiredSupplies([]);
+        setHasPrinted(false);
+    };
 
-            setinitializeLoading(false);
+    // Elimina de la lista de retiro
+    const handleDeleteRow = (item: DepositSupplyOrderItem) => {
+        console.log("Removing item from withdrawal list:", item);
+        setRemovedSupplies(prev => [...prev, { ...item, removedDate: new Date().toISOString() }]);
+        setWithdrawalItems(prev => prev.filter(x => x._id !== item._id));
+        NotificationService.showInfo(t("itemRemovedFromList"), { name: item.supply.name });
+
+        // Log updated state after a short delay to allow state to update
+        setTimeout(logPrintButtonState, 100);
+    };
+
+    // Restaura un insumo eliminado
+    const handleRestoreSupply = (item) => {
+        console.log("Restoring item to withdrawal list:", item);
+        setWithdrawalItems(prev => [...prev, { ...item, _id: `restored-${Date.now()}-${item._id}` }]);
+        setRemovedSupplies(prev => prev.filter(x => x._id !== item._id));
+        NotificationService.showSuccess(t("itemRestoredToList"), { name: item.supply.name });
+
+        // Log updated state after a short delay to allow state to update
+        setTimeout(logPrintButtonState, 100);
+    };
+
+    // Imprime y fija en `activity` las dosis como retiradas
+    const handlePrint = async () => {
+        console.log("Print button clicked. Current state:", {
+            activeOrder: !!activeOrder,
+            withdrawalItemsCount: withdrawalItems.length,
+            hasPrinted
+        });
+
+        setHasPrinted(true);
+
+        // 1) Tomo los nombres impresos
+        const printedNames = withdrawalItems.map(item => item.supply.name);
+        console.log("Printed supply names:", printedNames);
+
+        // 2) Marco en activity.detalles.dosis
+        if (activity?.detalles?.dosis) {
+            activity.detalles.dosis.forEach(dose => {
+                const originalName = dose.insumo?.name || dose.selectedOption?.name;
+                if (printedNames.includes(originalName)) {
+                    dose.retired = true;
+                }
+            });
+            console.log("Updated activity.detalles.dosis:", activity.detalles.dosis);
+        } else {
+            console.warn("activity.detalles.dosis is undefined or null");
         }
 
-        initializeGetOrder();
-    }, [])
+        // 3) Actualizo UI de retirados
+        const newlyRetired = withdrawalItems.map(item => ({
+            ...item,
+            retiredDate: new Date().toISOString()
+        }));
+        setRetiredSupplies(prev => [...prev, ...newlyRetired]);
+        console.log("Updated retired supplies:", [...retiredSupplies, ...newlyRetired]);
 
+        // 4) Notificación
+        NotificationService.showInfo(
+            t("itemsWillBeMarkedAsWithdrawn"),
+            { order: activeOrder?.order },
+            t("orderPrinted")
+        );
+    };
+
+    // Al abrir el modal inicializamos todo
     useEffect(() => {
-        if (depositsSuppliesOrder.length) {
-            setListWithdrawals(depositsSuppliesOrder.map(x => ({ ...x, amount: 0 } as DepositSupplyOrderItem)));
-        }
-    }, [depositsSuppliesOrder])
+        const initialize = async () => {
+            if (showModal !== DisplayModals.LaborOrder) return;
+            console.log("Initializing LaborOrderModal");
+            setRemovedSupplies([]);
+            setRetiredSupplies([]);
+            setWithdrawalItems([]);
+            setHasPrinted(false);
+            setLoading(true);
 
+            try {
+                console.log("Fetching business and campaign data");
+                await Promise.all([getBusinesses(), getCampaigns()]);
+
+                console.log("Selected campaign:", selectedCampaign);
+                if (selectedCampaign) {
+                    console.log("Initializing order data with:", {
+                        lotActive,
+                        selectedCampaign,
+                        activity,
+                        fieldName
+                    });
+
+                    const orderData = await initializeOrderData({
+                        lotActive,
+                        selectedCampaign,
+                        activity,
+                        fieldName,
+                        getLaborOrder,
+                        getOrderWithDepositsAndSuppliesByOrder
+                    });
+
+                    console.log("Order data initialized:", orderData);
+                    if (orderData) setActiveOrder(orderData);
+                }
+
+                console.log("Activity details:", activity?.detalles);
+                if (activity?.detalles?.dosis?.length) {
+                    console.log("Processing activity data for user:", user?.id);
+                    // Preparo items activos
+                    const activeItems = processActivityData(activity, user);
+                    console.log("Active items processed:", activeItems);
+                    setWithdrawalItems(activeItems);
+
+                    // Ya retirados en DB o tras imprimir
+                    const retiredInActivity = activity.detalles.dosis
+                        .filter(d => d.retired)
+                        .map((dose, idx) => {
+                            const amount = parseFloat(dose.dosificacion || "0");
+                            return {
+                                _id: `retired-${idx}`,
+                                accountId: user?.accountId || "",
+                                deposit: dose.deposito || {},
+                                supply: dose.insumo || dose.selectedOption || {},
+                                location: dose.ubicacion || "",
+                                nroLot: dose.nro_lote || "",
+                                order: 0,
+                                withdrawalAmount: amount,
+                                originalAmount: amount,
+                                amount,
+                                retiredDate: dose.retiredDate || activity.fecha
+                            };
+                        });
+                    console.log("Retrieved retired items:", retiredInActivity);
+                    setRetiredSupplies(retiredInActivity);
+                } else {
+                    console.warn("No activity.detalles.dosis data found");
+                }
+
+                setTimeout(() => setFadeIn(true), 100);
+            } catch (err) {
+                console.error("Error initializing LaborOrderModal:", err);
+            } finally {
+                setLoading(false);
+                // Log print button state after initialization
+                setTimeout(logPrintButtonState, 200);
+            }
+        };
+
+        initialize();
+        return () => setFadeIn(false);
+    }, [showModal]);
+
+    // Actualizo el PDF cada vez que cambian los items
     useEffect(() => {
-        if (orderActive && listWithdrawals.length) {
-            console.log('update file', { orderActive });
-            updateInstance(<LaborOrderDoc
-                withdrawalOrder={orderActive}
-                depositAndSupplies={listWithdrawals} />)
-        }
-    }, [listWithdrawals, orderActive])
+        if (activeOrder && withdrawalItems.length) {
+            console.log("Updating PDF with:", {
+                order: activeOrder.order,
+                itemCount: withdrawalItems.length,
+                creationDate
+            });
 
+            const orderWithDate = {
+                ...activeOrder,
+                creationDate,
+                fieldName: fieldName || lotActive?.properties?.campo_nombre || lotActive?.properties?.campo_parent_nombre
+            };
+
+            updatePDF(
+                <LaborOrderDoc withdrawalOrder={orderWithDate} depositAndSupplies={withdrawalItems} />
+            );
+        } else {
+            console.log("Not updating PDF because conditions not met:", {
+                hasActiveOrder: !!activeOrder,
+                withdrawalItemsCount: withdrawalItems.length
+            });
+        }
+
+        // Log print button state after PDF update
+        logPrintButtonState();
+    }, [activeOrder, withdrawalItems, creationDate, lotActive, fieldName]);
+
+    // Columnas de la tabla
+    const columns: ColumnProps[] = [
+        { text: t("warehouse"), align: "left" },
+        { text: t("supply"), align: "left" },
+        { text: t("measurementUnit"), align: "center" },
+        { text: t("location"), align: "center" },
+        { text: t("amountToWithdraw"), align: "center" },
+        { text: "", align: "right" }
+    ];
+
+    // Log every render
+    console.log("LaborOrderModal render state:", {
+        isModalShown: showModal === DisplayModals.LaborOrder,
+        loading,
+        hasActiveOrder: !!activeOrder,
+        withdrawalItemsCount: withdrawalItems.length,
+        hasPrinted,
+        creationDate
+    });
 
     return (
         <Dialog
             open={showModal === DisplayModals.LaborOrder}
-            maxWidth="md"
+            maxWidth="lg"
             fullWidth
             scroll="paper"
             onClose={onCloseModal}
+            PaperProps={{ elevation: 12, sx: { borderRadius: 2, overflow: 'hidden' } }}
+            TransitionComponent={Fade}
+            transitionDuration={400}
         >
-            <DialogTitle variant="h5" sx={{ m: 0, p: 2 }}>
-                <Box className="text-center">
-                    <AssignmentIcon fontSize='large' />
-                </Box>
-                <Typography
-                    component="h1"
-                    variant="h4"
-                    align="center"
-                    sx={{ mt: 1, mb: 7 }}
+            {/* Header */}
+            <Box sx={{
+                position: 'relative',
+                p: 3,
+                textAlign: 'center',
+                backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                color: 'white'
+            }}>
+                <IconButton
+                    aria-label={t("close")}
+                    onClick={onCloseModal}
+                    sx={{
+                        position: "absolute",
+                        right: 8,
+                        top: 8,
+                        color: 'white',
+                        '&:hover': { backgroundColor: alpha('#ffffff', 0.1) }
+                    }}
                 >
-                    {t('warehouseWithdrawalOrder')}
-                </Typography>
-            </DialogTitle>
-            <IconButton
-                aria-label={t('close')}
-                onClick={onCloseModal}
-                sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: 8,
-                    color: (theme) => theme.palette.grey[500],
-                }}
-            >
-                <CloseIcon />
-            </IconButton>
-            <DialogContent>
-                <Loading key="loading-labor" loading={isLoading || initializeLoading} />
-                <Paper
-                    variant="outlined"
-                    sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
-                >
-                    <Grid container spacing={2} mb={2}>
-                        <Grid item xs={12} sm={5}>
-                            <Typography variant="subtitle1">
-                                <strong> {t('campaign')}:</strong> {selectedCampaign?.name.toString().toUpperCase()}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={5}>
-                            <Typography variant="subtitle1">
-                                <strong> {t('crop')}:</strong> {
-                                    i18n.language === "en" ?
-                                        activity?.detalles?.cultivo.descriptionEN :
-                                        i18n.language === "es" ? activity?.detalles?.cultivo.descriptionES
-                                            : activity?.detalles?.cultivo.descriptionPT
-                                }
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="subtitle1">
-                                <strong> {t('field')}:</strong> {lotActive?.properties?.nombre}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="subtitle1">
-                                <strong> {t('lot')}:</strong> {lotActive?.properties?.nombre}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={4}>
-                            <Typography variant="subtitle1">
-                                <strong> {t('hectares')}:</strong> {lotActive?.properties?.hectareas}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={4} sx={{ mt: 3 }}>
-                            <TextField
-                                variant="outlined"
-                                type="date"
-                                label={t('date')}
-                                name="creationDate"
-                                value={creationDate}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                inputProps={{
-                                    min: getShortDate(), // Establece la fecha mínima permitida como la fecha actual
-                                }}
-                                fullWidth
+                    <CloseIcon />
+                </IconButton>
+                <Fade in={fadeIn} timeout={800}>
+                    <Box>
+                        <Avatar sx={{ width: 56, height: 56, mx: 'auto', mb: 2, bgcolor: 'white', color: theme.palette.primary.main }}>
+                            <AssignmentIcon fontSize="large" />
+                        </Avatar>
+                        <Typography component="h1" variant="h4" fontWeight="bold" sx={{ mb: 1 }}>
+                            {t("warehouseWithdrawalOrder")}
+                        </Typography>
+                        {activeOrder && (
+                            <Chip
+                                label={`${t("order")}: ${activeOrder.order.toString().toUpperCase()}`}
+                                color="secondary"
+                                sx={{ borderRadius: '8px', px: 2, fontWeight: 'bold', fontSize: '0.9rem' }}
                             />
-                        </Grid>
-                        {
-                            orderActive && (
-                                <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
-                                    <Typography variant="subtitle1">
-                                        <strong> {t('withdrawalOrder')}:</strong> {orderActive.order.toString().toUpperCase()}
-                                    </Typography>
-                                </Grid>
-                            )
-                        }
-                        <Grid item xs={12} sm={4} sx={{ mt: 3, display: "flex", alignItems: "center" }}>
-                            <Typography variant="subtitle1">
-                                <strong> {t('contractor')}:</strong> {contractorFromActivity.nombreCompleto || contractorFromActivity.razonSocial}
-                            </Typography>
-                        </Grid>
-                    </Grid>
-                    <Divider />
-                    <Box sx={{ my: 3 }}>
-                        <NewSupplyCropRow
-                            key="new-supply-order"
-                            deposits={deposits}
-                            crops={dataCrops}
-                            showDueDate={false}
-
-                            disabledCrops={false}
-                            // onChangeSupply={onChangeSupply}
-                            onChangeCrop={onChangeCrop}
-                            addNewSupplyOrCultive={handleAddDepositSupply} />
+                        )}
                     </Box>
-                    <Typography
-                        variant="h5"
-                        align="left"
-                        sx={{ mt: 1, mb: 3 }}
-                    >
-                        {t('suppliesToWithdraw')}:
-                    </Typography>
-                    <TableContainer
-                        key="table-labor-order"
-                        sx={{
-                            minHeight: "120px",
-                            maxHeight: "440",
-                            overflow: "scroll",
-                            mb: 5
-                        }}
-                        component={Paper}
-                    >
-                        <DataTable
-                            key="datatable-orders"
-                            columns={columns}
-                            isLoading={false}
+                </Fade>
+            </Box>
+
+            {/* Body */}
+            <DialogContent sx={{ p: 3 }}>
+                <Loading key="loading-labor" loading={loading} />
+                <Fade in={fadeIn && !loading} timeout={600}>
+                    <Paper variant="outlined" sx={{
+                        my: { xs: 2, md: 3 },
+                        p: { xs: 2, md: 3 },
+                        borderRadius: 2,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+                    }}>
+                        <Grid container spacing={2} mb={4}>
+                            <Grid item xs={12} sm={4} md={3}>
+                                <InfoCard
+                                    icon={<CropIcon />}
+                                    title={t("crop")}
+                                    value={activity?.tipo?.toString().toUpperCase()}
+                                    color="success"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={3}>
+                                <InfoCard
+                                    icon={<CalendarIcon />}
+                                    title={t("campaign")}
+                                    value={selectedCampaign?.campaignId?.toString().toUpperCase()}
+                                    color="primary"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={3}>
+                                <InfoCard
+                                    icon={<TerrainIcon />}
+                                    title={t("field")}
+                                    value={
+                                        fieldName ||
+                                        lotActive?.properties?.campo_nombre ||
+                                        lotActive?.properties?.campo_parent_nombre ||
+                                        t("noAvailable")
+                                    }
+                                    color="info"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={3}>
+                                <InfoCard
+                                    icon={<GridIcon />}
+                                    title={t("lot")}
+                                    value={lotActive?.properties?.nombre}
+                                    color="secondary"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={3}>
+                                <InfoCard
+                                    icon={<MeasureIcon />}
+                                    title={t("hectares")}
+                                    value={lotActive?.properties?.hectareas}
+                                    color="warning"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4} md={3}>
+                                <InfoCard
+                                    icon={<BusinessIcon />}
+                                    title={t("contractor")}
+                                    value={
+                                        activity?.detalles?.contratista?.nombreCompleto ||
+                                        activity?.contratista?.nombreCompleto ||
+                                        activity?.detalles?.contractor?.razonSocial ||
+                                        "No disponible"
+                                    }
+                                    color="error"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6} md={6}>
+                                <Card variant="outlined" sx={{ height: '100%', borderRadius: 2, boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.05)}` }}>
+                                    <CardContent>
+                                        <Stack direction="row" spacing={1.5} alignItems="center">
+                                            <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
+                                                <CalendarIcon />
+                                            </Avatar>
+                                            <TextField
+                                                variant="outlined"
+                                                type="date"
+                                                label={t("date")}
+                                                name="creationDate"
+                                                value={creationDate}
+                                                onChange={handleInputChange}
+                                                InputProps={{ sx: { borderRadius: 1.5 } }}
+                                                fullWidth
+                                                size="small"
+                                            />
+                                        </Stack>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        </Grid>
+
+                        {(retiredSupplies.length > 0 || removedSupplies.length > 0) && (
+                            <SupplyHistory
+                                retiredSupplies={retiredSupplies}
+                                removedSupplies={removedSupplies}
+                                onRestoreSupply={handleRestoreSupply}
+                            />
+                        )}
+
+                        <Divider sx={{ my: 3, '&::before, &::after': { borderColor: alpha(theme.palette.primary.main, 0.2) } }}>
+                            <Chip label={t("suppliesToWithdraw")} color="primary" icon={<InventoryIcon />} sx={{ px: 1, fontWeight: 'bold' }} />
+                        </Divider>
+
+                        <Box
+                            component={Paper}
+                            sx={{
+                                minHeight: "120px",
+                                maxHeight: "440px",
+                                overflow: "auto",
+                                mb: 5,
+                                borderRadius: 2,
+                                border: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.04)}`
+                            }}
                         >
-                            {listWithdrawals.map((row) => (
-                                <RowSupply
-                                    key={row._id}
-                                    row={row}
-                                    handleEdit={editRowSupply}
-                                    handleDelete={deleteRowSupply} />
-                            ))}
-                        </DataTable>
-                    </TableContainer>
-                </Paper>
+                            <DataTable
+                                key="datatable-orders"
+                                columns={columns}
+                                isLoading={false}
+                                sx={{
+                                    '& .MuiTableHead-root': { backgroundColor: alpha(theme.palette.primary.main, 0.05) },
+                                    '& .MuiTableHead-root .MuiTableCell-root': { color: theme.palette.primary.main, fontWeight: 'bold' }
+                                }}
+                            >
+                                {withdrawalItems.map((row, index) => (
+                                    <RowSupply key={row._id || `deposit-supply-${index}`} row={row} handleDelete={handleDeleteRow} />
+                                ))}
+                            </DataTable>
+                            {withdrawalItems.length === 0 && (
+                                <Box py={5} textAlign="center" sx={{ backgroundColor: alpha(theme.palette.background.default, 0.5) }}>
+                                    <Box sx={{ display: 'inline-flex', p: 2, borderRadius: '50%', backgroundColor: alpha(theme.palette.warning.light, 0.1), mb: 2 }}>
+                                        <InventoryIcon fontSize="large" sx={{ color: theme.palette.warning.main }} />
+                                    </Box>
+                                    <Typography variant="subtitle1" color="text.secondary">
+                                        {t("noItemsToWithdraw")}
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
+                    </Paper>
+                </Fade>
             </DialogContent>
-            <DialogActions>
-                <Grid
-                    container
-                    spacing={1}
-                    alignItems="center"
-                    justifyContent="space-around"
-                    sx={{ mt: 3 }}
-                >
-                    <Grid item xs={12} sm={3}>
-                        <Button onClick={onCloseModal}>{t('cancel')}</Button>
-                    </Grid>
-                    <Grid item xs={12} sm={3}>
-                        <Button
-                            variant="contained"
-                            color="success"
-                            onClick={() => onClickCreateOrder()}
-                        >
-                            {orderActive ? t('confirm') : t('generate')}
+
+            {/* Actions */}
+            <DialogActions sx={{ px: 3, pb: 3 }}>
+                <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
+                    <Grid item>
+                        <Button onClick={onCloseModal} variant="outlined" color="inherit" sx={{ borderRadius: 2, px: 3 }}>
+                            {t("cancel")}
                         </Button>
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid item>
                         <Button
                             variant="contained"
-                            href={instance.url || "#"}
-                            target='_blank'
-                            download={`order-${orderActive?.order}.pdf`}
+                            href={pdfInstance?.url || "#"}
+                            target="_blank"
+                            download={`order-${activeOrder?.order}.pdf`}
                             color="primary"
-                            disabled={!orderActive}
+                            disabled={!activeOrder || withdrawalItems.length === 0}
+                            onClick={handlePrint}
+                            startIcon={<PrintIcon />}
+                            sx={{
+                                borderRadius: 2,
+                                px: 3,
+                                boxShadow: `0 4px 14px ${alpha(theme.palette.primary.main, 0.4)}`,
+                                '&:hover': { boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.5)}` }
+                            }}
                         >
-                            {t('print')}
+                            {t("print")}
                         </Button>
                     </Grid>
                 </Grid>
             </DialogActions>
         </Dialog>
-    )
-}
+    );
+};
