@@ -23,7 +23,7 @@ const WithdrawalOrderManager: React.FC<WithdrawalOrderManagerProps> = ({
     for (const dosis of dosisList) {
       const newWithdrawalOrder = {
         accountId: user.accountId,
-        type: WithdrawalOrderType.Labor,
+        type: WithdrawalOrderType.Automatica,
         creationDate: new Date().toISOString(),
         order: 0,
         reason: 'Reserva de stock',

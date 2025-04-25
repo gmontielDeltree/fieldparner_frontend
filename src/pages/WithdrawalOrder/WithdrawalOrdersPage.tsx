@@ -28,7 +28,7 @@ const initialForm = {
     withdrawId: "",
     order: 0,
     state: OrderStatus.Pending,
-    type: WithdrawalOrderType.Individual,
+    type: WithdrawalOrderType.Manual,
 };
 
 export const WithdrawalOrdersPage: React.FC = () => {
@@ -78,7 +78,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
         }));
 
         addNewWithdrawalOrder({
-            type: WithdrawalOrderType.Individual,
+            type: WithdrawalOrderType.Manual,
             campaignId: formValues.campaignId,
             creationDate: formValues.creationDate,
             withdrawId: formValues.withdrawId,

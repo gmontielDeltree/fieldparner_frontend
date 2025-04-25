@@ -568,9 +568,7 @@ export interface DepositSupplyOrder extends Document {
   accountId: string;
   depositId: string;
   location: string;
-  // crop: Crop | null;
-  cropId?: string;
-  supplyId?: string;
+  supplyId: string;
   nroLot: string;
   withdrawalAmount: number;
   originalAmount: number;
@@ -580,7 +578,6 @@ export interface DepositSupplyOrderItem extends DepositSupplyOrder {
   amount: number;
   deposit?: Deposit;
   supply?: Supply;
-  crop?: Crop;
 }
 
 //Orden de retiro
@@ -590,15 +587,12 @@ export interface WithdrawalOrder extends Document {
   creationDate: string;
   order: number;
   reason: string;
-  // withdraw?: Business;
   withdrawId: string;
-  // campaign: Campaign;
   campaignId: string;
   field: string;
   contractorId?: string;
   labor?: string;
   laborNro?: string;
-  // cropId?: string;
   state: OrderStatus;
 }
 
@@ -753,6 +747,7 @@ export enum DisplayModals {
   SupplyByLots = "SupplyByLots",
   LaborOrder = "LaborOrder",
   UserPermissions = "UserPermissions",
+  HistoryWithdrawOrder = "HistoryWithdrawOrder",
 }
 
 export enum VehicleType {
@@ -788,8 +783,8 @@ export enum OrderStatus {
 }
 
 export enum WithdrawalOrderType {
-  Individual = "Individual",
-  Labor = "Labor"
+  Manual = "Manual",
+  Automatica = "Automatica"
 }
 
 export enum NumeratorType {

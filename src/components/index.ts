@@ -18,6 +18,7 @@ export * from './Supplies/StockForm';
 export * from './Modals/SupplyByDeposits';
 export * from './Modals/SupplyByLots';
 export * from './Modals/LaborOrder';
+export * from './Modals/HistoryWithdrawOrder';
 export * from './CloseButton';
 export * from './NewSupplyRow';
 export * from './BorderContainer';

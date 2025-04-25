@@ -25,7 +25,7 @@ export const withdrawalOrderSlice = createSlice({
         setWithdrawalOrderActive: (state, action: PayloadAction<WithdrawalOrderItem>) => {
             state.withdrawalOrderActive = action.payload;
         },
-        removeWithdrawalOrderActivve: (state) => {
+        removeWithdrawalOrderActive: (state) => {
             state.withdrawalOrderActive = null;
         }
     }
@@ -34,7 +34,7 @@ export const withdrawalOrderSlice = createSlice({
 
 export const {
     loadWithdrawalOrders,
-    removeWithdrawalOrderActivve,
+    removeWithdrawalOrderActive,
     removeWithdrawalOrders,
     setWithdrawalOrderActive
 } = withdrawalOrderSlice.actions;

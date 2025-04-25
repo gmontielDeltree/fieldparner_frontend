@@ -91,7 +91,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
     const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
     const { isLoading,
         depositsSuppliesOrder,
-        getOrderWithDepositsAndSuppliesByOrder,
+        getOrderWithDepositsAndSupplies,
         confirmWithdrawalOrder } = useOrder();
     const { t } = useTranslation();
 
@@ -112,10 +112,10 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
         { text: "", align: "center" },
     ];
     const columnsWithdrawals: ColumnProps[] = [
-        { text: t("_warehouse"), align: "left" },
         { text: t("_supply"), align: "left" },
-        { text: t("batchNumber"), align: "center" },
+        { text: t("_warehouse"), align: "left" },
         { text: t("_location"), align: "left" },
+        { text: t("batchNumber"), align: "center" },
         { text: t("amount"), align: "center" },
         { text: "", align: "center" },
     ];
@@ -143,7 +143,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
 
     useEffect(() => {
         if (orderId) {
-            getOrderWithDepositsAndSuppliesByOrder(Number(orderId));
+            getOrderWithDepositsAndSupplies(Number(orderId));
         }
     }, [orderId])
 
@@ -318,14 +318,19 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                     sx={{ mt: 3 }}
                 >
                     <Grid item xs={12} sm={3}>
-                        <Button onClick={onClickCancel}>
+                        <Button
+                            variant="contained"
+                            color="inherit"
+                            onClick={onClickCancel}>
                             {t("id_cancel")}
                         </Button>
                     </Grid>
                     <Grid item xs={12} sm={3}>
                         <Button
+                            type="submit"
                             variant="contained"
-                            color="primary"
+                            color="success"
+                            disabled={listWithdrawals.length === 0}
                             onClick={() => onClickConfirmOrder()}
                         >
                             {t("confirm")}
