@@ -11,19 +11,12 @@ import { ColumnProps, DisplayModals } from "../../../types";
 import { uiCloseModal } from "../../../redux/ui";
 import { DataTable, ItemRow, TableCellStyled } from "../..";
 import { removeWithdrawalOrderActive } from "../../../redux/withdrawalOrder";
+import { useTranslation } from "react-i18next";
 
-const columns: ColumnProps[] = [
-    { text: "Fecha", align: "left" },
-    { text: "Insumo", align: "left" },
-    { text: "Deposito", align: "left" },
-    { text: "Ubicación", align: "left" },
-    { text: "Nro Lote", align: "center" },
-    { text: "UM", align: "left" },
-    { text: "Cantidad Retirada", align: "right" },
-];
 
 export const HistoryWithdrawOrderModal: React.FC = () => {
     const dispatch = useAppDispatch();
+    const { t } = useTranslation();
     const { showModal } = useAppSelector((state) => state.ui);
     const { withdrawalOrderActive } = useAppSelector((state) => state.order);
     const { isLoading,
@@ -31,6 +24,17 @@ export const HistoryWithdrawOrderModal: React.FC = () => {
         depositsSuppliesOrder,
         getHistoryWithdrawOrder,
         getOrderWithDepositsAndSupplies } = useOrder();
+
+    const columns: ColumnProps[] = [
+        { text: t("_date"), align: "left" },
+        { text: t("_supply"), align: "left" },
+        { text: t("warehouse"), align: "left" },
+        { text: t("id_location"), align: "left" },
+        { text: t("batchNumber"), align: "center" },
+        { text: "UM", align: "left" },
+        { text: t("amountWithdrawn"), align: "right" },
+    ];
+
 
     const onCloseModal = () => {
         dispatch(removeWithdrawalOrderActive());
@@ -57,7 +61,7 @@ export const HistoryWithdrawOrderModal: React.FC = () => {
             scroll="paper"
             onClose={onCloseModal}
         >
-            <DialogTitle variant="h5">Historial de la Orden de Retiro: {withdrawalOrderActive?.order}</DialogTitle>
+            <DialogTitle variant="h5">{t("withdrawalFromOrder")}: {withdrawalOrderActive?.order}</DialogTitle>
             <DialogContent>
                 <DataTable
                     key="history-withdraw-order"
@@ -93,7 +97,7 @@ export const HistoryWithdrawOrderModal: React.FC = () => {
             </DialogContent>
             <DialogActions>
                 <Button variant="contained" color="primary" onClick={onCloseModal}>
-                    Cerrar
+                    {t("close")}
                 </Button>
             </DialogActions>
         </Dialog>

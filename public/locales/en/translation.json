@@ -787,6 +787,7 @@
   "quantityPerHectare": "Quantity per hectare",
   "totalQuantity": "Total quantity",
   "batchNumber": "Batch Number",
+  "amountWithdrawn": "Amount withdrawn",
   "selectSupplyPlease": "Please select a supply",
   "incompatibleSupply": "Incompatible Supply",
   "supplyNotCompatibleWithCrop": "The selected supply is not compatible with the crop",
@@ -1107,5 +1108,7 @@
   "order_details": "Order details",
   "type": "Type",
   "order": "Order",
-  "noRetiredSupplies": "No retired supplies"
+  "noRetiredSupplies": "No retired supplies",
+  "withdrawalFromOrder": "Withdrawals from the order",
+  "record": "Record"
 }

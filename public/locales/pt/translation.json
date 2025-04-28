@@ -786,6 +786,7 @@
   "addedSupplies": "Insumos Adicionados",
   "quantityPerHectare": "Quantidade por hectare",
   "totalQuantity": "Quantidade total",
+  "amountWithdrawn": "Valor retirado",
   "batchNumber": "Número do Lote",
   "selectSupplyPlease": "Por favor selecione um insumo",
   "incompatibleSupply": "Insumo incompatível",
@@ -798,7 +799,7 @@
   "directSeeding": "Semeadura Direta",
   "traditionalSeeding": "Semeadura Tradicional",
   "broadcast": "A lanço",
-  "rowSeeding": "Semeadura em linha/sulcos",
+  "rowSeeding": "Semeadura em/sulcos",
   "rowSpacing": "Distância entre sulcos",
   "thousandSeedWeight": "Peso de 1000 sementes",
   "selectServiceBeforeAdding": "Selecione um serviço antes de adicionar",
@@ -1116,6 +1117,8 @@
   "order_details": "Detalhes do pedido",
   "type": "Tipo",
   "order": "Ordem",
-  "noRetiredSupplies": "Não há insumos retirados"
+  "noRetiredSupplies": "Não há insumos retirados",
+  "withdrawalFromOrder": "Retiradas da ordem",
+  "record": "Registro"
 }
 

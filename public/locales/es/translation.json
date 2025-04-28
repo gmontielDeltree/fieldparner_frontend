@@ -780,6 +780,7 @@
   "warehouse": "Deposito",
   "measurementUnit": "UM",
   "amountToWithdraw": "Cantidad a retirar",
+  "amountWithdrawn": "Cantidad retirada",
   "warehouseWithdrawalOrder": "Orden de Retiro Deposito",
   "withdrawalOrder": "Orden Retiro",
   "suppliesToWithdraw": "Insumos a retirar",
@@ -1112,5 +1113,6 @@
   "order_details": "Detalles de la orden",
   "type": "Tipo",
   "order": "Orden",
-  "noRetiredSupplies": "No hay insumos retirados"
+  "noRetiredSupplies": "No hay insumos retirados",
+  "record": "Historial"
 }
