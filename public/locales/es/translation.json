@@ -787,6 +787,7 @@
   "confirm": "Confirmar",
   "generate": "Generar",
   "print": "Imprimir",
+  "printAndGenerateOrder": "Imprimir y generar orden",
   "oops": "Ups",
   "unexpectedError": "Ocurrio un error inesperado",
   "orderCreatedSuccess": "N° de orden {number} creado exitosamente.",
@@ -1114,5 +1115,8 @@
   "type": "Tipo",
   "order": "Orden",
   "noRetiredSupplies": "No hay insumos retirados",
-  "record": "Historial"
+  "noRemovedSupplies": "No hay insumos eliminados",
+  "withdrawal_order_label": "Orden de Retiro",
+  "record": "Historial",
+  "laborOrder": "Orden de Trabajo"
 }
