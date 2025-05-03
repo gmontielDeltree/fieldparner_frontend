@@ -86,67 +86,16 @@ export const useOrder = () => {
                 const orders = responseAll[0].docs.map(doc => doc as WithdrawalOrder);
                 const withdraws = responseAll[1].docs.map(doc => doc as Business);
                 const campaigns = responseAll[2].docs.map(doc => doc as Campaign);
-
                 const orderItems: WithdrawalOrderItem[] = orders.map(o => {
-                    // Buscar el withdraw utilizando tanto el ID directo como el ID con prefijo
-                    const withdraw = withdraws.find(w => {
-                        // Puede estar almacenado con o sin prefijo
-                        if (w._id === o.withdrawId) return true;
-
-                        // Si el withdrawId tiene prefijo "contractor:"
-                        if (o.withdrawId?.includes(':')) {
-                            const cleanId = o.withdrawId.split(':')[1];
-                            return w._id === cleanId;
-                        }
-
-                        // Si el w._id tiene prefijo "contractor:"
-                        if (w._id?.includes(':')) {
-                            const cleanId = w._id.split(':')[1];
-                            return cleanId === o.withdrawId;
-                        }
-
-                        return false;
-                    });
-
-                    // Buscar la campaña utilizando tanto el ID directo como el ID con prefijo
-                    const campaign = campaigns.find(c => {
-                        // Puede estar almacenado con o sin prefijo
-                        if (c._id === o.campaignId) return true;
-
-                        // Si el campaignId tiene prefijo "campaign:"
-                        if (o.campaignId?.includes(':')) {
-                            const cleanId = o.campaignId.split(':')[1];
-                            return c._id === cleanId;
-                        }
-
-                        // Si el c._id tiene prefijo "campaign:"
-                        if (c._id?.includes(':')) {
-                            const cleanId = c._id.split(':')[1];
-                            return cleanId === o.campaignId;
-                        }
-
-                        return false;
-                    });
-
-                    if (!withdraw || !campaign) {
-                        console.error("Business or Campaign not found for order:", {
-                            orderId: o._id,
-                            orderNumber: o.order,
-                            withdrawId: o.withdrawId,
-                            campaignId: o.campaignId,
-                            availableWithdraws: withdraws.map(w => w._id),
-                            availableCampaigns: campaigns.map(c => c._id)
-                        });
-                        throw new Error("Business or Campaign not found");
-                    }
-
+                    const withdraw = withdraws.find(w => w._id === o.withdrawId);
+                    const campaign = campaigns.find(c => c._id === o.campaignId);
+                    if (!withdraw || !campaign) throw new Error("Business or Campaign not found");
                     return {
                         ...o,
                         withdraw,
                         campaign,
                     } as WithdrawalOrderItem;
                 }).sort((a, b) => b.order - a.order);
-
                 setOrders(orderItems);
             }
 
@@ -154,7 +103,6 @@ export const useOrder = () => {
         } catch (error) {
             console.log(error);
             error && setError(error);
-            setIsLoading(false);
         }
     }
 
@@ -162,12 +110,6 @@ export const useOrder = () => {
         setIsLoading(true);
         try {
             if (!user) { dispatch(onLogout(t("session_expired"))); return; }
-
-            // Registrar los datos de entrada para depuración
-            console.log("Creating withdrawal order with data:", {
-                withdrawalOrder: newWithdrawalOrder,
-                depositSupplies: newDepositSupplies
-            });
 
             let lastNumerator: Numerator = {
                 accountId: user.accountId,
@@ -186,37 +128,18 @@ export const useOrder = () => {
                 lastNumerator.lastNumerator = (lastNumeratorFound.lastNumerator + 1);
             }
 
-            // Asegurarnos de que los IDs no tienen prefijos
-            const cleanWithdrawId = newWithdrawalOrder.withdrawId?.includes(':')
-                ? newWithdrawalOrder.withdrawId.split(':')[1]
-                : newWithdrawalOrder.withdrawId;
-
-            const cleanCampaignId = newWithdrawalOrder.campaignId?.includes(':')
-                ? newWithdrawalOrder.campaignId.split(':')[1]
-                : newWithdrawalOrder.campaignId;
-
             let newOrder: WithdrawalOrder = {
                 ...newWithdrawalOrder,
                 order: lastNumerator.lastNumerator,
-                accountId: user.accountId,
-                withdrawId: cleanWithdrawId,
-                campaignId: cleanCampaignId
+                accountId: user.accountId
             };
-
             let depositSuppliesOrder = newDepositSupplies.map(s => ({ ...s, order: lastNumerator.lastNumerator }));
-
-            console.log("Saving to database:", {
-                order: newOrder,
-                depositSupplies: depositSuppliesOrder
-            });
 
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
                 putLastNumerator(lastNumerator),
             ]);
-
-            console.log("Database response:", response);
 
             setIsLoading(false);
 
