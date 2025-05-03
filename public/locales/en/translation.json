@@ -780,6 +780,7 @@
   "confirm": "Confirm",
   "generate": "Generate",
   "print": "Print",
+  "printAndGenerateOrder": "Print and generate order",
   "oops": "Oops",
   "unexpectedError": "An unexpected error occurred",
   "orderCreatedSuccess": "Order No. {number} created successfully.",
@@ -1080,7 +1081,7 @@
   "user_logout_error": "Error during logout.",
   "confirm_account": "Confirm account.",
   "try_again_later": "Please try again later.",
- "info": "Information",
+  "info": "Information",
   "warning": "Warning",
   "added": "Added",
   "notification": "Notification",
@@ -1110,5 +1111,8 @@
   "order": "Order",
   "noRetiredSupplies": "No retired supplies",
   "withdrawalFromOrder": "Withdrawals from the order",
-  "record": "Record"
+  "record": "Record",
+  "laborOrder": "Work Order",
+  "noRemovedSupplies": "No removed supplies",
+  "withdrawal_order_label": "Withdrawal Order"
 }
