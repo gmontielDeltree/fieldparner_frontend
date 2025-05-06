@@ -12,41 +12,33 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useCorporateCompanies } from "../hooks";
-import { setCorporateCompaniesActive } from "../redux/corporateCompanies";
+import { useAppDispatch, useCompany } from "../../hooks";
+import { setCompanyActive } from "../../redux/companies";
 import { useTranslation } from "react-i18next";
-import { CorporateCompanies } from "../types";
-import { GenericListPage } from "./GenericListPage";
+import { GenericListPage } from "../GenericListPage";
+import { Company } from "../../interfaces/company";
 
-export const ListCorporateCompaniesPage: React.FC = () => {
+export const CompaniesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  // const { isLoading } = useAppSelector((state) => state.ui);
-  const { isLoading, corporateCompanies, getCorporateCompanies, setCorporateCompanies, removeCorporateCompanies} =  useCorporateCompanies();
- // const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const { isLoading, companies, removeCompany, getCompanies } = useCompany();
+
+  // const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
-  // const columns: ColumnProps[] = [
-  //   { text: t("tax_id_identification_number"), align: "center" },
-  //   { text: t("name_negal_name"), align: "center" },
-  //   { text: t("_address"), align: "center" },
-  //   { text: t("_state"), align: "center" },
-  //   { text: t("id_country"), align: "center" },
-  //   { text: "", align: "center" },
-  // ];
 
   const columns = [
-    {field: "taxKey", headerName: t("tax_id_identification_number"), flex: 1},
+    { field: "trybutaryCode", headerName: t("tax_id_identification_number"), flex: 1 },
     { field: "fantasyName", headerName: t("name_negal_name"), flex: 1 },
-    { field: "domicile", headerName: t("_address"), flex: 1 },
-    { field: "state", headerName: t("_state") , flex: 1 },
-    { field: "countryId", headerName: t("id_country") , flex: 1 },
+    { field: "address", headerName: t("_address"), flex: 1 },
+    { field: "province", headerName: t("_state"), flex: 1 },
+    { field: "country", headerName: t("id_country"), flex: 1 },
     {
       field: "actions",
       headerName: "",
       flex: 1,
       sortable: false,
-      renderCell: (params: { row: CorporateCompanies; }) => (
+      renderCell: (params: { row: Company; }) => (
         <Box display="flex" justifyContent="center">
           <Tooltip title={t("icon_edit")}>
             <IconButton
@@ -78,9 +70,9 @@ export const ListCorporateCompaniesPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    getCorporateCompanies();
+    getCompanies();
   }, []);
-  
+
 
   // const onClickSearch = (): void => {
   //   if (filterText === "") {
@@ -99,17 +91,17 @@ export const ListCorporateCompaniesPage: React.FC = () => {
 
   //const onClickAddBusiness = () => navigate("/init/overview/corporate-companies/new");
 
-  const onClickUpdateCorporateCompanies = (item: CorporateCompanies): void => {
-    dispatch(setCorporateCompaniesActive(item));
-    navigate(`/init/overview/corporate-companies/${item._id}`);
+  const onClickUpdateCorporateCompanies = (item: Company): void => {
+    dispatch(setCompanyActive(item));
+    navigate(`/init/overview/corporate-companies/${item._id}`); //TODO: chequear si deberia ser el id o el companyId
   };
 
 
 
-  const handleDeleteCorporateCompanies = (item: CorporateCompanies) => {
+  const handleDeleteCorporateCompanies = async (item: Company) => {
     if (item._id && item._rev) {
-      removeCorporateCompanies(item._id, item._rev);
-      getCorporateCompanies();
+      await removeCompany(item._id, item._rev);
+      getCompanies();
     }
   };
 
@@ -121,11 +113,12 @@ export const ListCorporateCompaniesPage: React.FC = () => {
           <BusinessIcon sx={{ marginRight: '8px' }} />
         </Box>
       }
-      data={corporateCompanies}
+      isLoading={isLoading}
+      data={companies}
       columns={columns}
-      getData={getCorporateCompanies}
-      deleteData={removeCorporateCompanies}
-      setActiveItem={setCorporateCompaniesActive}
+      getData={getCompanies}
+      deleteData={removeCompany}
+      setActiveItem={setCompanyActive}
       newItemPath="/init/overview/corporate-companies/new"
       editItemPath={(id) => `/init/overview/corporate-companie/${id}`}
     />

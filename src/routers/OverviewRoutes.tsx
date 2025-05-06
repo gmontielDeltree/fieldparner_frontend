@@ -37,8 +37,8 @@ import {
   PurchaseOrderPage,
   ListTransportDocumentPage,
   TransportDocumentPage,
-  NewCoporateCompaniesPage,
-  ListCorporateCompaniesPage,
+  CompanyPage,
+  CompaniesPage,
   NewCorporateContractPage,
   ListCorporateContractPage,
   ListCertificateDepositPage,
@@ -196,9 +196,9 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/purchase-order/:order" element={<PurchaseOrderPage />} />
         <Route path="/overview/purchase-order/new" element={<PurchaseOrderPage />} />
 
-        <Route path="/overview/corporate-companies/new" element={< NewCoporateCompaniesPage />} />
-        <Route path="/overview/corporate-companies" element={< ListCorporateCompaniesPage />} />
-        <Route path="/overview/corporate-companies/:id" element={< NewCoporateCompaniesPage />} />
+        <Route path="/overview/corporate-companies/new" element={< CompanyPage />} />
+        <Route path="/overview/corporate-companies" element={< CompaniesPage />} />
+        <Route path="/overview/corporate-companies/:id" element={< CompanyPage />} />
 
         <Route path="/overview/corporate-contract/new" element={< NewCorporateContractPage />} />
         <Route path="/overview/corporate-contract" element={< ListCorporateContractPage />} />

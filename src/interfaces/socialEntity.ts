@@ -1,4 +1,4 @@
-import { Document } from '../types';
+import { DataFileName, Document } from '../types';
 import { Country } from './country';
 
 export interface Business extends Document {
@@ -26,7 +26,7 @@ export interface Business extends Document {
     legajo?: string;
     matricula?: string;
     categorias: string[];
-    logoBusiness?: string;
+    logoBusiness?: DataFileName;
 }
 
 export interface BusinessItem extends Business {

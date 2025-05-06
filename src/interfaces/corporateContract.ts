@@ -1,19 +1,20 @@
 import { Document } from '../types';
 
-export interface ListCorporateContract  {
+export interface CompanyByContract extends Document {
     id: string,
-    companie: string;
-    percentageOfParticipation: string;
+    contractId: string;
+    companyId: string;
+    percentageOfParticipation: number;
     activity:string;
-    
 }
   export interface CorporateContract extends Document {
+    accountId: string;
+    licenceId: string;    
     idContract: string;
     description: string;
     status: EnumStatusContract;
-    contractsList: ListCorporateContract[];  
     totalCompany: number;
-    campaignSelect?: string;
+    campaignId?: string;
   }
   export interface CorporateContractState {
     corporateContractActive: CorporateContract| null;
@@ -21,8 +22,8 @@ export interface ListCorporateContract  {
   }
   
   export interface ListCorporateContractState {
-    listCorporateContractActive: ListCorporateContract| null;
-    ListCorporateContract: ListCorporateContract[];
+    listCorporateContractActive: CompanyByContract| null;
+    ListCorporateContract: CompanyByContract[];
   }
 
   

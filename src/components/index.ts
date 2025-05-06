@@ -34,3 +34,4 @@ export * from './LocalidadSelect/LocalidadSelect';
 export { default as UserPermissionsModal } from './Modals/UserPermissionsModal';
 
 export * from './TopBar/TopBarCustom';
+export * from './CorporateContract/TableCorporateContract';

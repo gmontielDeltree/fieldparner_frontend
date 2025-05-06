@@ -14,10 +14,9 @@ import {
   Typography,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAppDispatch, useForm, useCorporateCompanies, useAppSelector, useBusiness, useCountry } from '../hooks';
-import { Loading } from '../components';
-import { CorporateCompanies } from '../types';
-import { removeCorporateCompaniesActive } from '../redux/corporateCompanies';
+import { useAppDispatch, useForm, useAppSelector, useBusiness, useCountry, useCompany } from '../../hooks';
+import { Loading } from '../../components';
+import { removeCompanyActive } from '../../redux/companies';
 import {
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
@@ -25,23 +24,25 @@ import {
   People as PeopleIcon,
 } from '@mui/icons-material';
 import uuid4 from 'uuid4';
-import { uploadFile } from '../helpers/fileUpload';
-import { urlImg } from '../config';
+import { uploadFile } from '../../helpers/fileUpload';
+import { urlImg } from '../../config';
 import { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useTranslation } from 'react-i18next';
-import { Country } from '../interfaces/country';
-import { getLocalityAndStateByZipCode } from '../utils/getDataZipCode';
+import { Country } from '../../interfaces/country';
+import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
+import { Company } from '../../interfaces/company';
+import { CountryCode, ItemZipCode } from '../../types';
 
 
 interface FormErrors {
-  taxKey?: string;
-  businessName?: string;
+  trybutaryCode?: string;
+  socialReason?: string;
   fantasyName?: string;
   address?: string;
-  location?: string;
-  state?: string;
-  phoneNumber?: string;
+  locality?: string;
+  province?: string;
+  phone?: string;
 }
 
 export interface AddressFormProps {
@@ -50,97 +51,89 @@ export interface AddressFormProps {
   handleFormValueChange: (key: string, value: string) => void;
 }
 
-const initialForm: CorporateCompanies = {
+const initialForm: Company = {
   accountId: '',
   licenceId: '',
-  countryId: '',
+  country: '',
   companyId: '',
-  cp: '',
-  taxKey: '',
+  zipCode: '',
+  name: '',
+  email: '',
+  observation: '',
+  province: '',
+  trybutaryCode: '',
+  // taxKey: '',
   fantasyName: '',
-  location: '',
-  state: '',
-  photoName: '',
+  locality: '',
+  // state: '',
+  companyLogo: { originalName: '', uniqueName: '' },
   address: '',
-  phoneNumber: '',
+  phone: '',
   secondaryContact: '',
-  web: '',
-  observations: '',
-  businessName: '',
-  pais: '',
-  taxSituation: ''
+  website: '',
+  // observations: '',
+  socialReason: '',
+  // taxSituation: ''
 };
 
 
-export const NewCoporateCompaniesPage = () => {
+export const CompanyPage = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { user } = useAppSelector(state => state.auth);
-  const { corporateCompaniesActive } = useAppSelector((state) => state.corporateCompanies);
-  const { isLoading, createCorporateCompanies, updateCorporateCompanies, corporateCompanies, getCorporateCompanies } = useCorporateCompanies();
+  const { companyActive } = useAppSelector((state) => state.companies);
+  const { isLoading, companies, createCompany, updateCompany, getCompanies } = useCompany();
   const { getCountries, dataCountry: countries } = useCountry();
   const { businesses, getBusinesses } = useBusiness();
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [_localities, setLocalities] = useState<string[]>([]);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const countryUser = countries.find(country => country.code === user?.countryId);
-
   const {
-    photoName,
-    cp,
-    taxKey,
-    fantasyName,
-    state,
-    address,
-    location,
-    phoneNumber,
-    secondaryContact,
-    web,
-    businessName,
-    observations,
     formulario,
-    taxSituation,
     setFormulario,
     handleInputChange,
     reset,
-  } = useForm<CorporateCompanies>(initialForm);
+  } = useForm<Company>(initialForm);
+
+
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
     let isValid = true;
 
-    if (!taxKey?.trim()) {
-      errors.taxKey = t('required_field');
+    if (!formulario.trybutaryCode?.trim()) {
+      errors.trybutaryCode = t('required_field');
       isValid = false;
     }
 
-    if (!businessName?.trim()) {
-      errors.businessName = t('required_field');
+    if (!formulario.socialReason?.trim()) {
+      errors.socialReason = t('required_field');
       isValid = false;
     }
 
-    if (!fantasyName?.trim()) {
+    if (!formulario.fantasyName?.trim()) {
       errors.fantasyName = t('required_field');
       isValid = false;
     }
 
-    if (!address?.trim()) {
+    if (!formulario.address?.trim()) {
       errors.address = t('required_field');
       isValid = false;
     }
 
-    if (!location?.trim()) {
-      errors.location = t('required_field');
+    if (!formulario.locality?.trim()) {
+      errors.locality = t('required_field');
       isValid = false;
     }
 
-    if (!state?.trim()) {
-      errors.state = t('required_field');
+    if (!formulario.province?.trim()) {
+      errors.province = t('required_field');
       isValid = false;
     }
 
-    if (!phoneNumber?.trim()) {
-      errors.phoneNumber = t('required_field');
+    if (!formulario.phone?.trim()) {
+      errors.phone = t('required_field');
       isValid = false;
     }
 
@@ -149,22 +142,23 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   useEffect(() => {
-    if (corporateCompaniesActive) setFormulario(corporateCompaniesActive);
+    if (companyActive) setFormulario(companyActive);
     else setFormulario(initialForm);
-  }, [corporateCompaniesActive, setFormulario]);
+  }, [companyActive]);
 
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
+      const originalFileName = fileInput.name;
       const newFileName = `${uuid4()}.jpeg`;
       const renamedFile = new File([fileInput], newFileName, { type: fileInput.type });
       const response = await uploadFile(renamedFile);
 
 
       if (response)
-        setFormulario(({ ...formulario, photoName: newFileName }));
+        setFormulario(({ ...formulario, companyLogo: { originalName: originalFileName, uniqueName: newFileName } }));
       else
-        setFormulario(({ ...formulario, photoName: "" }));
+        setFormulario(({ ...formulario, companyLogo: { originalName: "", uniqueName: "" } }));
 
     } catch (error) {
       console.log('error', error)
@@ -177,19 +171,21 @@ export const NewCoporateCompaniesPage = () => {
   };
 
   const handleCancel = () => {
-    setFormulario(({ ...formulario, photoName: "" }));
+    setFormulario(({ ...formulario, companyLogo: { originalName: "", uniqueName: "" } }));
   };
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!formulario._id?.trim()) {
       Swal.fire('Error', t('cannot_update_without_valid_id'), 'error');
       return;
     }
-
-    if (validateForm()) {
-      updateCorporateCompanies(formulario);
-      reset();
-    } else {
+    try {
+      if (validateForm()) {
+        await updateCompany(formulario);
+        reset();
+        navigate('/init/overview/corporate-companies');
+      }
+    } catch (error) {
       Swal.fire({
         icon: 'error',
         title: t('validation_error'),
@@ -197,34 +193,38 @@ export const NewCoporateCompaniesPage = () => {
       });
     }
   };
+
   const handleAdd = async () => {
-    if (validateForm()) {
-      await createCorporateCompanies(formulario);
-      reset();
-    } else {
+    try {
+      if (validateForm()) {
+        await createCompany(formulario);
+        reset();
+        navigate('/init/overview/corporate-companies');
+      }
+    } catch (error) {
       Swal.fire({
         icon: 'error',
         title: t('validation_error'),
         text: t('check_required_fields'),
       });
     }
-  };
 
+  };
 
   const onClickCancel = () => {
-    dispatch(removeCorporateCompaniesActive());
+    dispatch(removeCompanyActive());
     navigate("/init/overview/corporate-companies");
     reset();
   };
 
   const handleVerifyId = () => {
     // Solo verificamos si el taxKey (CUIT) tiene algún valor
-    if (!taxKey || taxKey.trim() === '') {
+    if (!formulario.trybutaryCode || formulario.trybutaryCode.trim() === '') {
       return false;
     }
 
-    const existingBusiness = businesses.find(business => business.cuit === taxKey);
-    const taxIdExists = corporateCompanies.find(corporate => corporate.taxKey === taxKey);
+    const existingBusiness = businesses.find(business => business.cuit === formulario.trybutaryCode);
+    const taxIdExists = companies.find(corporate => corporate.trybutaryCode === formulario.trybutaryCode);
 
     if (taxIdExists) {
       Swal.fire({
@@ -234,8 +234,8 @@ export const NewCoporateCompaniesPage = () => {
       }).then(() => {
         setFormulario(prevForm => ({
           ...prevForm,
-          taxKey: '',
-          id: 0
+          trybutaryCode: '',
+          // id: 0
         }));
       });
       return true;
@@ -253,23 +253,20 @@ export const NewCoporateCompaniesPage = () => {
         if (result.isConfirmed) {
           setFormulario(prevForm => ({
             ...prevForm,
-            taxKey: existingBusiness.cuit || prevForm.taxKey,
-            businessName: existingBusiness.razonSocial || prevForm.businessName,
-            fantasyName: existingBusiness.razonSocial || prevForm.fantasyName,
-            cp: existingBusiness.cp || prevForm.cp,
-            location: existingBusiness.localidad || prevForm.location,
-            state: existingBusiness.provincia || prevForm.state,
+            trybutaryCode: existingBusiness.cuit || prevForm.trybutaryCode,
+            socialReason: existingBusiness.razonSocial || prevForm.socialReason,
+            fantasyName: existingBusiness.razonSocial || prevForm.fantasyName, //TODO: chequear si es correcto
+            zipCode: existingBusiness.cp || prevForm.zipCode,
+            locality: existingBusiness.localidad || prevForm.locality,
+            province: existingBusiness.provincia || prevForm.province,
             address: existingBusiness.domicilio || prevForm.address,
             secondaryContact: existingBusiness.contactoSecundario || prevForm.secondaryContact,
-            web: existingBusiness.sitioWeb || prevForm.web,
-            photoName: existingBusiness.logoBusiness || prevForm.photoName,
-            phoneNumber: existingBusiness.contactoPrincipal || prevForm.phoneNumber,
+            website: existingBusiness.sitioWeb || prevForm.website,
+            companyLogo: prevForm.companyLogo, //existingBusiness.logoBusiness ||
+            phone: existingBusiness.contactoPrincipal || prevForm.phone,
           }));
         } else {
-          setFormulario(prevForm => ({
-            ...prevForm,
-            id: 0
-          }));
+          setFormulario({ ...initialForm });
         }
       });
     }
@@ -291,58 +288,58 @@ export const NewCoporateCompaniesPage = () => {
 
   const onBlurZipCode = async () => {
 
-    if (cp !== "") {
+    if (formulario.zipCode !== "") {
 
       setLoadingZipCode(true);
       try {
-        if (countryUser?.code === "AR") {
-          const localityAndStates = await getLocalityAndStateByZipCode("ARG", cp);
+        if (countryUser?.code === CountryCode.ARGENTINA) {
+          const localityAndStates = await getLocalityAndStateByZipCode(CountryCode.ARGENTINA, formulario.zipCode);
 
           if (localityAndStates?.length) {
             const firstLocality = localityAndStates[0].locality;
             const firstProvince = localityAndStates[0].state;
-
-            setLocalities(localityAndStates.map((x) => x.locality));
+            console.log('firstLocality', firstLocality)
+            setLocalities(localityAndStates.map((x: ItemZipCode) => x.locality));
 
             handleInputChange({
               target: {
-                name: "location",
+                name: "locality",
                 value: firstLocality,
               },
             } as React.ChangeEvent<HTMLInputElement>);
 
             handleInputChange({
               target: {
-                name: "state",
+                name: "province",
                 value: firstProvince,
               },
             } as React.ChangeEvent<HTMLInputElement>);
           }
         } else if (countryUser?.code === "BR") {
 
-          const brazilData = await fetchBrazilZipCode(cp);
+          const brazilData = await fetchBrazilZipCode(formulario.zipCode);
           if (brazilData) {
 
             handleInputChange({
               target: {
-                name: "location",
+                name: "locality",
                 value: brazilData.localidade || brazilData.logradouro,
               },
             } as React.ChangeEvent<HTMLInputElement>);
 
             handleInputChange({
               target: {
-                name: "state",
+                name: "province",
                 value: brazilData.uf,
               },
             } as React.ChangeEvent<HTMLInputElement>);
 
-            handleInputChange({
-              target: {
-                name: "domicile",
-                value: `${brazilData.logradouro}, ${brazilData.bairro}`,
-              },
-            } as React.ChangeEvent<HTMLInputElement>);
+            // handleInputChange({
+            //   target: {
+            //     name: "domicile",
+            //     value: `${brazilData.logradouro}, ${brazilData.bairro}`,
+            //   },
+            // } as React.ChangeEvent<HTMLInputElement>);
 
           }
         }
@@ -356,13 +353,13 @@ export const NewCoporateCompaniesPage = () => {
 
   useEffect(() => {
     return () => {
-      dispatch(removeCorporateCompaniesActive());
+      dispatch(removeCompanyActive());
     };
   }, [dispatch]);
 
   useEffect(() => {
     getBusinesses();
-    getCorporateCompanies();
+    getCompanies();
     getCountries();
 
   }, []);
@@ -401,21 +398,21 @@ export const NewCoporateCompaniesPage = () => {
             align="center"
             sx={{ my: 3, mb: 5 }}
           >
-            {corporateCompaniesActive ? t("icon_edit") : t("new_famale")} {' '} {t("corporate_companies")}
+            {companyActive ? t("icon_edit") : t("new_famale")} {' '} {t("corporate_companies")}
           </Typography>
           <Grid container spacing={2} p={2} mt={2}>
             <Grid item xs={12} md={3}>
               <TextField
                 label={t("tax_key")}
                 type="text"
-                name="taxKey"
-                value={taxKey}
+                name="trybutaryCode"
+                value={formulario.trybutaryCode}
                 onBlur={handleVerifyId}
                 onChange={handleInputChange}
                 required
                 fullWidth
-                error={!!formErrors.taxKey}
-                helperText={formErrors.taxKey}
+                error={!!formErrors.trybutaryCode}
+                helperText={formErrors.trybutaryCode}
               />
             </Grid>
 
@@ -423,14 +420,14 @@ export const NewCoporateCompaniesPage = () => {
               <TextField
                 label={t("name_negal_name")}
                 type="text"
-                id="businessName"
-                name="businessName"
-                value={businessName}
+                id="socialReason"
+                name="socialReason"
+                value={formulario.socialReason}
                 onChange={handleInputChange}
                 required
                 fullWidth
-                error={!!formErrors.businessName}
-                helperText={formErrors.businessName}
+                error={!!formErrors.socialReason}
+                helperText={formErrors.socialReason}
               />
             </Grid>
             <Grid item xs={12} md={4.5}>
@@ -440,7 +437,7 @@ export const NewCoporateCompaniesPage = () => {
                 type="text"
                 id="fantasyName"
                 name="fantasyName"
-                value={fantasyName}
+                value={formulario.fantasyName}
                 onChange={handleInputChange}
                 required
                 fullWidth
@@ -454,8 +451,8 @@ export const NewCoporateCompaniesPage = () => {
                 variant="outlined"
                 type="text"
                 label={t("postal_code")}
-                name="cp"
-                value={cp}
+                name="zipCode"
+                value={formulario.zipCode}
                 onBlur={onBlurZipCode}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(e)}
                 InputProps={{
@@ -469,16 +466,16 @@ export const NewCoporateCompaniesPage = () => {
                 label={t("_locality")}
                 variant="outlined"
                 type="text"
-                name="location"
-                value={location}
+                name="locality"
+                value={formulario.locality}
                 onChange={handleInputChange}
                 InputProps={{
                   startAdornment: <InputAdornment position="start" />
                 }}
                 fullWidth
                 required
-                error={!!formErrors.location}
-                helperText={formErrors.location}
+                error={!!formErrors.locality}
+                helperText={formErrors.locality}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -487,7 +484,7 @@ export const NewCoporateCompaniesPage = () => {
                 type="text"
                 id="address"
                 name="address"
-                value={address}
+                value={formulario.address}
                 onChange={handleInputChange}
                 required
                 fullWidth
@@ -510,31 +507,31 @@ export const NewCoporateCompaniesPage = () => {
               <TextField
                 label={t("_state")}
                 type="text"
-                id="state"
-                name="state"
-                value={state}
+                id="province"
+                name="province"
+                value={formulario.province}
                 onChange={handleInputChange}
                 required
                 fullWidth
-                error={!!formErrors.state}
-                helperText={formErrors.state}
+                error={!!formErrors.province}
+                helperText={formErrors.province}
               />
             </Grid>
             <Grid item xs={12} md={4}>
               <TextField
                 label={t("_phone")}
                 type="text"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={phoneNumber}
+                id="phone"
+                name="phone"
+                value={formulario.phone}
                 onChange={handleInputChange}
                 required
                 fullWidth
-                error={!!formErrors.phoneNumber}
-                helperText={formErrors.phoneNumber}
+                error={!!formErrors.phone}
+                helperText={formErrors.phone}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            {/* <Grid item xs={12} md={4}>
               <TextField
                 label="Situacion Fiscal"
                 type="text"
@@ -545,15 +542,14 @@ export const NewCoporateCompaniesPage = () => {
                 required
                 fullWidth
               />
-
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} md={4}>
               <TextField
                 label={t("secondary_contact")}
                 type="text"
                 id="secondaryContact"
                 name="secondaryContact"
-                value={secondaryContact}
+                value={formulario.secondaryContact}
                 onChange={handleInputChange}
                 required
                 fullWidth
@@ -563,9 +559,9 @@ export const NewCoporateCompaniesPage = () => {
               <TextField
                 label="Web"
                 type="text"
-                id="web"
-                name="web"
-                value={web}
+                id="website"
+                name="website"
+                value={formulario.website}
                 onChange={handleInputChange}
                 required
                 fullWidth
@@ -575,9 +571,8 @@ export const NewCoporateCompaniesPage = () => {
               <TextField
                 label={t("_observations")}
                 type="text"
-                id="observations"
-                name="observations"
-                value={observations}
+                name="observation"
+                value={formulario.observation}
                 onChange={handleInputChange}
                 required
                 fullWidth
@@ -595,12 +590,12 @@ export const NewCoporateCompaniesPage = () => {
                   maxWidth: 200,
                   maxHeight: 240
                 }}>
-                  {photoName ? (
+                  {formulario.companyLogo?.uniqueName ? (
                     <CardMedia
                       key="preview-img"
                       component="img"
                       alt="Vista previa de la imagen"
-                      image={`${urlImg}/${photoName}`}
+                      image={`${urlImg}/${formulario.companyLogo?.uniqueName}`}
                       sx={{
                         maxHeight: 150,
                         maxWidth: 150,
@@ -629,7 +624,7 @@ export const NewCoporateCompaniesPage = () => {
                           onChange={handleFileUpload}
                         />
                       </label>
-                      {photoName && (
+                      {formulario.companyLogo?.uniqueName && (
                         <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
                           <CancelIcon fontSize="medium" />
                         </IconButton>
@@ -652,10 +647,10 @@ export const NewCoporateCompaniesPage = () => {
               variant="contained"
               color="success"
               onClick={
-                corporateCompaniesActive ? handleUpdate : handleAdd
+                companyActive ? handleUpdate : handleAdd
               }
             >
-              {!corporateCompaniesActive ? t("_add") : t("id_update")} {' '}
+              {!companyActive ? t("_add") : t("id_update")} {' '}
             </Button>
           </Box>
         </Paper>

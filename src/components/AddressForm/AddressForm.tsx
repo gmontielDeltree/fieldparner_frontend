@@ -1,29 +1,55 @@
-import React from "react";
+import React, { useState } from "react";
 import { Grid, TextField, InputAdornment, Button, Card, CardMedia, Box, Paper, IconButton } from "@mui/material";
 import { Phone as PhoneIcon } from "@mui/icons-material";
 import { Loading } from "..";
 import { CloudUpload as CloudUploadIcon, DoDisturb as DoDisturbIcon, Cancel as CancelIcon } from "@mui/icons-material";
 import { AddressFormProps, useAddressForm } from "./useAddressForm";
-import { useTranslation} from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { LocalidadSelect } from "../LocalidadSelect/LocalidadSelect";
+import uuid4 from "uuid4";
+import { urlImg } from "../../config";
 
 export const AddressForm: React.FC<AddressFormProps> = ({
   values,
   handleInputChange,
   setFile,
-  handleFormValueChange,
+  setFormulario,
 }) => {
   const { domicilio, localidad, cp, provincia, pais: _, logoBusiness, telefono } = values;
-  const {t} = useTranslation();
+  const [urlFile, setUrlFile] = useState("");
+  const { t } = useTranslation();
   const {
     loadingZipCode,
-    urlFile,
     handleBlur,
-    handleFileUpload,
-    handleCancelFile,
     localities,
-  } = useAddressForm(values, handleInputChange, handleFormValueChange, setFile);
+  } = useAddressForm(values, handleInputChange);
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files ? event.target.files[0] : null;
+    if (file) {
+      const fileNameOriginal = file.name;
+      const extensionPos = fileNameOriginal.lastIndexOf(".");
+      const fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
+      const newFileName = `business-logo-${uuid4()}${fileType}`;
+      const renamedFile = new File([file], newFileName, { type: file.type });
+      const fileURL = URL.createObjectURL(renamedFile);
+      setFile(renamedFile);
+      setUrlFile(fileURL);
+      setFormulario(prev => ({
+        ...prev,
+        logoBusiness: { originalName: fileNameOriginal, uniqueName: newFileName }
+      }));
+    }
+  };
+
+  const handleCancelFile = () => {
+    setUrlFile("");
+    setFile(null);
+    setFormulario(prev => ({
+      ...prev,
+      logoBusiness: { originalName: "", uniqueName: "" }
+    }));
+  }
 
 
   return (
@@ -38,7 +64,6 @@ export const AddressForm: React.FC<AddressFormProps> = ({
         justifyContent="center"
       >
         <Grid item xs={12} sm={6}>
-
           <TextField
             label={t("_phone")}
             variant="outlined"
@@ -88,8 +113,8 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           />
         </Grid>
         <Grid item xs={12} sm={6}>
-        <LocalidadSelect
-             name="localidad"
+          <LocalidadSelect
+            name="localidad"
             localidad={localidad}
             handleInputChange={handleInputChange}
             localidades={localities}
@@ -117,7 +142,7 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           alignItems: "center"
         }}>
           {
-            !(urlFile || logoBusiness) ? (
+            !(urlFile || logoBusiness?.uniqueName) ? (
               <Button
                 component="label"
                 variant="contained"
@@ -138,12 +163,12 @@ export const AddressForm: React.FC<AddressFormProps> = ({
           }
           <Box display="inline-block" component={Paper} sx={{ mb: 1 }}>
             {
-              (urlFile || logoBusiness) ? (
+              (urlFile || logoBusiness?.uniqueName) ? (
                 <Card sx={{ maxWidth: "220px", height: "120px" }}>
                   <CardMedia
                     component="img"
                     sx={{ objectFit: "contain" }}
-                    image={urlFile}
+                    image={urlFile || `${urlImg}/${logoBusiness?.uniqueName}`}
                     alt="Logo"
                   />
                 </Card>

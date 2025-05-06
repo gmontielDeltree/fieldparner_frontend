@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Business } from "../interfaces/socialEntity";
 import { ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 import { TipoStock } from "../interfaces/stock";
+import { Company } from "../interfaces/company";
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -42,6 +43,11 @@ export interface EspecificacionTecnica {
   descripcion: string;
 }
 
+export type DataFileName = {
+  originalName: string;
+  uniqueName: string;
+}
+
 export interface Vehicle extends Document {
   accountId: string;
   licenceId: string;
@@ -67,9 +73,9 @@ export interface Vehicle extends Document {
   location: string;
   maintenances: Mantenimiento[];
   technialSpecifications: RowData[];
-  insurencePolicyFile?: string;
-  photoVehicle?: string;
-  documentVehicleFile?: string;
+  insurencePolicyFile?: DataFileName;
+  photoVehicle?: DataFileName;
+  documentVehicleFile?: DataFileName;
 }
 
 export interface Zones extends Document {
@@ -252,9 +258,9 @@ export interface CorporateCompanies extends Document {
   taxSituation: string;
 }
 
-export interface CorporateCompaniesState {
-  corporateCompaniesActive: CorporateCompanies | null;
-  CorporateCompanies: CorporateCompanies[];
+export interface CompaniesState {
+  companyActive: Company | null;
+  companies: Company[];
 }
 
 export interface UserByAccount extends Document {
@@ -418,7 +424,7 @@ export interface StockMovement extends Document {
   totalValue: number;
   hours: string;
   campaignId: string;
-  documentFile?: string;
+  documentFile?: DataFileName;
 }
 
 export interface StockMovementItem extends StockMovement {
@@ -709,7 +715,6 @@ export enum TipoEntidad {
 }
 
 export enum CountryCode {
-
   ARGENTINA = 'AR',
   BRASIL = "BR",
   CHILE = "CH",

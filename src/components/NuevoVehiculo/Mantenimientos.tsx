@@ -7,14 +7,12 @@ import {
     CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { useFileUploadHook } from './useDatosGenerales';
+import {  useFileUploadHook } from './useDatosGenerales';
 
-const columns = ['Fecha', 'Kilometros', 'Descripcion', 'Observaciones', 'Proximo mantenimiento'];
 
 export interface MantenimientosProps {
     vehiculo: Vehicle;
     setVehiculo: React.Dispatch<React.SetStateAction<Vehicle>>;
-    handleFormValueChange: (key: string, value: string) => void;
     setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
     cancelFile: (indexToRemove: number) => void;
 }
@@ -23,22 +21,21 @@ export interface MantenimientosProps {
 export const Mantenimientos: React.FC<MantenimientosProps> = ({
     vehiculo,
     setVehiculo,
-    handleFormValueChange,
     setFilesUpload,
     cancelFile
 }) => {
     const { t } = useTranslation();
 
-    const { fileDisplayName, handleFileUpload, handleRemoveFile } = useFileUploadHook({
+    const { handleFileUpload, handleRemoveFile } = useFileUploadHook({
         setFilesUpload,
-        onFileChange: (fileName) => handleFormValueChange("documentVehicleFile", fileName),
-        cancelFile,
-        onFileRemove: () => handleFormValueChange("documentVehicleFile", ""),
+        onFileChange: (dataFileName) => setVehiculo(prev => ({ ...prev, documentVehicleFile: dataFileName })),
+        cancelFile: (index = 0) => cancelFile(index), // Proporciona valor por defecto
+        onFileRemove: () => setVehiculo(prev => ({ ...prev, documentVehicleFile: { originalName: '', uniqueName: '' } })),
         fileTypePrefix: "maintenance-doc",
         acceptedFileTypes: "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         returnBasicFile: false,
-        initialFileName: vehiculo.documentVehicleFile
-      });
+        initialFileName: vehiculo.documentVehicleFile?.originalName
+    });
     const {
         vehicleType,
         make,
@@ -126,7 +123,7 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                     {documentVehicleFile ? (
                         <>
                             <label
-                                title={fileDisplayName}
+                                title={documentVehicleFile.originalName}
                                 style={{
                                     margin: "10px",
                                     width: "240px",
@@ -135,9 +132,9 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
                                     textOverflow: "ellipsis",
                                     whiteSpace: "nowrap"
                                 }}>
-                                {fileDisplayName}
+                                {documentVehicleFile.originalName}
                             </label>
-                            <IconButton onClick={() =>handleRemoveFile(0)} color="error">
+                            <IconButton onClick={() => handleRemoveFile(0)} color="error">
                                 <CancelIcon fontSize="medium" />
                             </IconButton>
                         </>

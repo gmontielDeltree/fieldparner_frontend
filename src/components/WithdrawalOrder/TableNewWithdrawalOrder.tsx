@@ -1,4 +1,4 @@
-import { FormControl, IconButton, InputAdornment, InputLabel, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TableCell, TableContainer, TextField, Typography } from "@mui/material";
+import { Fab, FormControl, IconButton, InputAdornment, InputLabel, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TableCell, TableContainer, TextField, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { DataTable, ItemRow, TableCellStyled } from "../DataTable";
 import { ColumnProps, Deposit, Supply, TransformSupply } from "../../types";
@@ -187,10 +187,10 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
                         />
                     </TableCellStyled>
                     <TableCellStyled align='center'>
-                        <IconButton
+                        <Fab
                             color="success"
                             aria-label="add"
-                            size="small"
+                            size='small'
                             onClick={() => {
                                 if (supplySelected && depositSelected) {
                                     onClickAdd({
@@ -210,10 +210,9 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
                                     setSupplySelected(null);
                                     setDepositSelected(null);
                                 }
-                            }}
-                        >
+                            }}>
                             <AddIcon />
-                        </IconButton>
+                        </Fab>
                     </TableCellStyled>
                 </ItemRow>
                 {

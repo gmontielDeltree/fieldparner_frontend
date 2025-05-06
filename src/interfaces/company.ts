@@ -1,4 +1,4 @@
-import { Document } from "@types";
+import { DataFileName, Document } from "@types";
 
 export interface Company extends Document {
     accountId: string;
@@ -9,7 +9,7 @@ export interface Company extends Document {
     name: string;
     fantasyName: string;
     trybutaryCode: string;
-    companyLogo: string;
+    companyLogo: DataFileName;
     zipCode: string;
     phone: string;
     socialReason: string;

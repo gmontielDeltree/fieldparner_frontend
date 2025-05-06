@@ -25,17 +25,15 @@ import {
   CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { BasicFileInfo } from "./useDatosGenerales";
-
-
 
 
 export interface DatosGeneralesProps {
   vehiculo: Vehicle;
+  setVehiculo: React.Dispatch<React.SetStateAction<Vehicle>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleYearChange: ({ target }: SelectChangeEvent) => void;
   handleFormValueChange: (key: string, value: string) => void;
-  setFilesUpload: React.Dispatch<SetStateAction<Array<{file: File; originalName: string; uniqueName: string;}>>>;
+  setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
   cancelFile: (indexToRemove: number) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
@@ -47,7 +45,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   handleYearChange,
   setFilesUpload,
   cancelFile,
-  handleSelectChange
+  handleSelectChange,
+  setVehiculo
 }) => {
 
   const {
@@ -68,15 +67,15 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   } = vehiculo;
 
 
-  const { fileDisplayName, handleFileUpload, handleRemoveFile } = useFileUploadHook({
-    setFilesUpload: setFilesUpload as React.Dispatch<SetStateAction<BasicFileInfo[]>>,
-    onFileChange: (fileName) => handleFormValueChange("insurencePolicyFile", fileName),
+  const { handleFileUpload, handleRemoveFile } = useFileUploadHook({
+    setFilesUpload,
+    onFileChange: (dataFileName) => setVehiculo(prev => ({ ...prev, insurencePolicyFile: dataFileName })),
     cancelFile: (index = 0) => cancelFile(index), // Proporciona valor por defecto
-    onFileRemove: () => handleFormValueChange("insurencePolicyFile", ""),
+    onFileRemove: () => setVehiculo(prev => ({ ...prev, insurencePolicyFile: { originalName: '', uniqueName: '' } })),
     fileTypePrefix: "insurance-policy",
     acceptedFileTypes: "application/pdf",
-    returnBasicFile: true,
-    initialFileName: vehiculo.insurencePolicyFile
+    returnBasicFile: false,
+    initialFileName: vehiculo.insurencePolicyFile?.originalName
   });
   const { loadingBusiness, optionsPropietario, insuranceCompanies } = useBusinessHook();
   const { checkPatentAvailability } = usePatentHook();
@@ -88,8 +87,8 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
   const { t } = useTranslation();
 
 
-  const { 
-    typeVehicles, 
+  const {
+    typeVehicles,
     handleOnBlurTipoVehiculo,
   } = useVehicleTypeHook(vehicleType);
 
@@ -166,7 +165,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           />
         </Grid>
 
-       <Grid item xs={12} sm={2}>
+        <Grid item xs={12} sm={2}>
           <FormControl fullWidth>
             <InputLabel id="year-select-label">{t("_year")}</InputLabel>
             <Select
@@ -348,7 +347,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
           {insurencePolicyFile ? (
             <>
               <label
-               title={fileDisplayName}
+                title={insurencePolicyFile.originalName}
                 style={{
                   margin: "10px",
                   width: "240px",
@@ -357,7 +356,7 @@ export const DatosGenerales: React.FC<DatosGeneralesProps> = ({
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap"
                 }}>
-             {fileDisplayName}
+                {insurencePolicyFile.originalName}
               </label>
               <IconButton onClick={() => handleRemoveFile(0)} color="error">
                 <CancelIcon fontSize="medium" />

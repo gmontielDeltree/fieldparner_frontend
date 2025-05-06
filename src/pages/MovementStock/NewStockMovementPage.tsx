@@ -22,7 +22,7 @@ import {
 } from "@mui/material";
 import { SyncAlt as SyncAltIcon, Cancel as CancelIcon, CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { FormValueState, useAppSelector, useCampaign, useDeposit,  useFormValues, useStockMovement, useSupply } from "../../hooks";
+import { FormValueState, useAppSelector, useCampaign, useDeposit, useFormValues, useStockMovement, useSupply } from "../../hooks";
 import {
   Deposit,
   Movement,
@@ -56,11 +56,16 @@ const initialForm: FormValueState<StockMovement> = {
   isCrop: { value: false, isError: false, message: "", required: false },
   isIncome: { value: false, isError: false, message: "", required: false },
   movement: { value: Movement.Manual, isError: false, message: "", required: false },
-  operationDate: { value: getShortDate(false, "-"), isError: false, message: "", required: false },
+  operationDate: { value: getShortDate(), isError: false, message: "", required: false },
   supplyId: { value: "", isError: false, message: "", required: true },
   totalValue: { value: 0, isError: false, message: "", required: false },
   voucher: { value: "", isError: false, message: "", required: false },
-  documentFile: { value: "", isError: false, message: "", required: false },
+  documentFile: {
+    value: {
+      originalName: "",
+      uniqueName: "",
+    }, isError: false, message: "", required: false
+  },
 };
 
 
@@ -88,29 +93,40 @@ export const NewStockMovementPage: React.FC = () => {
     reset,
     getMapFormValues,
   } = useFormValues<StockMovement>(initialForm);
-
+  
   const [supplySelected, setSupplySelected] = useState<Supply | null>(null);
   const [showSwitch, setShowSwitch] = useState(true);
   const [depositSelected, setDepositSelected] = useState<Deposit | null>(null);
   const [depositDestinationSelected, setDepositDestinationSelected] = useState<Deposit | null>(null);
   const [locationDestinationSelected, setLocationDestinationSelected] = useState("");
   const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
-  const [fileUpload, setFileUpload] = React.useState<File | null>(null);
-  
+  const [documentFile, setDocumentFile] = React.useState<File | null>(null);
+
   const { depositId: depositOrigin, supplyId, location } = formValues
   const {
-    fileDisplayName,
+    // fileDisplayName,
     handleFileUpload,
     handleRemoveFile
   } = useFileUploadHook({
-    setFilesUpload: (file: File | BasicFileInfo) => setFileUpload(file as File),
-    onFileChange: (fileName) => handleFormValueChange("documentFile", fileName),
-    cancelFile: () => setFileUpload(null),
-    onFileRemove: () => handleFormValueChange("documentFile", ""),
+    setFilesUpload: (file: File | BasicFileInfo) => setDocumentFile(file as File),
+    onFileChange: (dataFileName) => {
+      //  handleFormValueChange("documentFile", fileName)
+      setFormValues(prev => ({ ...prev, documentFile: { ...prev.documentFile, value: dataFileName } }))
+    },
+    cancelFile: () => setDocumentFile(null),
+    onFileRemove: () => {
+      // handleFormValueChange("documentFile", "")
+      setFormValues(prev => ({
+        ...prev, documentFile: {
+          ...prev.documentFile,
+          value: { originalName: "", uniqueName: "", }
+        }
+      }))
+    },
     fileTypePrefix: "stock-movement",
     acceptedFileTypes: "application/pdf,image/*",
     returnBasicFile: false,
-    initialFileName: formValues.documentFile?.value,
+    initialFileName: formValues.documentFile?.value?.originalName,
     singleFile: true
   });
 
@@ -131,7 +147,7 @@ export const NewStockMovementPage: React.FC = () => {
 
       if (!supplySelected || !depositSelected || !movementTypeSelected) return;
       const mappedForm = getMapFormValues() as StockMovement;
-      console.log('mappedForm', mappedForm);
+
       uploadDocumentFile();
       addNewStockMovement(
         {
@@ -198,8 +214,8 @@ export const NewStockMovementPage: React.FC = () => {
 
   const uploadDocumentFile = async () => {
     try {
-      if (fileUpload) {
-        const response = await uploadFile(fileUpload);
+      if (documentFile) {
+        const response = await uploadFile(documentFile);
         if (response) console.log("file upload successful.");
       }
     } catch (error) {
@@ -660,7 +676,7 @@ export const NewStockMovementPage: React.FC = () => {
                     </Grid>
                   </>
                 )}
-                <Grid item xs={6} sm={2}>
+                <Grid item xs={6} sm={3}>
                   <TextField
                     variant="outlined"
                     type="number"
@@ -676,7 +692,7 @@ export const NewStockMovementPage: React.FC = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={12} sm={2}>
+                <Grid item xs={12} sm={3}>
                   <FormControl fullWidth>
                     <ListItemText
                       sx={{ backgroundColor: "#f4f4f4", px: 1 }}
@@ -688,7 +704,7 @@ export const NewStockMovementPage: React.FC = () => {
                     />
                   </FormControl>
                 </Grid>
-                <Grid item xs={6} sm={4}>
+                <Grid item xs={6} sm={3}>
                   <TextField
                     variant="outlined"
                     type="text"
@@ -704,19 +720,19 @@ export const NewStockMovementPage: React.FC = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={12} sm={2}>
+                <Grid item xs={12} sm={3}>
                   <FormControl fullWidth>
                     <ListItemText
                       sx={{ backgroundColor: "#f4f4f4", px: 1 }}
                       primary={<Typography variant='subtitle2'>Moneda</Typography>}
                       secondary={
-                        <Typography letterSpacing={1} variant='subtitle1'>
+                        <Typography letterSpacing={1} variant='subtitle1' fontWeight={600}>
                           {user?.currency}
                         </Typography>}
                     />
                   </FormControl>
                 </Grid>
-                <Grid item xs={6} sm={2}>
+                <Grid item xs={6} sm={4}>
                   <TextField
                     variant="outlined"
                     type="number"
@@ -732,7 +748,7 @@ export const NewStockMovementPage: React.FC = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid item xs={6} sm={4}>
+                <Grid item xs={6} sm={5}>
                   <FormControl
                     key="campaign-select"
                     fullWidth
@@ -755,10 +771,11 @@ export const NewStockMovementPage: React.FC = () => {
                     <FormHelperText>{formValues.campaignId.message}</FormHelperText>
                   </FormControl>
                 </Grid>
-                <Grid item xs={6} sm={4} sx={{ display: "flex", alignItems: "center", justifyContent: "start" }} >
+                <Grid item xs={12} sm={6} sx={{ display: "flex", alignItems: "center", justifyContent: "start" }} >
                   <Button
                     component="label"
                     variant="contained"
+                    sx={{ mr: 1 }}
                     startIcon={<CloudUploadIcon />}
                   >
                     Upload
@@ -767,19 +784,20 @@ export const NewStockMovementPage: React.FC = () => {
                       hidden
                       onChange={handleFileUpload} />
                   </Button>
-                  {formValues.documentFile?.value ? (
-                    <Grid>
+                  {formValues.documentFile?.value?.originalName ? (
+                    <Grid sx={{ display: "flex", alignItems: "baseline" }}>
                       <label
-                        title={fileDisplayName}
+                        title={formValues.documentFile?.value?.originalName}
                         style={{
                           margin: "10px",
                           width: "200px",
                           display: "inline-block",
                           overflow: "hidden",
                           textOverflow: "ellipsis",
-                          whiteSpace: "nowrap"
+                          whiteSpace: "nowrap",
+                          textAlign: "center",
                         }}>
-                        {fileDisplayName}
+                        {formValues.documentFile?.value?.originalName}
                       </label>
                       <IconButton onClick={() => handleRemoveFile()} color="error">
                         <CancelIcon fontSize="medium" />

@@ -16,7 +16,7 @@ import { usersSlice } from "./users/userSlice";
 import { withdrawalOrderSlice } from "./withdrawalOrder";
 import { laborsServicesSlice } from "./laborsService";
 import { syncStatusSlice } from "./syncStatus";
-import {corporateCompaniesSlice} from "./corporateCompanies";
+import { companiesSlice } from "./companies";
 import { corporateContractSlice } from "./corporateContract";
 import { productiveUnitsSlice } from "./productiveUntis";
 import { costsExpensesSlice } from "./costsExpenses";
@@ -39,11 +39,11 @@ const store = configureStore({
     order: withdrawalOrderSlice.reducer,
     syncStatus: syncStatusSlice.reducer,
     zone: zoneSlice.reducer,
-    laborsServices:laborsServicesSlice.reducer,
-    corporateCompanies:corporateCompaniesSlice.reducer,
-    corporateContract:corporateContractSlice.reducer,
-    productiveUnits:productiveUnitsSlice.reducer,
-    costsExpenes:costsExpensesSlice.reducer,
+    laborsServices: laborsServicesSlice.reducer,
+    companies: companiesSlice.reducer,
+    corporateContract: corporateContractSlice.reducer,
+    productiveUnits: productiveUnitsSlice.reducer,
+    costsExpenes: costsExpensesSlice.reducer,
   }
 });
 

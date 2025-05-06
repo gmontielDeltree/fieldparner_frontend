@@ -1,18 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
-import { CorporateContract, ListCorporateContract } from "../interfaces/corporateContract";
+import { CorporateContract, CompanyByContract } from "../interfaces/corporateContract";
 import { dbContext } from "../services/pouchdbService";
-import { useAppSelector } from '.';
+// import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
 import { NotificationService } from "../services/notificationService";
 
 export const useCorporateContract = () => {
   const navigate = useNavigate();
-  useAppSelector(state => state.auth);
+  // useAppSelector(state => state.auth);
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [corporateContract, setCorporateContract] = useState<CorporateContract[]>([]);
-  const [listCorporateContract, setListCorporateContract] = useState<ListCorporateContract[]>([]);
+  const [listCorporateContract, setListCorporateContract] = useState<CompanyByContract[]>([]);
   const [conceptoError, setConceptoError] = useState(false);
   const { t } = useTranslation();
 

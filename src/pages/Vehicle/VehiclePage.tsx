@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { uploadFile } from "../../helpers/fileUpload";
 import Swal from "sweetalert2";
 
+
 const initialState: Vehicle = {
   accountId: "",
   licenceId: "",
@@ -49,9 +50,9 @@ const initialState: Vehicle = {
   technialSpecifications: [],
   maintenances: [],
   chassisNumber: "",
-  photoVehicle: "",
-  documentVehicleFile: "",
-  insurencePolicyFile: "",
+  photoVehicle: { originalName: "", uniqueName: "" },
+  documentVehicleFile: { originalName: "", uniqueName: "" },
+  insurencePolicyFile: { originalName: "", uniqueName: "" },
 };
 
 
@@ -97,6 +98,7 @@ export const VehiclePage: React.FC = () => {
               handleSelectChange={handleSelectChange}
               setFilesUpload={setVehicleFiles}
               cancelFile={cancelFile}
+              setVehiculo={setFormulario}
             />
           );
         case 1:
@@ -106,7 +108,6 @@ export const VehiclePage: React.FC = () => {
               setVehiculo={setFormulario}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
-              handleFormValueChange={handleFormValueChange}
               setFilesUpload={setVehicleFiles}
               cancelFile={cancelFile}
             />
@@ -116,7 +117,6 @@ export const VehiclePage: React.FC = () => {
             <Mantenimientos
               vehiculo={formulario}
               setVehiculo={setFormulario}
-              handleFormValueChange={handleFormValueChange}
               setFilesUpload={setVehicleFiles}
               cancelFile={cancelFile}
             />
@@ -143,6 +143,7 @@ export const VehiclePage: React.FC = () => {
 
   useEffect(() => {
     if (vehiculoActivo) {
+      console.log('vehiculoActivo', vehiculoActivo);
       setFormulario(vehiculoActivo);
     }
   }, [vehiculoActivo, setFormulario]);
@@ -196,7 +197,7 @@ export const VehiclePage: React.FC = () => {
 
   const handleUpdateFiles = async () => {
     try {
-      await Promise.all(vehicleFiles.map(uploadFile));
+      await Promise.all(vehicleFiles.map((data) => uploadFile(data)));
     } catch (error) {
       console.error(t('upload_error'), error);
       Swal.fire({

@@ -27,7 +27,6 @@ export interface EspecificacionesProps {
   setVehiculo: React.Dispatch<React.SetStateAction<Vehicle>>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
-  handleFormValueChange: (key: string, value: string) => void;
   setFilesUpload: React.Dispatch<SetStateAction<File[]>>;
   cancelFile: (indexToRemove: number) => void;
 }
@@ -38,7 +37,6 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
   handleSelectChange,
   setVehiculo,
   setFilesUpload,
-  handleFormValueChange,
   cancelFile
 }) => {
 
@@ -54,18 +52,18 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
     photoVehicle
   } = vehiculo;
 
-  const { fileDisplayName, handleFileUpload, handleRemoveFile } = useFileUploadHook({
-    setFilesUpload: setFilesUpload as React.Dispatch<SetStateAction<File[]>>,
-    onFileChange: (fileName) => handleFormValueChange("photoVehicle", fileName),
+  const { handleFileUpload, handleRemoveFile } = useFileUploadHook({
+    setFilesUpload,
+    onFileChange: (dataFileName) => setVehiculo(prev => ({ ...prev, photoVehicle: dataFileName })),
     cancelFile: (index = 0) => cancelFile(index), // Proporciona valor por defecto
-    onFileRemove: () => handleFormValueChange("photoVehicle", ""),
+    onFileRemove: () => setVehiculo(prev => ({ ...prev, photoVehicle: { originalName: '', uniqueName: '' } })),
     fileTypePrefix: "vehicle-photo",
     acceptedFileTypes: "image/*",
     returnBasicFile: false,
-    initialFileName: vehiculo.photoVehicle
+    initialFileName: vehiculo.photoVehicle?.originalName
   });
 
-  
+
 
   const handleAgregarEspecificacion = (row: RowData) => {
     setVehiculo((prevState) => ({
@@ -206,7 +204,7 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
           {photoVehicle ? (
             <>
               <label
-                title={fileDisplayName}
+                title={photoVehicle.originalName}
                 style={{
                   margin: "10px",
                   width: "240px",
@@ -215,9 +213,9 @@ export const Especificaciones: React.FC<EspecificacionesProps> = ({
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap"
                 }}>
-                {fileDisplayName}
+                {photoVehicle.originalName}
               </label>
-              <IconButton onClick={() =>handleRemoveFile(1)} color="error">
+              <IconButton onClick={() => handleRemoveFile(1)} color="error">
                 <CancelIcon fontSize="medium" />
               </IconButton>
             </>

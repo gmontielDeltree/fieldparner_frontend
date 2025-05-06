@@ -24,7 +24,7 @@ import { removeBusinessActive } from "../../redux/business";
 import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../../helpers/fileUpload";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import { Business } from "../../interfaces/socialEntity";
 
 
@@ -50,7 +50,7 @@ const initialForm: Business = {
   legajo: "",
   matricula: "",
   categorias: [],
-  logoBusiness: "",
+  logoBusiness: { originalName: "", uniqueName: "" },
   taxSituation: ""
 };
 
@@ -100,6 +100,7 @@ export const BusinessPage: React.FC = () => {
       ),
     }));
   };
+
   const handleAddCategory = (category: string) => {
     setFormulario((prevState) => ({
       ...prevState,
@@ -167,6 +168,7 @@ export const BusinessPage: React.FC = () => {
               values={formulario}
               // countries={dataCountry}
               // countryError={countryError}
+              setFormulario={setFormulario}
               handleInputChange={handleInputChange}
               onChangeZipCode={getLocalityAndState}
               loading={isLoading || loadingZipCode}

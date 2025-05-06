@@ -55,7 +55,7 @@ export const StockMovementPage: React.FC = () => {
         isIncome: sm.isIncome ? t("_income") : t("_outcome"),
         um: sm.supply?.unitMeasurement || "-",
         amount: sm.amount,
-        documentFile: sm.documentFile
+        documentFile: sm.documentFile?.originalName
       }
     });
   }, [stockMovements, t]);

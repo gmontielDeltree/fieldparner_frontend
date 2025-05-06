@@ -1,3 +1,4 @@
+import { DataFileName } from "../../../types";
 import { SetStateAction, useState } from "react";
 import uuid4 from "uuid4";
 
@@ -14,7 +15,7 @@ type FileUploadSetter =
 
 interface FileUploadHookProps {
   setFilesUpload: FileUploadSetter;
-  onFileChange: (fileName: string) => void;
+  onFileChange: (dataFile: DataFileName) => void;
   cancelFile: (indexToRemove?: number) => void;
   onFileRemove: () => void;
   fileTypePrefix?: string;
@@ -65,7 +66,7 @@ export const useFileUploadHook = ({
       const extensionPos = fileNameOriginal.lastIndexOf(".");
       const fileExtension = extensionPos !== -1 ? fileNameOriginal.substring(extensionPos) : "";
       const newFileName = `${fileTypePrefix}_${uuid4()}${fileExtension}`;
-
+      
       if (returnBasicFile) {
         const fileInfo: BasicFileInfo = {
           file,
@@ -91,7 +92,7 @@ export const useFileUploadHook = ({
       }
 
       setFileDisplayName(fileNameOriginal);
-      onFileChange(newFileName);
+      onFileChange({originalName: fileNameOriginal, uniqueName: newFileName});
     } catch (err) {
       setError("Error al procesar el archivo");
       console.error(err);
