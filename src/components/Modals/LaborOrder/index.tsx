@@ -36,7 +36,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useAppDispatch, useAppSelector, useBusiness, useCampaign, useForm, useOrder } from '../../../hooks';
 import { uiCloseModal } from '../../../redux/ui';
-import { ColumnProps, DepositSupplyOrderItem, DisplayModals, WithdrawalOrder } from '../../../types';
+import { ColumnProps, DepositSupplyOrderItem, DisplayModals, OrderStatus, WithdrawalOrder, WithdrawalOrderType } from '../../../types';
 import { getShortDate } from '../../../helpers/dates';
 import { DataTable, Loading } from '../..';
 import { useLaborOrderPDF } from './LaborOrderPDF';
@@ -67,7 +67,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
     const { selectedCampaign } = useAppSelector((state) => state.campaign);
     const { lotActive } = useAppSelector((state) => state.map);
 
-    const { getLaborOrder, getOrderWithDepositsAndSuppliesByOrder } = useOrder();
+    const { getLaborOrder, getOrderWithDepositsAndSuppliesByOrder, createWithdrawalOrder } = useOrder();
     const { getBusinesses } = useBusiness();
     const { getCampaigns } = useCampaign();
     const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
@@ -156,7 +156,82 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
         setRetiredSupplies(prev => [...prev, ...newlyRetired]);
         console.log("Updated retired supplies:", [...retiredSupplies, ...newlyRetired]);
 
-        // 4) Notificación
+        // 4) Crear orden de retiro en el sistema
+        try {
+            if (activeOrder && selectedCampaign && user) {
+                // Extraer IDs limpios (sin prefijos)
+                const campaignId = selectedCampaign._id?.includes(':')
+                    ? selectedCampaign._id.split(':')[1]
+                    : selectedCampaign._id || "";
+
+                const contractorId = activity?.detalles?.contratista?._id?.includes(':')
+                    ? activity.detalles.contratista._id.split(':')[1]
+                    : activity?.detalles?.contratista?._id ||
+                        activity?.contratista?._id?.includes(':')
+                        ? activity.contratista._id.split(':')[1]
+                        : activity?.contratista?._id || "";
+
+                console.log("Using cleaned IDs:", {
+                    campaignId,
+                    contractorId,
+                    originalCampaignId: selectedCampaign._id,
+                    originalContractorId: activity?.detalles?.contratista?._id || activity?.contratista?._id
+                });
+
+                // Preparar objeto para la orden de retiro
+                const withdrawalOrder = {
+                    type: WithdrawalOrderType.Manual,
+                    campaignId,
+                    creationDate,
+                    withdrawId: contractorId,
+                    order: activeOrder.order || 0,
+                    reason: `${t("laborOrder")} - ${fieldName || ""}`,
+                    state: OrderStatus.Pending,
+                    accountId: user.accountId || "",
+                    field: fieldName || ""
+                };
+
+                // Preparar items de la orden
+                const depositSupplyOrders = withdrawalItems.map(item => ({
+                    accountId: user.accountId || "",
+                    depositId: item.deposit?._id || "",
+                    supplyId: item.supply?._id || "",
+                    crop: activity?.tipo || "",
+                    location: item.location || "",
+                    nroLot: item.nroLot || "",
+                    order: activeOrder.order || 0,
+                    withdrawalAmount: 0,
+                    originalAmount: Number(item.amount || 0),
+                }));
+
+                console.log("Creating withdrawal order:", withdrawalOrder);
+                console.log("With deposit supply orders:", depositSupplyOrders);
+
+                // Crear la orden
+                const success = await createWithdrawalOrder(withdrawalOrder, depositSupplyOrders);
+                if (success) {
+                    NotificationService.showSuccess(
+                        t("withdrawal_order_created_successfully"),
+                        { number: activeOrder.order },
+                    );
+                } else {
+                    console.error("Failed to create withdrawal order");
+                    NotificationService.showError(t("error_creating_document"));
+                }
+            } else {
+                console.warn("Missing required data to create withdrawal order:", {
+                    hasActiveOrder: !!activeOrder,
+                    hasSelectedCampaign: !!selectedCampaign,
+                    hasUser: !!user
+                });
+                NotificationService.showError(t("error_creating_document"));
+            }
+        } catch (error) {
+            console.error("Error creating withdrawal order:", error);
+            NotificationService.showError(t("unexpectedError"));
+        }
+
+        // 5) Notificación
         NotificationService.showInfo(
             t("itemsWillBeMarkedAsWithdrawn"),
             { order: activeOrder?.order },
@@ -518,7 +593,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                                 '&:hover': { boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.5)}` }
                             }}
                         >
-                            {t("print")}
+                            {t("printAndGenerateOrder")}
                         </Button>
                     </Grid>
                 </Grid>

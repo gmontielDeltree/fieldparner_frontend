@@ -265,7 +265,7 @@ export const useOrder = () => {
                     return;
                 }
             });
-            
+
             //Actualizamos el stock solo si es Manual
             if (withdrawalOrderActive.type === WithdrawalOrderType.Manual) {
                 const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
@@ -316,7 +316,7 @@ export const useOrder = () => {
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
-            
+
             if (isComplete) {
                 let updateOrder = { ...withdrawalOrderActive, state: OrderStatus.Completed };
                 delete updateOrder.withdraw;
