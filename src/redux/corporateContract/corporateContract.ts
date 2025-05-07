@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { CorporateContract, CorporateContractState} from '../../types';
+import { CorporateContract, CorporateContractState} from '../../interfaces/corporateContract';
 
 
 const initialState:  CorporateContractState = {
     corporateContractActive: null,
-    CorporateContract: [],
+    listCorporateContract: [],
 }
 
 
@@ -20,10 +20,10 @@ export const corporateContractSlice = createSlice({
             state. corporateContractActive = null
         },
         loadCorporateContractActive: (state, action: PayloadAction<CorporateContract[]>) => {
-            state. CorporateContract = action.payload;
+            state. listCorporateContract = action.payload;
         },
         removeCorporateContract: (state) => {
-            state. CorporateContract = [];
+            state. listCorporateContract = [];
         }
     }
 });

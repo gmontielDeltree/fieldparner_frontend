@@ -36,7 +36,7 @@ import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-
 import { CostsExpenses } from '../interfaces/costsExpenses';
 import { CropStockControl, Stock } from '../interfaces/stock';
 import { CampaingExpenses } from '../interfaces/campaignExpenses';
-import { CorporateContract } from '../interfaces/corporateContract';
+import { CompanyByContract, CorporateContract } from '../interfaces/corporateContract';
 
 
 PouchDB.plugin(PouchDBFind);
@@ -93,6 +93,7 @@ const dbNames = Object.freeze({
   transportDocument: `transport-documents${isEnvSTG()}`,
   companies: `companies${isEnvSTG()}`,
   // corporateCompanies: `corporate-companies${isEnvSTG()}`,
+  companiesByContract: `companies-by-contract${isEnvSTG()}`,
   corporateContract: `corporate-contract${isEnvSTG()}`,
   certificateDeposit: `certificate-deposit${isEnvSTG()}`,
   transportDocumentCertificateDeposit: `transport-document-certificate-deposit${isEnvSTG()}`,
@@ -139,7 +140,7 @@ export const dbContext = Object.freeze({
   licencesUse: new PouchDB<LicenceUse>(dbNames.licencesUse),
   transportDocument: new PouchDB<TransportDocument>(dbNames.transportDocument),
   companies: new PouchDB<Company>(dbNames.companies),
-  // corporateCompanies: new PouchDB<CorporateCompanies>(dbNames.corporateCompanies),
+  companiesByContract: new PouchDB<CompanyByContract>(dbNames.companiesByContract),
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
@@ -190,7 +191,6 @@ dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
 dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
 dbContext.transportDocument.sync(`${remoteCouchDBUrl}${dbNames.transportDocument}`, opts);
 dbContext.companies.sync(`${remoteCouchDBUrl}${dbNames.companies}`, opts);
-// dbContext.corporateCompanies.sync(`${remoteCouchDBUrl}${dbNames.corporateCompanies}`, opts);
 dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
 dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
 dbContext.transportDocumentCertificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`, opts);
@@ -200,7 +200,7 @@ dbContext.contractDeliveryDates.sync(`${remoteCouchDBUrl}${dbNames.contractDeliv
 dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts);
 dbContext.campaingExpenses.sync(`${remoteCouchDBUrl}${dbNames.campaingExpenses}`, opts);
 dbContext.cropStockControl.sync(`${remoteCouchDBUrl}${dbNames.cropStockControl}`, opts);
-
+dbContext.companiesByContract.sync(`${remoteCouchDBUrl}${dbNames.companiesByContract}`, opts);
 
 // #endregion
 

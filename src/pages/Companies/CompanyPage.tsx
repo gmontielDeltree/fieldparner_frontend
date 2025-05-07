@@ -62,18 +62,15 @@ const initialForm: Company = {
   observation: '',
   province: '',
   trybutaryCode: '',
-  // taxKey: '',
   fantasyName: '',
   locality: '',
-  // state: '',
   companyLogo: { originalName: '', uniqueName: '' },
   address: '',
   phone: '',
   secondaryContact: '',
   website: '',
-  // observations: '',
   socialReason: '',
-  // taxSituation: ''
+  fiscalSituation: ''
 };
 
 
@@ -531,18 +528,16 @@ export const CompanyPage = () => {
                 helperText={formErrors.phone}
               />
             </Grid>
-            {/* <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={4}>
               <TextField
                 label="Situacion Fiscal"
                 type="text"
-                id="taxSituation"
-                name="taxSituation"
-                value={taxSituation}
+                name="fiscalSituation"
+                value={formulario.fiscalSituation}
                 onChange={handleInputChange}
-                required
                 fullWidth
               />
-            </Grid> */}
+            </Grid>
             <Grid item xs={12} md={4}>
               <TextField
                 label={t("secondary_contact")}
@@ -551,7 +546,6 @@ export const CompanyPage = () => {
                 name="secondaryContact"
                 value={formulario.secondaryContact}
                 onChange={handleInputChange}
-                required
                 fullWidth
               />
             </Grid>
@@ -563,7 +557,6 @@ export const CompanyPage = () => {
                 name="website"
                 value={formulario.website}
                 onChange={handleInputChange}
-                required
                 fullWidth
               />
             </Grid>
@@ -574,7 +567,6 @@ export const CompanyPage = () => {
                 name="observation"
                 value={formulario.observation}
                 onChange={handleInputChange}
-                required
                 fullWidth
               />
             </Grid>

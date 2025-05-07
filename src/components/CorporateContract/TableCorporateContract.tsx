@@ -36,13 +36,13 @@ export const TableCorporateContract: React.FC<Props> = ({
     const { t } = useTranslation();
     const {
         handleInputChange,
-        // reset,
+        reset,
         formulario: formValues,
         setFormulario: setFormValues,
     } = useForm<CompanyByContract>(initialFormValues);
-    
+
     const { isLoading, companies, getCompanies } = useCompany();
-    
+
 
     const columns: ColumnProps[] = [
         { text: t("_company"), align: "left" },
@@ -128,9 +128,14 @@ export const TableCorporateContract: React.FC<Props> = ({
                             color="success"
                             aria-label="add"
                             size='small'
+                            disabled={!formValues.companyId || !formValues.percentageOfParticipation}
                             onClick={() => {
-                                onClickAdd({ ...formValues, id: uuid4() });
-                                // reset();
+                                onClickAdd({
+                                    ...formValues,
+                                    percentageOfParticipation: Number(formValues.percentageOfParticipation),
+                                    id: uuid4()
+                                });
+                                reset();
                             }}>
                             <AddIcon />
                         </Fab>

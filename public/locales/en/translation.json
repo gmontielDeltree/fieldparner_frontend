@@ -334,6 +334,7 @@
   "_activity": "Activity",
   "percentage_of_participation": "Percentage of Participation",
   "_company": "Company",
+  "_companies": "Companies",
   "contract_id": "Contract ID",
   "corporate_contracts": "Corporate Contracts",
   "locations_within_the_depot": "Locations within the Depot",

@@ -39,7 +39,7 @@ import {
   TransportDocumentPage,
   CompanyPage,
   CompaniesPage,
-  NewCorporateContractPage,
+  CorporateContractPage,
   ListCorporateContractPage,
   ListCertificateDepositPage,
   CertificateDepositPage,
@@ -200,9 +200,9 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/corporate-companies" element={< CompaniesPage />} />
         <Route path="/overview/corporate-companies/:id" element={< CompanyPage />} />
 
-        <Route path="/overview/corporate-contract/new" element={< NewCorporateContractPage />} />
+        <Route path="/overview/corporate-contract/new" element={< CorporateContractPage />} />
         <Route path="/overview/corporate-contract" element={< ListCorporateContractPage />} />
-        <Route path="/overview/corporate-contract/:id" element={< NewCorporateContractPage />} />
+        <Route path="/overview/corporate-contract/:contractId" element={< CorporateContractPage />} />
 
         <Route path="/overview/transport-documents" element={<ListTransportDocumentPage />} />
         <Route path="/overview/transport-documents/new" element={<TransportDocumentPage />} />

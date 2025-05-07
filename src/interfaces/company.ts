@@ -19,4 +19,5 @@ export interface Company extends Document {
     address: string;
     locality: string;
     province: string;
+    fiscalSituation: string;
 }

@@ -1,2 +1,2 @@
 export * from './ListCorporateContract';
-export * from './NewCorporateContract';
+export * from './CorporateContractPage';

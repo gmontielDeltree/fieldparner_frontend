@@ -1,17 +1,17 @@
-import React, { SyntheticEvent, useEffect, useState } from 'react';
-import { TextField, Container, Typography, Paper, Grid, Button, Box, FormControl, Autocomplete } from '@mui/material';
+import React, { SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import { TextField, Container, Typography, Paper, Grid, Button, Box, Autocomplete } from '@mui/material';
 import { Loading, TableCorporateContract } from '../../components';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector, useForm, useCorporateContract, useCampaign } from '../../hooks';
-import { useNavigate } from 'react-router-dom';
-import { removeCorporateContractActive } from '../../redux/corporateContract';
-import Swal from 'sweetalert2';
+import { useNavigate, useParams } from 'react-router-dom';
+import { removeCorporateContractActive, setCorporateContractActive } from '../../redux/corporateContract';
 import { EnumStatusContract } from '../../interfaces/corporateContract';
 import { CorporateContract, CompanyByContract } from '../../interfaces/corporateContract';
 import {
   Handshake as HandshakeIcon,
   Description as DescriptionIcon
 } from '@mui/icons-material/';
+import NotificationService from '../../services/notificationService';
 
 const initialForm: CorporateContract = {
   accountId: '',
@@ -23,24 +23,20 @@ const initialForm: CorporateContract = {
   campaignId: ''
 };
 
-export const NewCorporateContractPage: React.FC = () => {
-  // Form validation errors
+export const CorporateContractPage: React.FC = () => {
+  const { contractId } = useParams();
+
   const [errors, setErrors] = useState({
     idContract: false,
     description: false,
-    companie: false,
-    percentageOfParticipation: false,
-    activity: false,
   });
-  const [listCorporateContract, setlistCorporateContract] = useState<CompanyByContract[]>([]);
+  const [companiesFromContract, setCompaniesFromContract] = useState<CompanyByContract[]>([]);
   const { corporateContractActive } = useAppSelector((state) => state.corporateContract);
   const {
     isLoading,
-    // listCorporateContract,
     createCorporateContract,
     updateCorporateContract,
-    getCorporateContract,
-    corporateContract,
+    getCorporateContractById
   } = useCorporateContract();
   const {
     campaigns,
@@ -60,47 +56,38 @@ export const NewCorporateContractPage: React.FC = () => {
     reset,
   } = useForm<CorporateContract>(initialForm);
 
+  const totalPercentageCompanies = useMemo(() =>
+    companiesFromContract.reduce((suma, item) => suma + Number(item.percentageOfParticipation), 0)
+    , [companiesFromContract]);
 
   useEffect(() => {
     getCampaigns();
   }, []);
 
-  // useEffect(() => {
-  //   getCampaigns();
-  //   const campaign = loadCampaignFromLS();
-  //   if (campaign) {
-  //     dispatch(setSelectedCampaign(campaign));
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   if (corporateContractActive) setFormulario(corporateContractActive);
-  //   else setFormulario(initialForm);
-  // }, [corporateContractActive, setFormulario]);
-
   useEffect(() => {
-    getCorporateContract();
-  }, []);
-
-  const handleVerifyId = () => {
-    const IdContrtactExists = corporateContract.find(corporate => corporate.idContract === idContract);
-
-    if (IdContrtactExists) {
-      Swal.fire({
-        icon: 'error',
-        title: t('error'),
-        text: t('id_contract_exists'),
-      }).then(() => {
-        setFormulario(prevForm => ({
-          ...prevForm,
-          idContract: '',
-        }));
+    if (contractId) {
+      getCorporateContractById(contractId).then((result) => {
+        if (result) {
+          setFormulario(result.contract);
+          setCompaniesFromContract(result.companies || []);
+          dispatch(setCorporateContractActive(result.contract));
+        } else {
+          setFormulario(initialForm);
+        }
       });
-      return true;
     }
+  }, [contractId]);
 
-    // Clear the error state if ID is valid
-    setErrors(prev => ({ ...prev, idContract: false }));
+  const handleVerifyId = async () => {
+    const contractExists = await getCorporateContractById(idContract);
+    if (contractExists) {
+      NotificationService.showWarning(t('id_contract_exists'));
+      setFormulario(prevForm => ({
+        ...prevForm,
+        idContract: '',
+      }));
+      return;
+    }
   };
 
   const onClickCancel = () => {
@@ -114,9 +101,6 @@ export const NewCorporateContractPage: React.FC = () => {
     const newErrors = {
       idContract: !formulario.idContract?.trim(),
       description: !formulario.description?.trim(),
-      companie: false,
-      percentageOfParticipation: false,
-      activity: false
     };
 
     setErrors(prev => ({ ...prev, ...newErrors }));
@@ -124,78 +108,58 @@ export const NewCorporateContractPage: React.FC = () => {
     return !newErrors.idContract && !newErrors.description;
   };
 
-  const handleAddContract = async () => {
-    console.log('form', formulario);
-    console.log('compañias del contrato: ', listCorporateContract)
-    // if (!validateMainForm()) {
-    //   Swal.fire({
-    //     icon: 'error',
-    //     title: t('error'),
-    //     text: t('fill_required_fields'),
-    //   });
-    //   return;
-    // }
+  const handleAddCorporateContract = async () => {
 
-    // if (formulario.contractsList.length === 0) {
-    //   Swal.fire({
-    //     icon: 'error',
-    //     title: t('error'),
-    //     text: t('add_at_least_one_contract'),
-    //   });
-    //   return;
-    // }
-
-    // await createCorporateContract(formulario);
-    // reset();
-  };
-
-  const handleUpdate = () => {
     if (!validateMainForm()) {
-      Swal.fire({
-        icon: 'error',
-        title: t('error'),
-        text: t('fill_required_fields'),
-      });
+      NotificationService.showError(t('fill_required_fields'));
       return;
     }
+    await createCorporateContract(formulario, companiesFromContract);
+    navigate('/init/overview/corporate-contract/');
+  };
 
-    // if (formulario.contractsList.length === 0) {
-    //   Swal.fire({
-    //     icon: 'error',
-    //     title: t('error'),
-    //     text: t('add_at_least_one_contract'),
-    //   });
-    //   return;
-    // }
-
-    updateCorporateContract(formulario);
+  const handleUpdateCorporateContract = async () => {
+    if (!validateMainForm()) {
+      NotificationService.showError(t('fill_required_fields'));
+      return;
+    }
+    await updateCorporateContract(formulario, companiesFromContract);
+    navigate('/init/overview/corporate-contract/');
     reset();
   };
 
-  const handleAddCompany = (item: CompanyByContract) => {
-    console.log(item);
-    setlistCorporateContract([item, ...listCorporateContract]);
+  const handleAddCompanyToContract = (item: CompanyByContract) => {
+    try {
+      const existCompany = companiesFromContract.find(company => company.companyId === item.companyId);
+      if (existCompany) {
+        NotificationService.showWarning("No se puede agregar la misma compañia dos veces");
+        return;
+      }
+      // const totalPercentage = companiesFromContract.reduce((suma, item) => suma + item.percentageOfParticipation, 0);
+
+      if (Number(totalPercentageCompanies) + Number(item.percentageOfParticipation) > 100) {
+        NotificationService.showWarning("El porcentaje total de las compañias no puede ser mayor a 100%", null);
+        return;
+      }
+
+      setCompaniesFromContract([item, ...companiesFromContract]);
+    } catch (error) {
+      NotificationService.showError(t("databaseError", { error: error || t("unexpectedError") }), error, t("error_label"));
+    }
   };
 
-  const handleDeleteCompany = (contractToDelete: CompanyByContract) => {
-    console.log(contractToDelete);
-    setlistCorporateContract(prevList => prevList.filter(contract => contract.id !== contractToDelete.id));
+  const handleDeleteCompanyFromContract = (contractToDelete: CompanyByContract) => {
+    // if(companiesFromContract.length === 1) {}
+    setCompaniesFromContract(prevList => prevList.filter(contract => contract.id !== contractToDelete.id));
   };
-
 
   const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
     if (value !== null) {
       const statusEnum = value as EnumStatusContract;
-
       setFormulario(prevState => ({
         ...prevState,
         status: statusEnum
       }));
-
-      //   setNewContract(prevState => ({
-      //     ...prevState,
-      //     status: statusEnum
-      //   }));
     }
   };
 
@@ -237,7 +201,10 @@ export const NewCorporateContractPage: React.FC = () => {
                 label={t("contract_id") + " *"}
                 name="idContract"
                 value={idContract}
-                // onBlur={handleVerifyId}
+                disabled={!!corporateContractActive}
+                onBlur={() => {
+                  !corporateContractActive && handleVerifyId()
+                }}
                 onChange={handleMainInputChange}
                 error={errors.idContract}
                 helperText={errors.idContract ? t("field_required") : ""}
@@ -283,15 +250,18 @@ export const NewCorporateContractPage: React.FC = () => {
               />
             </Grid>
           </Grid>
-          <Typography variant="h5" sx={{ mt: 3, mb: 2, pl: 1 }}>
+          <Typography variant="h4" sx={{ mt: 4, mb: 2, pl: 1 }}>
             Compañias del contrato
           </Typography>
 
           <TableCorporateContract
-            listCorporateContract={listCorporateContract}
-            onClickAdd={handleAddCompany}
-            onClickDelete={handleDeleteCompany}
+            listCorporateContract={companiesFromContract}
+            onClickAdd={handleAddCompanyToContract}
+            onClickDelete={handleDeleteCompanyFromContract}
           />
+          <Typography variant="h6" sx={{ mb: 2, pl: 1 }}>
+            Porcentaje total de compañias: {totalPercentageCompanies} %
+          </Typography>
           <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>
               <Button
@@ -304,8 +274,9 @@ export const NewCorporateContractPage: React.FC = () => {
               <Button
                 type='submit'
                 variant="contained"
+                disabled={companiesFromContract.length === 0}
                 color="success"
-                onClick={corporateContractActive ? handleUpdate : handleAddContract}
+                onClick={corporateContractActive ? handleUpdateCorporateContract : handleAddCorporateContract}
               >
                 {!corporateContractActive ? t("_add") : t("id_update")} {' '}
               </Button>

@@ -37,7 +37,7 @@ export * from './TransportDocument/ListTransportDocumentPage';
 export * from './TransportDocument/TransportDocumentPage';
 export * from './Companies/CompanyPage';
 export * from './Companies/CompaniesPage';
-export * from "./CorporateContract/NewCorporateContract";
+export * from "./CorporateContract/CorporateContractPage";
 export * from "./CorporateContract/ListCorporateContract";
 export * from "./CertificateDeposit/ListCertificateDepositPage";
 export * from './CertificateDeposit/CertificateDepositPage';

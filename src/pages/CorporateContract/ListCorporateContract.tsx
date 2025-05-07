@@ -11,9 +11,9 @@ import {
   Handshake as HandshakeIcon,
   Description as DescriptionIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
+  // Delete as DeleteIcon,
 } from "@mui/icons-material";
-import {  useAppDispatch, useCorporateContract } from "../../hooks";
+import { useAppDispatch, useCorporateContract } from "../../hooks";
 import { setCorporateContractActive } from "../../redux/corporateContract";
 import { useTranslation } from "react-i18next";
 import { CorporateContract } from "../../interfaces/corporateContract";
@@ -22,9 +22,11 @@ import { GenericListPage } from "../GenericListPage";
 export const ListCorporateContractPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  // const { isLoading } = useAppSelector((state) => state.ui);
-  const { corporateContract, getCorporateContract, removeCorporateContract} =  useCorporateContract();
- // const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const {
+    listCorporateContract,
+    getCorporateContract,
+  } = useCorporateContract();
+  // const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
   // const columns: ColumnProps[] = [
@@ -37,9 +39,9 @@ export const ListCorporateContractPage: React.FC = () => {
   // ];
 
   const columns = [
-    {field: "idContract", headerName: t("contract_id"), flex: 1},
+    { field: "idContract", headerName: t("contract_id"), flex: 1 },
     { field: "description", headerName: t("_description"), flex: 1 },
-    { field: "totalCompany", headerName: t("_company") , flex: 1 },
+    { field: "totalCompany", headerName: t("_companies"), flex: 1 },
     { field: "status", headerName: "Status", flex: 1 },
     {
       field: "actions",
@@ -60,7 +62,7 @@ export const ListCorporateContractPage: React.FC = () => {
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("icon_delete")}>
+          {/* <Tooltip title={t("icon_delete")}>
             <IconButton
               aria-label={t("icon_delete")}
               onClick={() => handleDeleteCorporateContract(params.row)}
@@ -71,7 +73,7 @@ export const ListCorporateContractPage: React.FC = () => {
             >
               <DeleteIcon />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Box>
       ),
     },
@@ -80,37 +82,37 @@ export const ListCorporateContractPage: React.FC = () => {
   useEffect(() => {
     getCorporateContract();
   }, []);
-  
+
 
 
 
   const onClickUpdateCorporateContract = (item: CorporateContract): void => {
     dispatch(setCorporateContractActive(item));
-    navigate(`/init/overview/corporate-contract/${item._id}`);
+    navigate(`/init/overview/corporate-contract/${item.idContract}`);
   };
 
 
 
-  const handleDeleteCorporateContract = (item: CorporateContract) => {
-    if (item._id && item._rev) {
-      removeCorporateContract(item._id, item._rev);
-      getCorporateContract();
-    }
-  };
+  // const handleDeleteCorporateContract = (item: CorporateContract) => {
+  //   if (item._id && item._rev) {
+  //     removeCorporateContract(item._id, item._rev);
+  //     getCorporateContract();
+  //   }
+  // };
 
   return (
     <GenericListPage
       title={t("corporate_contracts")}
       icon={
         <Box display="flex" alignItems="center">
-          <DescriptionIcon/>
-            <HandshakeIcon sx={{ marginRight: "8px"}}/>
+          <DescriptionIcon />
+          <HandshakeIcon sx={{ marginRight: "8px" }} />
         </Box>
       }
-      data={corporateContract}
+      data={listCorporateContract}
       columns={columns}
       getData={getCorporateContract}
-      deleteData={removeCorporateContract}
+      deleteData={() => { }}
       setActiveItem={setCorporateContractActive}
       newItemPath="/init/overview/corporate-contract/new"
       editItemPath={(id) => `/init/overview/corporate-contract/${id}`}
@@ -118,6 +120,6 @@ export const ListCorporateContractPage: React.FC = () => {
     />
   );
 
-  
-  
+
+
 };
