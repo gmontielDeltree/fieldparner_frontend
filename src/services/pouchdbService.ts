@@ -31,7 +31,7 @@ import { LicenceUse } from '../interfaces/licencesUse';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
 import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../interfaces/certificate-deposit';
-import { ProductiveUnits } from '../interfaces/productiveUnits';
+import { FieldsByProductUnit, ProductUnits } from '../interfaces/productiveUnits';
 import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 import { CostsExpenses } from '../interfaces/costsExpenses';
 import { CropStockControl, Stock } from '../interfaces/stock';
@@ -92,7 +92,6 @@ const dbNames = Object.freeze({
   licencesUse: `licences-use${isEnvSTG()}`,
   transportDocument: `transport-documents${isEnvSTG()}`,
   companies: `companies${isEnvSTG()}`,
-  // corporateCompanies: `corporate-companies${isEnvSTG()}`,
   companiesByContract: `companies-by-contract${isEnvSTG()}`,
   corporateContract: `corporate-contract${isEnvSTG()}`,
   certificateDeposit: `certificate-deposit${isEnvSTG()}`,
@@ -103,6 +102,7 @@ const dbNames = Object.freeze({
   costsExpenses: `costs-expenses${isEnvSTG()}`,
   cropStockControl: `crop-stock-control${isEnvSTG()}`,
   campaingExpenses: `campaing-expenses`,
+  fieldsByProductUnit: `fields-by-product-unit${isEnvSTG()}`,
 });
 
 export const dbContext = Object.freeze({
@@ -144,13 +144,13 @@ export const dbContext = Object.freeze({
   corporateContract: new PouchDB<CorporateContract>(dbNames.corporateContract),
   certificateDeposit: new PouchDB<CertificateDeposit>(dbNames.certificateDeposit),
   transportDocumentCertificateDeposit: new PouchDB<TransportDocumentByCertificateDeposit>(dbNames.transportDocumentCertificateDeposit),
-  productiveUnits: new PouchDB<ProductiveUnits>(dbNames.productiveUnits),
+  productiveUnits: new PouchDB<ProductUnits>(dbNames.productiveUnits),
   contractSaleCereals: new PouchDB<ContractSaleCereal>(dbNames.contractSaleCereals),
   contractDeliveryDates: new PouchDB<ContractDeliveyDate>(dbNames.contractDeliveryDates),
   costsExpenses: new PouchDB<CostsExpenses>(dbNames.costsExpenses),
   campaingExpenses: new PouchDB<CampaingExpenses>(dbNames.campaingExpenses),
   cropStockControl: new PouchDB<CropStockControl>(dbNames.cropStockControl),
-
+  fieldsByProductUnit: new PouchDB<FieldsByProductUnit>(dbNames.fieldsByProductUnit),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -201,6 +201,7 @@ dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts
 dbContext.campaingExpenses.sync(`${remoteCouchDBUrl}${dbNames.campaingExpenses}`, opts);
 dbContext.cropStockControl.sync(`${remoteCouchDBUrl}${dbNames.cropStockControl}`, opts);
 dbContext.companiesByContract.sync(`${remoteCouchDBUrl}${dbNames.companiesByContract}`, opts);
+dbContext.fieldsByProductUnit.sync(`${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`, opts);
 
 // #endregion
 
