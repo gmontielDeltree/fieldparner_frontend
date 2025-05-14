@@ -16,14 +16,14 @@ LocationOn as LocationOnIcon,
 import {  useAppDispatch, useProductiveUnits } from "../../hooks";
 import { setProductiveUnitsActive } from "../../redux/productiveUntis";
 import { useTranslation } from "react-i18next";
-import { ProductiveUnits } from "../../interfaces/productiveUnits";
+import { ProductUnits } from "../../interfaces/productiveUnits";
 import { GenericListPage } from "../GenericListPage";
 
 export const ListProductiveUnits: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const { isLoading } = useAppSelector((state) => state.ui);
-  const { productiveUnits, getProductiveUnits, removeProductiveUnits} =  useProductiveUnits();
+  const { listProductiveUnits, getProductiveUnits, removeProductiveUnits} =  useProductiveUnits();
  // const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
@@ -44,7 +44,7 @@ export const ListProductiveUnits: React.FC = () => {
       headerName: "",
       flex: 1,
       sortable: false,
-      renderCell: (params: { row: ProductiveUnits; }) => (
+      renderCell: (params: { row: ProductUnits; }) => (
         <Box display="flex" justifyContent="center">
           <Tooltip title={t("icon_edit")}>
             <IconButton
@@ -58,7 +58,7 @@ export const ListProductiveUnits: React.FC = () => {
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("icon_delete")}>
+          {/* <Tooltip title={t("icon_delete")}>
             <IconButton
               aria-label={t("icon_delete")}
               onClick={() => handleDeleteCorporateContract(params.row)}
@@ -69,32 +69,28 @@ export const ListProductiveUnits: React.FC = () => {
             >
               <DeleteIcon />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
         </Box>
       ),
     },
   ];
-
+  console.log('listProductiveUnits', listProductiveUnits)
   useEffect(() => {
     getProductiveUnits();
   }, []);
   
-  
-
-
-
-  const onClickUpdateCorporateContract = (item: ProductiveUnits): void => {
+  const onClickUpdateCorporateContract = (item: ProductUnits): void => {
     dispatch(setProductiveUnitsActive(item));
-    navigate(`/init/overview/productive-units/${item._id}`);
+    console.log('item', item)
+    navigate(`/init/overview/productive-units/${item.idProductiveUnit}`);
   };
-
-
-
-  const handleDeleteCorporateContract = (item: ProductiveUnits) => {
-    if (item._id && item._rev) {
-      removeProductiveUnits(item._id, item._rev);
-      getProductiveUnits();
-    }
+  //TODO: implement delete
+  const handleDeleteCorporateContract = (item: ProductUnits) => {
+    // if (item._id && item._rev) {
+    //   removeProductiveUnits(item._id, item._rev);
+    //   getProductiveUnits();
+    // }
+    console.log('item', item)
   };
 
   return (
@@ -106,7 +102,7 @@ export const ListProductiveUnits: React.FC = () => {
          <LocationOnIcon sx={{ marginRight: "28px",fontSize: "inherit", verticalAlign: "middle"}}/>
         </Box>
       }
-      data={productiveUnits}
+      data={listProductiveUnits}
       columns={columns}
       getData={getProductiveUnits}
       deleteData={removeProductiveUnits}
