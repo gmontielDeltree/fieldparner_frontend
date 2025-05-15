@@ -14,6 +14,7 @@ export interface Business extends Document {
     contactoPrincipal?: string;
     contactoSecundario?: string;
     nameMainContact?: string;
+    nameSecundaryContact?: string;
     sitioWeb?: string;
     domicilio: string;
     localidad: string;
