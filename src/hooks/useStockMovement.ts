@@ -1,5 +1,5 @@
 import { Stock, StockItem, TipoStock } from '../interfaces/stock';
-import { DepositDestination, StockMovement, StockMovementItem, Supply, TypeMovement, MovementType, Crop, GetStockRequest, GetControlStockCropRequest } from "../types";
+import { DepositDestination, StockMovement, StockMovementItem, Supply, TypeMovement, MovementType, Crop, GetStockRequest, GetControlStockCropRequest, Campaign } from "../types";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { dbContext } from '../services';
@@ -35,11 +35,13 @@ export const useStockMovement = () => {
                         ]
                     },
                 }),
-                dbContext.crops.allDocs({ include_docs: true })
+                dbContext.crops.allDocs({ include_docs: true }),
+                dbContext.campaigns.find({ selector: { "accountId": user?.accountId } }),
             ]);
             const deposits = promisesResult[0].docs;
             const supplies = promisesResult[1].docs;
             const crops = promisesResult[2].rows.map(row => row.doc as Crop);
+            const campaigns = promisesResult[3].docs as Campaign[];
 
             setIsLoading(false);
 
@@ -49,7 +51,8 @@ export const useStockMovement = () => {
                         ...sm,
                         deposit: deposits.find(d => d._id === sm.depositId),
                         supply: supplies.find(s => s._id === sm.supplyId),
-                        crop: crops.find(c => c._id === sm.cropId)
+                        crop: crops.find(c => c._id === sm.cropId),
+                        campaign: campaigns.find(c => c.campaignId === sm.campaignId),
                     } as StockMovementItem;
                 });
                 setStockMovements(documents);
@@ -168,7 +171,7 @@ export const useStockMovement = () => {
                 location
             });
             let existingStock = responseStockSupply ? responseStockSupply[0] : null;
-            
+
             if (!(typeMovement === TypeMovement.TransferenciaDeposito.toString())) {
                 if (isIncome) {
                     if (existingStock) {

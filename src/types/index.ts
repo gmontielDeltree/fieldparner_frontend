@@ -431,6 +431,7 @@ export interface StockMovementItem extends StockMovement {
   supply?: Supply;
   deposit?: Deposit;
   crop?: Crop;
+  campaign?: Campaign;
 }
 
 export interface StockByNroLot {

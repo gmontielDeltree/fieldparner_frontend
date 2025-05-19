@@ -15,10 +15,12 @@ export * from './DataTable';
 export * from './Supplies/LaborsForm';
 export * from './Supplies/DoseForm';
 export * from './Supplies/StockForm';
+//Modals
 export * from './Modals/SupplyByDeposits';
 export * from './Modals/SupplyByLots';
 export * from './Modals/LaborOrder';
 export * from './Modals/HistoryWithdrawOrder';
+export * from './Modals/DetailStockMovement';
 export * from './CloseButton';
 export * from './NewSupplyRow';
 export * from './BorderContainer';

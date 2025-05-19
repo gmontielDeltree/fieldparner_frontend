@@ -1,32 +1,24 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { GridColDef } from "@mui/x-data-grid";
-import { SyncAlt as SyncAltIcon } from "@mui/icons-material";
+import { SyncAlt as SyncAltIcon, Visibility as VisibilityIcon } from "@mui/icons-material";
 import { useStockMovement } from "../../hooks";
 import { useTranslation } from "react-i18next";
 import { GenericListPage } from "../GenericListPage";
-
-interface StockMovementItem {
-  _id: string;
-  _rev: string;
-  creationDate: string;
-  movement: string;
-  supply: {
-    type: string;
-    name: string;
-    unitMeasurement: string;
-  };
-  deposit: {
-    description: string;
-  };
-  typeMovement: string;
-  isIncome: boolean;
-  amount: number;
-  documentFile: string;
-}
+import { IconButton } from "@mui/material";
+import { StockMovementItem } from "../../types";
+import { DetailStockMovementModal } from "../../components";
 
 export const StockMovementPage: React.FC = () => {
   const { stockMovements, getStockMovements } = useStockMovement();
   const { t } = useTranslation();
+  const [selectedMovement, setSelectedMovement] = useState<null | StockMovementItem>(null);
+  const [openModal, setOpenModal] = useState(false);
+
+  const onClickDetail = (item: StockMovementItem) => {
+    setSelectedMovement(item);
+    setOpenModal(true);
+  };
+
 
   const columns: GridColDef[] = [
     { field: "date", headerName: t("_date"), width: 150, align: "left" },
@@ -38,6 +30,24 @@ export const StockMovementPage: React.FC = () => {
     { field: "um", headerName: "UM", width: 150, headerAlign: 'center', align: "center" },
     { field: "amount", headerName: t("_quantity"), width: 150, headerAlign: 'right', align: "right" },
     { field: "documentFile", headerName: t("_file"), width: 250, headerAlign: 'center', align: "right" },
+    {
+      field: "actions",
+      headerName: "",
+      width: 150,
+      sortable: false,
+      renderCell: (params) => (
+        <IconButton
+          aria-label={"Detalle"}
+          onClick={() => onClickDetail(params.row)}
+          sx={{
+            transition: "transform 0.2s",
+            "&:hover": { transform: "scale(1.2)" },
+          }}
+        >
+          <VisibilityIcon />
+        </IconButton>
+      ),
+    },
   ];
 
   const rows = useMemo(() => {
@@ -45,8 +55,7 @@ export const StockMovementPage: React.FC = () => {
       const isCrop = !!sm.cropId;
       const supplyOrCrop = isCrop ? `${sm.crop?.descriptionEN || "-"}` : `${sm.supply?.type || "-"} / ${sm.supply?.name || "-"}`;
       return {
-        _id: sm._id,
-        _rev: sm._rev,
+        ...sm,
         date: sm.creationDate,
         movement: sm.movement,
         supplyOrCrop,
@@ -60,21 +69,25 @@ export const StockMovementPage: React.FC = () => {
     });
   }, [stockMovements, t]);
 
-  const setActiveItem = (item: StockMovementItem) => {
-    // todo if needed
-  };
 
   return (
-    <GenericListPage<StockMovementItem>
-      title={t("stock_movements")}
-      isLoading={false}
-      icon={<SyncAltIcon />}
-      data={rows}
-      columns={columns}
-      getData={getStockMovements}
-      setActiveItem={setActiveItem}
-      newItemPath="/init/overview/stock-movements/new"
-      editItemPath={(id) => `/init/overview/stock-movements/edit/${id}`}
-    />
+    <>
+      <GenericListPage<StockMovementItem>
+        title={t("stock_movements")}
+        isLoading={false}
+        icon={<SyncAltIcon />}
+        data={rows}
+        columns={columns}
+        getData={getStockMovements}
+        // setActiveItem={setActiveItem}
+        newItemPath="/init/overview/stock-movements/new"
+        editItemPath={(id) => `/init/overview/stock-movements/edit/${id}`}
+      />
+      <DetailStockMovementModal
+        open={openModal}
+        detail={selectedMovement}
+        onClose={() => setOpenModal(false)}
+      />
+    </>
   );
 };
