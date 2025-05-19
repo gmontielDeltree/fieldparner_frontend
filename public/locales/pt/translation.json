@@ -1102,7 +1102,6 @@
   "itemsWillBeMarkedAsWithdrawn": "Os insumos serão marcados como retirados",
   "orderPrinted": "Ordem impressa",
   "noItemsToWithdraw": "Não há insumos para retirar",
-  "withdrawal_order_created_successfully": "Ordem de retirada criada com sucesso",
   "retiredSupplies": "Insumos retirados",
   "itemsAlreadyWithdrawn": "Os insumos já foram retirados",
   "removedSupplies": "Insumos removidos",
@@ -1123,6 +1122,18 @@
   "noRemovedSupplies": "Não há insumos removidos",
   "withdrawalFromOrder": "Retiradas da ordem",
   "record": "Histórico",
-  "laborOrder": "Ordem de Trabalho"
+  "laborOrder": "Ordem de Trabalho",
+  "click_on_map_to_set_location": "Clique no mapa para definir a localização",
+  "location_set_click_again_to_update": "Localização definida. Clique novamente para atualizar",
+  "location_selection_help": "Para selecionar a localização do depósito, clique em qualquer ponto do mapa ou arraste o marcador vermelho",
+  "center_map_on_location": "Centralizar mapa na localização",
+  "use_my_current_location": "Usar minha localização atual",
+  "location_selected": "Localização selecionada",
+  "waiting_for_location_selection": "Aguardando seleção de localização",
+  "marker_drag_hint": "Você também pode arrastar o marcador para ajustar a localização com precisão",
+  "geolocation_error": "Não foi possível obter sua localização atual. Por favor, verifique as permissões de localização no seu navegador",
+  "click_anywhere_on_map_to_set_warehouse_location": "Clique em qualquer lugar do mapa para definir a localização do depósito",
+  "click_to_update_warehouse_location": "Clique para atualizar a localização do depósito",
+  "click_here": "Clique aqui"
 }
 

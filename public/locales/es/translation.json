@@ -1119,5 +1119,17 @@
   "noRemovedSupplies": "No hay insumos eliminados",
   "withdrawal_order_label": "Orden de Retiro",
   "record": "Historial",
-  "laborOrder": "Orden de Trabajo"
+  "laborOrder": "Orden de Trabajo",
+  "click_on_map_to_set_location": "Haz clic en el mapa para establecer la ubicación",
+  "location_set_click_again_to_update": "Ubicación establecida. Haz clic de nuevo para actualizar",
+  "location_selection_help": "Para seleccionar la ubicación del depósito, haz clic en cualquier punto del mapa o arrastra el marcador rojo",
+  "center_map_on_location": "Centrar mapa en la ubicación",
+  "use_my_current_location": "Usar mi ubicación actual",
+  "location_selected": "Ubicación seleccionada",
+  "waiting_for_location_selection": "Esperando selección de ubicación",
+  "marker_drag_hint": "También puedes arrastrar el marcador para ajustar la ubicación con precisión",
+  "geolocation_error": "No se pudo obtener tu ubicación actual. Por favor, verifica los permisos de ubicación en tu navegador",
+  "click_anywhere_on_map_to_set_warehouse_location": "Haz clic en cualquier lugar del mapa para establecer la ubicación del depósito",
+  "click_to_update_warehouse_location": "Haz clic para actualizar la ubicación del depósito",
+  "click_here": "Haz clic aquí"
 }

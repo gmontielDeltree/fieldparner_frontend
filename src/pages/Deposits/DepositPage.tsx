@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector , useDeposit} from "../../hooks";
-import { Deposit, EnumStatusContract} from "../../types";
+import { useAppDispatch, useAppSelector, useDeposit } from "../../hooks";
+import { Deposit, EnumStatusContract } from "../../types";
 import { removeDepositActive } from "../../redux/deposit";
 import { useTranslation } from "react-i18next";
 import { TemplateLayout } from "../../components";
@@ -19,17 +19,13 @@ import {
 } from "./componentes";
 import Swal from "sweetalert2";
 
-// Initial form values
-
-
-
 export const DepositPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { depositActive } = useAppSelector((state) => state.deposit);
 
-  const {createDeposit, updateDeposit} = useDeposit();
+  const { createDeposit, updateDeposit } = useDeposit();
 
   const initialForm: Deposit = {
     description: "",
@@ -50,9 +46,9 @@ export const DepositPage: React.FC = () => {
     deposit: false,
     siloBagId: "",
     status: EnumStatusContract.Inactivo,
-};
+  };
 
-const [formulario, setFormulario] = useState<Deposit>(initialForm);
+  const [formulario, setFormulario] = useState<Deposit>(initialForm);
 
   useEffect(() => {
     if (depositActive) setFormulario(depositActive);
@@ -63,13 +59,9 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
     };
   }, [depositActive, dispatch]);
 
-
-
-
-
   const validateForm = () => {
     let isValid = true;
-  
+
     if (formulario.description.trim() === "") {
       Swal.fire({ title: t("validation_error"), text: t("missing_description"), icon: "error" });
       isValid = false;
@@ -82,9 +74,9 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
       Swal.fire({ title: t("validation_error"), text: t("missing_country"), icon: "error" });
       isValid = false;
     }
-  
+
     // Validación de geolocalización
-    const boundaries = getBoundaries(formulario.country); // asegurate de tener esta función importada
+    const boundaries = getBoundaries(formulario.country);
     if (formulario.geolocation.lat < boundaries.minLat || formulario.geolocation.lat > boundaries.maxLat) {
       Swal.fire({ title: t("validation_error"), text: t("latitude_out_of_bounds"), icon: "error" });
       isValid = false;
@@ -93,7 +85,7 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
       Swal.fire({ title: t("validation_error"), text: t("longitude_out_of_bounds"), icon: "error" });
       isValid = false;
     }
-  
+
     return isValid;
   };
 
@@ -105,11 +97,11 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
         } else {
           await createDeposit(formulario);
         }
-  
+
         dispatch(removeDepositActive());
         setFormulario(initialForm);
         navigate("/init/overview/deposit");
-  
+
         Swal.fire({
           title: t("success"),
           text: formulario._id
@@ -136,7 +128,7 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
         await createDeposit(formulario);
         setFormulario(initialForm);
         navigate("/init/overview/deposit");
-  
+
         Swal.fire({
           title: t("success"),
           text: t("deposit_created_successfully"),
@@ -155,8 +147,20 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
     }
   };
 
+  const handleLocationChange = (newLocation) => {
+    setFormulario(prev => ({
+      ...prev,
+      geolocation: newLocation
+    }));
+  };
+
   return (
-    <TemplateLayout key="overview-deposit" viewMap={true}>
+    <TemplateLayout
+      key="overview-deposit"
+      viewMap={true}
+      initialLocation={formulario.geolocation}
+      onLocationChange={handleLocationChange}
+    >
       <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}>
         <Box textAlign="center" mb={3}>
           <WarehouseIcon fontSize="large" />
@@ -172,9 +176,9 @@ const [formulario, setFormulario] = useState<Deposit>(initialForm);
         <AddressSection formulario={formulario} setFormulario={setFormulario} />
         <GeolocationSection formulario={formulario} setFormulario={setFormulario} />
         <LocationsSection formulario={formulario} setFormulario={setFormulario} />
-        
-        <ActionButtons 
-          formulario={formulario} 
+
+        <ActionButtons
+          formulario={formulario}
           onCancel={() => navigate("/init/overview/deposit")}
           onSubmit={depositActive ? handleUpdateDeposit : handleAddDeposit}
           isEditMode={!!depositActive}

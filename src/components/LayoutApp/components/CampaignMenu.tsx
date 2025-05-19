@@ -46,8 +46,11 @@ const CampaignMenu: React.FC = () => {
     addCampaign,
     updateCampaign,
     deleteCampaign,
+    isLoading,
+    error
   } = useCampaign()
   const { selectedCampaign } = useAppSelector((state) => state.campaign)
+  const { user } = useAppSelector((state) => state.auth)
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const openDropdown = Boolean(anchorEl)
@@ -57,6 +60,16 @@ const CampaignMenu: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [campaignToClose, setCampaignToClose] = useState<Campaign | null>(null)
 
+  // Filtrar campañas activas una sola vez
+  const activeCampaigns = campaigns.filter((campaign) => campaign.state !== 'closed')
+
+  console.log("CampaignMenu - Render state:", {
+    campaignsTotal: campaigns.length,
+    activeCampaignsCount: activeCampaigns.length,
+    selectedCampaign: selectedCampaign,
+    isLoading
+  })
+
   useEffect(() => {
     if (campaignToClose) {
       setAnchorEl(null)
@@ -64,57 +77,114 @@ const CampaignMenu: React.FC = () => {
   }, [campaignToClose])
 
   const handleCampaignMenu = (event: React.MouseEvent<HTMLElement>) => {
+    console.log("Opening campaign menu dropdown")
     setAnchorEl(event.currentTarget)
   }
 
   const handleCloseMenu = () => {
+    console.log("Closing campaign menu dropdown")
     setAnchorEl(null)
   }
 
   const handleCreateAndEditCampaign = async (campaign: Campaign) => {
-    if (campaign._rev) {
-      // Edición
-      await updateCampaign(campaign)
+    console.log('Handling campaign create/edit:', campaign)
+    try {
+      if (campaign._rev) {
+        console.log('Editing existing campaign:', campaign)
+        await updateCampaign(campaign)
+        dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
+        setIsEditModalOpen(false)
+        await getCampaigns()
+        return
+      }
+      const uuid = uuidv7()
+      campaign._id = `campaign:${uuid}`
+      campaign.campaignId = `campaign:${uuid}`
+      console.log('Creating new campaign with ID:', campaign._id)
+      await addCampaign(campaign)
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
-      setIsEditModalOpen(false)
-      getCampaigns()
-      return
+      setIsCreateModalOpen(false)
+      await getCampaigns()
+    } catch (err) {
+      console.error('Error handling campaign create/edit:', err)
     }
-    // Creación
-    const uuid = uuidv7()
-    campaign._id = `campaign:${uuid}`
-    campaign.campaignId = `campaign:${uuid}`
-    await addCampaign(campaign)
-    dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
-    setIsCreateModalOpen(false)
-    getCampaigns()
   }
 
   const onDeleteCampaignHandler = async (campaign: Campaign) => {
-    await deleteCampaign(campaign)
-    setIsEditModalOpen(false)
+    console.log('Deleting campaign:', campaign._id)
+    try {
+      await deleteCampaign(campaign)
+      setIsEditModalOpen(false)
 
-    if (campaign._id === selectedCampaign?._id) {
-      const newCampaign = campaigns.find((e) => e._id !== campaign._id)
-      if (newCampaign) {
-        dispatch(setSelectedCampaign(newCampaign))
-      } else {
-        dispatch(setSelectedCampaign(null))
+      if (campaign._id === selectedCampaign?._id) {
+        const newCampaign = campaigns.find((e) => e._id !== campaign._id)
+        if (newCampaign) {
+          console.log('Setting new selected campaign after deletion:', newCampaign._id)
+          dispatch(setSelectedCampaign(newCampaign))
+        } else {
+          console.log('No campaigns left after deletion, setting selected to null')
+          dispatch(setSelectedCampaign(null))
+        }
       }
+      await getCampaigns()
+    } catch (err) {
+      console.error('Error deleting campaign:', err)
     }
-    getCampaigns()
   }
 
+  // Initial load effect
   useEffect(() => {
-    getCampaigns()
-    const campaign = loadCampaignFromLS()
-    if (campaign) {
-      dispatch(setSelectedCampaign(campaign))
+    console.log('CampaignMenu mounted, initializing...')
+    const initializeComponent = async () => {
+      console.log('Fetching campaigns on mount')
+      await getCampaigns()
+
+      const campaignFromLS = loadCampaignFromLS()
+      console.log('Campaign from localStorage:', campaignFromLS)
+
+      if (campaignFromLS) {
+        const campaignExists = campaigns.some(c => c._id === campaignFromLS._id)
+
+        if (campaignExists) {
+          console.log('Setting selected campaign from localStorage:', campaignFromLS._id)
+          dispatch(setSelectedCampaign(campaignFromLS))
+        } else {
+          console.log('Campaign from localStorage not found in current campaigns')
+          if (campaigns.length > 0) {
+            const firstActiveCampaign = campaigns.find(c => c.state !== 'closed')
+            if (firstActiveCampaign) {
+              console.log('Selecting first active campaign:', firstActiveCampaign._id)
+              dispatch(setSelectedCampaign(firstActiveCampaign))
+            }
+          }
+        }
+      } else if (campaigns.length > 0) {
+        const firstActiveCampaign = campaigns.find(c => c.state !== 'closed')
+        if (firstActiveCampaign) {
+          console.log('No campaign in localStorage, selecting first active campaign:', firstActiveCampaign._id)
+          dispatch(setSelectedCampaign(firstActiveCampaign))
+        }
+      }
     }
+
+    initializeComponent()
   }, [])
 
   useEffect(() => {
+    console.log('Campaigns updated, count:', campaigns.length)
+
+    if (!selectedCampaign && campaigns.length > 0) {
+      const firstActiveCampaign = campaigns.find(c => c.state !== 'closed')
+      if (firstActiveCampaign) {
+        console.log('No selected campaign, selecting first active campaign:', firstActiveCampaign._id)
+        dispatch(setSelectedCampaign(firstActiveCampaign))
+      }
+    }
+  }, [campaigns, selectedCampaign, dispatch])
+
+  useEffect(() => {
     if (selectedCampaign) {
+      console.log('Saving selected campaign to localStorage:', selectedCampaign._id)
       saveCampaignToLS(selectedCampaign)
       toast.success(
         `${t('La campaña')} ${selectedCampaign.name} ${t('está seleccionada')}`,
@@ -128,56 +198,71 @@ const CampaignMenu: React.FC = () => {
           theme: 'colored',
         },
       )
+    } else {
+      console.log('No campaign selected to save to localStorage')
     }
-  }, [selectedCampaign])
+  }, [selectedCampaign, t])
 
   const handleCampaignSelect = (campaignId: string) => {
+    console.log('Selecting campaign with ID:', campaignId)
     const campaign = campaigns.find((c) => c.campaignId === campaignId)
     if (campaign) {
+      console.log('Found campaign to select:', campaign)
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
       handleCloseMenu()
+    } else {
+      console.error('Campaign not found with ID:', campaignId)
     }
   }
 
   const handleEditClick = (campaignToEdit: Campaign) => {
+    console.log('Edit clicked for campaign:', campaignToEdit._id)
     setCampaignToEdit(campaignToEdit)
     setIsEditModalOpen(true)
     handleCloseMenu()
   }
 
   const handleCloseCampaign = (campaign: Campaign) => {
+    console.log('Setting campaign to close:', campaign._id)
     setCampaignToClose(campaign)
     handleCloseMenu()
   }
 
   const confirmCloseCampaign = async () => {
     if (campaignToClose) {
-      const updatedCampaign = { ...campaignToClose, state: 'closed' }
-      await updateCampaign(updatedCampaign)
-      toast.success(
-        `${t('Campaign')} "${updatedCampaign.name}" ${t('has been closed')}`,
-        {
-          position: 'top-center',
-          autoClose: 3000,
-          hideProgressBar: true,
-          theme: 'colored',
-          transition: Slide,
-        },
-      )
-      // Verificar si la campaña cerrada es la campaña seleccionada
-      if (selectedCampaign?._id === updatedCampaign._id) {
-        const newCampaign = campaigns.find(
-          (campaign) =>
-            campaign._id !== updatedCampaign._id && campaign.state !== 'closed',
+      try {
+        console.log('Confirming close of campaign:', campaignToClose._id)
+        const updatedCampaign = { ...campaignToClose, state: 'closed' }
+        await updateCampaign(updatedCampaign)
+        toast.success(
+          `${t('Campaign')} "${updatedCampaign.name}" ${t('has been closed')}`,
+          {
+            position: 'top-center',
+            autoClose: 3000,
+            hideProgressBar: true,
+            theme: 'colored',
+            transition: Slide,
+          },
         )
-        if (newCampaign) {
-          dispatch(setSelectedCampaign(newCampaign))
-        } else {
-          dispatch(setSelectedCampaign(null))
+
+        if (selectedCampaign?._id === updatedCampaign._id) {
+          const newCampaign = campaigns.find(
+            (campaign) =>
+              campaign._id !== updatedCampaign._id && campaign.state !== 'closed',
+          )
+          if (newCampaign) {
+            console.log('Setting new selected campaign after close:', newCampaign._id)
+            dispatch(setSelectedCampaign(newCampaign))
+          } else {
+            console.log('No active campaigns left after close, setting selected to null')
+            dispatch(setSelectedCampaign(null))
+          }
         }
+        await getCampaigns()
+        setCampaignToClose(null)
+      } catch (err) {
+        console.error('Error closing campaign:', err)
       }
-      getCampaigns()
-      setCampaignToClose(null)
     }
   }
 
@@ -186,12 +271,14 @@ const CampaignMenu: React.FC = () => {
     setAnchorEl(null)
   }
 
+  const campaignName = selectedCampaign?.name || t('no_campaign')
+  const tooltipTitle = selectedCampaign
+    ? `${t('Campaña seleccionada')}: ${t('Desde')} ${selectedCampaign.startDate} ${t('al')} ${selectedCampaign.endDate} - ${selectedCampaign.state}`
+    : t('no_campaign')
+
   return (
     <>
-      <Tooltip
-        title={`${t('Campaña seleccionada')}: ${t('Desde')} ${selectedCampaign?.startDate
-          } ${t('al')} ${selectedCampaign?.endDate} - ${selectedCampaign?.state}`}
-      >
+      <Tooltip title={tooltipTitle}>
         <Button
           aria-label="campaign"
           aria-controls="menu-appbar"
@@ -206,7 +293,7 @@ const CampaignMenu: React.FC = () => {
             textTransform: 'none',
           }}
         >
-          {selectedCampaign?.name || t('no_campaign')}
+          {isLoading ? `${t('Loading')}...` : campaignName}
         </Button>
       </Tooltip>
 
@@ -254,9 +341,17 @@ const CampaignMenu: React.FC = () => {
           {t('add_new_campaign')} +
         </MenuItem>
         <Divider />
-        {campaigns
-          .filter((campaign) => campaign.state !== 'closed')
-          .map((campaign) => (
+
+        {isLoading ? (
+          <MenuItem>
+            <Typography>{t('Loading')}...</Typography>
+          </MenuItem>
+        ) : activeCampaigns.length === 0 ? (
+          <MenuItem>
+            <Typography>{t('No active campaigns found')}</Typography>
+          </MenuItem>
+        ) : (
+          activeCampaigns.map((campaign) => (
             <MenuItem key={campaign._id}>
               <Grid container sx={{ width: '40rem' }}>
                 <Grid
@@ -265,15 +360,9 @@ const CampaignMenu: React.FC = () => {
                   onClick={() => handleCampaignSelect(campaign.campaignId)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <Typography variant="subtitle1">{campaign.name}</Typography>
+                  <Typography variant="subtitle1">{campaign.name || 'Unnamed Campaign'}</Typography>
                   <Typography variant="subtitle2" color="textSecondary">
-                    {`${campaign?.description.length
-                      ? campaign?.description
-                      : 'No description'
-                      } - ${campaign?.startDate} ${t('to')} ${campaign?.endDate
-                      } ${campaign?.state.length ? ` - ${campaign?.state}` : ''
-                      } ${campaign?.zoneId.length ? ` - ${campaign?.zoneId}` : ''
-                      }`}
+                    {`${campaign?.description || 'No description'} - ${campaign?.startDate || ''} ${t('to')} ${campaign?.endDate || ''} ${campaign?.state ? ` - ${campaign.state}` : ''} ${campaign?.zoneId ? ` - ${campaign.zoneId}` : ''}`}
                   </Typography>
                 </Grid>
                 <Grid item xs={4} style={{ textAlign: 'right' }}>
@@ -312,7 +401,8 @@ const CampaignMenu: React.FC = () => {
               </Grid>
               <Divider />
             </MenuItem>
-          ))}
+          ))
+        )}
       </Menu>
 
       <Dialog
@@ -367,3 +457,4 @@ const CampaignMenu: React.FC = () => {
 }
 
 export default CampaignMenu
+
