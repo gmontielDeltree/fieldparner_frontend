@@ -160,8 +160,9 @@ export const DepositPage: React.FC = () => {
       viewMap={true}
       initialLocation={formulario.geolocation}
       onLocationChange={handleLocationChange}
+      formWidth={60} /* Proporción del ancho para el formulario (60%) */
     >
-      <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}>
+      <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 }, maxWidth: "100%" }}>
         <Box textAlign="center" mb={3}>
           <WarehouseIcon fontSize="large" />
         </Box>

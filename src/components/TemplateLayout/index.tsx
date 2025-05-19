@@ -31,6 +31,7 @@ export interface TemplateLayoutProps {
   children: React.ReactNode;
   initialLocation?: { lat: number; lng: number };
   onLocationChange?: (location: { lat: number; lng: number }) => void;
+  formWidth?: number; // Nueva propiedad para controlar el ancho del formulario (porcentaje)
 }
 
 const drawerWidth = 245;
@@ -40,6 +41,7 @@ export const TemplateLayout: React.FC<TemplateLayoutProps> = ({
   children,
   initialLocation,
   onLocationChange,
+  formWidth = 50, // Valor por defecto: 50%
 }) => {
   const { t } = useTranslation();
   const { openSideBar } = useAppSelector((s) => s.ui);
@@ -191,6 +193,9 @@ export const TemplateLayout: React.FC<TemplateLayoutProps> = ({
 
   const sidebarOffset = openSideBar ? 0 : drawerWidth;
 
+  // Calcular el ancho del mapa como complemento del ancho del formulario
+  const mapWidth = 100 - formWidth;
+
   return (
     <MapContext.Provider value={ctxValue}>
       <Box
@@ -204,7 +209,8 @@ export const TemplateLayout: React.FC<TemplateLayoutProps> = ({
         <Box
           sx={{
             flex: 1,
-            width: viewMap ? "50%" : "100%",
+            width: viewMap ? `${formWidth}%` : "100%", // Usar el parámetro formWidth
+            maxWidth: viewMap ? `${formWidth}%` : "100%", // Asegurar que no exceda el ancho especificado
             overflowY: "auto",
             p: 2,
           }}
@@ -218,7 +224,7 @@ export const TemplateLayout: React.FC<TemplateLayoutProps> = ({
         {viewMap && (
           <Box
             sx={{
-              flexBasis: `calc(50% + ${sidebarOffset}px)`,
+              flexBasis: `calc(${mapWidth}% + ${sidebarOffset}px)`, // Ajuste proporcional complementario
               flexGrow: 0,
               flexShrink: 0,
               position: "relative",
