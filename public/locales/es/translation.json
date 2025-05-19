@@ -366,7 +366,7 @@
   "vehicle_fetch_error": "Error al obtener datos del vehículo",
   "user_not_found": "Usuario no encontrado",
   "required_fields_title": "Campos obligatorios",
-  "required_fields_message": "Por favor, completa 'Tipo de vehículo', 'Marca' y 'Modelo' para continuar.",
+  "required_fields_message": "Por favor, completa 'Tipo de vehículo', 'Marca' , 'Modelo' y 'Matricula' para continuar.",
   "understood": "Entendido",
   "upload_error_title": "Error de subida",
   "upload_error_message": "Error al subir archivos",

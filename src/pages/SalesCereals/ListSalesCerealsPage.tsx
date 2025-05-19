@@ -40,6 +40,15 @@ export const ListSalesCerealsPage: React.FC = () => {
             field: "dateCreated",
             headerName: "Fecha",
             flex: 1,
+            renderCell: (params: GridRenderCellParams) => {
+                if (!params.value) return "-";
+                const date = new Date(params.value);
+                return date.toLocaleDateString('es-AR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }).replace(/\//g, '/');
+            },
         },
         {
             field: "companyId",

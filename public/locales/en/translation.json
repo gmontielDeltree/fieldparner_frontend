@@ -360,7 +360,7 @@
   "vehicle_fetch_error": "Error fetching vehicle data",
   "user_not_found": "User not found",
   "required_fields_title": "Required fields",
-  "required_fields_message": "Please complete 'Vehicle type', 'Brand' and 'Model' to continue.",
+  "required_fields_message": "Please complete 'Vehicle Type', 'Make', 'Model' and 'License Plate' to continue.",
   "understood": "Understood",
   "upload_error_title": "Upload error",
   "upload_error_message": "Error uploading files",

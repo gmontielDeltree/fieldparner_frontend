@@ -360,7 +360,7 @@
   "vehicle_fetch_error": "Erro ao buscar dados do veículo",
   "user_not_found": "Usuário não encontrado",
   "required_fields_title": "Campos obrigatórios",
-  "required_fields_message": "Por favor, complete 'Tipo de veículo', 'Marca' e 'Modelo' para continuar.",
+  "required_fields_message": "Por favor, preencha 'Tipo de veículo', 'Marca', 'Modelo' e 'Placa' para continuar.",
   "understood": "Entendido",
   "upload_error_title": "Erro de upload",
   "upload_error_message": "Erro ao fazer upload de arquivos",

@@ -56,13 +56,13 @@ function a11yProps(index: number) {
 
 const LoteAccordion: React.FC = ({
   lote,
-  campanaId,
+  name,
   expanded,
   cicloSelected,
 }) => {
   const [exp, setExp] = useState(expanded);
 
-  console.log("LOTEACORDION", lote, campanaId);
+  console.log("LOTEACORDION", lote, name);
   // const [ciclos, setCiclos] = useState([])
   const { getCiclosFromCampanaAndLote, refreshCiclos } =
     useContext(CiclosContext);
@@ -124,7 +124,7 @@ const LoteAccordion: React.FC = ({
 
           <CicloEditorDialog
             otrosCiclos={ciclos}
-            campanaId={campanaId}
+            name={name}
             loteId={lote.id}
             onSave={() => {
               // Update
@@ -152,7 +152,7 @@ const LoteAccordion: React.FC = ({
   );
 };
 export const PlanificationByField = ({
-  campaignId,
+  name,
   fieldId,
   loteSelected,
   cicloSelected,
@@ -214,7 +214,7 @@ export const PlanificationByField = ({
           <Box>
             <Typography variant="h5">{campo?.nombre}</Typography>
             <Typography variant="subtitle2">
-              Planificación Campaña {getCampanaDesc(campaignId)}
+              Planificación Campaña? {getCampanaDesc(campaignId)}
             </Typography>
           </Box>
 

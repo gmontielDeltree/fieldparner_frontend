@@ -44,7 +44,20 @@ export const ListCertificateDepositPage: React.FC = () => {
 
   const columns = [
     { field: "numeroCertificado", headerName: "Nro Cert. Porte", flex: 1 },
-    { field: "fechaEmision", headerName: "Fecha Emitida", flex: 1 },
+{
+    field: "fechaEmision",
+    headerName: "Fecha Emitida",
+    flex: 1,
+    renderCell: (params: GridRenderCellParams) => {
+        if (!params.value) return "-";
+        const date = new Date(params.value);
+        return date.toLocaleDateString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).replace(/\//g, '/');
+    },
+},
     { field: "planta", headerName: "Planta Destino", flex: 1 },
     { field: "campania", headerName: "Campaña", flex: 1 },
     { field: "cultivo", headerName: "Cultivo", flex: 1 },

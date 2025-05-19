@@ -56,20 +56,20 @@ function a11yProps(index: number) {
 
 const LoteAccordion: React.FC = ({
   lote,
-  campanaId,
+  name,
   expanded,
   cicloSelected,
 }) => {
   const [exp, setExp] = useState(expanded);
 
-  console.log("LOTEACORDION", lote, campanaId);
+  console.log("LOTEACORDION", lote, name);
   // const [ciclos, setCiclos] = useState([])
   const {
     ciclos: todos_los_ciclos,
     getCiclosFromCampanaAndLote,
     refreshCiclos,
   } = useContext(CiclosContext);
-  let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id);
+  let ciclos = getCiclosFromCampanaAndLote(name, lote.id);
   const { crops, getCropLabelFromId, getCropColorFromId } =
     useContext(CultivoContext);
 
@@ -125,7 +125,7 @@ const LoteAccordion: React.FC = ({
 
           <CicloEditorDialog
             otrosCiclos={ciclos}
-            campanaId={campanaId}
+            name={name}
             loteId={lote.id}
             onSave={() => {
               // Update
@@ -154,7 +154,7 @@ const LoteAccordion: React.FC = ({
 };
 
 export const PlanificationByFieldForLotPage = ({
-  campaignId,
+  name,
   fieldId,
   loteId,
   loteSelected,
@@ -189,7 +189,7 @@ export const PlanificationByFieldForLotPage = ({
           <Box>
             <Typography variant="h5">{field?.nombre}</Typography>
             <Typography variant="subtitle2">
-              Planificación Campaña {getCampanaDesc(campaignId)}
+              Planificación Campaña {getCampanaDesc(name)}
             </Typography>
           </Box>
 
@@ -214,7 +214,7 @@ export const PlanificationByFieldForLotPage = ({
         <LoteAccordion
           key={lote.id}
           lote={lote}
-          campanaId={campaignId}
+          name={name}
           expanded={true}
           cicloSelected={cicloSelected}
         />

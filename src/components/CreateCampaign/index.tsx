@@ -37,7 +37,7 @@ const CreateCampaignModal = ({
   const [state, setState] = useState("");
   const { t } = useTranslation();
 
-  const title = editMode ? t("Edit_campaign") : t("Create_new_campaign");
+  const title = editMode ? t("Edit_campaign") : t("create_new_campaign");
 
   useEffect(() => {
     if (initialData && editMode) {
