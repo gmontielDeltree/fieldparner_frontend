@@ -1,3 +1,4 @@
+// src\components\Map\index.tsx
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import Map from "react-map-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
@@ -13,12 +14,12 @@ interface MapComponentProps {
   onMapLoad: (event: any) => void;
 }
 
-const get_initialVS = ()=>{
+const get_initialVS = () => {
   let mp = localStorage.getItem("mapposition")
-  if(mp){
+  if (mp) {
     let d = JSON.parse(mp)
-    return {longitude : +d[0].lng, latitude: +d[0].lat , zoom: +d[1]}
-  }else{
+    return { longitude: +d[0].lng, latitude: +d[0].lat, zoom: +d[1] }
+  } else {
     return {
       longitude: -59.2965,
       latitude: -35.1923,
@@ -84,7 +85,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ onMapLoad }) => {
   }, [isMapLoaded]);
 
 
-  
+
   const [viewState, setViewState] = useState(get_initialVS());
 
   return (

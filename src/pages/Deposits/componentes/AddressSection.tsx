@@ -7,31 +7,30 @@ import { getCountryOptions } from "../../../utils/country";
 import { AddressSectionProps } from "./types";
 import { onBlurZipCode } from "../../../utils";
 
-
-
-
 export const AddressSection: React.FC<AddressSectionProps> = ({
   formulario,
   setFormulario,
 }) => {
   const { t } = useTranslation();
-  const { dataCountry, getCountries } = useCountry();
+  const { dataCountry, getCountries, loading } = useCountry();
   const [loadingZipCode, setLoadingZipCode] = useState(false);
   const [localities, setLocalities] = useState<string[]>([]);
-
   const [countryError, setCountryError] = useState(false);
 
-  const countryOptions = getCountryOptions(dataCountry);
+  // Debug logs
+  console.log("dataCountry:", dataCountry);
 
-
+  // Create country options
+  const countryOptions = getCountryOptions(dataCountry || []);
+  console.log("countryOptions:", countryOptions);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("CAMBIO LOCALIDAD:", e.target.name, e.target.value);
     const { name, value } = e.target;
     setFormulario(prev => ({ ...prev, [name]: value }));
   };
-  const handleBlur = () => {
 
+  const handleBlur = () => {
     console.log("ZIP:", formulario.zipCode);
     console.log("PAIS:", formulario.country);
     onBlurZipCode(
@@ -43,15 +42,18 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
       t
     );
   };
+
   useEffect(() => {
-    getCountries();
+    if (!dataCountry.length) getCountries();
+  }, [getCountries, dataCountry.length]);
 
-  }, []);
-
+  useEffect(() => {
+    console.log("Country data updated:", dataCountry);
+  }, [dataCountry]);
 
   return (
     <>
-      <Loading loading={loadingZipCode} />
+      <Loading loading={loadingZipCode || loading} />
       <FormSection title={t("address_information")}>
         <Grid container spacing={2}>
           <Grid item xs={6} sm={4}>
@@ -60,12 +62,14 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
                 options={countryOptions}
                 value={formulario.country}
                 onChange={(countryCode) => {
-                  setFormulario(prev => ({ ...prev, country: countryCode }))
+                  console.log("Selected country:", countryCode);
+                  setFormulario(prev => ({ ...prev, country: countryCode }));
                 }}
                 label="id_country"
                 name="country"
                 error={countryError}
                 getOptionLabel={(option, language) => {
+                  console.log("Getting option label:", option, language);
                   switch (language) {
                     case "es":
                       return option.descriptionES;

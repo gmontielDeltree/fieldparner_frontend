@@ -1,5 +1,5 @@
 import { Deposit } from "../types";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
@@ -12,23 +12,21 @@ export const useDeposit = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const getDeposits = async () => {
+  const getDeposits = useCallback(async () => {
+    if (!user) return;
     setIsLoading(true);
     try {
       const result = await dbContext.deposits.find({
-        selector: { accountId: user?.accountId }
+        selector: { accountId: user.accountId },
       });
+      setDeposits(result.docs as Deposit[]);
+    } catch (err) {
+      console.error(t("errorLoadingDocuments"), err);
+    } finally {
       setIsLoading(false);
-      if (result.docs) {
-        const documents: Deposit[] = result.docs.map((row) => row as Deposit);
-        setDeposits(documents);
-      }
-    } catch (error) {
-      setIsLoading(false);
-      console.error(t("errorLoadingDocuments"), error);
     }
-  };
+  }, [user, t]);
+
 
   const createDeposit = async (newDeposit: Deposit) => {
     setIsLoading(true);
@@ -50,33 +48,28 @@ export const useDeposit = () => {
     }
   };
 
-  const updateDeposit = async (updateDeposit: Deposit) => {
+  const updateDeposit = async (doc: Deposit) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.deposits.put(updateDeposit);
-      setIsLoading(false);
-      if (response.ok) {
-        NotificationService.showUpdated(updateDeposit, t("deposit_label"));
-      }
+      const resp = await dbContext.deposits.put(doc);
+      if (resp.ok) NotificationService.showUpdated(doc, t("deposit_label"));
       navigate("/init/overview/deposit");
-    } catch (error) {
-      console.log(t("errorUpdatingDocument"), error);
-      NotificationService.showError(t("unexpectedError"), error, t("error_label"));
+    } catch (err) {
+      NotificationService.showError(t("unexpectedError"), err, t("error_label"));
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const deleteDeposit = async (deleteDepositId: string, revDeposit: string) => {
+  const deleteDeposit = async (id: string, rev: string) => {
     setIsLoading(true);
     try {
-      const response = await dbContext.deposits.remove(deleteDepositId, revDeposit);
-      setIsLoading(false);
-      if (response.ok)
-        NotificationService.showDeleted({ id: deleteDepositId }, t("deposit_label"));
+      const resp = await dbContext.deposits.remove(id, rev);
+      if (resp.ok) NotificationService.showDeleted({ id }, t("deposit_label"));
       navigate("/init/overview/deposit");
-    } catch (error) {
-      console.log(t("errorUpdatingDocument"), error);
-      NotificationService.showError(t("unexpectedError"), error, t("error_label"));
+    } catch (err) {
+      NotificationService.showError(t("unexpectedError"), err, t("error_label"));
+    } finally {
       setIsLoading(false);
     }
   };
@@ -100,7 +93,6 @@ export const useDeposit = () => {
     }
   };
 
-  // This function is defined as getDepositsBySupplyId
   const getDepositsBySupplyId = async (supplyId: string) => {
     setIsLoading(true);
     try {

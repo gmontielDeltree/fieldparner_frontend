@@ -1,5 +1,5 @@
 import { Field } from "@types";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
 import { Lot } from "../interfaces/field";
@@ -15,32 +15,25 @@ export const useField = () => {
   const [field, setField] = useState<Field>();
 
   const db = dbContext.fields;
-  const getFields = async () => {
+  const getFields = useCallback(async () => {
     setIsLoading(true);
     try {
       if (!user) throw new Error(t("userNotFound"));
 
-      // const result = await dbContext.fields.allDocs({ include_docs: true });
       const result = await db.find({
-        selector: { accountId: user.accountId }, //user?.accountId }
+        selector: { accountId: user.accountId },
       });
 
-      // const vehiculos = response.map((v: any) => v.content);
-      if (result.docs.length) {
-        const documents = result.docs.map((doc) => doc);
-        const d: Field[] = documents.filter((d) => d._id.includes("campos_"));
-        // console.log("DSDSDSSDSDSDSDS",d)
-        setFields(d);
-      }
-
+      const docs = result.docs.filter((d) => d._id.includes("campos_")) as Field[];
+      setFields(docs);
+    } catch (err) {
+      NotificationService.showError(t("noFieldsRecords"), err, t("field_label"));
+      setError(err);
+    } finally {
       setIsLoading(false);
-    } catch (error) {
-      console.log(error);
-      NotificationService.showError(t("noFieldsRecords"), error, t("field_label"));
-      setIsLoading(false);
-      if (error) setError(error);
     }
-  };
+  }, [db, user, t]);
+
 
   const getField = async (id: string) => {
     return db.get(id).then((d) => setField(d));

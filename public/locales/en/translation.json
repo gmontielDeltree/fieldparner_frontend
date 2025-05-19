@@ -1115,5 +1115,17 @@
   "record": "Record",
   "laborOrder": "Work Order",
   "noRemovedSupplies": "No removed supplies",
-  "withdrawal_order_label": "Withdrawal Order"
+  "withdrawal_order_label": "Withdrawal Order",
+  "click_on_map_to_set_location": "Click on the map to set the location",
+  "location_set_click_again_to_update": "Location set. Click again to update",
+  "location_selection_help": "To select the warehouse location, click anywhere on the map or drag the red marker",
+  "center_map_on_location": "Center map on location",
+  "use_my_current_location": "Use my current location",
+  "location_selected": "Location selected",
+  "waiting_for_location_selection": "Waiting for location selection",
+  "marker_drag_hint": "You can also drag the marker to precisely adjust the location",
+  "geolocation_error": "Could not obtain your current location. Please check location permissions in your browser",
+  "click_anywhere_on_map_to_set_warehouse_location": "Click anywhere on the map to set the warehouse location",
+  "click_to_update_warehouse_location": "Click to update warehouse location",
+  "click_here": "Click here"
 }
