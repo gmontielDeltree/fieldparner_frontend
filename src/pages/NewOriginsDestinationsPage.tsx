@@ -24,13 +24,18 @@ import {
   useForm,
 } from "../hooks";
 import { OriginDestinations } from "../types";
-import { removeOriginsDestinationsActive, setOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
+import { removeOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
 import { useOriginDestinations } from "../hooks/useOriginDestinations";
 import { useTranslation } from "react-i18next";
+import { TemplateLayout } from "../components";
+import { GeolocationSection } from "../pages/Deposits/componentes/GeolocationSection";
+import { getBoundaries } from "../utils/geolocation";
 
+// Update the initialForm to include geolocation object similar to Deposit
 const initialForm: OriginDestinations = {
   name: "",
-  geolocation: "",
+  // Change geolocation from string to object with lat/lng properties
+  geolocation: { lng: -35, lat: -34 },
   destino: true,
   procedencia: false,
 };
@@ -43,8 +48,6 @@ export const NewOriginsDestinationsPage: React.FC = () => {
   const { originsDestinationsActive } = useAppSelector((state) => state.ordesti);
 
   const {
-    name,
-    geolocation,
     formulario,
     setFormulario,
     handleInputChange,
@@ -63,37 +66,95 @@ export const NewOriginsDestinationsPage: React.FC = () => {
   };
 
   const onClickCancel = () => {
-    // Usa la acción correcta para limpiar el ítem activo
     dispatch(removeOriginsDestinationsActive());
     navigate("/init/overview/origins-destinations/");
+  };
+
+  // Handle location changes from the map
+  const handleLocationChange = (newLocation) => {
+    setFormulario(prev => ({
+      ...prev,
+      geolocation: newLocation
+    }));
   };
 
   // Check if we're on the "new" route and reset the form if needed
   useEffect(() => {
     const isNewRoute = location.pathname.endsWith('/new');
-    
+
     if (isNewRoute) {
-      // Clear active item from Redux store using the correct action
+      // Clear active item from Redux store
       dispatch(removeOriginsDestinationsActive());
       // Reset form to initial state
       setFormulario(initialForm);
     } else if (originsDestinationsActive) {
-      setFormulario(originsDestinationsActive);
+      // Convert geolocation string to object if it's coming from active record
+      // This is to handle the transition from string to object format
+      let updatedActive = { ...originsDestinationsActive };
+
+      // Check if geolocation is a string and convert it to object
+      if (typeof updatedActive.geolocation === 'string') {
+        try {
+          // Try to parse if it's a JSON string
+          const geoObject = JSON.parse(updatedActive.geolocation);
+          updatedActive.geolocation = geoObject;
+        } catch (e) {
+          // If it's not a valid JSON string, use default coordinates
+          updatedActive.geolocation = { lng: -35, lat: -34 };
+        }
+      } else if (!updatedActive.geolocation) {
+        // If geolocation is undefined or null
+        updatedActive.geolocation = { lng: -35, lat: -34 };
+      }
+
+      setFormulario(updatedActive);
     }
   }, [location.pathname, dispatch, setFormulario, originsDestinationsActive]);
 
   // Cleanup when component unmounts
   useEffect(() => {
     return () => {
-      // Usa la acción correcta en el cleanup
       dispatch(removeOriginsDestinationsActive());
     };
   }, [dispatch]);
 
+  // Validate form before submit
+  const validateForm = () => {
+    let isValid = true;
+
+    if (formulario.name.trim() === "") {
+      // Show error for missing name
+      return false;
+    }
+
+    // Validate geolocation
+    const boundaries = getBoundaries(formulario.country || "AR"); // Default to Argentina if no country specified
+    const geo = formulario.geolocation;
+
+    if (
+      !geo ||
+      typeof geo.lat !== 'number' ||
+      typeof geo.lng !== 'number' ||
+      geo.lat === -34 ||
+      geo.lng === -35
+    ) {
+      // Show error for invalid geolocation
+      return false;
+    }
+
+    return isValid;
+  };
+
   return (
     <>
-      <Loading key="loading-new-customer" loading={isLoading} />
-      <Container maxWidth="md" sx={{ mb: 4 }}>
+      <Loading key="loading-new-origin-destination" loading={isLoading} />
+      <TemplateLayout
+        key="overview-origin-destination"
+        viewMap={true}
+        initialLocation={formulario.geolocation}
+        onLocationChange={handleLocationChange}
+        formWidth={60} // Same width proportion as DepositPage
+      >
         <Box
           component="div"
           display="flex"
@@ -131,7 +192,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
                 variant="outlined"
                 type="text"
                 name="name"
-                value={name}
+                value={formulario.name}
                 onChange={handleInputChange}
                 error={conceptoError}
                 helperText={conceptoError ? t("this_field_is_mandatory") : ""}
@@ -139,7 +200,9 @@ export const NewOriginsDestinationsPage: React.FC = () => {
                 fullWidth
               />
             </Grid>
-            <Grid item xs={6}>
+
+            {/* We no longer need this text field since we're using the map for geolocation */}
+            {/* <Grid item xs={6}>
               <TextField
                 label={t("_geolocation")}
                 variant="outlined"
@@ -152,8 +215,9 @@ export const NewOriginsDestinationsPage: React.FC = () => {
                 }}
                 fullWidth
               />
-            </Grid>
-            <Grid item xs={6}>
+            </Grid> */}
+
+            <Grid item xs={12} sm={6}>
               <RadioGroup
                 row
                 name="destinoProcedencia"
@@ -179,7 +243,12 @@ export const NewOriginsDestinationsPage: React.FC = () => {
                 />
               </RadioGroup>
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
+              {/* Add the Geolocation Section from DepositPage */}
+              <GeolocationSection
+                formulario={formulario}
+                setFormulario={setFormulario}
+              />
             </Grid>
           </Grid>
           <Grid
@@ -210,7 +279,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
             </Grid>
           </Grid>
         </Paper>
-      </Container>
+      </TemplateLayout>
     </>
   );
 };

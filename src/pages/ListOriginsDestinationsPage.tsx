@@ -9,7 +9,7 @@ import {
   TextField,
   Tooltip,
   Typography,
-  
+
 } from "@mui/material";
 import { Icon } from "semantic-ui-react";
 import {
@@ -19,6 +19,7 @@ import {
   AddLocationAlt as AddLocationAltIcon,
   ArrowRightAlt as ArrowRightAltIcon,
   Delete as DeleteIcon,
+  LocationOn as LocationOnIcon,
 } from "@mui/icons-material";
 import { useForm, useAppDispatch, useAppSelector, useOriginDestinations } from "../hooks";
 import { setOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
@@ -40,17 +41,64 @@ export const ListOriginsDestinationsPage: React.FC = () => {
 
   useEffect(() => {
     console.log("originsDestinations", originsDestinations);
-  }
-  , [originsDestinations]);
+  }, [originsDestinations]);
 
+  // Función para formatear la geolocalización
+  const formatGeolocation = (geolocation: any): string => {
+    // Si es un string, devolverlo directamente (datos antiguos)
+    if (typeof geolocation === 'string') {
+      return geolocation;
+    }
+
+    // Si es un objeto con lat y lng, formatear como coordenadas
+    if (geolocation && typeof geolocation === 'object') {
+      if ('lat' in geolocation && 'lng' in geolocation) {
+        // Verificar si son coordenadas por defecto
+        if (geolocation.lat === -34 && geolocation.lng === -35) {
+          return t("no_coordinates");
+        }
+
+        // Formatear las coordenadas con precisión de 5 decimales
+        return `${geolocation.lat.toFixed(5)}, ${geolocation.lng.toFixed(5)}`;
+      }
+    }
+
+    // Para cualquier otro caso
+    return t("no_coordinates");
+  };
 
   const columns = [
-    { field: "type", headerName: t("_type"), flex: 1, renderCell: (params: { row: { destino: any; procedencia: any; }; }) => (
+    {
+      field: "type",
+      headerName: t("_type"),
+      flex: 1,
+      renderCell: (params: { row: { destino: any; procedencia: any; }; }) => (
         params.row.destino ? t("destination") : params.row.procedencia ? t("origin") : ''
-      ) 
-    }, 
+      )
+    },
     { field: "name", headerName: t("_description"), flex: 1 },
-    { field: "geolocation", headerName: t("_geolocation"), flex: 1 },
+    {
+      field: "geolocation",
+      headerName: t("_geolocation"),
+      flex: 1,
+      renderCell: (params: { row: { geolocation: any; }; }) => {
+        // Renderizar la geolocalización con icono y formato adecuado
+        const geoText = formatGeolocation(params.row.geolocation);
+
+        return (
+          <Box display="flex" alignItems="center">
+            <LocationOnIcon
+              fontSize="small"
+              color="primary"
+              sx={{ mr: 0.5 }}
+            />
+            <Typography variant="body2">
+              {geoText}
+            </Typography>
+          </Box>
+        );
+      }
+    },
     {
       field: "actions",
       headerName: "",
