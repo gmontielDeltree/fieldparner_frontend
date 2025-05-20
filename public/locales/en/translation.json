@@ -1126,6 +1126,6 @@
   "marker_drag_hint": "You can also drag the marker to precisely adjust the location",
   "geolocation_error": "Could not obtain your current location. Please check location permissions in your browser",
   "click_anywhere_on_map_to_set_warehouse_location": "Click anywhere on the map to set the warehouse location",
-  "click_to_update_warehouse_location": "Click to update warehouse location",
+  "click_to_update_warehouse_location": "Click to update the location",
   "click_here": "Click here"
 }
