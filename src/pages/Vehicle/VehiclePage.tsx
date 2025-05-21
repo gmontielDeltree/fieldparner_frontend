@@ -182,8 +182,8 @@ export const VehiclePage: React.FC = () => {
   );
 
   const validateRequiredFields = () => {
-    const { vehicleType, make, model } = formulario;
-    if (!vehicleType || !make || !model) {
+    const { vehicleType, make, model, patent } = formulario;
+    if (!vehicleType || !make || !model || !patent) {
       Swal.fire({
         icon: 'warning',
         title: t('required_fields_title'),

@@ -83,7 +83,7 @@ export const PlanificationByLotPage: React.FC = () => {
                 {selectedCampaign && parentId && loteId2 && (
                   <Paper>
                     <PlanificationByFieldForLotPage
-                      campaignId={selectedCampaign?._id}
+                      name={selectedCampaign?.name}
                       fieldId={parentId}
                       loteId={loteId2}
                       loteSelected={loteId2}

@@ -170,7 +170,7 @@ async function downloadInformePorCultivoXLS(data: In, campana: Campaign) {
     counter = counter + 1;
   }
 
-  addValue(0, 0, "Plan de Campaña " + campana.campaignId);
+  addValue(0, 0, "Plan de Campaña " + campana.name);
   const COL_WIDTH = 150;
 
   /* Excel column "A" -> SheetJS column index 2 == XLSX.utils.decode_col("C") */

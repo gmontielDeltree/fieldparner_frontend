@@ -45,6 +45,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
     contactoPrincipal,
     nameMainContact,
     contactoSecundario,
+    nameSecundaryContact,
     esEmpleado,
     matricula,
     legajo,
@@ -280,27 +281,22 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           {countryError && <FormHelperText>{t("error_message")}</FormHelperText>}
         </FormControl>
       </Grid>
-      <Grid item xs={8} sm={5}>
+      <Grid item xs={12} sm={5}>
         <TextField
           label={`${t("name")}  ${t("main_contact")}`}
           variant="outlined"
-          type="tel"
+          type="nameMainContact"
           name="nameMainContact"
           value={nameMainContact}
-          onChange={handlePhoneInput}
-          error={nameMainContact && !validatePhone(nameMainContact)}
-          helperText={
-            nameMainContact && !validatePhone(nameMainContact)
-              ? t("phone_format_error")
-              : ""
-          }
+          onChange={handleInputChange}
+
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
           fullWidth
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12} sm={5}>
         <TextField
           label={t("main_contact")}
           variant="outlined"
@@ -314,6 +310,21 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               ? t("phone_format_error")
               : ""
           }
+          InputProps={{
+            startAdornment: <InputAdornment position="start" />,
+          }}
+          fullWidth
+        />
+      </Grid>      
+      <Grid item xs={12} sm={5}>
+        <TextField
+          label={`${t("name")}  ${t("secondary_contact")}`}
+          variant="outlined"
+          type="nameSecundaryContact"
+          name="nameSecundaryContact"
+          value={nameSecundaryContact}
+          onChange={handleInputChange}
+
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
