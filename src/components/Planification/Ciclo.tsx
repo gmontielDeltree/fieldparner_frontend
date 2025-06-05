@@ -44,13 +44,13 @@ export const Ciclo = ({
 
   const [actividades, setActividades] = useState<string[]>([]);
   const { removeCiclo } = useContext(CiclosContext);
-  const {getCicloSortedActivities} = usePlanActividad()
+  const { getCicloSortedActivities } = usePlanActividad()
 
-  useEffect( ()=>{
-    if(ciclo.actividadesIds?.length >0){
-      getCicloSortedActivities(ciclo).then((a)=>setActividades(a))
+  useEffect(() => {
+    if (ciclo.actividadesIds?.length > 0) {
+      getCicloSortedActivities(ciclo).then((a) => setActividades(a))
     }
-  },[ciclo])
+  }, [ciclo])
 
   return (
     <Accordion
@@ -64,7 +64,7 @@ export const Ciclo = ({
         id="panel1-header"
       >
         <Box>
-          <Typography>Ciclo {getCropLabelFromId(ciclo.cultivoId)}</Typography>
+          <Typography>Zafra {getCropLabelFromId(ciclo.cultivoId)}</Typography>
           <Typography variant="subtitle2">
             {format(new Date(ciclo.fechaInicio), "dd-MM-yyyy")} /{" "}
             {format(new Date(ciclo.fechaFin), "dd-MM-yyyy")}
@@ -104,7 +104,7 @@ export const Ciclo = ({
             backgroundColor: "#c7bb27",
             margin: "0.2rem",
             paddingY: "1rem",
-            borderRadius: "1rem", 
+            borderRadius: "1rem",
           }}
         >
           {actividades.map((a, i) => {

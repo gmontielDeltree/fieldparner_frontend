@@ -324,6 +324,20 @@ function PersonalFormUnified({
           </>
         )}
 
+        {/* Campo Zafra para labores de siembra */}
+        {(formData.tipo === 'siembra' || formData.tipo === 'sowing') && (
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label={t('Zafra')}
+              value={formData.detalles?.zafra || ''}
+              onChange={(e) => onFieldChange('zafra', e.target.value)}
+              placeholder={t('Ingrese la zafra')}
+              helperText={t('Información de la zafra correspondiente a la planificación anual')}
+            />
+          </Grid>
+        )}
+
         <Grid item xs={12} sm={6}>
           <AutocompleteContratista
             value={formData.detalles?.contratista || ''}

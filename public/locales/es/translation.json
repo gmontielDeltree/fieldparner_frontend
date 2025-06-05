@@ -1131,5 +1131,8 @@
   "geolocation_error": "No se pudo obtener tu ubicación actual. Por favor, verifica los permisos de ubicación en tu navegador",
   "click_anywhere_on_map_to_set_warehouse_location": "Haz clic en cualquier lugar del mapa para establecer la ubicación del depósito",
   "click_to_update_warehouse_location": "Haz clic para actualizar la ubicación",
-  "click_here": "Haz clic aquí"
+  "click_here": "Haz clic aquí",
+  "Zafra": "Zafra",
+  "Ingrese la zafra": "Ingrese la zafra",
+  "Información de la zafra correspondiente a la planificación anual": "Información de la zafra correspondiente a la planificación anual"
 }

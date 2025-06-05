@@ -24,6 +24,11 @@ export default function CicloEditorDialog({
   onSave,
   otrosCiclos,
 }: {
+  campanaId: string;
+  loteId: string;
+  editor?: any;
+  cicloId?: string;
+  onSave: () => void;
   otrosCiclos: ICiclosPlanificacion[];
 }) {
   const [ciclo, saveCiclo] = useCiclo({
@@ -60,9 +65,9 @@ export default function CicloEditorDialog({
     }
   }, [otrosCiclos]);
 
-  const checkRangeIsValid = useCallback((sd,ed) => {
-    
-    if(!invalidRanges){
+  const checkRangeIsValid = useCallback((sd, ed) => {
+
+    if (!invalidRanges) {
       return true;
     }
     return !invalidRanges.some((r) =>
@@ -86,7 +91,7 @@ export default function CicloEditorDialog({
   return (
     <React.Fragment>
       <Button variant="contained" onClick={handleClickOpen}>
-        + Ciclo
+        + Zafra
       </Button>
       <Dialog
         open={open}
@@ -104,20 +109,20 @@ export default function CicloEditorDialog({
           },
         }}
       >
-        <DialogTitle>Nuevo Ciclo {campanaId}</DialogTitle>
+        <DialogTitle>Nueva Zafra {campanaId}</DialogTitle>
         <DialogContent>
           <DialogContentText></DialogContentText>
 
 
-        <Box             style={{ marginBottom: "1rem", marginTop: "1rem" }}
->
+          <Box style={{ marginBottom: "1rem", marginTop: "1rem" }}
+          >
             <AutocompleteCultivo
-           onChange={(value) =>
-            setCultivo(value)
-          }
-          ></AutocompleteCultivo>
-        </Box>
-        
+              onChange={(value) =>
+                setCultivo(value)
+              }
+            ></AutocompleteCultivo>
+          </Box>
+
           {/* <Autocomplete
             style={{ marginBottom: "1rem", marginTop: "1rem" }}
             disablePortal
@@ -144,7 +149,7 @@ export default function CicloEditorDialog({
             }}
           />
 
-          {!checkRangeIsValid(startDate,endDate) && (
+          {!checkRangeIsValid(startDate, endDate) && (
             <Typography>
               {t("El rango seleccionado incluye uno o mas ciclos")}
             </Typography>
@@ -154,11 +159,11 @@ export default function CicloEditorDialog({
           <Button onClick={handleClose}>Cancelar</Button>
           <Button
             type="submit"
-            disabled={!cultivo || !checkRangeIsValid(startDate,endDate)}
+            disabled={!cultivo || !checkRangeIsValid(startDate, endDate)}
             onClick={() => {
               console.log(cultivo);
               if (cultivo) {
-                if (checkRangeIsValid(startDate,endDate)) {
+                if (checkRangeIsValid(startDate, endDate)) {
                   saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate);
                   onSave();
                 }

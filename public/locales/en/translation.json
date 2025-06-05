@@ -1127,5 +1127,8 @@
   "geolocation_error": "Could not obtain your current location. Please check location permissions in your browser",
   "click_anywhere_on_map_to_set_warehouse_location": "Click anywhere on the map to set the warehouse location",
   "click_to_update_warehouse_location": "Click to update the location",
-  "click_here": "Click here"
+  "click_here": "Click here",
+  "Zafra": "Season",
+  "Ingrese la zafra": "Enter the season",
+  "Información de la zafra correspondiente a la planificación anual": "Season information corresponding to annual planning"
 }
