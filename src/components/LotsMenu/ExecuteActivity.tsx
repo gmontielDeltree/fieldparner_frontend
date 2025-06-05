@@ -48,7 +48,7 @@ const ACTIVITY_TYPES = {
 }
 
 // Map from English input props to Spanish constants
-const mapToSpanishType = (englishType) => {
+const mapToSpanishType = (englishType: string): string => {
   switch (englishType) {
     case 'preparation': return ACTIVITY_TYPES.preparation;
     case 'sowing': return ACTIVITY_TYPES.sowing;
@@ -82,7 +82,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const [formData, setFormData] = useState(
     existingActivity || getEmptyExecution(),
   )
-  const { addNewStockMovement } = useStockMovement()
+  const { addNewStockMovement, getStock } = useStockMovement()
   const { confirmWithdrawalOrder } = useOrder()
   const { getSupplies } = useSupply()
   const [activeStep, setActiveStep] = useState(0)
@@ -91,7 +91,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const spanishActivityType = mapToSpanishType(activityType);
 
   // Only translate for display purposes
-  const activityTypeTranslations = {
+  const activityTypeTranslations: { [key: string]: string } = {
     "preparado": t('preparation'),
     "siembra": t('sowing'),
     "cosecha": t('harvesting'),
@@ -184,7 +184,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }))
   }, [lot, rawActivityType, existingActivity])
 
-  const countMissingFields = (formData, step) => {
+  const countMissingFields = (formData: any, step: number) => {
     let missingFields = 0
     if (activityType !== 'sowing' && spanishActivityType !== 'siembra' && step > 1) {
       step = step + 1
@@ -300,10 +300,8 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       case 3:
         return (
           <ServicesForm
-            lot={lot}
             formData={formData}
             setFormData={setFormData}
-            isExecution={true}
           />
         )
       case 4:
@@ -348,22 +346,22 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, step))
   }
 
-  const updateActivityStateToCompleted = (activityId) => {
+  const updateActivityStateToCompleted = (activityId: string) => {
     return db
       .get(activityId)
-      .then((activityDoc) => {
+      .then((activityDoc: any) => {
         activityDoc.estado = 'completada'
         return db.put(activityDoc)
       })
       .then(() => {
         console.log('Activity state updated to completed successfully')
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error('Error updating activity state to completed:', error)
       })
   }
 
-  const processHarvestStockMovements = async (executionDetails) => {
+  const processHarvestStockMovements = async (executionDetails: any) => {
     for (const dosis of executionDetails.detalles.dosis) {
       // Fix: Check if dosis.insumo exists, if not, use dosis.selectedOption instead
       const supplyInfo = dosis.insumo || dosis.selectedOption
@@ -374,11 +372,11 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         continue // Skip this dose and continue with the next one
       }
 
-      const newMovement = {
+      const newMovement: StockMovement = {
         movement: t('harvestEntry'),
-        accountId: user?.accountId,
+        accountId: user?.accountId || '',
         supplyId: supplyInfo._id, // Use the updated reference
-        userId: user?.id,
+        userId: user?.id || '',
         depositId: dosis.deposito._id,
         location: '',
         nroLot: '',
@@ -386,6 +384,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         dueDate: '',
         typeMovement: TypeMovement.Labores,
         isIncome: true,
+        isCrop: false,
         detail: t('harvestEntry'),
         operationDate: new Date().toISOString(),
         amount: Number(dosis.rinde_obtenido),
@@ -393,11 +392,11 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         currency: 'ARS',
         totalValue: 0,
         hours: '0',
-        campaignId: executionDetails.campaña.campaignId,
+        campaignId: executionDetails.campaña?.campaignId || '',
       }
 
       try {
-        await addNewStockMovement(newMovement, supplyInfo, dosis.deposito)
+        await addNewStockMovement(newMovement, supplyInfo as any, dosis.deposito)
       } catch (error) {
         console.error(
           t('movementError', { supplyName: supplyInfo.name }),
@@ -408,7 +407,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }
   }
 
-  const removeReservedStock = async (dosis) => {
+  const removeReservedStock = async (dosis: any) => {
     console.log(t('removingStock'))
 
     if (!dosis.orden_de_retiro) {
@@ -429,6 +428,8 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         supply: dosis.insumo || dosis.selectedOption, // Fixed here as well
         withdrawalAmount: Number(dosis.total),
         _id: withdrawalOrder._id,
+        depositId: dosis.deposito._id,
+        supplyId: (dosis.insumo || dosis.selectedOption)?._id,
       },
     ]
 
@@ -455,7 +456,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     console.log(t('executionDetails'), executionDetails);
 
     // Lista para almacenar insumos sin stock
-    const suppliesWithoutStock = [];
+    const suppliesWithoutStock: string[] = [];
 
     // Validar stocks antes de proceder
     if (executionDetails.detalles.dosis) {
@@ -471,7 +472,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           // Verificar si existe stock
           const responseStockSupply = await getStock({
             id: supplyInfo._id,
-            campaignId: executionDetails.campaña.campaignId,
+            campaignId: executionDetails.campaña?.campaignId || '',
             tipo: TipoStock.INSUMO,
             depositId: dosis.deposito._id,
             nroLot: dosis.nro_lote,
@@ -490,17 +491,19 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
     // Si hay insumos sin stock, mostrar confirmación al usuario
     if (suppliesWithoutStock.length > 0) {
+      const suppliesListHtml: string = suppliesWithoutStock.map((name: string) => `
+        <div style="padding: 8px; margin-bottom: 5px; border-left: 3px solid #ff9800; background-color: #fff">
+          <span style="color: #333; font-weight: 500">${name}</span>
+        </div>
+      `).join('');
+
       const confirmContinue = await Swal.fire({
         title: `<span style="font-weight: 600">${t('insufficientStock')}</span>`,
         html: `
           <div class="swal-content">
             <p style="margin-bottom: 15px; color: #4a4a4a">${t('noStockFound')}</p>
             <div style="background-color: #f8f9fa; border-radius: 8px; padding: 10px; margin-bottom: 15px; text-align: left; max-height: 150px; overflow-y: auto">
-              ${suppliesWithoutStock.map(name => `
-                <div style="padding: 8px; margin-bottom: 5px; border-left: 3px solid #ff9800; background-color: #fff">
-                  <span style="color: #333; font-weight: 500">${name}</span>
-                </div>
-              `).join('')}
+              ${suppliesListHtml}
             </div>
             <p style="color: #4a4a4a">${t('continueQuestion')}</p>
           </div>
@@ -512,21 +515,13 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         confirmButtonColor: '#4CAF50',
         cancelButtonColor: '#f44336',
         buttonsStyling: true,
-        showClass: {
-          popup: 'animate__animated animate__fadeIn animate__faster'
-        },
-        hideClass: {
-          popup: 'animate__animated animate__fadeOut animate__faster'
-        },
         customClass: {
           popup: 'swal-modern',
           title: 'swal-title',
-          content: 'swal-content',
           confirmButton: 'swal-confirm-button',
           cancelButton: 'swal-cancel-button'
         },
         background: '#fff',
-        borderRadius: 10,
         backdrop: `rgba(0,0,0,0.4)`,
         allowOutsideClick: false
       });
@@ -550,11 +545,11 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           continue; // Skip this dose and continue with the next one
         }
 
-        const newMovement = {
+        const newMovement: StockMovement = {
           movement: t('executionExit'),
-          accountId: user?.accountId,
+          accountId: user?.accountId || '',
           supplyId: supplyInfo._id, // Use the updated reference
-          userId: user?.id,
+          userId: user?.id || '',
           depositId: dosis.deposito._id,
           location: '',
           nroLot: '',
@@ -562,6 +557,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           dueDate: '',
           typeMovement: TypeMovement.Labores,
           isIncome: false,
+          isCrop: false,
           detail: t('executionExit'),
           operationDate: new Date().toISOString(),
           amount: Number(dosis.dosificacion || dosis.dosis), // Handle both property names
@@ -569,12 +565,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           currency: 'ARS',
           totalValue: 0,
           hours: '0',
-          campaignId: executionDetails.campaña.campaignId,
+          campaignId: executionDetails.campaña?.campaignId || '',
         };
 
         try {
           console.log(t('newMovement'), newMovement);
-          await addNewStockMovement(newMovement, supplyInfo, dosis.deposito);
+          await addNewStockMovement(newMovement, supplyInfo as any, dosis.deposito);
 
           // Solo intentar remover stock reservado si existe una orden de retiro
           if (dosis.orden_de_retiro) {
@@ -632,13 +628,13 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
     db.get(executionDetails._id)
       .then(() => {
-        return updateActivityStateToCompleted(executionDetails.actividad_uuid);
+        return updateActivityStateToCompleted(executionDetails.uuid);
       })
-      .then((doc) => {
+      .then((doc: any) => {
         executionDetails._rev = doc._rev;
         return db.put(executionDetails);
       })
-      .catch((error) => {
+      .catch((error: any) => {
         if (error.name === 'conflict') {
           console.error(t('conflictError'), error);
 
@@ -663,7 +659,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
                 backToActivites();
               });
             })
-            .catch((err) => {
+            .catch((err: any) => {
               console.error(t('docCreateError'), err);
 
               Swal.fire({
@@ -791,7 +787,3 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 }
 
 export default ExecuteActivity
-
-function getStock(arg0: { id: string; campaignId: string; tipo: any; depositId: any; nroLot: any; location: any }) {
-  throw new Error('Function not implemented.')
-}
