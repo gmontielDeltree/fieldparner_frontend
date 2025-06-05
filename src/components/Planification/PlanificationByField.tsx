@@ -54,11 +54,20 @@ function a11yProps(index: number) {
   };
 }
 
-const LoteAccordion: React.FC = ({
+interface LoteAccordionProps {
+  lote: any;
+  name: string;
+  expanded: boolean;
+  cicloSelected: string;
+  campanaId: string;
+}
+
+const LoteAccordion: React.FC<LoteAccordionProps> = ({
   lote,
   name,
   expanded,
   cicloSelected,
+  campanaId,
 }) => {
   const [exp, setExp] = useState(expanded);
 
@@ -158,6 +167,7 @@ export const PlanificationByField = ({
   cicloSelected,
   onClose,
   onlyLoteSelected,
+  campaignId,
 }) => {
   // Lista de Campañas
   // Planificaciones por campaña
@@ -230,10 +240,30 @@ export const PlanificationByField = ({
       <Box
         sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY: "auto" }}
       >
-        <Box sx={{padding:"10px"}}>
-          <p>Ingresos (USD): {input}</p>
-          <p>Egresos (USD): {out}</p>
-          <p>Ganancia (USD): {out ? (input-out): 0}</p>
+        <Box sx={{
+          padding: "15px",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "8px",
+          margin: "10px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+        }}>
+          <Typography variant="h6" sx={{ marginBottom: "10px", color: "#2c3e50" }}>
+            Resumen Económico
+          </Typography>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px" }}>
+            <Box sx={{ textAlign: "center", padding: "10px", backgroundColor: "#e8f5e8", borderRadius: "6px" }}>
+              <Typography variant="subtitle2" color="textSecondary">Ingresos</Typography>
+              <Typography variant="h6" color="success.main">${input || 0}</Typography>
+            </Box>
+            <Box sx={{ textAlign: "center", padding: "10px", backgroundColor: "#fff3e0", borderRadius: "6px" }}>
+              <Typography variant="subtitle2" color="textSecondary">Egresos</Typography>
+              <Typography variant="h6" color="warning.main">${out || 0}</Typography>
+            </Box>
+            <Box sx={{ textAlign: "center", padding: "10px", backgroundColor: "#e3f2fd", borderRadius: "6px" }}>
+              <Typography variant="subtitle2" color="textSecondary">Ganancia</Typography>
+              <Typography variant="h6" color="primary.main">${out ? (input - out) : 0}</Typography>
+            </Box>
+          </Box>
         </Box>
         {/* Por cada lote */}
 
