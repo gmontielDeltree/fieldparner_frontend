@@ -6,6 +6,9 @@ import {
   IconButton,
   Typography,
   Paper,
+  Select,
+  MenuItem,
+  InputLabel,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { styled } from '@mui/material/styles'
@@ -57,7 +60,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       })
       return
     }
-  
+
     // Validación de compatibilidad de semillas
     if (supply && supply.type === 'Semillas') {
       const { _id } = formData.detalles.cultivo
@@ -71,7 +74,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
         return
       }
     }
-    
+
     // Use insumo instead of selectedOption to maintain consistency
     const newRow = {
       insumo: selectedSupply, // Changed from selectedOption to insumo
@@ -83,14 +86,14 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       precio,
       uuid: uuid4(),
     }
-  
+
     const newDetalles = [...formData.detalles.dosis, newRow]
-  
+
     setFormData({
       ...formData,
       detalles: { ...formData.detalles, dosis: newDetalles },
     })
-  
+
     // Limpiar campos después de agregar
     setSelectedSupply('')
     setDosificacion('')
@@ -114,6 +117,8 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
 
   const handleDepositoChange = (event) => {
     setDeposito(event)
+    // Limpiar ubicación cuando se cambie el depósito
+    setUbicacion('')
   }
 
   const handleLotNumberChange = (event) => {
@@ -183,7 +188,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
             </Grid>
           </Grid>
 
-          {/* Línea 2: Deposito, Nro de Lote, Ubicacion */}
+          {/* Línea 2: Deposito, Ubicacion, Nro de Lote */}
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <AutocompleteDeposito
@@ -192,19 +197,29 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               />
             </Grid>
             <Grid item xs={4}>
+              <FormControl fullWidth>
+                <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
+                <Select
+                  labelId="ubicacion-label"
+                  label={t('location')}
+                  value={ubicacion}
+                  onChange={handleUbicacionChange}
+                  disabled={!deposito}
+                >
+                  {deposito?.locations?.map((loc) => (
+                    <MenuItem key={loc} value={loc}>
+                      {loc}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={4}>
               <TextField
                 fullWidth
                 label={t('batchNumber')}
                 value={nroLote}
                 onChange={handleLotNumberChange}
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label={t('location')}
-                value={ubicacion}
-                onChange={handleUbicacionChange}
               />
             </Grid>
           </Grid>
