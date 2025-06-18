@@ -316,7 +316,7 @@ export const PlanificationPage: React.FC = () => {
                 </Grid>
 
                 {/* Planning Details Panel */}
-                {selCampanaId &&
+                {selectedCampaignForPlanning &&
                   selCampoId &&
                   selLoteId &&
                   selCicloId &&
@@ -331,7 +331,7 @@ export const PlanificationPage: React.FC = () => {
                         }}
                       >
                         <PlanificationByField
-                          campaignId={selCampanaId}
+                          campaignId={selectedCampaignForPlanning}
                           fieldId={selCampoId}
                           loteSelected={selLoteId}
                           cicloSelected={selCicloId}
