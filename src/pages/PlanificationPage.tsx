@@ -34,6 +34,7 @@ import { CloseButtonPage } from "../components";
 import { SearchBar } from "../components/Planification/SearchBar";
 import { Field } from "@types";
 import { PlanificacionMoreButton } from "../components/Planification/PlanificacionMoreButton";
+import CampaignSelector from "../components/Planification/CampaignSelector";
 
 const ItemMemo = React.memo(ItemPlanificationByField);
 
@@ -104,9 +105,14 @@ export const PlanificationPage: React.FC = () => {
                         <IconButton onClick={() => navigate(-1)}>
                           <ArrowBack></ArrowBack>
                         </IconButton>
-                        <Typography variant="h5">
-                          Planificación Anual de Campañas
-                        </Typography>
+                        <Box>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1e3a8a' }}>
+                            Planificación Anual de Campañas
+                          </Typography>
+                          <Typography variant="body2" color="textSecondary">
+                            Gestione la planificación anual de cultivos por campo y campaña
+                          </Typography>
+                        </Box>
                       </Box>
 
                       <PlanificacionMoreButton
@@ -139,6 +145,22 @@ export const PlanificationPage: React.FC = () => {
                         paddingX: "1rem",
                       }}
                     >
+                      {/* Selector de Campaña */}
+                      <Box sx={{ mb: 2, p: 2, backgroundColor: '#f8f9fa', borderRadius: 2 }}>
+                        <Typography variant="h6" sx={{ mb: 1, fontWeight: 'bold' }}>
+                          Seleccionar Campaña para Planificación
+                        </Typography>
+                        <CampaignSelector
+                          campaigns={campaigns || []}
+                          selectedCampaignId={selectedCampaign?._id || ''}
+                          currentCampaignId={campaigns?.find(c => c.isCurrent)?._id}
+                          onCampaignChange={(campaignId) => {
+                            // TODO: Actualizar campaña seleccionada
+                            console.log('Campaña seleccionada:', campaignId);
+                          }}
+                        />
+                      </Box>
+
                       <SearchBar
                         onChange={(e) => {
                           let text = e.target.value.toLowerCase();
