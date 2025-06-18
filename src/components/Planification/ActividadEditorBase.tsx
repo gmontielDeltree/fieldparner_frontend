@@ -12,15 +12,15 @@ import {
   IInsumosPlanificacion,
 } from "../../interfaces/planification";
 import PlanTasksForm from "./forms/PlanTasksForm";
-import { PlanSuppliesTableForm } from "./forms/PlanSuppliesTableForm";
 import PlanSuppliesForm from "./forms/PlanSuppliesForm";
+import PlanObservationsForm from "./forms/PlanObservationsForm";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { ILaboresPlanificacion } from "../../interfaces/planification";
 import { uuidv7 } from "uuidv7";
 import { useSupply } from "../../hooks";
 import { useTranslation } from "react-i18next";
 
-const steps = ["Fecha", "Insumos", "Servicios"];
+const steps = ["General", "Insumos", "Servicios", "Observaciones"];
 
 const tasksList = [
   { name: "Siembra", id: "1" },
@@ -40,12 +40,14 @@ export const ActividadEditorBase = ({
   onClose,
   editing,
 }: {
+  tipo?: string;
   actividadDoc: IActividadPlanificacion;
   onSave: () => void;
   onClose: () => void;
+  editing?: boolean;
 }) => {
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const [rows, setRows] = useState<IInsumosPlanificacion[]>([]);
   const [rowsLab, setRowsLab] = useState<ILaboresPlanificacion[]>([]);
 
@@ -140,8 +142,8 @@ export const ActividadEditorBase = ({
     const newActiveStep =
       isLastStep() && !allStepsCompleted()
         ? // It's the last step, but not all steps have been completed,
-          // find the first step that has been completed
-          steps.findIndex((step, i) => !(i in completed))
+        // find the first step that has been completed
+        steps.findIndex((step, i) => !(i in completed))
         : activeStep + 1;
     setActiveStep(newActiveStep);
   };
@@ -184,6 +186,7 @@ export const ActividadEditorBase = ({
               <PlanPersonalForm
                 formData={actividad}
                 setFormData={setActividad}
+                tipo={actividad.tipo}
               />
             )}
             {activeStep === 1 && (
@@ -197,8 +200,12 @@ export const ActividadEditorBase = ({
               <PlanTasksForm
                 formData={actividad}
                 setFormData={setActividad}
-                rows={rowsLab}
-                setRows={setRowsLab}
+              />
+            )}
+            {activeStep === 3 && (
+              <PlanObservationsForm
+                formData={actividad}
+                setFormData={setActividad}
               />
             )}
             <Typography sx={{ mt: 2, mb: 1, py: 1 }}></Typography>
@@ -232,7 +239,7 @@ export const ActividadEditorBase = ({
               <Button
                 onClick={handleNext}
                 sx={{ mr: 1 }}
-                disabled={activeStep === 2}
+                disabled={activeStep === 3}
               >
                 Siguiente
               </Button>
