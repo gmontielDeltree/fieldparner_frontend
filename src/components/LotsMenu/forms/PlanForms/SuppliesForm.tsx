@@ -9,6 +9,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  SelectChangeEvent,
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { styled } from '@mui/material/styles'
@@ -34,17 +35,22 @@ const CustomPaper = styled(Paper)({
   backgroundColor: '#f7f7f7',
 })
 
-function SuppliesForm({ lot, db, formData, setFormData }) {
+interface SuppliesFormProps {
+  lot: any
+  db: any
+  formData: any
+  setFormData: (data: any) => void
+}
+
+function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
   const { t } = useTranslation()
-  const [selectedSupply, setSelectedSupply] = useState()
+  const [selectedSupply, setSelectedSupply] = useState<any>()
   const [dosificacion, setDosificacion] = useState('')
   const [total, setTotal] = useState('')
-  const [precio, setPrecio] = useState('')
-  const [costoTotal, setCostoTotal] = useState(0)
   const [nroLote, setNroLote] = useState('')
   const [ubicacion, setUbicacion] = useState('')
   const [rows, setRows] = useState([])
-  const [deposito, setDeposito] = useState()
+  const [deposito, setDeposito] = useState<any>()
 
   const { isLoading, supplies, getSupplies } = useSupply()
   const { getCrops, crops } = useCrops()
@@ -83,7 +89,6 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
       deposito,
       nro_lote: nroLote,
       ubicacion,
-      precio,
       uuid: uuid4(),
     }
 
@@ -95,54 +100,45 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
     })
 
     // Limpiar campos después de agregar
-    setSelectedSupply('')
+    setSelectedSupply(undefined)
     setDosificacion('')
     setTotal('')
-    setDeposito('')
+    setDeposito(undefined)
     setNroLote('')
     setUbicacion('')
-    setPrecio('')
   }
-  const handleSelectChange = (event) => {
+
+  const handleSelectChange = (event: any) => {
     setSelectedSupply(event)
   }
 
-  const handleDosificacionChange = (event) => {
+  const handleDosificacionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDosificacion(event.target.value)
     setTotal((+event.target.value * formData.detalles.hectareas).toFixed(2))
-    setCostoTotal(
-      (+event.target.value * formData.detalles.hectareas * +precio).toFixed(2),
-    )
   }
 
-  const handleDepositoChange = (event) => {
+  const handleDepositoChange = (event: any) => {
     setDeposito(event)
     // Limpiar ubicación cuando se cambie el depósito
     setUbicacion('')
   }
 
-  const handleLotNumberChange = (event) => {
+  const handleLotNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNroLote(event.target.value)
   }
 
-  const handleUbicacionChange = (event) => {
+  const handleUbicacionChange = (event: SelectChangeEvent<string>) => {
     setUbicacion(event.target.value)
   }
 
-  const handleTotalChange = (event) => {
+  const handleTotalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTotal(event.target.value)
     setDosificacion(
       (+event.target.value / formData.detalles.hectareas).toFixed(2),
     )
-    setCostoTotal((+event.target.value * +precio).toFixed(2))
   }
 
-  const handlePrecioChange = (event) => {
-    setPrecio(event.target.value)
-    setCostoTotal((+event.target.value * +total).toFixed(2))
-  }
-
-  const handleUpdateRows = (updatedRows) => {
+  const handleUpdateRows = (updatedRows: any) => {
     setRows(updatedRows)
     setFormData({
       ...formData,
@@ -206,7 +202,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
                   onChange={handleUbicacionChange}
                   disabled={!deposito}
                 >
-                  {deposito?.locations?.map((loc) => (
+                  {deposito?.locations?.map((loc: string) => (
                     <MenuItem key={loc} value={loc}>
                       {loc}
                     </MenuItem>
@@ -230,7 +226,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               <NumberFieldWithUnits
                 fullWidth
                 label={t('quantity')}
-                value={dosificacion}
+                value={Number(dosificacion)}
                 onChange={handleDosificacionChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
               />
@@ -239,7 +235,7 @@ function SuppliesForm({ lot, db, formData, setFormData }) {
               <NumberFieldWithUnits
                 fullWidth
                 label={t('totalQuantity')}
-                value={total}
+                value={Number(total)}
                 onChange={handleTotalChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
               />

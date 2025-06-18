@@ -33,7 +33,12 @@ const CustomPaper = styled(Paper)({
   backgroundColor: '#f7f7f7',
 })
 
-function ServicesForm({ formData, setFormData }) {
+interface ServicesFormProps {
+  formData: any
+  setFormData: (data: any) => void
+}
+
+function ServicesForm({ formData, setFormData }: ServicesFormProps) {
   const { t } = useTranslation()
   const { laborsServices, getLaborsServices } = useLaborsServices()
   const { businesses, getBusinesses } = useBusiness()
@@ -45,16 +50,14 @@ function ServicesForm({ formData, setFormData }) {
   const isFitosanitaria = formData.detalles.fitosanitaria
 
   // Campos para agregar un nuevo servicio
-  const [selectedService, setSelectedService] = useState(null)   // Aquí guardaremos el objeto entero
+  const [selectedServiceId, setSelectedServiceId] = useState('')   // ID del servicio seleccionado
   const [contractor, setContractor] = useState('')
   const [comment, setComment] = useState('')
   const [units, setUnits] = useState(0)
-  const [unitPrice, setUnitPrice] = useState(0)
-  const [totalCost, setTotalCost] = useState(0)
   const [art, setArt] = useState('')
 
   // Fila(s) de servicios agregados
-  const [rows, setRows] = useState([])
+  const [rows, setRows] = useState<any[]>([])
 
   // Trae datos iniciales
   useEffect(() => {
@@ -71,18 +74,16 @@ function ServicesForm({ formData, setFormData }) {
     }
   }, [formData])
 
-  // Recalcula el total al cambiar unidades o precio
-  useEffect(() => {
-    const total = Number(units) * Number(unitPrice)
-    setTotalCost(total.toFixed(2))
-  }, [units, unitPrice])
-
   // Agregar una fila de servicio al arreglo
   const handleAddRow = () => {
-    if (!selectedService) {
+    if (!selectedServiceId) {
       alert(t('selectServiceBeforeAdding'))
       return
     }
+
+    // Buscar el objeto servicio completo por ID
+    const selectedService = laborsServices.find(service => service._id === selectedServiceId)
+    if (!selectedService) return
 
     // Construye el objeto "servicio"
     const newService = {
@@ -91,8 +92,6 @@ function ServicesForm({ formData, setFormData }) {
       contratista: contractor, // This could be an object from AutocompleteContratista
       comentario: comment,
       unidades: Number(units),
-      precio_unidad: Number(unitPrice),
-      costo_total: Number(totalCost),
       art: isBrazil && isFitosanitaria ? art : undefined,
       uuid: uuid4(),
     }
@@ -111,17 +110,15 @@ function ServicesForm({ formData, setFormData }) {
     })
 
     // Limpia inputs
-    setSelectedService(null)
+    setSelectedServiceId('')
     setContractor('')
     setComment('')
     setUnits(0)
-    setUnitPrice(0)
-    setTotalCost(0)
     if (isBrazil && isFitosanitaria) setArt('')
   }
 
   // Para cuando ServicesList actualiza/borrra/edita filas
-  const handleUpdateRows = (updatedRows) => {
+  const handleUpdateRows = (updatedRows: any) => {
     setRows(updatedRows)
     setFormData({
       ...formData,
@@ -155,7 +152,7 @@ function ServicesForm({ formData, setFormData }) {
             </Grid>
           )}
 
-          {/* Fila para "Servicio", "Contratista" y "Comentario" */}
+          {/* Fila para "Servicio", "Contratista" y "Unidades" */}
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={4}>
               <FormControl fullWidth>
@@ -163,17 +160,17 @@ function ServicesForm({ formData, setFormData }) {
                 <Select
                   labelId="service-dropdown-label"
                   id="service-dropdown"
-                  value={selectedService || ''} // si es null => ''
+                  value={selectedServiceId || ''} // si es null => ''
                   label={t('service')}
                   onChange={(e) => {
-                    // e.target.value es el OBJETO "service" seleccionado
-                    setSelectedService(e.target.value)
+                    // e.target.value es el ID del servicio seleccionado
+                    setSelectedServiceId(e.target.value as string)
                   }}
                 >
                   {laborsServices.map((serviceObj) => (
                     <MenuItem
                       key={serviceObj._id}
-                      value={serviceObj} // Guardamos el objeto completo
+                      value={serviceObj._id} // Guardamos solo el ID
                     >
                       {serviceObj.service}
                     </MenuItem>
@@ -193,10 +190,10 @@ function ServicesForm({ formData, setFormData }) {
             <Grid item xs={3}>
               <TextField
                 fullWidth
-                label={t('comment')}
-                variant="outlined"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                label={t('units')}
+                type="number"
+                value={units}
+                onChange={(e) => setUnits(Number(e.target.value))}
               />
             </Grid>
 
@@ -211,34 +208,15 @@ function ServicesForm({ formData, setFormData }) {
             </Grid>
           </Grid>
 
-          {/* Fila para "Unidades", "Valor Unidad" y "Valor Total" */}
+          {/* Fila para "Comentario" */}
           <Grid container item xs={12} spacing={1} alignItems="flex-end">
-            <Grid item xs={4}>
+            <Grid item xs={12}>
               <TextField
                 fullWidth
-                label={t('units')}
-                value={units}
-                onChange={(e) => setUnits(e.target.value)}
-              />
-            </Grid>
-
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label={t('unitValue')}
-                value={unitPrice}
-                onChange={(e) => setUnitPrice(e.target.value)}
-              />
-            </Grid>
-
-            <Grid item xs={3}>
-              <TextField
-                fullWidth
-                label={t('totalServiceValue')}
-                value={totalCost}
-                InputProps={{
-                  readOnly: true,
-                }}
+                label={t('comment')}
+                variant="outlined"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
               />
             </Grid>
           </Grid>

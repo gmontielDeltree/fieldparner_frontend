@@ -109,24 +109,23 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
   const { t } = useTranslation()
   const [editIndex, setEditIndex] = useState(-1)
   const [editData, setEditData] = useState({
-    insumo: null, 
+    insumo: null,
     dosificacion: '',
     nro_lote: '',
     ubicacion: '',
     total: '',
     deposito: null,
-    precio: '',
     uuid: '',
   })
-  
+
   const [deletingIndex, setDeletingIndex] = useState(null)
 
   const handleEditRow = (index) => {
     const rowToEdit = rows[index]
     if (!rowToEdit) return
-  
+
     console.log('Starting edit for row:', rowToEdit)
-  
+
     // Hacer una copia profunda de los datos, cambiando selectedOption a insumo
     const editDataCopy = {
       insumo: rowToEdit.insumo
@@ -142,12 +141,12 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       precio: rowToEdit.precio ?? '',
       uuid: rowToEdit.uuid,
     }
-  
+
     console.log('Edit data initialized as:', editDataCopy)
     setEditData(editDataCopy)
     setEditIndex(index)
   }
-  
+
   const handleDeleteRow = async (index) => {
     setDeletingIndex(index)
     const updatedRows = [...rows]
@@ -165,7 +164,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
     const originalRow = rows[editIndex]
     console.log('Original row:', originalRow)
     console.log('Edit data:', editData)
-  
+
     // Creamos el objeto actualizado con los valores editados o los originales si no se modificaron
     const updatedRow = {
       ...originalRow, // Mantenemos todas las propiedades originales como base
@@ -186,24 +185,24 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       total: editData.total !== '' ? editData.total : originalRow.total,
       deposito:
         editData.deposito !== null ? editData.deposito : originalRow.deposito,
-      precio: editData.precio !== '' ? editData.precio : originalRow.precio,
+
       uuid: originalRow.uuid,
     }
-  
+
     console.log('Updated row before save:', updatedRow)
-  
+
     // Validación adicional
     if (!updatedRow.insumo) {
       console.error('insumo is required')
       return
     }
-  
+
     console.log('Updated row:', updatedRow) // Debug log
-  
+
     const updatedRows = [...rows]
     updatedRows[editIndex] = updatedRow
     onUpdateRows(updatedRows)
-  
+
     // Reset edit state
     setEditIndex(-1)
     setEditData({
@@ -217,7 +216,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       uuid: '',
     })
   }
-  
+
 
   const handleCancelEdit = () => {
     setEditIndex(-1)
@@ -258,7 +257,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
         : value,
     }))
   }
-  
+
   const handleEditCantidadTotalChange = (event) => {
     const value = event.target.value
     setEditData((prev) => ({
@@ -324,13 +323,13 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
         {rows.map((row, index) => {
           // Get the supply object from either insumo or selectedOption for backward compatibility
           const supply = row.insumo || row.selectedOption;
-          
+
           // If no supply information is available, skip rendering this row
           if (!supply) {
             console.warn('Row missing supply information:', row);
             return null;
           }
-  
+
           return (
             <CustomListItem
               key={row.uuid || index}
@@ -450,7 +449,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                           <StyledChip label={supply.type} />
                         )}
                       </Box>
-  
+
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
@@ -469,7 +468,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         </Grid>
                       </Grid>
                     </ContentSection>
-  
+
                     <ContentSection>
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
@@ -486,7 +485,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                         </Grid>
                       </Grid>
                     </ContentSection>
-  
+
                     <ContentSection
                       sx={{
                         display: 'flex',

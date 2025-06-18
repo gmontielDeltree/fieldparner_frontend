@@ -26,13 +26,20 @@ import { useTranslation } from 'react-i18next'
  * - isBrazil, isFitosanitaria (para lógica condicional con la 'ART')
  */
 
-const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
+interface ServicesListProps {
+    rows: any[]
+    onUpdateRows: (rows: any[]) => void
+    isBrazil: boolean
+    isFitosanitaria: boolean
+}
+
+const ServicesList: React.FC<ServicesListProps> = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
     const { t } = useTranslation()
     const [editIndex, setEditIndex] = useState(-1)
-    const [editData, setEditData] = useState({})
+    const [editData, setEditData] = useState<any>({})
 
     // Pulsar "Editar"
-    const handleEditRow = (index) => {
+    const handleEditRow = (index: number) => {
         setEditIndex(index)
         setEditData({ ...rows[index] })
     }
@@ -60,21 +67,21 @@ const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
     }
 
     // Borrar fila
-    const handleDeleteRow = (index) => {
+    const handleDeleteRow = (index: number) => {
         const updatedRows = rows.filter((_, i) => i !== index)
         onUpdateRows(updatedRows)
     }
 
     // Controla inputs en edición
-    const handleChangeField = (field, value) => {
-        setEditData((prev) => ({
+    const handleChangeField = (field: string, value: any) => {
+        setEditData((prev: any) => ({
             ...prev,
             [field]: value,
         }))
     }
 
     // Helper to display contractor information properly
-    const renderContratista = (contratista) => {
+    const renderContratista = (contratista: any) => {
         if (!contratista) return ''
 
         // If contratista is an object, display its name or a relevant property
@@ -102,8 +109,6 @@ const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
                             <TableCell>{t('contractor')}</TableCell>
                             <TableCell>{t('comment')}</TableCell>
                             <TableCell>{t('units')}</TableCell>
-                            <TableCell>{t('unitValue')}</TableCell>
-                            <TableCell>{t('totalValue')}</TableCell>
                             <TableCell align="center">{t('actions')}</TableCell>
                         </TableRow>
                     </TableHead>
@@ -154,7 +159,7 @@ const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
                                         {isEditing ? (
                                             <AutocompleteContratista
                                                 value={editData.contratista || ''}
-                                                onChange={(val) => handleChangeField('contratista', val)}
+                                                onChange={(val: any) => handleChangeField('contratista', val)}
                                             />
                                         ) : (
                                             renderContratista(row.contratista)
@@ -186,30 +191,6 @@ const ServicesList = ({ rows, onUpdateRows, isBrazil, isFitosanitaria }) => {
                                         ) : (
                                             row.unidades
                                         )}
-                                    </TableCell>
-
-                                    {/* Valor unidad */}
-                                    <TableCell>
-                                        {isEditing ? (
-                                            <TextField
-                                                size="small"
-                                                type="number"
-                                                value={editData.precio_unidad || 0}
-                                                onChange={(e) =>
-                                                    handleChangeField('precio_unidad', Number(e.target.value))
-                                                }
-                                            />
-                                        ) : (
-                                            row.precio_unidad
-                                        )}
-                                    </TableCell>
-
-                                    {/* Valor total (costo_total o calcula multiplicando) */}
-                                    <TableCell>
-                                        {isEditing
-                                            ? (Number(editData.unidades) * Number(editData.precio_unidad)).toFixed(2)
-                                            : row.costo_total ||
-                                            (Number(row.unidades) * Number(row.precio_unidad)).toFixed(2)}
                                     </TableCell>
 
                                     {/* Acciones */}
