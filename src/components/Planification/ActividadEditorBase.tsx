@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Box from "@mui/material/Box";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepButton from "@mui/material/StepButton";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { Card, CardBody, CardFooter, Alert, Container, Progress } from 'reactstrap';
-import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { TextField, FormControl, Grid, Paper, Alert, MenuItem, Select, InputLabel } from '@mui/material';
 import { IActividadPlanificacion } from "../../interfaces/planification";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { useTranslation } from "react-i18next";
@@ -13,9 +15,6 @@ import PersonalForm from '../LotsMenu/forms/PlanForms/PersonalForm';
 import SuppliesForm from '../LotsMenu/forms/PlanForms/SuppliesForm';
 import ServicesForm from '../LotsMenu/forms/PlanForms/ServicesForm';
 import ObservationsForm from '../LotsMenu/forms/PlanForms/ObservationsForm';
-
-// Import for additional fields
-import { TextField, FormControl, Grid } from '@mui/material';
 import { NumberFieldWithUnits } from '../LotsMenu/components/NumberField';
 
 interface ActividadEditorBaseProps {
@@ -75,7 +74,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
 
   const [formData, setFormData] = useState(convertToLaborFormat(actividadDoc));
   const [activeStep, setActiveStep] = useState(0);
-  const [maxStepReached, setMaxStepReached] = useState(0);
+  const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
 
   const steps = [t('general'), t('supplies'), t('services'), t('observations')];
 
@@ -83,12 +82,17 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     setFormData(convertToLaborFormat(actividadDoc));
   }, [actividadDoc]);
 
+  const totalSteps = () => steps.length;
+  const completedSteps = () => Object.keys(completed).length;
+  const isLastStep = () => activeStep === totalSteps() - 1;
+  const allStepsCompleted = () => completedSteps() === totalSteps();
+
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => {
-      const nextStep = prevActiveStep + 1;
-      setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, nextStep));
-      return nextStep;
-    });
+    const newActiveStep =
+      isLastStep() && !allStepsCompleted()
+        ? steps.findIndex((step, i) => !(i in completed))
+        : activeStep + 1;
+    setActiveStep(newActiveStep);
   };
 
   const handleBack = () => {
@@ -96,13 +100,18 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   };
 
   const handleStep = (step: number) => () => {
-    if (step <= maxStepReached) {
-      setActiveStep(step);
-    }
+    setActiveStep(step);
   };
 
-  // Enhanced PersonalForm for planification
-  const PlanificationPersonalForm = ({ formData, setFormData }: any) => {
+  const handleComplete = () => {
+    const newCompleted = completed;
+    newCompleted[activeStep] = true;
+    setCompleted(newCompleted);
+    handleNext();
+  };
+
+  // Status and enhanced fields form
+  const PlanificationStatusForm = () => {
     const onFieldChange = (fieldName: string, value: any) => {
       setFormData((prevData: any) => ({
         ...prevData,
@@ -114,119 +123,58 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     };
 
     return (
-      <Card>
-        <CardBody>
-          <Typography variant="h6" className="mb-3">
-            {t('General Information')}
-          </Typography>
+      <Paper sx={{ p: 3, mb: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          {t('Planning Status and Details')}
+        </Typography>
 
-          <Grid container spacing={2}>
-            {/* Status field - always visible */}
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <TextField
-                  select
-                  label={t('Status')}
-                  value={formData.estado || 'abierta'}
-                  onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                  SelectProps={{
-                    native: true,
-                  }}
-                  disabled={formData.estado === 'cerrada'}
-                >
-                  <option value="abierta">{t('Open')}</option>
-                  <option value="cerrada">{t('Closed')}</option>
-                </TextField>
-              </FormControl>
-            </Grid>
+        <Grid container spacing={2}>
+          {/* Status field */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>{t('Status')}</InputLabel>
+              <Select
+                value={formData.estado || 'abierta'}
+                onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+                label={t('Status')}
+              >
+                <MenuItem value="abierta">{t('Open')}</MenuItem>
+                <MenuItem value="cerrada">{t('Closed')}</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
 
-            {/* Zafra field for preparation and sowing */}
-            {(formData.tipo === 'preparado' || formData.tipo === 'siembra') && (
+          {/* Harvest specific fields */}
+          {formData.tipo === 'cosecha' && (
+            <>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <NumberFieldWithUnits
                   fullWidth
-                  label={t('Zafra')}
-                  value={formData.detalles?.zafra || ''}
-                  onChange={(e) => onFieldChange('zafra', e.target.value)}
-                  placeholder={t('Ingrese la zafra')}
-                  helperText={t('Información de la zafra correspondiente a la planificación anual')}
-                  disabled={formData.estado === 'cerrada'}
+                  label="Rinde Estimado (ton/ha)"
+                  value={formData.detalles?.rinde_estimado || 0}
+                  onChange={(e) => onFieldChange('rinde_estimado', e.target.value)}
+                  unit="ton/ha"
                 />
               </Grid>
-            )}
-
-            {/* Harvest specific fields */}
-            {formData.tipo === 'cosecha' && (
-              <>
-                <Grid item xs={12} sm={6}>
-                  <NumberFieldWithUnits
-                    fullWidth
-                    label="Rinde Estimado (ton/ha)"
-                    value={formData.detalles?.rinde_estimado || 0}
-                    onChange={(e) => onFieldChange('rinde_estimado', e.target.value)}
-                    unit="ton/ha"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <NumberFieldWithUnits
-                    fullWidth
-                    label="Rinde Estimado Total (ton)"
-                    value={formData.detalles?.rinde_estimado_total || 0}
-                    onChange={(e) => onFieldChange('rinde_estimado_total', e.target.value)}
-                    unit="ton"
-                  />
-                </Grid>
-              </>
-            )}
-
-            {/* Hectares */}
-            <Grid item xs={12} sm={6}>
-              <NumberFieldWithUnits
-                fullWidth
-                label={t('Hectares to treat')}
-                value={formData.detalles?.hectareas || 0}
-                onChange={(e) => onFieldChange('hectareas', e.target.value)}
-                unit="ha"
-              />
-            </Grid>
-
-            {/* Activity type details for application */}
-            {formData.tipo === 'aplicacion' && (
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" className="mb-2">
-                  {t('Activity Details')}
-                </Typography>
-                <div className="d-flex gap-3">
-                  <div className="form-check form-switch">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={formData.detalles?.fertilizacion || false}
-                      onChange={(e) => onFieldChange('fertilizacion', e.target.checked)}
-                      disabled={formData.estado === 'cerrada'}
-                    />
-                    <label className="form-check-label">
-                      {t('Fertilization')}
-                    </label>
-                  </div>
-                  <div className="form-check form-switch">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={formData.detalles?.fitosanitaria || false}
-                      onChange={(e) => onFieldChange('fitosanitaria', e.target.checked)}
-                      disabled={formData.estado === 'cerrada'}
-                    />
-                    <label className="form-check-label">
-                      {t('Phytosanitary')}
-                    </label>
-                  </div>
-                </div>
+              <Grid item xs={12} sm={6}>
+                <NumberFieldWithUnits
+                  fullWidth
+                  label="Rinde Estimado Total (ton)"
+                  value={formData.detalles?.rinde_estimado_total || 0}
+                  onChange={(e) => onFieldChange('rinde_estimado_total', e.target.value)}
+                  unit="ton"
+                />
               </Grid>
-            )}
-          </Grid>
-        </CardBody>
-      </Card>
+            </>
+          )}
+        </Grid>
+
+        {formData.estado === 'cerrada' && (
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            {t('Planning is closed and cannot be modified')}
+          </Alert>
+        )}
+      </Paper>
     );
   };
 
@@ -236,20 +184,26 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     switch (step) {
       case 0:
         return (
-          <PlanificationPersonalForm
-            formData={formData}
-            setFormData={setFormData}
-          />
+          <>
+            <PlanificationStatusForm />
+            <PersonalForm
+              lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
+              formData={formData}
+              setFormData={setFormData}
+              mode="plan"
+              showActivityType={formData.tipo === 'aplicacion'}
+            />
+          </>
         );
       case 1:
         return isDisabled ? (
-          <Alert color="warning">
-            La planificación está cerrada y no puede ser modificada
+          <Alert severity="warning">
+            {t('Planning is closed and cannot be modified')}
           </Alert>
         ) : (
-          <div>
-            <Alert color="info" className="mb-3">
-              <strong>Modo Planificación:</strong> No es necesario validar stock ni ubicación para planificación anual
+          <>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <strong>{t('Planning Mode')}:</strong> {t('Stock validation and deposit location are not required for planning')}
             </Alert>
             <SuppliesForm
               lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
@@ -257,12 +211,12 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
               formData={formData}
               setFormData={setFormData}
             />
-          </div>
+          </>
         );
       case 2:
         return isDisabled ? (
-          <Alert color="warning">
-            La planificación está cerrada y no puede ser modificada
+          <Alert severity="warning">
+            {t('Planning is closed and cannot be modified')}
           </Alert>
         ) : (
           <ServicesForm
@@ -272,8 +226,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         );
       case 3:
         return isDisabled ? (
-          <Alert color="warning">
-            La planificación está cerrada y no puede ser modificada
+          <Alert severity="warning">
+            {t('Planning is closed and cannot be modified')}
           </Alert>
         ) : (
           <ObservationsForm
@@ -294,7 +248,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         tipo: formData.tipo,
         fecha: formData.detalles.fecha_ejecucion_tentativa || new Date().toISOString(),
         area: formData.detalles.hectareas,
-        comentarios: formData.observaciones,
+        ...(formData.observaciones && { comentarios: formData.observaciones }),
         ...(formData.estado && { estado: formData.estado }),
         ...(formData.detalles.rinde_estimado && { rendimientoEstimado: formData.detalles.rinde_estimado }),
         ...(formData.detalles.rinde_estimado_total && { rendimientoEstimadoTotal: formData.detalles.rinde_estimado_total }),
@@ -307,139 +261,50 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     }
   };
 
-  const getStepStatus = (stepIndex: number) => {
-    if (stepIndex === activeStep) return 'current';
-    if (stepIndex < activeStep) return 'complete';
-    if (stepIndex <= maxStepReached) return 'available';
-    return 'upcoming';
-  };
-
-  const getStepStyle = (status: string) => {
-    switch (status) {
-      case 'complete':
-        return { background: '#10b981', color: 'white', border: 'none' };
-      case 'current':
-        return { background: 'white', color: '#10b981', border: '2px solid #10b981' };
-      case 'upcoming':
-        return { background: '#f3f4f6', color: '#6b7280', border: 'none' };
-      default:
-        return { background: '#e5e7eb', color: '#6b7280', border: 'none' };
-    }
-  };
-
   return (
-    <Container className="py-4">
-      <Card className="shadow-lg">
-        {/* Stepper */}
-        <div className="px-4 py-4">
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            {steps.map((step, index) => {
-              const status = getStepStatus(index);
+    <Box sx={{ width: "100%" }}>
+      <Stepper alternativeLabel nonLinear activeStep={activeStep}>
+        {steps.map((label, index) => (
+          <Step key={label} completed={completed[index]}>
+            <StepButton color="inherit" onClick={handleStep(index)}>
+              {label}
+            </StepButton>
+          </Step>
+        ))}
+      </Stepper>
 
-              return (
-                <div
-                  key={step}
-                  className="text-center position-relative"
-                  style={{ flex: 1 }}
-                >
-                  <div
-                    onClick={handleStep(index)}
-                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center"
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      cursor: index <= maxStepReached ? 'pointer' : 'default',
-                      transition: 'all 0.2s',
-                      ...getStepStyle(status),
-                    }}
-                  >
-                    {status === 'complete' ? (
-                      <Check size={20} />
-                    ) : (
-                      <span style={{ fontWeight: '600' }}>{index + 1}</span>
-                    )}
-                  </div>
+      <Box sx={{ p: 3 }}>
+        {getStepContent(activeStep)}
+      </Box>
 
-                  <div className="mt-2">
-                    <small
-                      className="text-muted"
-                      style={{
-                        fontWeight: status === 'current' ? '600' : '400',
-                      }}
-                    >
-                      {step}
-                    </small>
-                  </div>
-
-                  {index < steps.length - 1 && (
-                    <Progress
-                      value={index < activeStep ? 100 : 0}
-                      color="success"
-                      style={{
-                        position: 'absolute',
-                        top: '20px',
-                        left: '50%',
-                        width: '100%',
-                        height: '2px',
-                        zIndex: -1,
-                      }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Content */}
-        <CardBody className="p-4">
-          {getStepContent(activeStep)}
-        </CardBody>
-
-        {/* Actions */}
-        <CardFooter className="bg-light d-flex justify-content-between align-items-center p-4">
-          <Button
-            color="secondary"
-            onClick={onClose}
-            className="d-flex align-items-center gap-2"
-          >
-            <ChevronLeft size={16} />
-            {t('cancel')}
+      <Box sx={{ display: "flex", flexDirection: "row", pt: 2, px: 3, pb: 2 }}>
+        <Button color="error" onClick={onClose} sx={{ mr: 1 }}>
+          {t('cancel')}
+        </Button>
+        <Button
+          color="inherit"
+          disabled={activeStep === 0}
+          onClick={handleBack}
+          sx={{ mr: 1 }}
+        >
+          {t('previous')}
+        </Button>
+        <Box sx={{ flex: "1 1 auto" }} />
+        {activeStep !== steps.length - 1 && (
+          <Button onClick={handleNext} sx={{ mr: 1 }}>
+            {t('next')}
           </Button>
-
-          <div className="d-flex gap-2">
-            {activeStep > 0 && (
-              <Button
-                color="secondary"
-                onClick={handleBack}
-                className="d-flex align-items-center gap-2"
-              >
-                <ChevronLeft size={16} />
-                {t('previous')}
-              </Button>
-            )}
-
-            {activeStep === steps.length - 1 ? (
-              <Button
-                color="success"
-                onClick={handleSave}
-                disabled={formData.estado === 'cerrada'}
-              >
-                {editing ? t('update') : t('save')} {t('planning')}
-              </Button>
-            ) : (
-              <Button
-                color="primary"
-                onClick={handleNext}
-                className="d-flex align-items-center gap-2"
-              >
-                {t('next')}
-                <ChevronRight size={16} />
-              </Button>
-            )}
-          </div>
-        </CardFooter>
-      </Card>
-    </Container>
+        )}
+        {activeStep === steps.length - 1 && (
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={formData.estado === 'cerrada'}
+          >
+            {editing ? t('update') : t('save')} {t('planning')}
+          </Button>
+        )}
+      </Box>
+    </Box>
   );
 };

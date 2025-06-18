@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DateRangePicker from "./DateRangePicker";
-import { Autocomplete, Box, Typography, Chip, Switch, FormControlLabel, Alert } from "@mui/material";
+import { Autocomplete, Box, Typography } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { CultivoItem } from "../../hooks";

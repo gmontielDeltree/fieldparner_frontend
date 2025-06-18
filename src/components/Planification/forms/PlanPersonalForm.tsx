@@ -10,10 +10,6 @@ import {
   Typography,
   InputAdornment,
   Autocomplete,
-  Switch,
-  FormControlLabel,
-  Card,
-  CardContent,
 } from "@mui/material";
 import { useBusiness } from "../../../hooks";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -39,13 +35,7 @@ const Title = styled(Typography)({
   marginBottom: "20px",
 });
 
-interface PlanPersonalFormProps {
-  formData: any
-  setFormData: (data: any) => void
-  tipo: string
-}
-
-function PlanPersonalForm({ formData, setFormData, tipo }: PlanPersonalFormProps) {
+function PlanPersonalForm({ formData, setFormData, tipo }) {
   const { businesses, getBusinesses } = useBusiness();
 
   const [interPrecio, setInterPrecio] = useState("0");
@@ -139,23 +129,17 @@ function PlanPersonalForm({ formData, setFormData, tipo }: PlanPersonalFormProps
             />
           </Grid>
 
-          {/* Campos específicos para Cosecha */}
           {formData.tipo === TTipoActividadPlanificada.COSECHA && (
-            <Grid item container xs={12} spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-                  Información de Cosecha
-                </Typography>
-              </Grid>
-              <Grid item xs={4}>
+            <Grid item container xs={6} spacing={1}>
+              <Grid item xs={3}>
                 <TextField
                   id="rendimiento"
-                  label="Rinde Histórico Estimado"
+                  label="Rinde estimado"
                   size="small"
                   inputProps={{ min: 0, style: { textAlign: "right" } }}
                   InputProps={{
                     endAdornment: (
-                      <InputAdornment position="end">tn/ha</InputAdornment>
+                      <InputAdornment position="end">tn/has</InputAdornment>
                     ),
                   }}
                   value={interRinde || 0}
@@ -165,9 +149,9 @@ function PlanPersonalForm({ formData, setFormData, tipo }: PlanPersonalFormProps
                 />
               </Grid>
 
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                 <TextField
-                  label="Rinde Histórico Total"
+                  label="Rinde Total"
                   disabled
                   size="small"
                   inputProps={{ min: 0, style: { textAlign: "right" } }}
@@ -177,10 +161,10 @@ function PlanPersonalForm({ formData, setFormData, tipo }: PlanPersonalFormProps
                       <InputAdornment position="end">tn</InputAdornment>
                     ),
                   }}
-                  value={(formData.rindeEstimado * formData.area || 0).toFixed(2)}
+                  value={formData.rindeEstimado * formData.area || 0}
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={3}>
                 <TextField
                   label="Precio Estimado"
                   size="small"
@@ -192,60 +176,13 @@ function PlanPersonalForm({ formData, setFormData, tipo }: PlanPersonalFormProps
                   }}
                   value={interPrecio || 0}
                   onChange={(e) => {
+                    console.log("dsds");
                     onFieldChange("precioEstimadoCosecha", e.target.value);
                   }}
                 />
               </Grid>
             </Grid>
           )}
-
-          {/* Campos específicos para Aplicación */}
-          {formData.tipo === TTipoActividadPlanificada.APLICACION && (
-            <Grid item xs={12}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Detalles de la Actividad:
-                  </Typography>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.fertilizacion || false}
-                        onChange={(e) => onFieldChange('fertilizacion', e.target.checked)}
-                        color="primary"
-                      />
-                    }
-                    label="Fertilización"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={formData.fitosanitaria || false}
-                        onChange={(e) => onFieldChange('fitosanitaria', e.target.checked)}
-                        color="primary"
-                      />
-                    }
-                    label="Fitosanitaria"
-                  />
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
-
-          {/* Campo Zafra para Preparado y Siembra */}
-          {(formData.tipo === TTipoActividadPlanificada.PREPARADO ||
-            formData.tipo === TTipoActividadPlanificada.SIEMBRA) && (
-              <Grid item xs={6}>
-                <TextField
-                  fullWidth
-                  label="Zafra"
-                  value={formData.zafra || ''}
-                  onChange={(e) => onFieldChange('zafra', e.target.value)}
-                  placeholder="Ingrese la zafra"
-                  helperText="Información de la zafra correspondiente a la planificación anual"
-                />
-              </Grid>
-            )}
         </Grid>
       </FormControl>
     </CustomPaper>
