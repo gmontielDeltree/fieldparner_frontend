@@ -3,11 +3,24 @@ import { Row, Col } from 'reactstrap';
 import {
   MapIcon,
   MapPin,
-  Sprout
+  Sprout,
+  Calendar,
+  Wheat
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const ActivityHeader = ({
+interface ActivityHeaderProps {
+  activityType: string;
+  fieldName: string;
+  lot: any;
+  formData: any;
+  activityIcons: any;
+  mode?: 'plan' | 'execute';
+  isEditing?: boolean;
+  getActivityColor?: (activityType: string) => string;
+}
+
+const ActivityHeader: React.FC<ActivityHeaderProps> = ({
   activityType,
   fieldName,
   lot,
@@ -129,6 +142,50 @@ const ActivityHeader = ({
                   </div>
                   <div className="text-white fw-semibold">
                     {formData.detalles.cultivo.descriptionES}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Campaign info (if available) */}
+            {formData?.campaña && (
+              <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                <Calendar className="text-white" size={20} />
+                <div>
+                  <div
+                    className="text-white-50 mb-0"
+                    style={{
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {t('campaign')}
+                  </div>
+                  <div className="text-white fw-semibold">
+                    {formData.campaña.nombreComercial || formData.campaña.name || formData.campaña.campaignId}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Zafra info (if available) */}
+            {formData?.detalles?.zafra && (
+              <div className="d-flex align-items-center gap-2 bg-white bg-opacity-10 rounded-3 px-3 py-2">
+                <Wheat className="text-white" size={20} />
+                <div>
+                  <div
+                    className="text-white-50 mb-0"
+                    style={{
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                    }}
+                  >
+                    {t('Zafra')}
+                  </div>
+                  <div className="text-white fw-semibold">
+                    {formData.detalles.zafra}
                   </div>
                 </div>
               </div>
