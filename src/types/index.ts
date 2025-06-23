@@ -385,6 +385,7 @@ export interface Deposit extends Document {
   hopper: boolean;
   silo: boolean;
   deposit: boolean;
+  taxId: string;
   siloBagId: string;
   status: EnumStatusContract;
 }
