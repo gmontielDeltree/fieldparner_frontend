@@ -54,7 +54,12 @@ export const Ciclo = ({
 
   return (
     <Accordion
-      sx={{ backgroundColor: getCropColorFromId(ciclo.cultivoId) }}
+      sx={{
+        backgroundColor: getCropColorFromId?.(ciclo.cultivoId),
+        marginBottom: 1,
+        borderRadius: "8px !important",
+        "&:before": { display: "none" }
+      }}
       expanded={expan}
       onChange={(_, e) => setExpan(e)}
     >
@@ -62,61 +67,113 @@ export const Ciclo = ({
         expandIcon={<ExpandMoreIcon />}
         aria-controls="panel1-content"
         id="panel1-header"
+        sx={{
+          backgroundColor: "rgba(255,255,255,0.9)",
+          borderRadius: "8px 8px 0 0",
+          minHeight: 48
+        }}
       >
-        <Box>
-          <Typography>Zafra {getCropLabelFromId(ciclo.cultivoId)}</Typography>
-          <Typography variant="subtitle2">
-            {format(new Date(ciclo.fechaInicio), "dd-MM-yyyy")} /{" "}
-            {format(new Date(ciclo.fechaFin), "dd-MM-yyyy")}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Zafra {getCropLabelFromId?.(ciclo.cultivoId)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {format(new Date(ciclo.fechaInicio), "dd/MM/yyyy")} - {format(new Date(ciclo.fechaFin), "dd/MM/yyyy")}
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+            {ciclo.actividadesIds?.length || 0} actividades
           </Typography>
         </Box>
       </AccordionSummary>
-      <AccordionDetails>
+      <AccordionDetails sx={{ backgroundColor: "rgba(255,255,255,0.95)" }}>
+        {/* Header de gestión de actividades */}
         <Box
           sx={{
-            justifyContent: "flex-end",
-            margin: "0.5rem",
-            gap: "0.2rem",
-            display: "flex",
+            background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+            borderRadius: "12px",
+            padding: "16px",
+            marginBottom: "16px",
+            border: "1px solid #e2e8f0",
           }}
         >
-          <Button
-            variant="outlined"
-            startIcon={<DeleteIcon />}
-            onClick={() => removeCiclo(ciclo._id)}
-          >
-            Eliminar
-          </Button>
-          <ActividadEditorDialog
-            cicloId={ciclo._id}
-            campanaId={ciclo.campanaId}
-            loteId={loteId}
-            campoId={lote.properties.campo_parent_id}
-          />
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b", mb: 0.5 }}>
+                🌾 Gestión de Actividades
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Planifica y administra las actividades de esta zafra
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<DeleteIcon />}
+              onClick={() => removeCiclo?.(ciclo._id)}
+              color="error"
+              size="small"
+              sx={{ borderRadius: "8px" }}
+            >
+              Eliminar Zafra
+            </Button>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <ActividadEditorDialog
+              cicloId={ciclo._id}
+              campanaId={ciclo.campanaId}
+              loteId={loteId}
+              campoId={lote.properties.campo_parent_id}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
+              {ciclo.actividadesIds?.length || 0} actividad{(ciclo.actividadesIds?.length || 0) !== 1 ? 'es' : ''} planificada{(ciclo.actividadesIds?.length || 0) !== 1 ? 's' : ''}
+            </Typography>
+          </Box>
         </Box>
 
-        <Paper
+        {/* Lista de actividades */}
+        <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            alignItems: "center",
-            gap: "1rem",
-            backgroundColor: "#c7bb27",
-            margin: "0.2rem",
-            paddingY: "1rem",
-            borderRadius: "1rem",
+            gap: "16px",
+            backgroundColor: "rgba(248, 250, 252, 0.8)",
+            borderRadius: "12px",
+            padding: ciclo.actividadesIds?.length ? "20px" : "24px",
+            border: "1px solid #e2e8f0",
+            marginTop: "8px", // Added margin top to separate from header
           }}
         >
           {actividades.map((a, i) => {
             return (
-              <ActividadCardBase key={a} actividadId={a}></ActividadCardBase>
+              <Box key={a} sx={{
+                backgroundColor: "white",
+                borderRadius: "8px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                overflow: "hidden",
+                marginBottom: "4px" // Added margin bottom for better spacing between cards
+              }}>
+                <ActividadCardBase actividadId={a} />
+              </Box>
             );
           })}
 
-          {!ciclo.actividadesIds.length && (
-            <Typography>Sin Actividades Planificadas</Typography>
+          {!ciclo.actividadesIds?.length && (
+            <Box sx={{
+              textAlign: "center",
+              py: 3,
+              color: "text.secondary"
+            }}>
+              <Typography variant="h6" sx={{ mb: 1, opacity: 0.7 }}>
+                📝 Sin Actividades Planificadas
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.6 }}>
+                Usa el botón "Nueva Actividad" para comenzar a planificar
+              </Typography>
+            </Box>
           )}
-        </Paper>
+        </Box>
       </AccordionDetails>
     </Accordion>
   );

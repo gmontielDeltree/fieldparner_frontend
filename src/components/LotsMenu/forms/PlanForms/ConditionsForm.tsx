@@ -45,7 +45,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
     setFormData({
       ...formData,
       condiciones: {
-        ...formData.condiciones,
+        ...(formData.condiciones || {}),
         [id]: numericValue
       }
     });
@@ -62,7 +62,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               id="temperatura_min"
               label={t("minTemperature")}
               fullWidth
-              value={formData.condiciones.temperatura_min}
+              value={formData.condiciones?.temperatura_min || ""}
               onChange={handleInputChange}
               type="number"
               InputProps={{
@@ -80,7 +80,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               id="humedad_min"
               label={t("minHumidity")}
               fullWidth
-              value={formData.condiciones.humedad_min || ""}
+              value={formData.condiciones?.humedad_min || ""}
               onChange={handleInputChange}
               type="number"
               InputProps={{
@@ -98,7 +98,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               id="velocidad_min"
               label={t("minWind")}
               fullWidth
-              value={formData.condiciones.velocidad_min || ""}
+              value={formData.condiciones?.velocidad_min || ""}
               onChange={handleInputChange}
               type="number"
               InputProps={{
@@ -116,7 +116,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               id="temperatura_max"
               label={t("maxTemperature")}
               fullWidth
-              value={formData.condiciones.temperatura_max || ""}
+              value={formData.condiciones?.temperatura_max || ""}
               onChange={handleInputChange}
               type="number"
               InputProps={{
@@ -134,7 +134,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               id="humedad_max"
               label={t("maxHumidity")}
               fullWidth
-              value={formData.condiciones.humedad_max || ""}
+              value={formData.condiciones?.humedad_max || ""}
               onChange={handleInputChange}
               type="number"
               InputProps={{
@@ -152,7 +152,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               id="velocidad_max"
               label={t("maxWind")}
               fullWidth
-              value={formData.condiciones.velocidad_max || ""}
+              value={formData.condiciones?.velocidad_max || ""}
               onChange={handleInputChange}
               type="number"
               InputProps={{

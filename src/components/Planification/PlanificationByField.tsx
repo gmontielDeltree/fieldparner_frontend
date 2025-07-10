@@ -8,13 +8,15 @@ import {
   IconButton,
   Tooltip,
   Typography,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import React, { useContext, useEffect, useState } from "react";
 import { Ciclo } from "./Ciclo";
 import { useField } from "../../hooks/useField";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CicloEditorDialog from "./CicloEditorDialog";
-import { MoreVert } from "@mui/icons-material";
+import { MoreVert, Campaign } from "@mui/icons-material";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
@@ -24,6 +26,7 @@ import { CultivoContext } from "./contexts/CultivosContext";
 import { format } from "date-fns";
 import { filter } from "jszip";
 import { get_ingresos_egresos } from "./FuncionesInformes";
+import { useTranslation } from "react-i18next";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -56,7 +59,7 @@ function a11yProps(index: number) {
 
 interface LoteAccordionProps {
   lote: any;
-  name: string;
+  name?: string;
   expanded: boolean;
   cicloSelected: string;
   campanaId: string;
@@ -74,9 +77,9 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
   console.log("LOTEACORDION", lote, name);
   // const [ciclos, setCiclos] = useState([])
   const { getCiclosFromCampanaAndLote, refreshCiclos } =
-    useContext(CiclosContext);
-  let ciclos = getCiclosFromCampanaAndLote(campanaId, lote.id);
-  const { getCropLabelFromId, getCropColorFromId } = useContext(CultivoContext);
+    useContext(CiclosContext) || {};
+  let ciclos = getCiclosFromCampanaAndLote?.(campanaId, lote.id) || [];
+  const { getCropLabelFromId, getCropColorFromId } = useContext(CultivoContext) || {};
 
   useEffect(() => {
     setExp(expanded);
@@ -108,7 +111,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
           <Typography>{lote.properties.nombre}</Typography>
 
           <Box sx={{ display: "flex", gap: "0.4rem" }}>
-            {ciclos?.map((ciclo, i) => (
+            {ciclos?.map((ciclo: any, i: number) => (
               <Tooltip
                 title={
                   format(new Date(ciclo.fechaInicio), "dd-MM-yyyy") +
@@ -122,10 +125,10 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
                   sx={{
                     borderRadius: "4px",
                     height: "1.9rem",
-                    backgroundColor: getCropColorFromId(ciclo.cultivoId),
+                    backgroundColor: getCropColorFromId?.(ciclo.cultivoId) || '#ccc',
                   }}
                 >
-                  {getCropLabelFromId(ciclo.cultivoId)}
+                  {getCropLabelFromId?.(ciclo.cultivoId) || 'Unknown'}
                 </Fab>
               </Tooltip>
             ))}
@@ -133,11 +136,11 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
 
           <CicloEditorDialog
             otrosCiclos={ciclos}
-            name={name}
+            campanaId={campanaId}
             loteId={lote.id}
             onSave={() => {
               // Update
-              refreshCiclos();
+              refreshCiclos?.();
             }}
           />
         </Box>
@@ -160,7 +163,19 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
     </Accordion>
   );
 };
-export const PlanificationByField = ({
+interface PlanificationByFieldProps {
+  name?: string;
+  fieldId: string;
+  loteSelected: string;
+  cicloSelected: string;
+  onClose: () => void;
+  onlyLoteSelected?: boolean;
+  campaignId: string;
+  verificationMode?: boolean;
+  activityToVerify?: any;
+}
+
+export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
   name,
   fieldId,
   loteSelected,
@@ -168,19 +183,22 @@ export const PlanificationByField = ({
   onClose,
   onlyLoteSelected,
   campaignId,
+  verificationMode = false,
+  activityToVerify,
 }) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
 
+  const { t } = useTranslation();
   const { getCampanaDesc } = useContext(CampanasContext);
-  const [campo, setCampo] = useState([]);
-  const [lotes, setLotes] = useState([]);
+  const [campo, setCampo] = useState<any>(null);
+  const [lotes, setLotes] = useState<any[]>([]);
 
   const { fields, getFields } = useField();
 
-  const [input, setIn] = useState();
-  const [out, setOut] = useState();
+  const [input, setIn] = useState<number>(0);
+  const [out, setOut] = useState<number>(0);
 
   const { ciclos, getCiclosFromCampanaAndLote } = useContext(CiclosContext);
 
@@ -213,59 +231,83 @@ export const PlanificationByField = ({
 
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
-      <Box>
+      {/* Header con información de campaña */}
+      <Box
+        sx={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          padding: "16px",
+          borderRadius: "12px 12px 0 0",
+        }}
+      >
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            paddingX: "1rem",
+            alignItems: "center",
           }}
         >
           <Box>
-            <Typography variant="h5">{campo?.nombre}</Typography>
-            <Typography variant="subtitle2">
-              Planificación Campaña? {getCampanaDesc(campaignId)}
+            <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+              {campo?.nombre}
             </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+              <Campaign fontSize="small" />
+              <Typography variant="subtitle1">
+                Planificación de Campaña: <strong>{getCampanaDesc(campaignId)}</strong>
+              </Typography>
+            </Box>
           </Box>
 
-          <IconButton onClick={handleClose}>
+          <IconButton onClick={handleClose} sx={{ color: "white" }}>
             <CancelIcon />
-
-            {/* <MoreVert></MoreVert> */}
           </IconButton>
         </Box>
-        <Divider component={"div"} variant="middle" />
       </Box>
 
-      <Box
-        sx={{ marginBottom: "0.2rem", maxHeight: "70vh", overflowY: "auto" }}
-      >
-        <Box sx={{
-          padding: "15px",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "8px",
-          margin: "10px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-        }}>
-          <Typography variant="h6" sx={{ marginBottom: "10px", color: "#2c3e50" }}>
-            Resumen Económico
+      {/* Verification Mode Alert */}
+      {verificationMode && activityToVerify && (
+        <Alert
+          severity="warning"
+          sx={{ m: 2 }}
+          icon={<MoreVert />}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+            {t("activityVerificationModeTitle")}
           </Typography>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px" }}>
-            <Box sx={{ textAlign: "center", padding: "10px", backgroundColor: "#e8f5e8", borderRadius: "6px" }}>
-              <Typography variant="subtitle2" color="textSecondary">Ingresos</Typography>
-              <Typography variant="h6" color="success.main">${input || 0}</Typography>
-            </Box>
-            <Box sx={{ textAlign: "center", padding: "10px", backgroundColor: "#fff3e0", borderRadius: "6px" }}>
-              <Typography variant="subtitle2" color="textSecondary">Egresos</Typography>
-              <Typography variant="h6" color="warning.main">${out || 0}</Typography>
-            </Box>
-            <Box sx={{ textAlign: "center", padding: "10px", backgroundColor: "#e3f2fd", borderRadius: "6px" }}>
-              <Typography variant="subtitle2" color="textSecondary">Ganancia</Typography>
-              <Typography variant="h6" color="primary.main">${out ? (input - out) : 0}</Typography>
-            </Box>
-          </Box>
-        </Box>
+          <Typography variant="body2">
+            {t("activityVerificationModeDescription", { activityType: activityToVerify.tipo })}
+          </Typography>
+        </Alert>
+      )}
+
+      {/* Alert informativo */}
+      <Alert
+        severity="info"
+        sx={{
+          margin: "10px",
+          borderRadius: "8px",
+          '& .MuiAlert-message': {
+            width: '100%'
+          }
+        }}
+      >
+        <AlertTitle sx={{ fontWeight: 'bold' }}>{t("productiveCyclesManagementTitle")}</AlertTitle>
+        <Typography variant="body2">
+          {t("productiveCyclesManagementDescription", { campaignName: getCampanaDesc(campaignId) })}
+        </Typography>
+      </Alert>
+
+      <Box
+        sx={{ marginBottom: "0.2rem", maxHeight: "calc(100vh - 350px)", overflowY: "auto" }}
+      >
         {/* Por cada lote */}
+
+        {lotes?.length === 0 && (
+          <Box sx={{ textAlign: "center", padding: "40px", color: "text.secondary" }}>
+            <Typography variant="h6">{t("noLotesInFieldMessage")}</Typography>
+          </Box>
+        )}
 
         {lotes?.map((lote, i) => {
           return (

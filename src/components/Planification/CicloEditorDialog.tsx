@@ -6,15 +6,18 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DateRangePicker from "./DateRangePicker";
-import { Autocomplete, Box, Typography } from "@mui/material";
+import { Autocomplete, Box, Typography, Chip, Alert } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { CultivoItem } from "../../hooks";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useContext, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ICiclosPlanificacion } from "../../interfaces/planification";
 import { add, isWithinInterval } from "date-fns";
 import { AutocompleteCultivo } from "../LotsMenu/components/AutocompleteCultivo";
+import { CampanasContext } from "./contexts/CampanasContext";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EventIcon from '@mui/icons-material/Event';
 
 export default function CicloEditorDialog({
   campanaId,
@@ -38,6 +41,7 @@ export default function CicloEditorDialog({
   });
 
   const { t, i18n } = useTranslation();
+  const { getCampanaDesc } = useContext(CampanasContext);
 
   const [open, setOpen] = React.useState(false);
   const [cultivo, setCultivo] = React.useState<CultivoItem>();
@@ -90,12 +94,25 @@ export default function CicloEditorDialog({
 
   return (
     <React.Fragment>
-      <Button variant="contained" onClick={handleClickOpen}>
-        + Zafra
+      <Button
+        variant="contained"
+        onClick={handleClickOpen}
+        startIcon={<AddCircleOutlineIcon />}
+        size="small"
+        sx={{
+          backgroundColor: '#2e7d32',
+          '&:hover': {
+            backgroundColor: '#1b5e20'
+          }
+        }}
+      >
+        {t('Nueva Zafra')}
       </Button>
       <Dialog
         open={open}
         onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
         PaperProps={{
           component: "form",
           onClick: (e) => e.stopPropagation(),
@@ -109,56 +126,79 @@ export default function CicloEditorDialog({
           },
         }}
       >
-        <DialogTitle>Nueva Zafra {campanaId}</DialogTitle>
-        <DialogContent>
-          <DialogContentText></DialogContentText>
+        <DialogTitle sx={{
+          backgroundColor: '#f5f5f5',
+          borderBottom: '1px solid #e0e0e0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1
+        }}>
+          <EventIcon color="primary" />
+          {t('Nueva Zafra/Ciclo Productivo')}
+        </DialogTitle>
+        <DialogContent sx={{ paddingTop: '20px' }}>
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                {t('Creando zafra para la campaña')}:
+              </Typography>
+              <Chip
+                label={getCampanaDesc(campanaId) || campanaId}
+                color="primary"
+                size="small"
+                sx={{ fontWeight: 'bold' }}
+              />
+            </Box>
+          </Alert>
 
+          <DialogContentText sx={{ mb: 2 }}>
+            {t('Configure el cultivo y las fechas para este ciclo productivo')}
+          </DialogContentText>
 
-          <Box style={{ marginBottom: "1rem", marginTop: "1rem" }}
-          >
+          <Box style={{ marginBottom: "1rem", marginTop: "1rem" }}>
             <AutocompleteCultivo
-              onChange={(value) =>
-                setCultivo(value)
-              }
-            ></AutocompleteCultivo>
+              onChange={(value) => setCultivo(value)}
+              label={t('Seleccione el cultivo para esta zafra')}
+            />
           </Box>
 
-          {/* <Autocomplete
-            style={{ marginBottom: "1rem", marginTop: "1rem" }}
-            disablePortal
-            value={cultivo}
-            id="combo-box-demo"
-            options={crops}
-            getOptionLabel={(option) => option.descriptionEN}
-            sx={{ width: 300 }}
-            isOptionEqualToValue={(option, value) => option._id === value._id}
-            onChange={(event: any, newValue: string | null) =>
-              setCultivo(newValue)
-            }
-            renderInput={(params) => <TextField {...params} label="Cultivo" />}
-          /> */}
-
-          <DateRangePicker
-            invalidRanges={invalidRanges}
-            startDate={startDate}
-            endDate={endDate}
-            onRangeChange={(s, e) => {
-              console.log(s, e);
-              setStartDate(s);
-              setEndDate(e);
-            }}
-          />
+          <Box sx={{ mt: 3 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
+              {t('Período del ciclo productivo')}:
+            </Typography>
+            <DateRangePicker
+              invalidRanges={invalidRanges}
+              startDate={startDate}
+              endDate={endDate}
+              onRangeChange={(s, e) => {
+                console.log(s, e);
+                setStartDate(s);
+                setEndDate(e);
+              }}
+            />
+          </Box>
 
           {!checkRangeIsValid(startDate, endDate) && (
-            <Typography>
+            <Alert severity="error" sx={{ mt: 2 }}>
               {t("El rango seleccionado incluye uno o mas ciclos")}
-            </Typography>
+            </Alert>
+          )}
+
+          {otrosCiclos?.length > 0 && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="caption" color="text.secondary">
+                {t('Ciclos existentes en este lote')}: {otrosCiclos.length}
+              </Typography>
+            </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancelar</Button>
+        <DialogActions sx={{ padding: '16px 24px', backgroundColor: '#f5f5f5' }}>
+          <Button onClick={handleClose} color="inherit">
+            {t('Cancelar')}
+          </Button>
           <Button
             type="submit"
+            variant="contained"
             disabled={!cultivo || !checkRangeIsValid(startDate, endDate)}
             onClick={() => {
               console.log(cultivo);
@@ -166,11 +206,12 @@ export default function CicloEditorDialog({
                 if (checkRangeIsValid(startDate, endDate)) {
                   saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate);
                   onSave();
+                  handleClose();
                 }
               }
             }}
           >
-            Aceptar
+            {t('Crear Zafra')}
           </Button>
         </DialogActions>
       </Dialog>

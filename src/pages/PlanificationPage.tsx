@@ -24,7 +24,7 @@ import {
 import { useField } from "../hooks/useField";
 import { useAppSelector, useCampaign } from "../hooks";
 import { ItemPlanificationByField } from "../components/Planification/ItemPlanificationByField";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { CultivoContext } from "../components/Planification/contexts/CultivosContext";
 import { useCrops } from "../hooks/useCrops";
 import {
@@ -39,7 +39,7 @@ import { LaboresContext } from "../components/Planification/contexts/LaboresCont
 import { useLabores } from "../hooks/useLabores";
 import { CiclosContext } from "../components/Planification/contexts/CiclosContext";
 import { useCiclos, useListaDeCiclos } from "../hooks/usePlanifications";
-import { ArrowBack, Campaign, Info } from "@mui/icons-material";
+import { ArrowBack, Campaign, Info, VerifiedUser } from "@mui/icons-material";
 import { ReporteDeCampanas } from "../components/Planification/FuncionesInformes";
 import { SearchBar } from "../components/Planification/SearchBar";
 import { Field } from "@types";
@@ -50,18 +50,42 @@ const ItemMemo = React.memo(ItemPlanificationByField);
 
 export const PlanificationPage: React.FC = () => {
   const { t } = useTranslation();
-  const navigation = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [filteredFields, setFilteredFields] = useState<Field[]>([]);
   const { fields, getFields } = useField();
   const { campaigns, getCampaigns } = useCampaign();
 
-  const [selCampanaId, setSelCampanaId] = useState();
-  const [selCampoId, setSelCampoId] = useState();
-  const [selLoteId, setSelLoteId] = useState();
-  const [selCicloId, setSelCicloId] = useState();
+  // Get verification mode data from navigation state
+  const verificationData = location.state as {
+    selectedCampaignId?: string;
+    selectedFieldId?: string;
+    selectedLoteId?: string;
+    selectedCicloId?: string;
+    activityToVerify?: any;
+    verificationMode?: boolean;
+  } | null;
+
+  const isVerificationMode = verificationData?.verificationMode || false;
+  const activityToVerify = verificationData?.activityToVerify;
+
+  const [selCampanaId, setSelCampanaId] = useState<string | undefined>(
+    verificationData?.selectedCampaignId
+  );
+  const [selCampoId, setSelCampoId] = useState<string | undefined>(
+    verificationData?.selectedFieldId
+  );
+  const [selLoteId, setSelLoteId] = useState<string | undefined>(
+    verificationData?.selectedLoteId
+  );
+  const [selCicloId, setSelCicloId] = useState<string | undefined>(
+    verificationData?.selectedCicloId
+  );
 
   // New state for campaign selection
-  const [selectedCampaignForPlanning, setSelectedCampaignForPlanning] = useState('');
+  const [selectedCampaignForPlanning, setSelectedCampaignForPlanning] = useState(
+    verificationData?.selectedCampaignId || ''
+  );
   const [showCurrentCampaignAlert, setShowCurrentCampaignAlert] = useState(false);
   const [pendingCampaignSelection, setPendingCampaignSelection] = useState('');
 
@@ -84,14 +108,33 @@ export const PlanificationPage: React.FC = () => {
     }
   }, [fields, campaigns]);
 
+  // Add debugging for cycles
+  useEffect(() => {
+    console.log("🔄 CICLOS DEBUG - Estado completo:", {
+      ciclosObject: ciclos,
+      allCiclos: ciclos.ciclos,
+      ciclosLength: ciclos.ciclos?.length || 0,
+      hasGetCiclosFunction: typeof ciclos.getCiclosFromCampanaAndLote === 'function'
+    });
+
+    if (ciclos.ciclos?.length > 0) {
+      console.log("📋 TODOS LOS CICLOS:", ciclos.ciclos.map(c => ({
+        id: c._id,
+        campaignId: c.campanaId,
+        loteId: c.loteId,
+        cultivoId: c.cultivoId
+      })));
+    } else {
+      console.log("❌ NO HAY CICLOS CARGADOS");
+    }
+  }, [ciclos]);
+
   useEffect(() => {
     // Set default to current campaign if available
-    if (selectedCampaign) {
+    if (selectedCampaign && selectedCampaign._id) {
       setSelectedCampaignForPlanning(selectedCampaign._id);
     }
   }, [selectedCampaign]);
-
-  const navigate = useNavigate();
 
   const handleCampaignChange = (campaignId: string) => {
     // Check if it's the current campaign
@@ -120,7 +163,7 @@ export const PlanificationPage: React.FC = () => {
 
   const getCurrentCampaignName = () => {
     if (selectedCampaign) {
-      return selectedCampaign.name || selectedCampaign.nombreComercial || 'Campaña Actual';
+      return selectedCampaign.name || 'Campaña Actual';
     }
     return 'Campaña Actual';
   };
@@ -138,7 +181,7 @@ export const PlanificationPage: React.FC = () => {
                 sx={{
                   position: "absolute",
                   zIndex: 2,
-                  backgroundColor: "#f8fafcee",
+                  backgroundColor: "#f8fafcaa", // Reduced opacity from 'ee' to 'aa' to show map better
                   minHeight: "100vh",
                   padding: "16px",
                 }}
@@ -151,6 +194,8 @@ export const PlanificationPage: React.FC = () => {
                       maxHeight: "calc(100vh - 32px)",
                       borderRadius: "12px",
                       overflow: "hidden",
+                      backgroundColor: "rgba(255, 255, 255, 0.95)", // Semi-transparent background
+                      backdropFilter: "blur(10px)", // Add blur effect for better readability
                     }}
                   >
                     {/* Header */}
@@ -184,25 +229,46 @@ export const PlanificationPage: React.FC = () => {
 
                       <PlanificacionMoreButton
                         onReportePorCultivoPDF={() => {
-                          ReporteDeCampanas(
-                            ciclos.ciclos,
-                            campaigns,
-                            crops,
-                            "pdf",
-                            selectedCampaign
-                          );
+                          if (selectedCampaign) {
+                            ReporteDeCampanas(
+                              ciclos.ciclos,
+                              campaigns,
+                              crops,
+                              "pdf",
+                              selectedCampaign
+                            );
+                          }
                         }}
                         onReportePorCultivoXLS={() => {
-                          ReporteDeCampanas(
-                            ciclos.ciclos,
-                            campaigns,
-                            crops,
-                            "xls",
-                            selectedCampaign
-                          );
+                          if (selectedCampaign) {
+                            ReporteDeCampanas(
+                              ciclos.ciclos,
+                              campaigns,
+                              crops,
+                              "xls",
+                              selectedCampaign
+                            );
+                          }
                         }}
                       />
                     </Box>
+
+                    {/* Verification Mode Alert */}
+                    {isVerificationMode && activityToVerify && (
+                      <Alert
+                        severity="warning"
+                        sx={{ m: 2 }}
+                        icon={<VerifiedUser />}
+                      >
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                          {t('Activity Verification Required')}
+                        </Typography>
+                        <Typography variant="body2">
+                          {t('You are verifying a planned activity of type')} <strong>{activityToVerify.tipo}</strong>.
+                          {t(' Please complete the missing fields to make this activity executable.')}
+                        </Typography>
+                      </Alert>
+                    )}
 
                     {/* Campaign Selection */}
                     <Card sx={{ m: 2, border: "1px solid #e3f2fd" }}>
@@ -224,7 +290,7 @@ export const PlanificationPage: React.FC = () => {
                             {campaigns.map((campaign) => (
                               <MenuItem key={campaign._id} value={campaign._id}>
                                 <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                  <span>{campaign.name || campaign.nombreComercial}</span>
+                                  <span>{campaign.name}</span>
                                   {selectedCampaign && campaign._id === selectedCampaign._id && (
                                     <Chip
                                       label={t('Current')}
@@ -249,17 +315,6 @@ export const PlanificationPage: React.FC = () => {
                             <br />
                             {t('You are working with the current active campaign. Changes may affect ongoing operations.')}
                           </Alert>
-                        )}
-
-                        {getSelectedCampaignData() && (
-                          <Box sx={{ mt: 2, p: 2, backgroundColor: "#f5f5f5", borderRadius: 1 }}>
-                            <Typography variant="subtitle2" color="text.secondary">
-                              {t('Selected Campaign')}:
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-                              {getSelectedCampaignData()?.name || getSelectedCampaignData()?.nombreComercial}
-                            </Typography>
-                          </Box>
                         )}
                       </CardContent>
                     </Card>
@@ -287,27 +342,71 @@ export const PlanificationPage: React.FC = () => {
                         />
                       </Box>
 
-                      {filteredFields === undefined && (
+                      {!selectedCampaignForPlanning && (
+                        <Box
+                          sx={{
+                            textAlign: "center",
+                            padding: "60px 20px",
+                            color: "text.secondary",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: "12px",
+                            border: "2px dashed #dee2e6"
+                          }}
+                        >
+                          <Campaign sx={{ fontSize: 60, color: "#6c757d", mb: 2 }} />
+                          <Typography variant="h6" gutterBottom>
+                            {t('No Campaign Selected')}
+                          </Typography>
+                          <Typography variant="body2">
+                            {t('Please select a campaign above to view and plan activities')}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {selectedCampaignForPlanning && filteredFields === undefined && (
                         <Typography sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
                           {t('No fields available')}
                         </Typography>
                       )}
 
-                      {filteredFields?.map((campo, i) => (
+                      {selectedCampaignForPlanning && filteredFields?.length === 0 && (
+                        <Box
+                          sx={{
+                            textAlign: "center",
+                            padding: "40px 20px",
+                            color: "text.secondary",
+                            backgroundColor: "#f8f9fa",
+                            borderRadius: "8px"
+                          }}
+                        >
+                          <Typography variant="h6" gutterBottom>
+                            {t('No fields match your search')}
+                          </Typography>
+                          <Typography variant="body2">
+                            {t('Try adjusting your search criteria')}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {selectedCampaignForPlanning && filteredFields?.map((campo, i) => (
                         <ItemMemo
                           key={campo._id}
                           campo={campo}
-                          campanas={campaigns}
-                          onCampaignClick={(campana, lote, ciclo) => {
+                          campanas={selectedCampaignForPlanning ?
+                            campaigns.filter(c => c._id === selectedCampaignForPlanning) :
+                            []
+                          }
+                          onCampaignClick={(campana: any, lote: any, ciclo?: any) => {
                             setSelCampanaId(campana._id);
                             setSelCampoId(campo._id);
                             setSelLoteId(lote.id);
                             if (ciclo) {
                               setSelCicloId(ciclo._id);
                             } else {
-                              setSelCicloId(" ");
+                              // If no cycle exists, set a placeholder to open the planning panel
+                              setSelCicloId("no-cycle");
                             }
-                            console.log("CLICK!!!", campana, campo);
+                            console.log("CLICK!!!", campana, campo, lote, ciclo);
                           }}
                         />
                       ))}
@@ -328,16 +427,23 @@ export const PlanificationPage: React.FC = () => {
                           borderRadius: "12px",
                           overflow: "hidden",
                           maxHeight: "calc(100vh - 32px)",
+                          backgroundColor: "rgba(255, 255, 255, 0.95)", // Semi-transparent background
+                          backdropFilter: "blur(10px)", // Add blur effect for better readability
                         }}
                       >
                         <PlanificationByField
                           campaignId={selectedCampaignForPlanning}
                           fieldId={selCampoId}
                           loteSelected={selLoteId}
-                          cicloSelected={selCicloId}
+                          cicloSelected={selCicloId === "no-cycle" ? "" : selCicloId}
                           onClose={() => {
                             setSelCampanaId(undefined);
+                            setSelCampoId(undefined);
+                            setSelLoteId(undefined);
+                            setSelCicloId(undefined);
                           }}
+                          verificationMode={isVerificationMode}
+                          activityToVerify={activityToVerify}
                         />
                       </Paper>
                     </Grid>

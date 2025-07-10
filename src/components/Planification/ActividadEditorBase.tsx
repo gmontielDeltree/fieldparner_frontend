@@ -5,10 +5,11 @@ import Step from "@mui/material/Step";
 import StepButton from "@mui/material/StepButton";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import { TextField, FormControl, Grid, Paper, Alert, MenuItem, Select, InputLabel } from '@mui/material';
+import { TextField, Grid, Alert, Card, CardContent, Switch, FormControlLabel } from '@mui/material';
 import { IActividadPlanificacion } from "../../interfaces/planification";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../hooks/useRedux";
 
 // Import the labor forms
 import PersonalForm from '../LotsMenu/forms/PlanForms/PersonalForm';
@@ -34,6 +35,13 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
 }) => {
   const { t } = useTranslation();
   const { saveActividad } = usePlanActividad();
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Unit conversion functions
+  const convertTonsToQuintals = (tons: number) => tons * 10;
+  const convertQuintalsToTons = (quintals: number) => quintals / 10;
+  const convertTonsToKg = (tons: number) => tons * 1000;
+  const convertKgToTons = (kg: number) => kg / 1000;
 
   // Convert planification data to labor form format
   const convertToLaborFormat = (actividad: IActividadPlanificacion) => {
@@ -72,6 +80,96 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     };
   };
 
+  // Harvest Yield Form Component
+  const HarvestYieldForm = () => {
+    const isArgentina = user?.countryId === 'AR';
+    const [yieldPerHa, setYieldPerHa] = useState(convertKgToTons(formData.detalles?.rinde_estimado || 0));
+    const [totalYield, setTotalYield] = useState(convertKgToTons(formData.detalles?.rinde_estimado_total || 0));
+
+    const onYieldPerHaChange = (value: number) => {
+      setYieldPerHa(value);
+      const kgValue = convertTonsToKg(value);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          rinde_estimado: kgValue,
+        },
+      }));
+
+      // Update total yield based on hectares
+      const totalTons = value * (formData.detalles?.hectareas || 0);
+      setTotalYield(totalTons);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          rinde_estimado_total: convertTonsToKg(totalTons),
+        },
+      }));
+    };
+
+    const onTotalYieldChange = (value: number) => {
+      setTotalYield(value);
+      const kgValue = convertTonsToKg(value);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          rinde_estimado_total: kgValue,
+        },
+      }));
+    };
+
+    return (
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {t('Estimated Yield')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={isArgentina ? t('Yield per hectare (qq/ha)') : t('Yield per hectare (ton/ha)')}
+                value={isArgentina ? convertTonsToQuintals(yieldPerHa) : yieldPerHa}
+                onChange={(e) => {
+                  const inputValue = Number(e.target.value);
+                  const tonsValue = isArgentina ? convertQuintalsToTons(inputValue) : inputValue;
+                  onYieldPerHaChange(tonsValue);
+                }}
+                unit={isArgentina ? "qq/ha" : "ton/ha"}
+              />
+              {isArgentina && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  {t('Equivalent')}: {yieldPerHa.toFixed(2)} ton/ha
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={isArgentina ? t('Total estimated yield (qq)') : t('Total estimated yield (ton)')}
+                value={isArgentina ? convertTonsToQuintals(totalYield) : totalYield}
+                onChange={(e) => {
+                  const inputValue = Number(e.target.value);
+                  const tonsValue = isArgentina ? convertQuintalsToTons(inputValue) : inputValue;
+                  onTotalYieldChange(tonsValue);
+                }}
+                unit={isArgentina ? "qq" : "ton"}
+              />
+              {isArgentina && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  {t('Equivalent')}: {totalYield.toFixed(2)} ton
+                </Typography>
+              )}
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const [formData, setFormData] = useState(convertToLaborFormat(actividadDoc));
   const [activeStep, setActiveStep] = useState(0);
   const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
@@ -79,7 +177,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   const steps = [t('general'), t('supplies'), t('services'), t('observations')];
 
   useEffect(() => {
-    setFormData(convertToLaborFormat(actividadDoc));
+    const converted = convertToLaborFormat(actividadDoc);
+    setFormData(converted);
   }, [actividadDoc]);
 
   const totalSteps = () => steps.length;
@@ -122,59 +221,84 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
       }));
     };
 
-    return (
-      <Paper sx={{ p: 3, mb: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {t('Planning Status and Details')}
-        </Typography>
-
-        <Grid container spacing={2}>
-          {/* Status field */}
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>{t('Status')}</InputLabel>
-              <Select
-                value={formData.estado || 'abierta'}
-                onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
-                label={t('Status')}
-              >
-                <MenuItem value="abierta">{t('Open')}</MenuItem>
-                <MenuItem value="cerrada">{t('Closed')}</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* Harvest specific fields */}
-          {formData.tipo === 'cosecha' && (
-            <>
-              <Grid item xs={12} sm={6}>
-                <NumberFieldWithUnits
-                  fullWidth
-                  label="Rinde Estimado (ton/ha)"
-                  value={formData.detalles?.rinde_estimado || 0}
-                  onChange={(e) => onFieldChange('rinde_estimado', e.target.value)}
-                  unit="ton/ha"
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <NumberFieldWithUnits
-                  fullWidth
-                  label="Rinde Estimado Total (ton)"
-                  value={formData.detalles?.rinde_estimado_total || 0}
-                  onChange={(e) => onFieldChange('rinde_estimado_total', e.target.value)}
-                  unit="ton"
-                />
-              </Grid>
-            </>
-          )}
-        </Grid>
-
-        {formData.estado === 'cerrada' && (
-          <Alert severity="warning" sx={{ mt: 2 }}>
+    // Only show status section if the planning is closed
+    if (formData.estado === 'cerrada') {
+      return (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            📋 {t('Planning Status')}: {t('Closed')}
+          </Typography>
+          <Typography>
             {t('Planning is closed and cannot be modified')}
-          </Alert>
-        )}
-      </Paper>
+          </Typography>
+        </Alert>
+      );
+    }
+
+    // For active planning, don't show any status section
+    return null;
+  };
+
+  // Activity Details Form (for application activities)
+  const ActivityDetailsForm = () => {
+    const [fertilizationChecked, setFertilizationChecked] = useState(
+      formData.detalles?.fertilizacion || false,
+    );
+    const [phytosanitaryChecked, setPhytosanitaryChecked] = useState(
+      formData.detalles?.fitosanitaria || false,
+    );
+
+    const handleCheckboxChange = (fieldName: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = event.target.checked;
+      if (fieldName === 'fertilizacion') {
+        setFertilizationChecked(checked);
+      } else if (fieldName === 'fitosanitaria') {
+        setPhytosanitaryChecked(checked);
+      }
+
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          [fieldName]: checked,
+        },
+      }));
+    };
+
+    return (
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {t('Activity Details')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={fertilizationChecked}
+                    onChange={handleCheckboxChange('fertilizacion')}
+                    color="primary"
+                  />
+                }
+                label={t('Fertilization')}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={phytosanitaryChecked}
+                    onChange={handleCheckboxChange('fitosanitaria')}
+                    color="primary"
+                  />
+                }
+                label={t('Phytosanitary')}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
     );
   };
 
@@ -186,12 +310,14 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         return (
           <>
             <PlanificationStatusForm />
+            {formData.tipo === 'cosecha' && <HarvestYieldForm />}
+            {formData.tipo === 'aplicacion' && <ActivityDetailsForm />}
             <PersonalForm
               lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
               formData={formData}
               setFormData={setFormData}
               mode="plan"
-              showActivityType={formData.tipo === 'aplicacion'}
+              showActivityType={false}
             />
           </>
         );
@@ -210,6 +336,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
               db={null}
               formData={formData}
               setFormData={setFormData}
+              mode="plan"
             />
           </>
         );
@@ -222,6 +349,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
           <ServicesForm
             formData={formData}
             setFormData={setFormData}
+            mode="plan"
           />
         );
       case 3:
@@ -252,6 +380,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         ...(formData.estado && { estado: formData.estado }),
         ...(formData.detalles.rinde_estimado && { rendimientoEstimado: formData.detalles.rinde_estimado }),
         ...(formData.detalles.rinde_estimado_total && { rendimientoEstimadoTotal: formData.detalles.rinde_estimado_total }),
+        ...(formData.detalles.fertilizacion !== undefined && { fertilizacion: formData.detalles.fertilizacion }),
+        ...(formData.detalles.fitosanitaria !== undefined && { fitosanitaria: formData.detalles.fitosanitaria }),
       };
 
       await saveActividad(planificationData, [], []);

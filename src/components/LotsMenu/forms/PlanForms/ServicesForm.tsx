@@ -16,6 +16,7 @@ import uuid4 from 'uuid4'
 import { useAppSelector } from '../../../../hooks/useRedux'
 import { useDeposit, useLaborsServices, useBusiness, useSupply } from '../../../../hooks'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
+import { NumberFieldWithUnits } from '../../components/NumberField'
 import ServicesList from './ServicesList'
 import { useTranslation } from 'react-i18next'
 
@@ -36,9 +37,10 @@ const CustomPaper = styled(Paper)({
 interface ServicesFormProps {
   formData: any
   setFormData: (data: any) => void
+  mode?: 'plan' | 'execute'
 }
 
-function ServicesForm({ formData, setFormData }: ServicesFormProps) {
+function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormProps) {
   const { t } = useTranslation()
   const { laborsServices, getLaborsServices } = useLaborsServices()
   const { businesses, getBusinesses } = useBusiness()
@@ -154,7 +156,7 @@ function ServicesForm({ formData, setFormData }: ServicesFormProps) {
 
           {/* Fila para "Servicio", "Contratista" y "Unidades" */}
           <Grid container item xs={12} spacing={1}>
-            <Grid item xs={4}>
+            <Grid item xs={mode === 'plan' ? 3 : 4}>
               <FormControl fullWidth>
                 <InputLabel id="service-dropdown-label">{t('service')}</InputLabel>
                 <Select
@@ -179,7 +181,7 @@ function ServicesForm({ formData, setFormData }: ServicesFormProps) {
               </FormControl>
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={mode === 'plan' ? 4 : 4}>
               <AutocompleteContratista
                 value={contractor}
                 onChange={setContractor}
@@ -187,13 +189,13 @@ function ServicesForm({ formData, setFormData }: ServicesFormProps) {
               />
             </Grid>
 
-            <Grid item xs={3}>
-              <TextField
+            <Grid item xs={mode === 'plan' ? 4 : 3}>
+              <NumberFieldWithUnits
                 fullWidth
                 label={t('units')}
-                type="number"
-                value={units}
+                value={Number(units)}
                 onChange={(e) => setUnits(Number(e.target.value))}
+                unit={t('hectares')}
               />
             </Grid>
 
