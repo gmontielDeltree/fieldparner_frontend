@@ -1185,6 +1185,7 @@
   "planning": "planejamento",
   "newActivity": "Nova Atividade",
   "selectActivityType": "Selecionar Tipo de Atividade",
-  "chooseTheActivityTypeYouWantToPlan": "Escolha o tipo de atividade que deseja planejar"
+  "chooseTheActivityTypeYouWantToPlan": "Escolha o tipo de atividade que deseja planejar",
+  "tax_data": "Dados fiscais"
 }
 

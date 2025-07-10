@@ -1182,5 +1182,6 @@
   "Información de la zafra correspondiente a la planificación anual": "Información de la zafra correspondiente a la planificación anual",
   "newActivity": "Nueva Actividad",
   "selectActivityType": "Seleccionar Tipo de Actividad",
-  "chooseTheActivityTypeYouWantToPlan": "Elige el tipo de actividad que deseas planificar"
+  "chooseTheActivityTypeYouWantToPlan": "Elige el tipo de actividad que deseas planificar",
+  "tax_data": "ID Fiscal"
 }

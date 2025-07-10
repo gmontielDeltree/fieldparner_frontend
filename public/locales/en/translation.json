@@ -1178,5 +1178,6 @@
   "planning": "planning",
   "newActivity": "New Activity",
   "selectActivityType": "Select Activity Type",
-  "chooseTheActivityTypeYouWantToPlan": "Choose the activity type you want to plan"
+  "chooseTheActivityTypeYouWantToPlan": "Choose the activity type you want to plan",
+  "tax_data": "Tax Data"
 }

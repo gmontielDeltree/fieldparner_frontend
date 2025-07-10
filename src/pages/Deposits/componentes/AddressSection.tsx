@@ -122,6 +122,15 @@ export const AddressSection: React.FC<AddressSectionProps> = ({
               localidades={localities}
             />
           </Grid>
+          <Grid item xs={6} sm={4}>
+            <TextField
+              label={t("tax_data")}
+              name="taxId"
+              value={formulario.taxId}
+              onChange={handleInputChange}
+              fullWidth
+            />
+          </Grid>
           <Grid item xs={12}>
             <TextField
               label={t("_address")}
