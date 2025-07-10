@@ -255,17 +255,6 @@ export const ActividadCardBase: React.FC = ({
                 }}
               />
             )}
-            <Chip
-              title="Costo Total"
-              label={
-                "USD " + calcTotal(lineasInsumos, lineasLabores)?.toFixed(2)
-              }
-              sx={{
-                backgroundColor: "#01579b",
-                color: "#FFD567",
-                fontWeight: "bold",
-              }}
-            />
           </Box>
         </CardContent>
       </Card>

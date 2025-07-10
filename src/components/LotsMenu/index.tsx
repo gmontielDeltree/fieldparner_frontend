@@ -29,7 +29,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const dispatch = useAppDispatch()
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null)
   const db = dbContext.fields
-  const [activities, setActivities] = useState(null)
+  const [activities, setActivities] = useState<any>(null)
   const { t } = useTranslation()
 
   // Información de actividad que se está editando:
@@ -59,49 +59,179 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   }
 
   const getActivities = async (uuid_del_lote: string) => {
-    let acts: Actividad[] = await gbl_docs_starting(
-      'actividad',
-      true,
-      true,
-      true
-    ).then(only_docs)
+    try {
+      // Primero obtener las actividades normales como siempre
+      let acts = await gbl_docs_starting(
+        'actividad',
+        true,
+        true,
+        true
+      ).then(only_docs) as any[]
 
-    let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
-    let _actividades_docs = s.reverse()
+      let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
+      let _actividades_docs = s.reverse()
 
-    let result = await db.allDocs({
-      startkey: 'ejecucion:',
-      endkey: 'ejecucion:\ufff0',
-    })
+      // Ahora intentar agregar las actividades planificadas
+      try {
+        let planificadasResponse = await gbl_docs_starting(
+          'planactividad',
+          true,
+          true,
+          true
+        )
+        let planificadas = only_docs(planificadasResponse) || []
 
-    let respuesta: { actividad: Actividad; ejecucion_id: string }[] = []
-    if (result.rows) {
-      _actividades_docs.forEach((actividad) => {
-        let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid))
-        respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id })
+        // Filtrar las actividades planificadas por loteId
+        let actividadesPlanificadas = planificadas.filter((doc: any) => doc && doc.loteId === uuid_del_lote)
+
+        // Load complete planned activity data and convert to expected format
+        for (const planif of actividadesPlanificadas) {
+          const planifData = planif as any;
+          if (planifData && planifData._id) {
+            try {
+              // Load complete planification data from database
+              const completePlanifData = await db.get(planifData._id) as any;
+              console.log('🔄 LOADING COMPLETE PLANIF DATA:', completePlanifData);
+
+              let actividadFormateada: any = {
+                _id: planifData._id,
+                lote_uuid: planifData.loteId,
+                uuid: planifData._id.replace('planactividad:', ''),
+                tipo: planifData.tipo || 'otro',
+                estado: 'planificada',
+                fecha: planifData.fecha,
+                detalles: {
+                  fecha_ejecucion_tentativa: planifData.fecha,
+                  hectareas: planifData.area || 0,
+                  // Map complete planned activity fields to regular activity format
+                  cultivo: completePlanifData.cultivo || null,
+                  contratista: completePlanifData.contratista || null,
+                  business: completePlanifData.accountId || planifData.accountId || null,
+                  dosis: completePlanifData.dosis || [],
+                  servicios: completePlanifData.servicios || [],
+                  rinde_estimado: completePlanifData.rindeEstimado || completePlanifData.rendimientoEstimado || 0,
+                  rinde_estimado_total: completePlanifData.rendimientoEstimadoTotal || 0,
+                  fertilizacion: completePlanifData.fertilizacion || false,
+                  fitosanitaria: completePlanifData.fitosanitaria || false,
+                  zafra: completePlanifData.zafra || '',
+                },
+                campaña: {
+                  campaignId: planifData.campanaId
+                },
+                ts_generacion: planifData.created?.date || new Date().toISOString(),
+                contratista: completePlanifData.contratista || null,
+                ingeniero: null,
+                comentario: completePlanifData.comentarios || completePlanifData.comentario || 'Actividad planificada',
+                observaciones: completePlanifData.comentarios || completePlanifData.observaciones || '',
+                condiciones: completePlanifData.condiciones || {
+                  humedad_max: undefined,
+                  humedad_min: undefined,
+                  temperatura_max: undefined,
+                  temperatura_min: undefined,
+                  velocidad_max: undefined,
+                  velocidad_min: undefined,
+                },
+                isPlanificada: true,
+                // Keep reference to original planned activity data
+                _originalPlanifData: completePlanifData
+              }
+              _actividades_docs.push(actividadFormateada)
+            } catch (error) {
+              console.warn('Could not load complete planification data for:', planifData._id, error);
+              // Fallback to basic mapping if complete data is not available
+              let actividadFormateada: any = {
+                _id: planifData._id,
+                lote_uuid: planifData.loteId,
+                uuid: planifData._id.replace('planactividad:', ''),
+                tipo: planifData.tipo || 'otro',
+                estado: 'planificada',
+                fecha: planifData.fecha,
+                detalles: {
+                  fecha_ejecucion_tentativa: planifData.fecha,
+                  hectareas: planifData.area || 0,
+                  cultivo: null,
+                  contratista: null,
+                  business: planifData.accountId || null,
+                  dosis: [],
+                  servicios: [],
+                  rinde_estimado: 0,
+                  rinde_estimado_total: 0,
+                  fertilizacion: false,
+                  fitosanitaria: false,
+                  zafra: '',
+                },
+                campaña: {
+                  campaignId: planifData.campanaId
+                },
+                ts_generacion: planifData.created?.date || new Date().toISOString(),
+                contratista: null,
+                ingeniero: null,
+                comentario: 'Actividad planificada',
+                observaciones: '',
+                condiciones: {
+                  humedad_max: undefined,
+                  humedad_min: undefined,
+                  temperatura_max: undefined,
+                  temperatura_min: undefined,
+                  velocidad_max: undefined,
+                  velocidad_min: undefined,
+                },
+                isPlanificada: true,
+                _originalPlanifData: planifData
+              }
+              _actividades_docs.push(actividadFormateada)
+            }
+          }
+        }
+      } catch (err) {
+        console.log('Error cargando actividades planificadas:', err)
+        // Si hay error, continuar sin las actividades planificadas
+      }
+
+      let result = await db.allDocs({
+        startkey: 'ejecucion:',
+        endkey: 'ejecucion:\ufff0',
       })
 
-      // Ordenar por fecha
-      respuesta.sort((a, b) => {
-        let fecha_1 = a.ejecucion_id
-          ? parseISO(a.ejecucion_id.split(':')[1])
-          : parseISO(
-            a.actividad.tipo === 'nota'
+      let respuesta: { actividad: any; ejecucion_id: string | undefined }[] = []
+      if (result.rows) {
+        _actividades_docs.forEach((actividad: any) => {
+          let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid))
+          respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id })
+        })
+
+        // Ordenar por fecha
+        respuesta.sort((a, b) => {
+          let fecha_1_str = a.ejecucion_id
+            ? a.ejecucion_id.split(':')[1]
+            : a.actividad.tipo === 'nota'
               ? a.actividad.fecha
-              : a.actividad.detalles.fecha_ejecucion_tentativa
-          )
-        let fecha_2 = b.ejecucion_id
-          ? parseISO(b.ejecucion_id.split(':')[1])
-          : parseISO(
-            b.actividad.tipo === 'nota'
-              ? b.actividad.fecha
-              : b.actividad.detalles.fecha_ejecucion_tentativa
-          )
-        return isBefore(fecha_1, fecha_2) ? 1 : -1
-      })
-    }
+              : a.actividad.detalles?.fecha_ejecucion_tentativa
 
-    return respuesta ? respuesta : null
+          let fecha_2_str = b.ejecucion_id
+            ? b.ejecucion_id.split(':')[1]
+            : b.actividad.tipo === 'nota'
+              ? b.actividad.fecha
+              : b.actividad.detalles?.fecha_ejecucion_tentativa
+
+          // Validar que las fechas existan antes de parsear
+          if (!fecha_1_str || !fecha_2_str) return 0
+
+          try {
+            let fecha_1 = parseISO(fecha_1_str as string)
+            let fecha_2 = parseISO(fecha_2_str as string)
+            return isBefore(fecha_1, fecha_2) ? 1 : -1
+          } catch (e) {
+            return 0
+          }
+        })
+      }
+
+      return respuesta ? respuesta : null
+    } catch (error) {
+      console.error('Error general en getActivities:', error)
+      return null
+    }
   }
 
   const gbl_docs_starting = async (
@@ -150,6 +280,9 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
         break
       case 'note':
         setSelectedCategory('editNote')
+        break
+      case 'verifyActivity':
+        setSelectedCategory('verifyActivity')
         break
       default:
         console.error('Invalid edit type')

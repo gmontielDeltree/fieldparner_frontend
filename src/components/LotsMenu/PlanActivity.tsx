@@ -38,6 +38,7 @@ import {
   MapPin,
   Sprout,
 } from 'lucide-react'
+import { format } from 'date-fns';
 
 // Keep the raw activity types with the standard Spanish values
 const ACTIVITY_TYPES = {
@@ -75,6 +76,7 @@ interface PlanActivityProps {
   lotActivities?: any
   backToActivites: () => void
   existingActivity: any
+  verificationMode?: boolean
 }
 
 // Maximum timeout for DB operations (10 seconds)
@@ -105,6 +107,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   lotActivities,
   fieldName,
   existingActivity,
+  verificationMode = false,
 }) => {
   if (!lot) return null
 
@@ -129,10 +132,19 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const rawActivityType = spanishActivityType;
 
   const { createWithdrawalOrder } = useOrder()
-  const isEditing = existingActivity && Object.keys(existingActivity).length > 0
+  let isEditing = existingActivity && Object.keys(existingActivity).length > 0
   const selectedCampaign = useAppSelector(
     (state) => state.campaign.selectedCampaign,
   )
+
+  // Debug: Log what data we're receiving
+  console.log('🔧 PLAN ACTIVITY DEBUG:', {
+    verificationMode,
+    existingActivity,
+    isEditing,
+    activityType,
+    translatedActivityType: rawActivityType
+  });
 
   const [showValidationNotification, setShowValidationNotification] = useState(false)
   const [missingFieldsList, setMissingFieldsList] = useState([])
@@ -199,7 +211,9 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       case t('general'):
         if (!formDetails.fecha_ejecucion_tentativa) fields.push(t('executionDate'))
         if (!formDetails.cultivo) fields.push(t('crop'))
-        if (!formData.contratista) fields.push(t('contractor'))
+        if (!formDetails.contratista || (!formDetails.contratista.nombreCompleto && !formDetails.contratista.razonSocial)) {
+          fields.push(t('contractor'))
+        }
         if (!formDetails.hectareas) fields.push(t('hectares'))
         break
 
@@ -252,7 +266,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         if (!formData.detalles || !formData.detalles.cultivo) {
           missingFields++
         }
-        if (!formData.contratista) {
+        if (!formData.detalles || !formData.detalles.contratista || (!formData.detalles.contratista.nombreCompleto && !formData.detalles.contratista.razonSocial)) {
           missingFields++
         }
         if (!formData.detalles || !formData.detalles.hectareas) {
@@ -364,12 +378,12 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       console.log("Save already in progress, ignoring additional click");
       return;
     }
-    
+
     // Set saving state immediately
     setIsSaving(true);
     setDbError(null);
     console.log("Starting save process...");
-    
+
     try {
       // Check database connection first
       console.log("Checking database connection...");
@@ -378,7 +392,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         throw new Error(t('databaseConnectionError'));
       }
       console.log("Database connection check passed");
-      
+
       // First validate all fields
       if (!validateAllSteps()) {
         setIsSaving(false);
@@ -388,9 +402,46 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       // Prepare activity data
       let actividad = { ...formData };
       actividad.tipo = rawActivityType;
-      
+
+      // If we're in verification mode (converting planned activity to regular activity)
+      if (verificationMode && existingActivity && (existingActivity.isPlanificada || existingActivity.estado === 'planificada')) {
+        console.log("Converting planned activity to regular activity");
+
+        // Remove the planned activity flag and change state
+        delete actividad.isPlanificada;
+        actividad.estado = 'pendiente'; // Change from 'planificada' to 'pendiente'
+
+        // Generate a new ID for the regular activity
+        try {
+          const fechaEjecucion = actividad.detalles.fecha_ejecucion_tentativa;
+          const parsedDate = new Date(fechaEjecucion);
+          const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+          actividad._id = 'actividad:' + formattedDate + ':' + actividad.uuid;
+          delete actividad._rev; // Remove revision since this will be a new document
+          console.log("New regular activity ID generated:", actividad._id);
+        } catch (error) {
+          console.error('Error generating new ID for regular activity:', error);
+          setIsSaving(false);
+          return;
+        }
+
+        // Try to delete the original planned activity
+        try {
+          if (existingActivity._id && existingActivity._id.startsWith('planactividad:')) {
+            await db.remove(existingActivity._id, existingActivity._rev);
+            console.log("Original planned activity deleted:", existingActivity._id);
+          }
+        } catch (error) {
+          console.warn("Could not delete original planned activity:", error);
+          // Continue anyway - the save operation is more important
+        }
+
+        // Force this to be treated as a new activity
+        isEditing = false;
+      }
+
       console.log("Starting saveActivity operation...");
-      
+
       // Implement our own timeout for the save operation
       await withTimeout(
         saveActivity(
@@ -413,7 +464,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       );
     } catch (error) {
       console.error("Error saving activity:", error);
-      
+
       // Handle specific error types
       if (error.status === 429) {
         setDbError(t('tooManyRequestsError'));
@@ -424,7 +475,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       } else {
         setDbError(t('generalSaveError') + ': ' + (error.message || ''));
       }
-      
+
       setSnackbarMessage(t('errorSavingActivity'));
       setOpenSnackbar(true);
       setIsSaving(false);
@@ -553,7 +604,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       <Card className="shadow-lg">
         {/* Header */}
         <CardHeader
-          className="p-0" 
+          className="p-0"
           style={{
             borderTopLeftRadius: '0.5rem',
             borderTopRightRadius: '0.5rem',
@@ -570,11 +621,11 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             getActivityColor={getActivityColor}
           />
         </CardHeader>
-        
+
         {/* Database error alert */}
         {dbError && (
-          <Alert 
-            color="danger" 
+          <Alert
+            color="danger"
             className="m-3"
           >
             <div className="d-flex align-items-center">
@@ -587,7 +638,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             </div>
           </Alert>
         )}
-        
+
         {/* Stepper */}
         <div className="px-4 py-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
@@ -696,8 +747,8 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             )}
 
             {activeStep === steps.length - 1 ? (
-              <Button 
-                color={getProgressColor()} 
+              <Button
+                color={getProgressColor()}
                 onClick={handleSave}
                 disabled={isSaving}
                 id="save-activity-button"
@@ -741,7 +792,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           color="warning"
           className="position-fixed bottom-0 end-0 m-4 d-flex align-items-center justify-content-between"
           style={{
- 
+
             maxWidth: '400px',
             boxShadow:
               '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',

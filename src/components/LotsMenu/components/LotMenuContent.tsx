@@ -63,6 +63,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
     editActivity: t('editActivity'),
     editNote: t('editNote'),
     executeActivity: t('executeActivity'),
+    verifyActivity: t('verifyActivity'),
     lotPlanning: t('lotPlanning')
   }
 
@@ -252,6 +253,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         db={db}
         fieldName={field.nombre}
         backToActivites={backToActivites}
+        selectedCampaign={selectedCampaign}
       />
     )
   }
@@ -296,6 +298,25 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         backToActivites={backToActivites}
         existingActivity={editingActivityInfo.activity}
         isExecuting={editingActivityInfo.isExecuting}
+      />
+    )
+  }
+
+  if (selectedCategory === 'verifyActivity') {
+    return (
+      <PlanActivity
+        activityType={
+          activityTypeTranslations[
+          editingActivityInfo.activity?.tipo?.toLowerCase() || ''
+          ]
+        }
+        lot={lot}
+        field={field}
+        fieldName={field.nombre}
+        db={db}
+        backToActivites={backToActivites}
+        existingActivity={editingActivityInfo.activity}
+        verificationMode={true}
       />
     )
   }

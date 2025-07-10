@@ -40,9 +40,10 @@ interface SuppliesFormProps {
   db: any
   formData: any
   setFormData: (data: any) => void
+  mode?: 'plan' | 'execute'
 }
 
-function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
+function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: SuppliesFormProps) {
   const { t } = useTranslation()
   const [selectedSupply, setSelectedSupply] = useState<any>()
   const [dosificacion, setDosificacion] = useState('')
@@ -86,9 +87,11 @@ function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
       insumo: selectedSupply, // Changed from selectedOption to insumo
       dosificacion,
       total,
-      deposito,
-      nro_lote: nroLote,
-      ubicacion,
+      ...(mode !== 'plan' && {
+        deposito,
+        nro_lote: nroLote,
+        ubicacion,
+      }),
       uuid: uuid4(),
     }
 
@@ -100,12 +103,15 @@ function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
     })
 
     // Limpiar campos después de agregar
+    console.log('Clearing form fields after adding supply')
     setSelectedSupply(undefined)
     setDosificacion('')
     setTotal('')
-    setDeposito(undefined)
-    setNroLote('')
-    setUbicacion('')
+    if (mode !== 'plan') {
+      setDeposito(undefined)
+      setNroLote('')
+      setUbicacion('')
+    }
   }
 
   const handleSelectChange = (event: any) => {
@@ -118,9 +124,13 @@ function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
   }
 
   const handleDepositoChange = (event: any) => {
+    console.log('Changing deposit:', event)
     setDeposito(event)
-    // Limpiar ubicación cuando se cambie el depósito
-    setUbicacion('')
+    // Solo limpiar ubicación si el nuevo depósito no tiene la ubicación actualmente seleccionada
+    if (ubicacion && event?.locations && !event.locations.includes(ubicacion)) {
+      console.log('Clearing location because it is not available in new deposit')
+      setUbicacion('')
+    }
   }
 
   const handleLotNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,6 +179,7 @@ function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={6}>
               <AutocompleteSupplies
+                key={`supply-${selectedSupply?.id || 'empty'}`}
                 value={selectedSupply}
                 onChange={handleSelectChange}
               />
@@ -185,47 +196,51 @@ function SuppliesForm({ lot, db, formData, setFormData }: SuppliesFormProps) {
           </Grid>
 
           {/* Línea 2: Deposito, Ubicacion, Nro de Lote */}
-          <Grid container item xs={12} spacing={1}>
-            <Grid item xs={4}>
-              <AutocompleteDeposito
-                value={deposito}
-                onChange={handleDepositoChange}
-              />
+          {mode !== 'plan' && (
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={4}>
+                <AutocompleteDeposito
+                  key={`deposit-${deposito?.id || 'empty'}`}
+                  value={deposito}
+                  onChange={handleDepositoChange}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
+                  <Select
+                    key={`location-${deposito?.id || 'empty'}`}
+                    labelId="ubicacion-label"
+                    label={t('location')}
+                    value={ubicacion}
+                    onChange={handleUbicacionChange}
+                    disabled={!deposito}
+                  >
+                    {deposito?.locations?.map((loc: string) => (
+                      <MenuItem key={loc} value={loc}>
+                        {loc}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label={t('batchNumber')}
+                  value={nroLote}
+                  onChange={handleLotNumberChange}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={4}>
-              <FormControl fullWidth>
-                <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
-                <Select
-                  labelId="ubicacion-label"
-                  label={t('location')}
-                  value={ubicacion}
-                  onChange={handleUbicacionChange}
-                  disabled={!deposito}
-                >
-                  {deposito?.locations?.map((loc: string) => (
-                    <MenuItem key={loc} value={loc}>
-                      {loc}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={4}>
-              <TextField
-                fullWidth
-                label={t('batchNumber')}
-                value={nroLote}
-                onChange={handleLotNumberChange}
-              />
-            </Grid>
-          </Grid>
+          )}
 
           {/* Línea 3: Cantidad, Cant Total */}
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={6}>
               <NumberFieldWithUnits
                 fullWidth
-                label={t('quantity')}
+                label={t('quantity') + ' x ' + t('hectares')}
                 value={Number(dosificacion)}
                 onChange={handleDosificacionChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}

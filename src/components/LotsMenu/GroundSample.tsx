@@ -35,13 +35,15 @@ interface GroundSampleProps {
   db: any;
   fieldName: string;
   backToActivites: () => void;
+  selectedCampaign?: any;
 }
 
 const GroundSample: React.FC<GroundSampleProps> = ({
   lot,
   db,
   fieldName,
-  backToActivites
+  backToActivites,
+  selectedCampaign
 }) => {
   if (!lot) return null;
   const { t } = useTranslation();
@@ -299,13 +301,15 @@ const GroundSample: React.FC<GroundSampleProps> = ({
       lote_uuid: lot.id,
       ts_generacion: Date.now(),
       uuid: formData.id || uuidv4(), // Asegurar que haya un UUID
+      campaña: selectedCampaign, // Incluir campaña seleccionada
       actividad: {  // Añadir estructura anidada que ActivityContent espera
         tipo: "analisis_suelo",
         uuid: formData.id || uuidv4(),
         detalles: {
           hectareas: lot.properties.hectareas,
           fecha_ejecucion_tentativa: formData.fecha ? new Date(formData.fecha).toISOString() : new Date().toISOString()
-        }
+        },
+        campaña: selectedCampaign // También en la estructura anidada
       }
     };
 

@@ -40,8 +40,10 @@ export const usePlanActivity = (
 
   useEffect(() => {
     if (existingActivity) {
+      console.log('📝 SETTING EXISTING ACTIVITY AS FORM DATA:', existingActivity);
       setFormData(existingActivity)
     } else {
+      console.log('📝 SETTING EMPTY ACTIVITY AS FORM DATA');
       setFormData(getEmptyActivity())
     }
   }, [existingActivity])

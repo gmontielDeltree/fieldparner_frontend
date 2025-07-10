@@ -1,147 +1,195 @@
 import React, { useEffect, useState } from "react";
-
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepButton from "@mui/material/StepButton";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import PlanPersonalForm from "./forms/PlanPersonalForm";
-import {
-  IActividadPlanificacion,
-  IInsumosPlanificacion,
-} from "../../interfaces/planification";
-import PlanTasksForm from "./forms/PlanTasksForm";
-import { PlanSuppliesTableForm } from "./forms/PlanSuppliesTableForm";
-import PlanSuppliesForm from "./forms/PlanSuppliesForm";
+import { TextField, Grid, Alert, Card, CardContent, Switch, FormControlLabel } from '@mui/material';
+import { IActividadPlanificacion } from "../../interfaces/planification";
 import { usePlanActividad } from "../../hooks/usePlanifications";
-import { ILaboresPlanificacion } from "../../interfaces/planification";
-import { uuidv7 } from "uuidv7";
-import { useSupply } from "../../hooks";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../hooks/useRedux";
 
-const steps = ["Fecha", "Insumos", "Servicios"];
+// Import the labor forms
+import PersonalForm from '../LotsMenu/forms/PlanForms/PersonalForm';
+import SuppliesForm from '../LotsMenu/forms/PlanForms/SuppliesForm';
+import ServicesForm from '../LotsMenu/forms/PlanForms/ServicesForm';
+import ObservationsForm from '../LotsMenu/forms/PlanForms/ObservationsForm';
+import { NumberFieldWithUnits } from '../LotsMenu/components/NumberField';
 
-const tasksList = [
-  { name: "Siembra", id: "1" },
-  { name: "Cosecha", id: "3" },
-  { name: "Aplicación Aerea", id: "4" },
-  { name: "Aplicación Terrestre", id: "5" },
-  { name: "Cincel", id: "6" },
-  { name: "Disco", id: "7" },
-  { name: "Fertilización al Voleo", id: "8" },
-  { name: "Riego", id: "9" },
-];
+interface ActividadEditorBaseProps {
+  tipo: string;
+  actividadDoc: IActividadPlanificacion;
+  onSave: () => void;
+  onClose: () => void;
+  editing?: boolean;
+}
 
-export const ActividadEditorBase = ({
+export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   tipo,
   actividadDoc,
   onSave,
   onClose,
-  editing,
-}: {
-  actividadDoc: IActividadPlanificacion;
-  onSave: () => void;
-  onClose: () => void;
+  editing = false,
 }) => {
+  const { t } = useTranslation();
+  const { saveActividad } = usePlanActividad();
+  const { user } = useAppSelector((state) => state.auth);
 
-  const {t} = useTranslation();
-  const [rows, setRows] = useState<IInsumosPlanificacion[]>([]);
-  const [rowsLab, setRowsLab] = useState<ILaboresPlanificacion[]>([]);
+  // Unit conversion functions
+  const convertTonsToQuintals = (tons: number) => tons * 10;
+  const convertQuintalsToTons = (quintals: number) => quintals / 10;
+  const convertTonsToKg = (tons: number) => tons * 1000;
+  const convertKgToTons = (kg: number) => kg / 1000;
 
-  const { supplies, getSupplies } = useSupply();
+  // Convert planification data to labor form format
+  const convertToLaborFormat = (actividad: IActividadPlanificacion) => {
+    return {
+      uuid: actividad._id,
+      tipo: actividad.tipo,
+      detalles: {
+        business: actividad.accountId,
+        cultivo: null,
+        contratista: null,
+        fecha_ejecucion_tentativa: actividad.fecha,
+        hectareas: actividad.area || 0,
+        dosis: [],
+        servicios: [],
+        zafra: '',
+        rinde_estimado: (actividad as any).rendimientoEstimado || 0,
+        rinde_estimado_total: (actividad as any).rendimientoEstimadoTotal || 0,
+        fertilizacion: false,
+        fitosanitaria: false,
+      },
+      condiciones: {
+        humedad_max: undefined,
+        humedad_min: undefined,
+        temperatura_max: undefined,
+        temperatura_min: undefined,
+        velocidad_max: undefined,
+        velocidad_min: undefined,
+      },
+      observaciones: (actividad as any).comentarios || '',
+      campaña: {
+        campaignId: actividad.campanaId,
+        name: '',
+        nombreComercial: '',
+      },
+      estado: (actividad as any).estado || 'abierta',
+    };
+  };
+
+  // Harvest Yield Form Component
+  const HarvestYieldForm = () => {
+    const isArgentina = user?.countryId === 'AR';
+    const [yieldPerHa, setYieldPerHa] = useState(convertKgToTons(formData.detalles?.rinde_estimado || 0));
+    const [totalYield, setTotalYield] = useState(convertKgToTons(formData.detalles?.rinde_estimado_total || 0));
+
+    const onYieldPerHaChange = (value: number) => {
+      setYieldPerHa(value);
+      const kgValue = convertTonsToKg(value);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          rinde_estimado: kgValue,
+        },
+      }));
+
+      // Update total yield based on hectares
+      const totalTons = value * (formData.detalles?.hectareas || 0);
+      setTotalYield(totalTons);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          rinde_estimado_total: convertTonsToKg(totalTons),
+        },
+      }));
+    };
+
+    const onTotalYieldChange = (value: number) => {
+      setTotalYield(value);
+      const kgValue = convertTonsToKg(value);
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          rinde_estimado_total: kgValue,
+        },
+      }));
+    };
+
+    return (
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {t('Estimated Yield')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={isArgentina ? t('Yield per hectare (qq/ha)') : t('Yield per hectare (ton/ha)')}
+                value={isArgentina ? convertTonsToQuintals(yieldPerHa) : yieldPerHa}
+                onChange={(e) => {
+                  const inputValue = Number(e.target.value);
+                  const tonsValue = isArgentina ? convertQuintalsToTons(inputValue) : inputValue;
+                  onYieldPerHaChange(tonsValue);
+                }}
+                unit={isArgentina ? "qq/ha" : "ton/ha"}
+              />
+              {isArgentina && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  {t('Equivalent')}: {yieldPerHa.toFixed(2)} ton/ha
+                </Typography>
+              )}
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <NumberFieldWithUnits
+                fullWidth
+                label={isArgentina ? t('Total estimated yield (qq)') : t('Total estimated yield (ton)')}
+                value={isArgentina ? convertTonsToQuintals(totalYield) : totalYield}
+                onChange={(e) => {
+                  const inputValue = Number(e.target.value);
+                  const tonsValue = isArgentina ? convertQuintalsToTons(inputValue) : inputValue;
+                  onTotalYieldChange(tonsValue);
+                }}
+                unit={isArgentina ? "qq" : "ton"}
+              />
+              {isArgentina && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                  {t('Equivalent')}: {totalYield.toFixed(2)} ton
+                </Typography>
+              )}
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const [formData, setFormData] = useState(convertToLaborFormat(actividadDoc));
+  const [activeStep, setActiveStep] = useState(0);
+  const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
+
+  const steps = [t('general'), t('supplies'), t('services'), t('observations')];
 
   useEffect(() => {
-    getSupplies();
-  }, []);
+    const converted = convertToLaborFormat(actividadDoc);
+    setFormData(converted);
+  }, [actividadDoc]);
 
-  const [actividad, setActividad] =
-    useState<IActividadPlanificacion>(actividadDoc);
-
-  const { saveActividad, getLineasServicios, getLineasInsumos } =
-    usePlanActividad();
-
-  useEffect(() => {
-    setActividad(actividadDoc);
-    // Reset rows
-    setRows([]);
-
-    if (!editing) {
-      let default_activity = {
-        id: "lineaLabor:" + uuidv7(),
-        labor: { name: "Siembra", id: "1" },
-        costoPorHectarea: 0,
-        hectareas: 0,
-        totalCosto: 0,
-        comentario: "string",
-      };
-
-      if (actividadDoc.tipo === "siembra") {
-        default_activity.labor = { name: "Siembra", id: "1" };
-      } else if (actividadDoc.tipo === "cosecha") {
-        default_activity.labor = { name: "Cosecha", id: "3" };
-      } else if (actividadDoc.tipo === "aplicacion") {
-        default_activity.labor = { name: "Aplicación Aerea", id: "4" };
-      }
-
-      setRowsLab([default_activity]);
-    } else {
-      if (supplies) {
-        // Nuevo
-        getLineasServicios(actividadDoc.laboresLineasIds).then((lineas) => {
-          let rows = lineas.map((linea) => {
-            return {
-              ...linea,
-              id: linea._id,
-              labor: tasksList.find((f) => f.id === linea.laborId),
-            };
-          });
-          setRowsLab(rows);
-        });
-
-        getLineasInsumos(actividadDoc.insumosLineasIds).then((lineas) => {
-          let rows = lineas.map((linea) => {
-            return {
-              ...linea,
-              id: linea._id,
-              insumo: supplies.find((f) => f._id === linea.insumoId),
-            };
-          });
-          setRows(rows);
-        });
-      }
-    }
-
-    setActiveStep(0);
-  }, [actividadDoc, supplies]);
-
-  const [activeStep, setActiveStep] = React.useState(0);
-  const [completed, setCompleted] = React.useState<{
-    [k: number]: boolean;
-  }>({});
-
-  const totalSteps = () => {
-    return steps.length;
-  };
-
-  const completedSteps = () => {
-    return Object.keys(completed).length;
-  };
-
-  const isLastStep = () => {
-    return activeStep === totalSteps() - 1;
-  };
-
-  const allStepsCompleted = () => {
-    return completedSteps() === totalSteps();
-  };
+  const totalSteps = () => steps.length;
+  const completedSteps = () => Object.keys(completed).length;
+  const isLastStep = () => activeStep === totalSteps() - 1;
+  const allStepsCompleted = () => completedSteps() === totalSteps();
 
   const handleNext = () => {
     const newActiveStep =
       isLastStep() && !allStepsCompleted()
-        ? // It's the last step, but not all steps have been completed,
-          // find the first step that has been completed
-          steps.findIndex((step, i) => !(i in completed))
+        ? steps.findIndex((step, i) => !(i in completed))
         : activeStep + 1;
     setActiveStep(newActiveStep);
   };
@@ -161,9 +209,186 @@ export const ActividadEditorBase = ({
     handleNext();
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
-    setCompleted({});
+  // Status and enhanced fields form
+  const PlanificationStatusForm = () => {
+    const onFieldChange = (fieldName: string, value: any) => {
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          [fieldName]: value,
+        },
+      }));
+    };
+
+    // Only show status section if the planning is closed
+    if (formData.estado === 'cerrada') {
+      return (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            📋 {t('Planning Status')}: {t('Closed')}
+          </Typography>
+          <Typography>
+            {t('Planning is closed and cannot be modified')}
+          </Typography>
+        </Alert>
+      );
+    }
+
+    // For active planning, don't show any status section
+    return null;
+  };
+
+  // Activity Details Form (for application activities)
+  const ActivityDetailsForm = () => {
+    const [fertilizationChecked, setFertilizationChecked] = useState(
+      formData.detalles?.fertilizacion || false,
+    );
+    const [phytosanitaryChecked, setPhytosanitaryChecked] = useState(
+      formData.detalles?.fitosanitaria || false,
+    );
+
+    const handleCheckboxChange = (fieldName: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = event.target.checked;
+      if (fieldName === 'fertilizacion') {
+        setFertilizationChecked(checked);
+      } else if (fieldName === 'fitosanitaria') {
+        setPhytosanitaryChecked(checked);
+      }
+
+      setFormData((prevData: any) => ({
+        ...prevData,
+        detalles: {
+          ...prevData.detalles,
+          [fieldName]: checked,
+        },
+      }));
+    };
+
+    return (
+      <Card sx={{ mb: 2 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            {t('Activity Details')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={fertilizationChecked}
+                    onChange={handleCheckboxChange('fertilizacion')}
+                    color="primary"
+                  />
+                }
+                label={t('Fertilization')}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={phytosanitaryChecked}
+                    onChange={handleCheckboxChange('fitosanitaria')}
+                    color="primary"
+                  />
+                }
+                label={t('Phytosanitary')}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const getStepContent = (step: number) => {
+    const isDisabled = formData.estado === 'cerrada';
+
+    switch (step) {
+      case 0:
+        return (
+          <>
+            <PlanificationStatusForm />
+            {formData.tipo === 'cosecha' && <HarvestYieldForm />}
+            {formData.tipo === 'aplicacion' && <ActivityDetailsForm />}
+            <PersonalForm
+              lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
+              formData={formData}
+              setFormData={setFormData}
+              mode="plan"
+              showActivityType={false}
+            />
+          </>
+        );
+      case 1:
+        return isDisabled ? (
+          <Alert severity="warning">
+            {t('Planning is closed and cannot be modified')}
+          </Alert>
+        ) : (
+          <>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <strong>{t('Planning Mode')}:</strong> {t('Stock validation and deposit location are not required for planning')}
+            </Alert>
+            <SuppliesForm
+              lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
+              db={null}
+              formData={formData}
+              setFormData={setFormData}
+              mode="plan"
+            />
+          </>
+        );
+      case 2:
+        return isDisabled ? (
+          <Alert severity="warning">
+            {t('Planning is closed and cannot be modified')}
+          </Alert>
+        ) : (
+          <ServicesForm
+            formData={formData}
+            setFormData={setFormData}
+            mode="plan"
+          />
+        );
+      case 3:
+        return isDisabled ? (
+          <Alert severity="warning">
+            {t('Planning is closed and cannot be modified')}
+          </Alert>
+        ) : (
+          <ObservationsForm
+            lot={null}
+            formData={formData}
+            setFormData={setFormData}
+          />
+        );
+      default:
+        return <div>{t('Unknown step')}</div>;
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const planificationData: IActividadPlanificacion = {
+        ...actividadDoc,
+        tipo: formData.tipo,
+        fecha: formData.detalles.fecha_ejecucion_tentativa || new Date().toISOString(),
+        area: formData.detalles.hectareas,
+        ...(formData.observaciones && { comentarios: formData.observaciones }),
+        ...(formData.estado && { estado: formData.estado }),
+        ...(formData.detalles.rinde_estimado && { rendimientoEstimado: formData.detalles.rinde_estimado }),
+        ...(formData.detalles.rinde_estimado_total && { rendimientoEstimadoTotal: formData.detalles.rinde_estimado_total }),
+        ...(formData.detalles.fertilizacion !== undefined && { fertilizacion: formData.detalles.fertilizacion }),
+        ...(formData.detalles.fitosanitaria !== undefined && { fitosanitaria: formData.detalles.fitosanitaria }),
+      };
+
+      await saveActividad(planificationData, [], []);
+      onSave();
+    } catch (error) {
+      console.error('Error saving planification:', error);
+    }
   };
 
   return (
@@ -177,127 +402,39 @@ export const ActividadEditorBase = ({
           </Step>
         ))}
       </Stepper>
-      <div>
-        {
-          <React.Fragment>
-            {activeStep === 0 && (
-              <PlanPersonalForm
-                formData={actividad}
-                setFormData={setActividad}
-              />
-            )}
-            {activeStep === 1 && (
-              <PlanSuppliesForm
-                formData={actividad}
-                setFormData={setActividad}
-                {...{ rows, setRows }}
-              />
-            )}
-            {activeStep === 2 && (
-              <PlanTasksForm
-                formData={actividad}
-                setFormData={setActividad}
-                rows={rowsLab}
-                setRows={setRowsLab}
-              />
-            )}
-            <Typography sx={{ mt: 2, mb: 1, py: 1 }}></Typography>
 
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                pt: 2,
-                justifyContent: "flex-end",
-              }}
-            >
-              <Button
-                variant="contained"
-                color="error"
-                onClick={onClose}
-                sx={{ mr: 1 }}
-              >
-                {t("Cancelar")}
-              </Button>
+      <Box sx={{ p: 3 }}>
+        {getStepContent(activeStep)}
+      </Box>
 
-              <Button
-                color="inherit"
-                disabled={activeStep === 0}
-                onClick={handleBack}
-                sx={{ mr: 1 }}
-              >
-                Atras
-              </Button>
-              <Box sx={{ flex: "1 1 auto" }} />
-              <Button
-                onClick={handleNext}
-                sx={{ mr: 1 }}
-                disabled={activeStep === 2}
-              >
-                Siguiente
-              </Button>
-
-              <Button
-                variant="contained"
-                onClick={() => {
-                  //
-                  let newIds = rows.map((f) => f.id);
-                  let newLineasDocs: IInsumosPlanificacion[] = rows.map((f) => {
-                    let a = {
-                      _id: f.id,
-                      insumoId: f.insumo._id,
-                      dosis: f.dosis,
-                      totalCantidad: f.totalCantidad,
-                      hectareas: f.hectareas,
-                      precioUnitario: f.precioUnitario,
-                      totalCosto: f.totalCosto,
-                    };
-                    if (f._rev) {
-                      a._rev = f._rev;
-                    }
-                    return a;
-                  });
-
-                  console.log("new insumos lists id", newIds, newLineasDocs);
-                  setActividad({ ...actividad, insumosLineasIds: newIds });
-
-                  let newLaboresIds = rowsLab.map((f) => f.id);
-                  let newLabLinDocs: ILaboresPlanificacion[] = rowsLab.map(
-                    (f) => {
-                      let a = {
-                        _id: f.id,
-                        laborId: f.labor.id,
-                        costoPorHectarea: f.costoPorHectarea,
-                        hectareas: f.hectareas,
-                        totalCosto: f.totalCosto,
-                      };
-
-                      if (f._rev) {
-                        a._rev = f._rev;
-                      }
-                      return a;
-                    }
-                  );
-
-                  console.log("update actividad");
-                  saveActividad(
-                    {
-                      ...actividad,
-                      insumosLineasIds: newIds,
-                      laboresLineasIds: newLaboresIds,
-                    },
-                    newLineasDocs,
-                    newLabLinDocs
-                  ).then(onSave);
-                }}
-                sx={{ mr: 1 }}
-              >
-                Guardar
-              </Button>
-            </Box>
-          </React.Fragment>
-        }
-      </div>
+      <Box sx={{ display: "flex", flexDirection: "row", pt: 2, px: 3, pb: 2 }}>
+        <Button color="error" onClick={onClose} sx={{ mr: 1 }}>
+          {t('cancel')}
+        </Button>
+        <Button
+          color="inherit"
+          disabled={activeStep === 0}
+          onClick={handleBack}
+          sx={{ mr: 1 }}
+        >
+          {t('previous')}
+        </Button>
+        <Box sx={{ flex: "1 1 auto" }} />
+        {activeStep !== steps.length - 1 && (
+          <Button onClick={handleNext} sx={{ mr: 1 }}>
+            {t('next')}
+          </Button>
+        )}
+        {activeStep === steps.length - 1 && (
+          <Button
+            variant="contained"
+            onClick={handleSave}
+            disabled={formData.estado === 'cerrada'}
+          >
+            {editing ? t('update') : t('save')} {t('planning')}
+          </Button>
+        )}
+      </Box>
     </Box>
   );
 };
