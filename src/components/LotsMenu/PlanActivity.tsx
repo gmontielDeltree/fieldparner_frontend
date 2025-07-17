@@ -143,7 +143,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     existingActivity,
     isEditing,
     activityType,
-    translatedActivityType: rawActivityType
+    translatedActivityType: rawActivityType,
+    existingActivityDetails: existingActivity?.detalles,
+    existingActivityConditions: existingActivity?.condiciones,
+    originalPlanifData: existingActivity?._originalPlanifData
   });
 
   const [showValidationNotification, setShowValidationNotification] = useState(false)
@@ -406,9 +409,28 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       // If we're in verification mode (converting planned activity to regular activity)
       if (verificationMode && existingActivity && (existingActivity.isPlanificada || existingActivity.estado === 'planificada')) {
         console.log("Converting planned activity to regular activity");
+        console.log("Original planned data:", existingActivity._originalPlanifData);
+
+        // Preserve all existing data while converting
+        const originalData = existingActivity._originalPlanifData || existingActivity;
+
+        // Merge the original data with the updated form data
+        actividad = {
+          ...originalData,
+          ...actividad,
+          detalles: {
+            ...(originalData.detalles || {}),
+            ...(actividad.detalles || {}),
+          },
+          condiciones: {
+            ...(originalData.condiciones || {}),
+            ...(actividad.condiciones || {}),
+          }
+        };
 
         // Remove the planned activity flag and change state
         delete actividad.isPlanificada;
+        delete actividad._originalPlanifData;
         actividad.estado = 'pendiente'; // Change from 'planificada' to 'pendiente'
 
         // Generate a new ID for the regular activity

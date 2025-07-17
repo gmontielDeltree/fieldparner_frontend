@@ -101,8 +101,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                 estado: 'planificada',
                 fecha: planifData.fecha,
                 detalles: {
-                  fecha_ejecucion_tentativa: planifData.fecha,
-                  hectareas: planifData.area || 0,
+                  fecha_ejecucion_tentativa: completePlanifData.fecha || planifData.fecha,
+                  hectareas: completePlanifData.area || planifData.area || 0,
                   // Map complete planned activity fields to regular activity format
                   cultivo: completePlanifData.cultivo || null,
                   contratista: completePlanifData.contratista || null,
@@ -114,15 +114,21 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   fertilizacion: completePlanifData.fertilizacion || false,
                   fitosanitaria: completePlanifData.fitosanitaria || false,
                   zafra: completePlanifData.zafra || '',
+                  // Add sowing-specific fields if they exist
+                  densidad_objetivo: completePlanifData.densidadObjetivo || completePlanifData.detalles?.densidad_objetivo || undefined,
+                  peso_1000: completePlanifData.peso1000 || completePlanifData.detalles?.peso_1000 || undefined,
+                  profundidad: completePlanifData.profundidad || completePlanifData.detalles?.profundidad || undefined,
+                  tipo_siembra: completePlanifData.tipoSiembra || completePlanifData.detalles?.tipo_siembra || undefined,
+                  distancia: completePlanifData.distancia || completePlanifData.detalles?.distancia || undefined,
                 },
                 campaña: {
-                  campaignId: planifData.campanaId
+                  campaignId: completePlanifData.campanaId || planifData.campanaId
                 },
                 ts_generacion: planifData.created?.date || new Date().toISOString(),
                 contratista: completePlanifData.contratista || null,
-                ingeniero: null,
-                comentario: completePlanifData.comentarios || completePlanifData.comentario || 'Actividad planificada',
-                observaciones: completePlanifData.comentarios || completePlanifData.observaciones || '',
+                ingeniero: completePlanifData.ingeniero || null,
+                comentario: completePlanifData.comentario || completePlanifData.comentarios || 'Actividad planificada',
+                observaciones: completePlanifData.observaciones || completePlanifData.comentarios || '',
                 condiciones: completePlanifData.condiciones || {
                   humedad_max: undefined,
                   humedad_min: undefined,
@@ -139,6 +145,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             } catch (error) {
               console.warn('Could not load complete planification data for:', planifData._id, error);
               // Fallback to basic mapping if complete data is not available
+              // Still try to preserve as much data as possible from the basic planif doc
               let actividadFormateada: any = {
                 _id: planifData._id,
                 lote_uuid: planifData.loteId,
@@ -147,28 +154,34 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                 estado: 'planificada',
                 fecha: planifData.fecha,
                 detalles: {
-                  fecha_ejecucion_tentativa: planifData.fecha,
-                  hectareas: planifData.area || 0,
-                  cultivo: null,
-                  contratista: null,
-                  business: planifData.accountId || null,
-                  dosis: [],
-                  servicios: [],
-                  rinde_estimado: 0,
-                  rinde_estimado_total: 0,
-                  fertilizacion: false,
-                  fitosanitaria: false,
-                  zafra: '',
+                  fecha_ejecucion_tentativa: planifData.fecha || planifData.detalles?.fecha_ejecucion_tentativa,
+                  hectareas: planifData.area || planifData.detalles?.hectareas || 0,
+                  cultivo: planifData.cultivo || planifData.detalles?.cultivo || null,
+                  contratista: planifData.contratista || planifData.detalles?.contratista || null,
+                  business: planifData.accountId || planifData.detalles?.business || null,
+                  dosis: planifData.dosis || planifData.detalles?.dosis || [],
+                  servicios: planifData.servicios || planifData.detalles?.servicios || [],
+                  rinde_estimado: planifData.rindeEstimado || planifData.rendimientoEstimado || planifData.detalles?.rinde_estimado || 0,
+                  rinde_estimado_total: planifData.rendimientoEstimadoTotal || planifData.detalles?.rinde_estimado_total || 0,
+                  fertilizacion: planifData.fertilizacion || planifData.detalles?.fertilizacion || false,
+                  fitosanitaria: planifData.fitosanitaria || planifData.detalles?.fitosanitaria || false,
+                  zafra: planifData.zafra || planifData.detalles?.zafra || '',
+                  // Sowing specific fields
+                  densidad_objetivo: planifData.densidadObjetivo || planifData.detalles?.densidad_objetivo,
+                  peso_1000: planifData.peso1000 || planifData.detalles?.peso_1000,
+                  profundidad: planifData.profundidad || planifData.detalles?.profundidad,
+                  tipo_siembra: planifData.tipoSiembra || planifData.detalles?.tipo_siembra,
+                  distancia: planifData.distancia || planifData.detalles?.distancia,
                 },
                 campaña: {
-                  campaignId: planifData.campanaId
+                  campaignId: planifData.campanaId || planifData.campaña?.campaignId
                 },
                 ts_generacion: planifData.created?.date || new Date().toISOString(),
-                contratista: null,
-                ingeniero: null,
-                comentario: 'Actividad planificada',
-                observaciones: '',
-                condiciones: {
+                contratista: planifData.contratista || null,
+                ingeniero: planifData.ingeniero || null,
+                comentario: planifData.comentario || planifData.comentarios || 'Actividad planificada',
+                observaciones: planifData.observaciones || planifData.comentarios || '',
+                condiciones: planifData.condiciones || {
                   humedad_max: undefined,
                   humedad_min: undefined,
                   temperatura_max: undefined,

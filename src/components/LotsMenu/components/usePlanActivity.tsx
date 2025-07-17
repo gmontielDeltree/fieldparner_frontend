@@ -1,17 +1,29 @@
 import { useState, useEffect } from 'react'
-import { getEmptyActivity } from '../../../interfaces/activity'
+import { getEmptyActivity, Actividad } from '../../../interfaces/activity'
 import { useSupply } from '../../../hooks'
 
+interface UsePlanActivityParams {
+  activityType: string
+  lot: any
+  translatedActivityType: string
+  existingActivity: Actividad | null
+  user: any
+  db: any
+  backToActivites: () => void
+  createWithdrawalOrder: any
+  selectedCampaign: any
+}
+
 export const usePlanActivity = (
-  activityType,
-  lot,
-  translatedActivityType,
-  existingActivity,
-  user,
-  db,
-  backToActivites,
-  createWithdrawalOrder,
-  selectedCampaign,
+  activityType: string,
+  lot: any,
+  translatedActivityType: string,
+  existingActivity: Actividad | null,
+  user: any,
+  db: any,
+  backToActivites: () => void,
+  createWithdrawalOrder: any,
+  selectedCampaign: any,
 ) => {
   const [formData, setFormData] = useState(
     existingActivity || getEmptyActivity(),
@@ -41,7 +53,23 @@ export const usePlanActivity = (
   useEffect(() => {
     if (existingActivity) {
       console.log('📝 SETTING EXISTING ACTIVITY AS FORM DATA:', existingActivity);
-      setFormData(existingActivity)
+      // Ensure we have a properly structured activity with all required fields
+      const activityData = {
+        ...getEmptyActivity(), // Start with empty structure
+        ...existingActivity,   // Override with existing data
+        detalles: {
+          ...getEmptyActivity().detalles, // Ensure all detail fields exist
+          ...(existingActivity.detalles || {}), // Override with existing details
+          hectareas: existingActivity.detalles?.hectareas || lot.properties.hectareas,
+        },
+        condiciones: {
+          ...getEmptyActivity().condiciones, // Ensure all condition fields exist
+          ...(existingActivity.condiciones || {}), // Override with existing conditions
+        },
+        lote_uuid: existingActivity.lote_uuid || lot.id,
+        tipo: existingActivity.tipo || translatedActivityType?.toLowerCase() || '',
+      };
+      setFormData(activityData);
     } else {
       console.log('📝 SETTING EMPTY ACTIVITY AS FORM DATA');
       setFormData(getEmptyActivity())
