@@ -77,7 +77,11 @@ function Activity({
       detalles: activity.actividad?.detalles,
       isPlanificada: activity.actividad?.isPlanificada,
       estado: activity.actividad?.estado,
-      originalPlanifData: activity.actividad?._originalPlanifData
+      originalPlanifData: activity.actividad?._originalPlanifData,
+      dosis: activity.actividad?.detalles?.dosis,
+      servicios: activity.actividad?.detalles?.servicios,
+      cultivo: activity.actividad?.detalles?.cultivo,
+      contratista: activity.actividad?.detalles?.contratista
     });
 
     // Use the same pattern as edit activity but with a special type for verification

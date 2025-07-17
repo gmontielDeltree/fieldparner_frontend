@@ -143,7 +143,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     existingActivity,
     isEditing,
     activityType,
-    translatedActivityType: rawActivityType
+    translatedActivityType: rawActivityType,
+    existingActivityDetails: existingActivity?.detalles,
+    existingActivityConditions: existingActivity?.condiciones,
+    originalPlanifData: existingActivity?._originalPlanifData
   });
 
   const [showValidationNotification, setShowValidationNotification] = useState(false)
@@ -406,9 +409,28 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       // If we're in verification mode (converting planned activity to regular activity)
       if (verificationMode && existingActivity && (existingActivity.isPlanificada || existingActivity.estado === 'planificada')) {
         console.log("Converting planned activity to regular activity");
+        console.log("Original planned data:", existingActivity._originalPlanifData);
+
+        // Preserve all existing data while converting
+        const originalData = existingActivity._originalPlanifData || existingActivity;
+
+        // Merge the original data with the updated form data
+        actividad = {
+          ...originalData,
+          ...actividad,
+          detalles: {
+            ...(originalData.detalles || {}),
+            ...(actividad.detalles || {}),
+          },
+          condiciones: {
+            ...(originalData.condiciones || {}),
+            ...(actividad.condiciones || {}),
+          }
+        };
 
         // Remove the planned activity flag and change state
         delete actividad.isPlanificada;
+        delete actividad._originalPlanifData;
         actividad.estado = 'pendiente'; // Change from 'planificada' to 'pendiente'
 
         // Generate a new ID for the regular activity
@@ -428,11 +450,54 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         // Try to delete the original planned activity
         try {
           if (existingActivity._id && existingActivity._id.startsWith('planactividad:')) {
-            await db.remove(existingActivity._id, existingActivity._rev);
-            console.log("Original planned activity deleted:", existingActivity._id);
+            console.log("🗑️ ATTEMPTING TO DELETE PLANNED ACTIVITY:", existingActivity._id);
+            
+            // Get the current document to ensure we have the latest _rev
+            const currentDoc = await db.get(existingActivity._id);
+            console.log("📄 GOT CURRENT DOC FOR DELETION:", currentDoc);
+            
+            // Delete the document
+            const deleteResult = await db.remove(currentDoc);
+            console.log("✅ PLANNED ACTIVITY DELETED SUCCESSFULLY:", deleteResult);
+            
+            // Also try to delete any associated supply and service lines
+            if (currentDoc.insumosLineasIds && currentDoc.insumosLineasIds.length > 0) {
+              try {
+                const insumosResult = await db.allDocs({
+                  keys: currentDoc.insumosLineasIds,
+                  include_docs: true
+                });
+                for (const row of insumosResult.rows) {
+                  if (row.doc) {
+                    await db.remove(row.doc);
+                    console.log("🗑️ Deleted supply line:", row.doc._id);
+                  }
+                }
+              } catch (insumosError) {
+                console.warn("Could not delete some supply lines:", insumosError);
+              }
+            }
+            
+            if (currentDoc.laboresLineasIds && currentDoc.laboresLineasIds.length > 0) {
+              try {
+                const laboresResult = await db.allDocs({
+                  keys: currentDoc.laboresLineasIds,
+                  include_docs: true
+                });
+                for (const row of laboresResult.rows) {
+                  if (row.doc) {
+                    await db.remove(row.doc);
+                    console.log("🗑️ Deleted service line:", row.doc._id);
+                  }
+                }
+              } catch (laboresError) {
+                console.warn("Could not delete some service lines:", laboresError);
+              }
+            }
           }
         } catch (error) {
-          console.warn("Could not delete original planned activity:", error);
+          console.error("❌ ERROR DELETING PLANNED ACTIVITY:", error);
+          console.error("Existing activity data:", existingActivity);
           // Continue anyway - the save operation is more important
         }
 
