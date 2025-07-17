@@ -371,20 +371,62 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
 
   const handleSave = async () => {
     try {
+      // Convert supply data (dosis) to planification format
+      const lineasInsumos = (formData.detalles?.dosis || []).map((dosis: any) => ({
+        _id: `planlinsumo:${dosis.uuid || Date.now()}-${Math.random()}`,
+        insumoId: dosis.insumo?._id,
+        dosis: dosis.dosis || 0,
+        totalCantidad: dosis.total || 0,
+        precioUnitario: dosis.precio_estimado || 0,
+        actividadId: actividadDoc._id,
+      }));
+
+      // Convert service data (servicios) to planification format
+      const lineasLabores = (formData.detalles?.servicios || []).map((servicio: any) => ({
+        _id: `planlabor:${servicio.uuid || Date.now()}-${Math.random()}`,
+        laborId: servicio.laborId || 'default-labor',
+        laborNombre: servicio.servicio || 'Servicio',
+        totalCosto: servicio.costo_total || 0,
+        costoPorHectarea: servicio.precio_unidad || 0,
+        comentario: servicio.comentario || '',
+        actividadId: actividadDoc._id,
+      }));
+
       const planificationData: IActividadPlanificacion = {
         ...actividadDoc,
         tipo: formData.tipo,
         fecha: formData.detalles.fecha_ejecucion_tentativa || new Date().toISOString(),
         area: formData.detalles.hectareas,
+        // Save reference IDs to the lines
+        insumosLineasIds: lineasInsumos.map(l => l._id),
+        laboresLineasIds: lineasLabores.map(l => l._id),
+        // Save additional fields
+        ...(formData.detalles?.cultivo && { cultivo: formData.detalles.cultivo }),
+        ...(formData.detalles?.contratista && { contratista: formData.detalles.contratista }),
+        ...(formData.detalles?.ingeniero && { ingeniero: formData.detalles.ingeniero }),
         ...(formData.observaciones && { comentarios: formData.observaciones }),
         ...(formData.estado && { estado: formData.estado }),
         ...(formData.detalles.rinde_estimado && { rendimientoEstimado: formData.detalles.rinde_estimado }),
         ...(formData.detalles.rinde_estimado_total && { rendimientoEstimadoTotal: formData.detalles.rinde_estimado_total }),
         ...(formData.detalles.fertilizacion !== undefined && { fertilizacion: formData.detalles.fertilizacion }),
         ...(formData.detalles.fitosanitaria !== undefined && { fitosanitaria: formData.detalles.fitosanitaria }),
+        // Save sowing-specific fields if they exist
+        ...(formData.detalles?.densidad_objetivo && { densidadObjetivo: formData.detalles.densidad_objetivo }),
+        ...(formData.detalles?.peso_1000 && { peso1000: formData.detalles.peso_1000 }),
+        ...(formData.detalles?.profundidad && { profundidad: formData.detalles.profundidad }),
+        ...(formData.detalles?.tipo_siembra && { tipoSiembra: formData.detalles.tipo_siembra }),
+        ...(formData.detalles?.distancia && { distancia: formData.detalles.distancia }),
+        // Save conditions
+        ...(formData.condiciones && { condiciones: formData.condiciones }),
       };
 
-      await saveActividad(planificationData, [], []);
+      console.log('💾 SAVING PLANIFICATION DATA:', {
+        planificationData,
+        lineasInsumos,
+        lineasLabores
+      });
+
+      await saveActividad(planificationData, lineasInsumos, lineasLabores);
       onSave();
     } catch (error) {
       console.error('Error saving planification:', error);

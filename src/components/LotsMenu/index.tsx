@@ -92,6 +92,83 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
               // Load complete planification data from database
               const completePlanifData = await db.get(planifData._id) as any;
               console.log('🔄 LOADING COMPLETE PLANIF DATA:', completePlanifData);
+              console.log('📋 INSUMOS Y SERVICIOS:', {
+                insumosLineasIds: completePlanifData.insumosLineasIds,
+                laboresLineasIds: completePlanifData.laboresLineasIds,
+                hasInsumos: completePlanifData.insumosLineasIds?.length > 0,
+                hasServicios: completePlanifData.laboresLineasIds?.length > 0
+              });
+
+              // Load supply lines (insumos) if they exist
+              let dosisData = [];
+              if (completePlanifData.insumosLineasIds && completePlanifData.insumosLineasIds.length > 0) {
+                try {
+                  const insumosResult = await db.allDocs({
+                    keys: completePlanifData.insumosLineasIds,
+                    include_docs: true
+                  });
+                  
+                  for (const row of insumosResult.rows) {
+                    if (row.doc) {
+                      const lineaInsumo = row.doc as any;
+                      try {
+                        // Try to get the actual supply (insumo) document
+                        const insumoDoc = await dbContext.supplies.get(lineaInsumo.insumoId);
+                        dosisData.push({
+                          insumo: insumoDoc,
+                          uuid: lineaInsumo._id,
+                          dosis: lineaInsumo.dosis || 0,
+                          total: lineaInsumo.totalCantidad || 0,
+                          precio_estimado: lineaInsumo.precioUnitario || 0,
+                          deposito: null
+                        });
+                      } catch (insumoError) {
+                        console.warn('Could not load supply for line:', lineaInsumo.insumoId, insumoError);
+                        // Add minimal data if supply can't be loaded
+                        dosisData.push({
+                          insumo: { _id: lineaInsumo.insumoId, nombre: 'Insumo no encontrado' },
+                          uuid: lineaInsumo._id,
+                          dosis: lineaInsumo.dosis || 0,
+                          total: lineaInsumo.totalCantidad || 0,
+                          precio_estimado: lineaInsumo.precioUnitario || 0,
+                          deposito: null
+                        });
+                      }
+                    }
+                  }
+                } catch (error) {
+                  console.warn('Could not load supply lines for planned activity:', error);
+                }
+              }
+
+              // Load service lines (labores) if they exist
+              let serviciosData = [];
+              if (completePlanifData.laboresLineasIds && completePlanifData.laboresLineasIds.length > 0) {
+                try {
+                  const laboresResult = await db.allDocs({
+                    keys: completePlanifData.laboresLineasIds,
+                    include_docs: true
+                  });
+                  
+                  for (const row of laboresResult.rows) {
+                    if (row.doc) {
+                      const lineaLabor = row.doc as any;
+                      serviciosData.push({
+                        servicio: lineaLabor.laborNombre || lineaLabor.servicio || 'Servicio',
+                        laborId: lineaLabor.laborId,
+                        contratista: lineaLabor.contratista || completePlanifData.contratista || null,
+                        costo_total: lineaLabor.totalCosto || 0,
+                        comentario: lineaLabor.comentario || '',
+                        uuid: lineaLabor._id,
+                        unidades: completePlanifData.area || 0,
+                        precio_unidad: lineaLabor.costoPorHectarea || 0
+                      });
+                    }
+                  }
+                } catch (error) {
+                  console.warn('Could not load service lines for planned activity:', error);
+                }
+              }
 
               let actividadFormateada: any = {
                 _id: planifData._id,
@@ -106,9 +183,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   // Map complete planned activity fields to regular activity format
                   cultivo: completePlanifData.cultivo || null,
                   contratista: completePlanifData.contratista || null,
+                  ingeniero: completePlanifData.ingeniero || completePlanifData.accountId || null,
                   business: completePlanifData.accountId || planifData.accountId || null,
-                  dosis: completePlanifData.dosis || [],
-                  servicios: completePlanifData.servicios || [],
+                  dosis: dosisData, // Use loaded supply data
+                  servicios: serviciosData, // Use loaded service data
                   rinde_estimado: completePlanifData.rindeEstimado || completePlanifData.rendimientoEstimado || 0,
                   rinde_estimado_total: completePlanifData.rendimientoEstimadoTotal || 0,
                   fertilizacion: completePlanifData.fertilizacion || false,
@@ -122,7 +200,9 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   distancia: completePlanifData.distancia || completePlanifData.detalles?.distancia || undefined,
                 },
                 campaña: {
-                  campaignId: completePlanifData.campanaId || planifData.campanaId
+                  campaignId: completePlanifData.campanaId || planifData.campanaId,
+                  name: null, // Will be set from selectedCampaign
+                  nombreComercial: null // Will be set from selectedCampaign
                 },
                 ts_generacion: planifData.created?.date || new Date().toISOString(),
                 contratista: completePlanifData.contratista || null,
@@ -146,6 +226,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
               console.warn('Could not load complete planification data for:', planifData._id, error);
               // Fallback to basic mapping if complete data is not available
               // Still try to preserve as much data as possible from the basic planif doc
+              console.warn('Using fallback mapping for planned activity:', planifData._id);
+              
               let actividadFormateada: any = {
                 _id: planifData._id,
                 lote_uuid: planifData.loteId,
@@ -158,9 +240,10 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   hectareas: planifData.area || planifData.detalles?.hectareas || 0,
                   cultivo: planifData.cultivo || planifData.detalles?.cultivo || null,
                   contratista: planifData.contratista || planifData.detalles?.contratista || null,
+                  ingeniero: planifData.ingeniero || planifData.detalles?.ingeniero || planifData.accountId || null,
                   business: planifData.accountId || planifData.detalles?.business || null,
-                  dosis: planifData.dosis || planifData.detalles?.dosis || [],
-                  servicios: planifData.servicios || planifData.detalles?.servicios || [],
+                  dosis: [], // Will be empty in fallback - user will need to add them manually
+                  servicios: [], // Will be empty in fallback - user will need to add them manually
                   rinde_estimado: planifData.rindeEstimado || planifData.rendimientoEstimado || planifData.detalles?.rinde_estimado || 0,
                   rinde_estimado_total: planifData.rendimientoEstimadoTotal || planifData.detalles?.rinde_estimado_total || 0,
                   fertilizacion: planifData.fertilizacion || planifData.detalles?.fertilizacion || false,
@@ -174,12 +257,14 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   distancia: planifData.distancia || planifData.detalles?.distancia,
                 },
                 campaña: {
-                  campaignId: planifData.campanaId || planifData.campaña?.campaignId
+                  campaignId: planifData.campanaId || planifData.campaña?.campaignId,
+                  name: null, // Will be set from selectedCampaign
+                  nombreComercial: null // Will be set from selectedCampaign
                 },
                 ts_generacion: planifData.created?.date || new Date().toISOString(),
                 contratista: planifData.contratista || null,
                 ingeniero: planifData.ingeniero || null,
-                comentario: planifData.comentario || planifData.comentarios || 'Actividad planificada',
+                comentario: planifData.comentario || planifData.comentarios || 'Actividad planificada (datos incompletos)',
                 observaciones: planifData.observaciones || planifData.comentarios || '',
                 condiciones: planifData.condiciones || {
                   humedad_max: undefined,
@@ -190,7 +275,8 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
                   velocidad_min: undefined,
                 },
                 isPlanificada: true,
-                _originalPlanifData: planifData
+                _originalPlanifData: planifData,
+                _fallbackMapping: true // Flag to indicate this used fallback mapping
               }
               _actividades_docs.push(actividadFormateada)
             }
