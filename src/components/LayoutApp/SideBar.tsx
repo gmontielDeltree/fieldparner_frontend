@@ -431,6 +431,17 @@ export const SideBar: React.FC<SideBarProps> = ({
                 </ListItemIcon>
                 <ListItemText primary={t("campaign_results")} />
               </ListItemButton>
+              <ListItemButton
+                sx={{ pl: 4 }}
+                component={RouterLink}
+                to="/init/overview/annual-plan-valorization"
+                selected={pathname.includes("/init/overview/annual-plan-valorization")}
+              >
+                <ListItemIcon>
+                  <MonetizationOnIcon />
+                </ListItemIcon>
+                <ListItemText primary={t("annual_plan_valorization")} />
+              </ListItemButton>
 
             </List>
           </Collapse>

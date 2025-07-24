@@ -232,6 +232,11 @@ const CampaignMenu: React.FC = () => {
     if (campaignToClose) {
       try {
         console.log('Confirming close of campaign:', campaignToClose._id)
+        
+        // TODO: Check for non-valorized planifications
+        // This will be implemented after the annual plan database is set up
+        // For now, we'll add a placeholder warning
+        
         const updatedCampaign = { ...campaignToClose, state: 'closed' }
         await updateCampaign(updatedCampaign)
         toast.success(
