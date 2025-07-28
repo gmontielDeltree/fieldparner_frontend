@@ -81,6 +81,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               onChange={handleInputChange('densidad_objetivo')}
               unit="plantas/ha"
               label={t('targetDensity')}
+              allowNegative={false}
+              allowDecimals={true}
             />
           </Grid>
 
@@ -93,6 +95,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               onChange={handleInputChange('profundidad')}
               fullWidth
               unit="cm"
+              allowNegative={false}
+              allowDecimals={true}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -104,6 +108,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               onChange={handleInputChange('distancia')}
               fullWidth
               unit="cm"
+              allowNegative={false}
+              allowDecimals={true}
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -115,6 +121,8 @@ const OtherDetailsForm: React.FC<OtherDetailsFormProps> = ({
               onChange={handleInputChange('peso_1000')}
               unit="grs"
               fullWidth
+              allowNegative={false}
+              allowDecimals={true}
             />
           </Grid>
         </Grid>

@@ -89,13 +89,43 @@ export const useOrder = () => {
                 const orderItems: WithdrawalOrderItem[] = orders.map(o => {
                     const withdraw = withdraws.find(w => w._id === o.withdrawId);
                     const campaign = campaigns.find(c => c._id === o.campaignId);
-                    if (!withdraw || !campaign) throw new Error("Business or Campaign not found");
+                    
+                    console.log(`Processing order ${o.order}:`, {
+                        orderId: o._id,
+                        orderNumber: o.order,
+                        campaignId: o.campaignId,
+                        foundCampaign: campaign,
+                        availableCampaigns: campaigns.map(c => ({id: c._id, name: c.name}))
+                    });
+                    
+                    // For automatic orders, create a default withdraw if not found
+                    const defaultWithdraw = withdraw || {
+                        _id: o.withdrawId || 'auto',
+                        nombreCompleto: 'Sistema Automático',
+                        razonSocial: 'Sistema Automático',
+                        cuit: '',
+                        accountId: o.accountId
+                    };
+                    
+                    // For automatic orders without campaign, create a default campaign
+                    const defaultCampaign = campaign || {
+                        _id: o.campaignId || 'auto',
+                        name: 'Sistema Automático',
+                        accountId: o.accountId
+                    };
+                    
+                    // Only skip if it's a manual order without campaign (automatic orders can work without campaign)
+                    if (!campaign && o.type !== 'Automatica') {
+                        console.warn(`Manual order ${o.order} skipped: Campaign not found for campaignId: ${o.campaignId}`);
+                        return null;
+                    }
+                    
                     return {
                         ...o,
-                        withdraw,
-                        campaign,
+                        withdraw: defaultWithdraw,
+                        campaign: defaultCampaign,
                     } as WithdrawalOrderItem;
-                }).sort((a, b) => b.order - a.order);
+                }).filter(Boolean).sort((a, b) => b.order - a.order);
                 setOrders(orderItems);
             }
 
@@ -149,14 +179,19 @@ export const useOrder = () => {
                     { order: lastNumerator.lastNumerator.toString() },
                     t("withdrawal_order_label")
                 );
-                return true;
+                // Return the created order with the assigned ID and order number
+                return {
+                    ...newOrder,
+                    _id: response[0].id,
+                    _rev: response[0].rev
+                };
             }
-            return false;
+            return null;
         } catch (error) {
             console.log(t('document_creation_error'), error);
             NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
-            return false;
+            return null;
         }
     }
 
@@ -444,6 +479,83 @@ export const useOrder = () => {
         }
     }
 
+    const confirmAutomaticWithdrawalOrder = async (withdrawalOrder: WithdrawalOrder, listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
+        setIsLoading(true);
+        try {
+            if (!user) throw new Error(t("user_not_found"));
+            if (!withdrawalOrder) throw new Error(t("withdrawal_order_not_found"));
+            
+            let isComplete = true;
+
+            const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
+                accountId: w.accountId,
+                amount: Number(w.amount),
+                depositSupplyOrderId: w._id,
+                order: w.order,
+                withdrawalDate,
+            } as WithdrawalsByDepositSupply));
+
+            let updateDepositSupplies: DepositSupplyOrder[] = listWithdrawals.map(w => {
+                const { amount, ...newObject } = w;
+                let withdrawalAmount = Number(w.withdrawalAmount) + Number(amount);
+                delete newObject.supply;
+                delete newObject.deposit;
+                return {
+                    ...newObject,
+                    withdrawalAmount
+                };
+            });
+
+            updateDepositSupplies.forEach(u => {
+                if (Number(u.originalAmount) > Number(u.withdrawalAmount)) {
+                    isComplete = false;
+                    return;
+                }
+            });
+
+            let newMovements = listWithdrawals.map(w => ({
+                accountId: user.accountId,
+                amount: w.amount,
+                campaignId: withdrawalOrder.campaignId,
+                creationDate: withdrawalDate,
+                depositId: w.deposit?._id,
+                supplyId: w.supply?._id,
+                isCrop: false,
+                cropId: "",
+                location: w.location,
+                nroLot: w.nroLot,
+                detail: withdrawalOrder.reason,
+                voucher: withdrawalOrder.order.toString(),
+                isIncome: false,
+                movement: withdrawalOrder.type,
+                operationDate: withdrawalDate,
+                typeMovement: TypeMovement.OrdenRetiro,
+            } as StockMovement));
+
+            let responseAll = await Promise.all([
+                dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
+                dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
+                dbContext.stockMovements.bulkDocs(newMovements),
+            ]);
+
+            if (isComplete) {
+                let updateOrder = { ...withdrawalOrder, state: OrderStatus.Completed };
+                await dbContext.withdrawalOrders.put(updateOrder);
+            }
+
+            setIsLoading(false);
+
+            if (responseAll) {
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.log("Error en la confirmacion de Retiro Automatico", error);
+            setIsLoading(false);
+            return false;
+        }
+    };
+
     const getLaborOrder = async (field: string, campaignId: string, contractorId: string) => {
         setIsLoading(true);
         try {
@@ -511,6 +623,7 @@ export const useOrder = () => {
         getWithdrawalOrders,
         createWithdrawalOrder,
         confirmWithdrawalOrder,
+        confirmAutomaticWithdrawalOrder,
         deleteWithdrawalOrder,
         getOrderWithDepositsAndSupplies,
         createLaborOrder,

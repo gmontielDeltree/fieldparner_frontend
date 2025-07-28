@@ -10,6 +10,7 @@ import MapIcon from '@mui/icons-material/Map'
 import SaveIcon from '@mui/icons-material/Save'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { useTranslation } from 'react-i18next'
+import area from '@turf/area'
 
 MapboxDraw.modes.direct_select.onTrash = function (state) {
   if (state.selectedCoordPaths.length === 0) {
@@ -71,39 +72,15 @@ const DrawGeometry2: React.FC<DrawGeometryProps> = ({
   )
 
   const calculateAreaInHectares = useCallback((feature: any) => {
-    if (
-      !feature ||
-      !feature.geometry ||
-      !feature.geometry.coordinates ||
-      !feature.geometry.coordinates[0]
-    ) {
+    if (!feature || !feature.geometry) {
       return 0
     }
 
     try {
-      const coordinates = feature.geometry.coordinates[0]
-
-      const coordsInRadians = coordinates.map((coord: number[]) => [
-        (coord[0] * Math.PI) / 180,
-        (coord[1] * Math.PI) / 180,
-      ])
-
-      const R = 6371000
-
-      let area = 0
-      for (let i = 0; i < coordsInRadians.length - 1; i++) {
-        area +=
-          coordsInRadians[i][0] * coordsInRadians[i + 1][1] -
-          coordsInRadians[i + 1][0] * coordsInRadians[i][1]
-      }
-
-      area +=
-        coordsInRadians[coordsInRadians.length - 1][0] * coordsInRadians[0][1] -
-        coordsInRadians[0][0] * coordsInRadians[coordsInRadians.length - 1][1]
-
-      area = Math.abs((area * R * R) / 2)
-
-      return area / 10000
+      // Use the same Turf.js area calculation as in NewFieldPage.tsx
+      const areaInSquareMeters = area(feature)
+      // Convert to hectares and round to 2 decimal places (same as in NewFieldPage.tsx)
+      return Math.round((areaInSquareMeters / 10000) * 100) / 100
     } catch (error) {
       console.error(t('errorCalculatingArea'), error)
       return 0

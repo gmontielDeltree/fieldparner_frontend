@@ -35,7 +35,23 @@ const ActivityHeader: React.FC<ActivityHeaderProps> = ({
   // Get the display activity name
   const getDisplayText = () => {
     if (mode === 'execute') {
-      return t('execute') + ' ' + t(activityType);
+      // Try specific execute keys first
+      const executeKey = `execute_${activityType}`;
+      const translated = t(executeKey, { defaultValue: '' });
+      if (translated) {
+        return translated;
+      }
+      // Fallback: construct from available keys
+      const executeText = t('executeActivity', { defaultValue: t('execution', { defaultValue: 'Execute' }) });
+      const activityText = t(activityType);
+      
+      // If executeActivity contains "Activity", replace it
+      if (executeText.toLowerCase().includes('activity') || executeText.toLowerCase().includes('actividad')) {
+        return executeText.replace(/activity|actividad/gi, activityText);
+      }
+      
+      // Otherwise just concatenate
+      return `${executeText} ${activityText}`;
     }
     return isEditing ? t('edit') + ' ' + t(activityType) : t(activityType);
   };

@@ -59,12 +59,18 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
 
   const handleAddRow = () => {
     const supply = selectedSupply
-    if (!supply) {
+    // T2-75: En cosecha, no es obligatorio agregar insumos
+    if (!supply && formData.tipo !== 'cosecha') {
       Swal.fire({
         icon: 'error',
         title: t('error'),
         text: t('selectSupplyPlease'),
       })
+      return
+    }
+    
+    // Si no hay supply en cosecha, permitir continuar sin validación
+    if (!supply && formData.tipo === 'cosecha') {
       return
     }
 
@@ -87,13 +93,19 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
       insumo: selectedSupply, // Changed from selectedOption to insumo
       dosificacion,
       total,
+      deposito, // Always include deposito for both plan and execute modes
       ...(mode !== 'plan' && {
-        deposito,
         nro_lote: nroLote,
         ubicacion,
       }),
       uuid: uuid4(),
     }
+    
+    console.log('🔍 DEBUG AGREGANDO INSUMO:')
+    console.log('  dosificacion (cantidad x ha):', dosificacion)
+    console.log('  total (cantidad total):', total)
+    console.log('  hectareas del lote:', formData.detalles.hectareas)
+    console.log('  newRow completo:', newRow)
 
     const newDetalles = [...formData.detalles.dosis, newRow]
 
@@ -107,8 +119,8 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
     setSelectedSupply(undefined)
     setDosificacion('')
     setTotal('')
+    setDeposito(undefined) // Always clear deposit in both plan and execute modes
     if (mode !== 'plan') {
-      setDeposito(undefined)
       setNroLote('')
       setUbicacion('')
     }
@@ -119,8 +131,21 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
   }
 
   const handleDosificacionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setDosificacion(event.target.value)
-    setTotal((+event.target.value * formData.detalles.hectareas).toFixed(2))
+    const value = event.target.value
+    setDosificacion(value)
+    
+    // Calculate total only if both values are valid numbers
+    if (value !== '' && !isNaN(Number(value)) && formData.detalles.hectareas) {
+      const calculatedTotal = (Number(value) * formData.detalles.hectareas).toFixed(2)
+      console.log('📊 Cálculo de total:', {
+        dosificacion: value,
+        hectareas: formData.detalles.hectareas,
+        total: calculatedTotal
+      })
+      setTotal(calculatedTotal)
+    } else if (value === '') {
+      setTotal('')
+    }
   }
 
   const handleDepositoChange = (event: any) => {
@@ -134,7 +159,21 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
   }
 
   const handleLotNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNroLote(event.target.value)
+    const value = event.target.value
+    // Only allow numbers for lot number
+    if (value === '' || /^\d+$/.test(value)) {
+      setNroLote(value)
+    }
+  }
+
+  const handleLotNumberKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow control keys (backspace, delete, arrow keys, etc.)
+    if (event.key.length > 1) return
+    
+    // Only allow numbers
+    if (!/[0-9]/.test(event.key)) {
+      event.preventDefault()
+    }
   }
 
   const handleUbicacionChange = (event: SelectChangeEvent<string>) => {
@@ -142,10 +181,17 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
   }
 
   const handleTotalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTotal(event.target.value)
-    setDosificacion(
-      (+event.target.value / formData.detalles.hectareas).toFixed(2),
-    )
+    const value = event.target.value
+    setTotal(value)
+    
+    // Calculate dosificacion only if both values are valid numbers
+    if (value !== '' && !isNaN(Number(value)) && formData.detalles.hectareas) {
+      setDosificacion(
+        (Number(value) / formData.detalles.hectareas).toFixed(2),
+      )
+    } else if (value === '') {
+      setDosificacion('')
+    }
   }
 
   const handleUpdateRows = (updatedRows: any) => {
@@ -195,45 +241,52 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
             </Grid>
           </Grid>
 
-          {/* Línea 2: Deposito, Ubicacion, Nro de Lote */}
-          {mode !== 'plan' && (
-            <Grid container item xs={12} spacing={1}>
-              <Grid item xs={4}>
-                <AutocompleteDeposito
-                  key={`deposit-${deposito?.id || 'empty'}`}
-                  value={deposito}
-                  onChange={handleDepositoChange}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <FormControl fullWidth>
-                  <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
-                  <Select
-                    key={`location-${deposito?.id || 'empty'}`}
-                    labelId="ubicacion-label"
-                    label={t('location')}
-                    value={ubicacion}
-                    onChange={handleUbicacionChange}
-                    disabled={!deposito}
-                  >
-                    {deposito?.locations?.map((loc: string) => (
-                      <MenuItem key={loc} value={loc}>
-                        {loc}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={4}>
-                <TextField
-                  fullWidth
-                  label={t('batchNumber')}
-                  value={nroLote}
-                  onChange={handleLotNumberChange}
-                />
-              </Grid>
+          {/* Línea 2: Deposito (always), Ubicacion, Nro de Lote (only in execute) */}
+          <Grid container item xs={12} spacing={1}>
+            <Grid item xs={mode === 'plan' ? 12 : 4}>
+              <AutocompleteDeposito
+                key={`deposit-${deposito?.id || 'empty'}`}
+                value={deposito}
+                onChange={handleDepositoChange}
+              />
             </Grid>
-          )}
+            {mode !== 'plan' && (
+              <>
+                <Grid item xs={4}>
+                  <FormControl fullWidth>
+                    <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
+                    <Select
+                      key={`location-${deposito?.id || 'empty'}`}
+                      labelId="ubicacion-label"
+                      label={t('location')}
+                      value={ubicacion}
+                      onChange={handleUbicacionChange}
+                      disabled={!deposito}
+                    >
+                      {deposito?.locations?.map((loc: string) => (
+                        <MenuItem key={loc} value={loc}>
+                          {loc}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={4}>
+                  <TextField
+                    fullWidth
+                    label={t('batchNumber')}
+                    value={nroLote}
+                    onChange={handleLotNumberChange}
+                    onKeyPress={handleLotNumberKeyPress}
+                    inputProps={{
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*'
+                    }}
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
 
           {/* Línea 3: Cantidad, Cant Total */}
           <Grid container item xs={12} spacing={1}>
@@ -241,18 +294,22 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
               <NumberFieldWithUnits
                 fullWidth
                 label={t('quantity') + ' x ' + t('hectares')}
-                value={Number(dosificacion)}
+                value={dosificacion === '' ? '' : Number(dosificacion)}
                 onChange={handleDosificacionChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
+                allowNegative={false}
+                allowDecimals={true}
               />
             </Grid>
             <Grid item xs={5}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t('totalQuantity')}
-                value={Number(total)}
+                value={total === '' ? '' : Number(total)}
                 onChange={handleTotalChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
+                allowNegative={false}
+                allowDecimals={true}
               />
             </Grid>
             <Grid item xs={1}>
