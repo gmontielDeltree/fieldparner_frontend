@@ -50,6 +50,9 @@ import {
   ListCostsExpenses,
   NewCostsExpenses,
   CampaignsResultsPage,
+  ListAnnualPlanValorization,
+  AnnualPlanValorizationPage,
+  ValorizationAnalysisPage,
 } from "../pages";
 
 import { AppLayout } from "../components";
@@ -223,6 +226,11 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/costs-expenses" element={<ListCostsExpenses />} />
         <Route path="/overview/costs-expenses/new" element={<NewCostsExpenses />} />
         <Route path="/overview/costs-expenses/:id" element={<NewCostsExpenses />} />
+
+        <Route path="/overview/annual-plan-valorization" element={<ListAnnualPlanValorization />} />
+        <Route path="/overview/annual-plan-valorization/new" element={<AnnualPlanValorizationPage />} />
+        <Route path="/overview/annual-plan-valorization/edit/:id" element={<AnnualPlanValorizationPage />} />
+        <Route path="/overview/annual-plan-valorization/analysis" element={<ValorizationAnalysisPage />} />
 
         <Route path="/*" element={<Navigate to="/init/overview/fields" />} />
       </Routes>

@@ -31,4 +31,5 @@ export * from './useCertificateDeposit';
 export * from './useProductiveUnits';
 export * from './useContractSaleCereals';
 export * from './useCostsExpenses';
-export * from './useCampaignExpenses'
+export * from './useCampaignExpenses';
+export * from './useAnnualPlanValorization';
