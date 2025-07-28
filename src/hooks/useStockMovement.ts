@@ -195,10 +195,17 @@ export const useStockMovement = () => {
                     }
                 } else {
                     if (!existingStock) {
+                        console.log('🔍 DEBUG: No se encontró stock existente para insumo:', supplyData._id);
+                        console.log('  Verificando si el depósito permite stock negativo...');
+                        
                         // Verificar si el depósito permite stock negativo
                         try {
                             const depositDoc = await dbContext.deposits.get(depositId);
+                            console.log('  📦 Información del depósito:', depositDoc);
+                            console.log('  ✅ Permite stock negativo:', depositDoc?.isNegative);
+                            
                             if (depositDoc && depositDoc.isNegative) {
+                                console.log('  ✅ Creando stock negativo para depósito que lo permite');
                                 // Crear un nuevo registro de stock si el depósito permite negativo
                                 promiseStockByLot = dbContext.stock.post({
                                     accountId: accountId,
@@ -215,12 +222,16 @@ export const useStockMovement = () => {
                                     reservedStock: 0
                                 });
                             } else {
+                                console.log('  ❌ Depósito NO permite stock negativo, lanzando error');
                                 throw new Error(t("supply_stock_not_found"));
                             }
                         } catch (error) {
+                            console.log('  ❌ Error al obtener información del depósito:', error);
                             if (error instanceof Error && error.name === 'not_found') {
+                                console.log('  ❌ Depósito no encontrado');
                                 throw new Error(t("supply_stock_not_found_invalid_deposit"));
                             } else {
+                                console.log('  ❌ Lanzando error: stock no encontrado');
                                 throw new Error(t("supply_stock_not_found"));
                             }
                         }

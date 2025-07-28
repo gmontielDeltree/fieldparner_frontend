@@ -96,7 +96,7 @@ export const AutocompleteDeposito = ({ value, onChange }) => {
         // Regular option
         return option.description;
       }}
-      renderOption={(props, option) => <li {...props}>{option.description}</li>}
+      renderOption={(props, option) => <li {...props} key={option._id || option.inputValue || option.description}>{option.description}</li>}
      
       freeSolo
       renderInput={(params) => (

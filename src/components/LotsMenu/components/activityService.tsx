@@ -59,16 +59,20 @@ export const reserveSupplyStock = async (
   // Get the field information
   const field = dosis.insumo.campo;
 
+  console.log('reserveSupplyStock: selectedCampaign data:', selectedCampaign);
+  
   const newWithdrawalOrder = {
     accountId: user.accountId,
     type: WithdrawalOrderType.Automatica,
     creationDate: new Date().toISOString(),
     order: 0,
     reason: 'Reserva de stock',
-    campaign: selectedCampaign,
+    campaignId: selectedCampaign?._id,
     field: field, // Use field from insumo
     state: 'pending',
   }
+  
+  console.log('reserveSupplyStock: newWithdrawalOrder data:', newWithdrawalOrder);
 
   const newDepositSupplyOrder = {
     order: 0,
@@ -82,12 +86,12 @@ export const reserveSupplyStock = async (
   }
 
   try {
-    const success = await createWithdrawalOrder(newWithdrawalOrder, [
+    const createdOrder = await createWithdrawalOrder(newWithdrawalOrder, [
       newDepositSupplyOrder,
     ])
-    if (success) {
-      dosis.orden_de_retiro = newWithdrawalOrder
-      return newWithdrawalOrder
+    if (createdOrder) {
+      dosis.orden_de_retiro = createdOrder
+      return createdOrder
     } else {
       throw new Error(`Error reserving stock for supply ${dosis.insumo.name || 'unknown'}`)
     }
@@ -192,12 +196,19 @@ export const saveActivity = async (
               console.log("saveActivity: Reserving stock for supply:", supplyName);
               
               // Attempt to reserve stock
-              await reserveSupplyStock(
+              const withdrawalOrder = await reserveSupplyStock(
                 dosis,
                 user,
                 selectedCampaign,
                 createWithdrawalOrder,
               )
+              
+              // IMPORTANT: Asignar la orden de retiro al objeto dosis para que se guarde con la actividad
+              if (withdrawalOrder) {
+                dosis.orden_de_retiro = withdrawalOrder;
+                console.log("saveActivity: Withdrawal order assigned to dosis:", withdrawalOrder);
+              }
+              
               console.log("saveActivity: Stock reserved successfully for:", supplyName);
             } catch (error) {
               // Log error but continue with other supplies
@@ -207,6 +218,23 @@ export const saveActivity = async (
               )
               // Don't return here, continue with other supplies
             }
+          }
+          
+          // IMPORTANT: Actualizar la actividad en la base de datos con las órdenes de retiro
+          console.log("saveActivity: Updating activity with withdrawal orders");
+          try {
+            // Obtener la versión más reciente de la actividad para evitar conflictos
+            const latestActivity = await db.get(actividad._id);
+            
+            // Actualizar solo las dosis con las órdenes de retiro
+            latestActivity.detalles.dosis = actividad.detalles.dosis;
+            
+            await db.put(latestActivity);
+            console.log("saveActivity: Activity updated with withdrawal orders");
+          } catch (error) {
+            console.error("saveActivity: Error updating activity with withdrawal orders:", error);
+            // El error no es crítico - las órdenes se crearon pero no se guardaron en la actividad
+            // El sistema aún puede funcionar sin ellas
           }
         }
 

@@ -13,6 +13,52 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { UNIT } from "@deck.gl/core/typed";
 
+// Utility function to validate numeric input
+const handleNumericInput = (event, allowNegative = false, allowDecimals = true) => {
+  const { value } = event.target;
+  
+  // Allow empty string
+  if (value === '') return value;
+  
+  // Create regex pattern based on options
+  let pattern;
+  if (allowNegative && allowDecimals) {
+    pattern = /^-?\d*\.?\d*$/; // Allow negative and decimals
+  } else if (allowNegative && !allowDecimals) {
+    pattern = /^-?\d*$/; // Allow negative but no decimals
+  } else if (!allowNegative && allowDecimals) {
+    pattern = /^\d*\.?\d*$/; // No negative but allow decimals
+  } else {
+    pattern = /^\d*$/; // No negative and no decimals
+  }
+  
+  // Test if the value matches the pattern
+  if (pattern.test(value)) {
+    return value;
+  }
+  
+  // If invalid, return the previous valid value
+  return event.target.defaultValue || '';
+};
+
+// Enhanced change handler that filters invalid input
+const createNumericChangeHandler = (originalOnChange, allowNegative = false, allowDecimals = true) => {
+  return (event) => {
+    const filteredValue = handleNumericInput(event, allowNegative, allowDecimals);
+    
+    // Create new event with filtered value
+    const filteredEvent = {
+      ...event,
+      target: {
+        ...event.target,
+        value: filteredValue
+      }
+    };
+    
+    originalOnChange(filteredEvent);
+  };
+};
+
 function abrUnit(unit : string){
   if(!unit) return "unit"
   let splited = unit.split('/')
@@ -30,26 +76,43 @@ export const NumberFieldWithUnits = ({
   onChange,
   label,
   unit,
-  fullWidth
+  fullWidth,
+  allowNegative = false,
+  allowDecimals = true,
+  ...otherProps
 }: {
-  value: number;
+  value: number | string;
   onChange: (e) => void;
   label: string;
   unit: string;
-  fullWidth?: boolean,
-  size?:string
+  fullWidth?: boolean;
+  size?: string;
+  allowNegative?: boolean;
+  allowDecimals?: boolean;
+  [key: string]: any;
 }) => {
+  // For context-based negative validation
+  const shouldAllowNegative = allowNegative || 
+    (typeof allowNegative === 'undefined' && 
+     (unit?.includes('temp') || label?.toLowerCase().includes('temp') || 
+      unit?.includes('°C') || unit?.includes('°F')));
+
+  const enhancedOnChange = createNumericChangeHandler(onChange, shouldAllowNegative, allowDecimals);
+
   return (
       <TextField
-        fullWidth
+        {...otherProps}
+        fullWidth={fullWidth}
         label={label}
         value={value}
-        onChange={onChange}
+        onChange={enhancedOnChange}
         id="outlined-start-adornment"
-        
         InputProps={{
           inputProps: {
             style: { textAlign: "right" },
+            pattern: shouldAllowNegative 
+              ? (allowDecimals ? "[0-9.-]*" : "[0-9-]*")
+              : (allowDecimals ? "[0-9.]*" : "[0-9]*"),
         },
           endAdornment: <InputAdornment title={unit} position="end">{abrUnit(unit)}</InputAdornment>,
         }}

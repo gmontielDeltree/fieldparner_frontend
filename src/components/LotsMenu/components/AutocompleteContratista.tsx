@@ -128,7 +128,7 @@ export const AutocompleteContratista = ({ value, onChange, width = 300 }) => {
         clearOnBlur
         handleHomeEndKeys
         renderOption={(props, option) => (
-          <li {...props}>
+          <li {...props} key={option._id || option.inputValue || option.razonSocial}>
             {option?.nombreCompleto === ""
               ? option.razonSocial
               : option.nombreCompleto}
