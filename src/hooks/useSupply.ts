@@ -143,6 +143,7 @@ export const useSupply = () => {
                     }
                 })
             ]);
+            
             const [suppliesStock, supplies] = promisesResult;
             const supplyIds = suppliesStock.docs.map(s => s.id);//Obtenemos los id de insumos
             const groupSupplyIds = Array.from(new Set(supplyIds));//Agrupamos por id de insumo
