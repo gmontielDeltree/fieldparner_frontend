@@ -221,7 +221,8 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         break
 
       case t('supplies'):
-        if (!formDetails.dosis || formDetails.dosis.length === 0) {
+        // Para cosecha, los insumos no son obligatorios
+        if (spanishActivityType !== 'cosecha' && (!formDetails.dosis || formDetails.dosis.length === 0)) {
           fields.push(t('atLeastOneSupply'))
         }
         break
@@ -278,10 +279,12 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         break
 
       case t('supplies'):
+        // Para cosecha, los insumos no son obligatorios
         if (
-          !formData.detalles ||
+          spanishActivityType !== 'cosecha' &&
+          (!formData.detalles ||
           !formData.detalles.dosis ||
-          formData.detalles.dosis.length === 0
+          formData.detalles.dosis.length === 0)
         ) {
           missingFields++
         }
@@ -832,12 +835,17 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
                 color="primary"
                 onClick={() => {
                   const currentStepValidation = getStepValidationStatus(activeStep)
+                  console.log('Validation status:', currentStepValidation)
                   if (!currentStepValidation.isValid) {
                     const missingFields = getMissingFieldsMessages(activeStep)
+                    console.log('Missing fields:', missingFields)
+                    console.log('Current step:', steps[activeStep])
                     setMissingFieldsList(missingFields)
                     setShowValidationNotification(true)
+                    console.log('showValidationNotification set to true')
                     return
                   }
+                  console.log('About to call handleNext with steps:', steps)
                   handleNext(steps)
                 }}
                 className="d-flex align-items-center gap-2"

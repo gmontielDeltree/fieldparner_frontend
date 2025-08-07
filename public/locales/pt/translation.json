@@ -509,7 +509,7 @@
   "Activity Verification Required": "Verificação de Atividade Obrigatória",
   "You are verifying a planned activity of type": "Você está verificando uma atividade planejada do tipo",
   " Please complete the missing fields to make this activity executable.": " Por favor, complete os campos ausentes para tornar esta atividade executável.",
-  "Unlock Activity": "Desbloquear Atividade",
+  "Unlock Activity": "Verificar Atividade",
   "Actividad Planificada": "Atividade Planejada",
   "activityVerificationModeTitle": "Modo de Verificação de Atividade",
   "activityVerificationModeDescription": "Você está verificando uma atividade planejada do tipo {{activityType}}. Complete os campos ausentes abaixo para desbloquear esta atividade para execução.",

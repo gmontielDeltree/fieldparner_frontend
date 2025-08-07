@@ -207,7 +207,13 @@ export const usePlanActivity = (
   }
 
   const handleNext = (steps) => {
+    console.log('🚀 handleNext START')
+    console.log('Steps array:', steps)
+    console.log('Active step index:', activeStep)
+    
     const currentStepName = steps[activeStep]
+    console.log('Current step name:', currentStepName)
+    console.log('Form data detalles:', formData.detalles)
 
     if (currentStepName === 'Servicios') {
       if (
@@ -221,15 +227,22 @@ export const usePlanActivity = (
     }
 
     if (currentStepName === 'Insumos') {
-      if (!formData.detalles.dosis || formData.detalles.dosis.length === 0) {
+      console.log('Checking Insumos step. Activity type:', translatedActivityType)
+      // Para cosecha, los insumos no son obligatorios
+      if (translatedActivityType !== 'cosecha' && (!formData.detalles.dosis || formData.detalles.dosis.length === 0)) {
+        console.log('Insumos required but missing for non-harvest activity')
         setMissingItem('insumos')
         setOpenConfirmDialog(true)
         return
+      } else {
+        console.log('Insumos validation passed (either has supplies or is harvest)')
       }
     }
 
+    console.log('✅ About to increment active step')
     setActiveStep((prevActiveStep) => {
       const nextStep = prevActiveStep + 1
+      console.log('Incrementing step from', prevActiveStep, 'to', nextStep)
       setMaxStepReached((prevMaxStep) => Math.max(prevMaxStep, nextStep))
       return nextStep
     })

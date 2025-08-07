@@ -12,7 +12,8 @@
       "mcp__puppeteer__puppeteer_evaluate",
       "Bash(open:*)",
       "Bash(ls:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

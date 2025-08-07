@@ -35,7 +35,21 @@ const CreateCampaignModal = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [state, setState] = useState("");
+  const [zafra, setZafra] = useState("");
   const { t } = useTranslation();
+
+  // Lista de zafras comunes
+  const zafrasOptions = [
+    { value: "2023/2024", label: "2023/2024" },
+    { value: "2024/2025", label: "2024/2025" },
+    { value: "2025/2026", label: "2025/2026" },
+    { value: "gruesa", label: "Gruesa" },
+    { value: "fina", label: "Fina" },
+    { value: "invierno", label: "Invierno" },
+    { value: "verano", label: "Verano" },
+    { value: "primera", label: "Primera" },
+    { value: "segunda", label: "Segunda" },
+  ];
 
   const title = editMode ? t("Edit_campaign") : t("create_new_campaign");
 
@@ -47,6 +61,7 @@ const CreateCampaignModal = ({
       setStartDate(initialData.startDate);
       setEndDate(initialData.endDate);
       setState(initialData.state);
+      setZafra(initialData.zafra || "");
 
       // TODO Load data to form
     }
@@ -63,6 +78,7 @@ const CreateCampaignModal = ({
         startDate,
         endDate,
         state,
+        zafra,
       });
     } else {
       onCreate({
@@ -73,6 +89,7 @@ const CreateCampaignModal = ({
         startDate,
         endDate,
         state,
+        zafra,
       });
     }
     // Reset form
@@ -82,6 +99,7 @@ const CreateCampaignModal = ({
     setStartDate("");
     setEndDate("");
     setState("");
+    setZafra("");
   };
 
   function onDeleteHandler(
@@ -151,6 +169,25 @@ const CreateCampaignModal = ({
             onChange={(e) => setEndDate(e.target.value)}
           />
         </LocalizationProvider>
+        <FormControl fullWidth margin="dense">
+          <InputLabel id="zafra-label">Zafra</InputLabel>
+          <Select
+            labelId="zafra-label"
+            id="zafra"
+            value={zafra}
+            label="Zafra"
+            onChange={(e) => setZafra(e.target.value)}
+          >
+            <MenuItem value="">
+              <em>Seleccionar zafra</em>
+            </MenuItem>
+            {zafrasOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <FormControl fullWidth margin="dense">
           <InputLabel id="state-label">{t("state")}</InputLabel>
           <Select

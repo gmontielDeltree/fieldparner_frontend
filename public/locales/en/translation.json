@@ -508,7 +508,7 @@
   "Activity Verification Required": "Activity Verification Required",
   "You are verifying a planned activity of type": "You are verifying a planned activity of type",
   " Please complete the missing fields to make this activity executable.": " Please complete the missing fields to make this activity executable.",
-  "Unlock Activity": "Unlock Activity",
+  "Unlock Activity": "Verify Activity",
   "Actividad Planificada": "Planned Activity",
   "activityVerificationModeTitle": "Activity Verification Mode",
   "activityVerificationModeDescription": "You are verifying a planned activity of type {{activityType}}. Complete the missing fields below to unlock this activity for execution.",

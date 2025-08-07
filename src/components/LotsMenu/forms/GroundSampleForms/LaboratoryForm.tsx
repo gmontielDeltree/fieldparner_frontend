@@ -56,18 +56,6 @@ function LaboratoryForm({ lot, formData, setFormData }) {
       <Title>{t("laboratory")}</Title>
       <FormControl fullWidth>
         <Grid container spacing={2}>
-          {/* ID Input - unmodifiable */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              id="id"
-              label="ID"
-              fullWidth
-              value={formData.id || ""}
-              InputProps={{
-                readOnly: true
-              }}
-            />
-          </Grid>
 
           {/* Fecha Input */}
           <Grid item xs={12} sm={6}>
@@ -76,20 +64,36 @@ function LaboratoryForm({ lot, formData, setFormData }) {
                 label={t("date")}
                 value={formData.fecha || null}
                 onChange={(newValue) => onFieldChange("fecha", newValue)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                renderInput={(params) => <TextField {...params} fullWidth sx={{ width: '100%' }} />}
+                sx={{ width: '100%' }}
               />
             </LocalizationProvider>
           </Grid>
 
           {/* Laboratorio Input */}
           <Grid item xs={12} sm={6}>
-            <TextField
-              id="laboratorio"
-              label={t("laboratory")}
-              fullWidth
-              value={formData.laboratorio || ""}
-              onChange={(e) => onFieldChange("laboratorio", e.target.value)}
-            />
+            <FormControl fullWidth>
+              <InputLabel id="laboratorio-select-label">{t("laboratory")}</InputLabel>
+              <Select
+                labelId="laboratorio-select-label"
+                id="laboratorio-select"
+                value={formData.laboratorio?._id || formData.laboratorio || ""}
+                label={t("laboratory")}
+                onChange={(e) => {
+                  const selectedBusiness = businesses.find(b => b._id === e.target.value);
+                  onFieldChange("laboratorio", selectedBusiness || e.target.value);
+                }}
+              >
+                <MenuItem value="">
+                  <em>Seleccionar laboratorio</em>
+                </MenuItem>
+                {businesses.map((business) => (
+                  <MenuItem key={business._id} value={business._id}>
+                    {business.razonSocial || business.nombreComercial || business.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Grid>
 
           {/* Referencia Doc Laboratorio Input */}
