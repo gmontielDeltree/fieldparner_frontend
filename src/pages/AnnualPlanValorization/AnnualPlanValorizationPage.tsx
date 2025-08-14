@@ -379,7 +379,9 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     const updatedInsumos = [...insumos];
     console.log('🔧 Current insumo before update:', updatedInsumos[index]);
     
-    updatedInsumos[index].valorUnidad = valor;
+    // Validate that valor is a valid positive number
+    const validValue = isNaN(valor) || valor < 0 ? 0 : valor;
+    updatedInsumos[index].valorUnidad = validValue;
     
     // Calcular valor total: valor unitario * cantidad por hectárea * hectáreas totales
     const cantidadPorHa = updatedInsumos[index].cantidadHa || 0;
@@ -405,7 +407,10 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const handleServicioValorChange = (index: number, valor: number) => {
     console.log('🔨 handleServicioValorChange called:', { index, valor, has: formData.has });
     const updatedServicios = [...servicios];
-    updatedServicios[index].valorUnidad = valor;
+    
+    // Validate that valor is a valid positive number
+    const validValue = isNaN(valor) || valor < 0 ? 0 : valor;
+    updatedServicios[index].valorUnidad = validValue;
     
     // Para servicios, el valor unitario es por hectárea
     const hectareas = formData.has || 0;
@@ -1318,14 +1323,28 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   value={formData.rindeHistorico}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // Allow typing, don't parse immediately
-                    setFormData(prev => ({ ...prev, rindeHistorico: value === '' ? 0 : parseFloat(value) || 0 }));
+                    // Only allow numbers and decimals, no negative values for yield
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      setFormData(prev => ({ ...prev, rindeHistorico: value === '' ? 0 : parseFloat(value) || 0 }));
+                    }
                   }}
                   onBlur={(e) => {
                     // Ensure clean number on blur and recalculate
                     const value = parseFloat(e.target.value) || 0;
                     setFormData(prev => ({ ...prev, rindeHistorico: value }));
                     setTimeout(() => recalcularTotales(), 0);
+                  }}
+                  onKeyPress={(e) => {
+                    // Allow control keys
+                    if (e.key.length > 1) return;
+                    // Only allow numbers and decimal point
+                    if (!/[0-9.]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  inputProps={{
+                    inputMode: 'decimal',
+                    pattern: '[0-9]*'
                   }}
                 />
               </Grid>
@@ -1339,14 +1358,28 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   value={formData.cotizFutCer}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // Allow typing, don't parse immediately
-                    setFormData(prev => ({ ...prev, cotizFutCer: value === '' ? 0 : parseFloat(value) || 0 }));
+                    // Only allow numbers and decimals, no negative values for prices
+                    if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                      setFormData(prev => ({ ...prev, cotizFutCer: value === '' ? 0 : parseFloat(value) || 0 }));
+                    }
                   }}
                   onBlur={(e) => {
                     // Ensure clean number on blur and recalculate
                     const value = parseFloat(e.target.value) || 0;
                     setFormData(prev => ({ ...prev, cotizFutCer: value }));
                     setTimeout(() => recalcularTotales(), 0);
+                  }}
+                  onKeyPress={(e) => {
+                    // Allow control keys
+                    if (e.key.length > 1) return;
+                    // Only allow numbers and decimal point
+                    if (!/[0-9.]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  inputProps={{
+                    inputMode: 'decimal',
+                    pattern: '[0-9]*'
                   }}
                   helperText={t("local_currency_per_ton")}
                 />
@@ -1511,10 +1544,28 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                             size="small"
                             type="number"
                             value={insumo.valorUnidad || ''}
-                            onChange={(e) => handleInsumoValorChange(index, parseFloat(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // Only allow numbers and decimals, no negative values
+                              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                handleInsumoValorChange(index, parseFloat(value) || 0);
+                              }
+                            }}
+                            onKeyPress={(e) => {
+                              // Allow control keys
+                              if (e.key.length > 1) return;
+                              // Only allow numbers and decimal point
+                              if (!/[0-9.]/.test(e.key)) {
+                                e.preventDefault();
+                              }
+                            }}
                             sx={{ width: 120 }}
                             InputProps={{
                               startAdornment: <span style={{ marginRight: 4 }}>$</span>
+                            }}
+                            inputProps={{
+                              inputMode: 'decimal',
+                              pattern: '[0-9]*'
                             }}
                           />
                         </TableCell>
@@ -1565,10 +1616,28 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                             size="small"
                             type="number"
                             value={servicio.valorUnidad || ''}
-                            onChange={(e) => handleServicioValorChange(index, parseFloat(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              // Only allow numbers and decimals, no negative values
+                              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                handleServicioValorChange(index, parseFloat(value) || 0);
+                              }
+                            }}
+                            onKeyPress={(e) => {
+                              // Allow control keys
+                              if (e.key.length > 1) return;
+                              // Only allow numbers and decimal point
+                              if (!/[0-9.]/.test(e.key)) {
+                                e.preventDefault();
+                              }
+                            }}
                             sx={{ width: 120 }}
                             InputProps={{
                               startAdornment: <span style={{ marginRight: 4 }}>$</span>
+                            }}
+                            inputProps={{
+                              inputMode: 'decimal',
+                              pattern: '[0-9]*'
                             }}
                           />
                         </TableCell>

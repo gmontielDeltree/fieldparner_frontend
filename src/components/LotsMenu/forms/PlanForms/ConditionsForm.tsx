@@ -39,9 +39,28 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  // Utility function to validate numeric input
+  const handleNumericInput = (value, fieldId) => {
+    if (value === '') return '';
+    
+    // Temperature fields can be negative, others cannot
+    const allowNegative = fieldId.includes('temperatura');
+    const pattern = allowNegative ? /^-?\d*\.?\d*$/ : /^\d*\.?\d*$/;
+    
+    return pattern.test(value) ? value : '';
+  };
+
   const handleInputChange = (event) => {
     const { id, value } = event.target;
-    const numericValue = value === "" ? "" : Number(value);
+    
+    // Validate input before processing
+    const validatedValue = handleNumericInput(value, id);
+    if (validatedValue === '' && value !== '') {
+      // Invalid input, prevent the change
+      return;
+    }
+    
+    const numericValue = validatedValue === "" ? "" : Number(validatedValue);
     setFormData({
       ...formData,
       condiciones: {
@@ -49,6 +68,24 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
         [id]: numericValue
       }
     });
+  };
+
+  // Prevent invalid characters on keypress
+  const handleKeyPress = (event, fieldId) => {
+    const { key } = event;
+    const allowNegative = fieldId.includes('temperatura');
+    
+    // Allow control keys (backspace, delete, arrow keys, etc.)
+    if (key.length > 1) return;
+    
+    // Allow numbers and decimal point
+    if (/[0-9.]/.test(key)) return;
+    
+    // Allow minus sign only for temperature fields and only at the beginning
+    if (key === '-' && allowNegative && event.target.selectionStart === 0) return;
+    
+    // Prevent all other characters
+    event.preventDefault();
   };
 
   return (
@@ -64,6 +101,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               fullWidth
               value={formData.condiciones?.temperatura_min || ""}
               onChange={handleInputChange}
+              onKeyPress={(e) => handleKeyPress(e, "temperatura_min")}
               type="number"
               InputProps={{
                 endAdornment: (
@@ -82,6 +120,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               fullWidth
               value={formData.condiciones?.humedad_min || ""}
               onChange={handleInputChange}
+              onKeyPress={(e) => handleKeyPress(e, "humedad_min")}
               type="number"
               InputProps={{
                 endAdornment: (
@@ -100,6 +139,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               fullWidth
               value={formData.condiciones?.velocidad_min || ""}
               onChange={handleInputChange}
+              onKeyPress={(e) => handleKeyPress(e, "velocidad_min")}
               type="number"
               InputProps={{
                 endAdornment: (
@@ -118,6 +158,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               fullWidth
               value={formData.condiciones?.temperatura_max || ""}
               onChange={handleInputChange}
+              onKeyPress={(e) => handleKeyPress(e, "temperatura_max")}
               type="number"
               InputProps={{
                 endAdornment: (
@@ -136,6 +177,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               fullWidth
               value={formData.condiciones?.humedad_max || ""}
               onChange={handleInputChange}
+              onKeyPress={(e) => handleKeyPress(e, "humedad_max")}
               type="number"
               InputProps={{
                 endAdornment: (
@@ -154,6 +196,7 @@ const ConditionsForm: React.FC<ConditionsFormProps> = ({
               fullWidth
               value={formData.condiciones?.velocidad_max || ""}
               onChange={handleInputChange}
+              onKeyPress={(e) => handleKeyPress(e, "velocidad_max")}
               type="number"
               InputProps={{
                 endAdornment: (

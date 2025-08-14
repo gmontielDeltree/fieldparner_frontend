@@ -331,6 +331,57 @@ function ExecutionContent(props) {
           </CardContent>
         </Card>
       )}
+      
+      {/* T2-77: Mostrar info del primer paso al clickear Ejecución */}
+      {execution && (
+        <Card
+          elevation={2}
+          sx={{
+            mt: 2,
+            backgroundColor: "rgba(245, 245, 245, 0.8)",
+            border: "1px solid rgba(200, 200, 200, 0.3)",
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              {t('executionDetails')}
+            </Typography>
+            
+            {/* Información general del primer paso */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {execution.detalles?.fecha_ejecucion && (
+                <Typography variant="body2">
+                  <strong>{t('executionDate')}:</strong> {format(new Date(execution.detalles.fecha_ejecucion), "dd/MM/yyyy")}
+                </Typography>
+              )}
+              
+              {execution.detalles?.hectareas && (
+                <Typography variant="body2">
+                  <strong>{t('hectares')}:</strong> {execution.detalles.hectareas} ha
+                </Typography>
+              )}
+              
+              {execution.detalles?.cultivo?.name && (
+                <Typography variant="body2">
+                  <strong>{t('crop')}:</strong> {execution.detalles.cultivo.name}
+                </Typography>
+              )}
+              
+              {execution.detalles?.deposito?.name && execution.tipo === 'cosecha' && (
+                <Typography variant="body2">
+                  <strong>{t('deposit')}:</strong> {execution.detalles.deposito.name}
+                </Typography>
+              )}
+              
+              {execution.detalles?.rinde_obtenido && execution.tipo === 'cosecha' && (
+                <Typography variant="body2">
+                  <strong>{t('yieldObtained')}:</strong> {execution.detalles.rinde_obtenido} ton/ha
+                </Typography>
+              )}
+            </Box>
+          </CardContent>
+        </Card>
+      )}
     </>
   );
 }

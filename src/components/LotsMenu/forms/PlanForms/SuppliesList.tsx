@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import InventoryIcon from '@mui/icons-material/Inventory'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import QrCodeIcon from '@mui/icons-material/QrCode'
+import WarehouseIcon from '@mui/icons-material/Warehouse'
 import { styled, keyframes, alpha } from '@mui/material/styles'
 import { useTranslation } from 'react-i18next'
 import { NumberFieldWithUnits } from '../../components/NumberField'
@@ -270,10 +271,24 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
   }
 
   const handleEditNroLoteChange = (event) => {
-    setEditData((prev) => ({
-      ...prev,
-      nro_lote: event.target.value,
-    }))
+    const value = event.target.value
+    // Only allow numbers for lot number
+    if (value === '' || /^\d+$/.test(value)) {
+      setEditData((prev) => ({
+        ...prev,
+        nro_lote: value,
+      }))
+    }
+  }
+
+  const handleNroLoteKeyPress = (event) => {
+    // Allow control keys (backspace, delete, arrow keys, etc.)
+    if (event.key.length > 1) return
+    
+    // Only allow numbers
+    if (!/[0-9]/.test(event.key)) {
+      event.preventDefault()
+    }
   }
 
   const handleEditUbicacionChange = (event) => {
@@ -382,6 +397,11 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                           label={t('batchNumber')}
                           value={editData.nro_lote}
                           onChange={handleEditNroLoteChange}
+                          onKeyPress={handleNroLoteKeyPress}
+                          inputProps={{
+                            inputMode: 'numeric',
+                            pattern: '[0-9]*'
+                          }}
                         />
                       </Grid>
                       <Grid item xs={12} md={6}>
@@ -473,14 +493,20 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                       <Grid container spacing={2}>
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
+                            <WarehouseIcon />
+                            <strong>{t('deposit')}:</strong> {row.deposito ? row.deposito.description : t('notSpecified')}
+                          </MetaInfo>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <MetaInfo variant="body2">
                             <LocationOnIcon />
-                            <strong>{t('location')}:</strong> {row.ubicacion}
+                            <strong>{t('location')}:</strong> {row.ubicacion || t('notSpecified')}
                           </MetaInfo>
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <MetaInfo variant="body2">
                             <QrCodeIcon />
-                            <strong>{t('batchNumber')}:</strong> {row.nro_lote}
+                            <strong>{t('batchNumber')}:</strong> {row.nro_lote || t('notSpecified')}
                           </MetaInfo>
                         </Grid>
                       </Grid>

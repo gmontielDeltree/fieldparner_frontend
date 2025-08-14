@@ -38,7 +38,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const { createWithdrawalOrder } = useOrder();
     const [suppliesToAdd, setSuppliesToAdd] = useState<TransformSupply[]>([]);
     const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
-    const { campaigns, getCampaigns } = useCampaign();
+    const { getCampaigns } = useCampaign();
     const { businesses: socialEntities, getBusinesses } = useBusiness();
     const { getStock } = useStockMovement();
     const {
@@ -57,10 +57,9 @@ export const WithdrawalOrdersPage: React.FC = () => {
     }
 
     const onClickGenerate = () => {
-        const campaign = campaigns.find(c => c._id === formValues.campaignId);
         const withdraw = socialEntities.find(s => s._id === formValues.withdrawId);
 
-        if (!user || !campaign || !withdraw) {
+        if (!user || !campaignSelected || !withdraw) {
             Swal.fire('Error', 'Debe seleccionar campaña y quien retira.', 'error');
             return;
         }
@@ -69,7 +68,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
             accountId: user?.accountId,
             depositId: s.deposit?._id || "",
             supplyId: s.supply?._id || "",
-            crop: s.crop,
+            crop: null,
             location: s.location,
             nroLot: s.nroLot,
             order: 0, // Se genera en createWithdrawalOrder()
@@ -107,6 +106,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
                     nroLot: newSupply.nroLot
                 }
             );
+            console.log('stock del insumo:', result)
             if (result && result[0]?.currentStock > 0) {
                 let supplyStock: Stock = result[0];
                 const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
@@ -155,9 +155,9 @@ export const WithdrawalOrdersPage: React.FC = () => {
         getCampaigns();
         getBusinesses();
     }, [])
-    console.log(formValues.creationDate);
+
     return (
-        <TemplateLayout key="new-withdrawal-order" viewMap={true}>
+        <TemplateLayout key="new-withdrawal-order" viewMap={false}>
             <Loading loading={isLoading} />
             <Paper
                 variant="outlined"
@@ -211,11 +211,12 @@ export const WithdrawalOrdersPage: React.FC = () => {
                         <AutocompleteCampaign
                             value={campaignSelected}
                             onChange={(campaign) => {
+                                console.log('campaign', campaign);
                                 if (campaign) {
                                     setCampaignSelected(campaign);
                                     setFormValues((prevState) => ({
                                         ...prevState,
-                                        campaignId: campaign?._id || "",
+                                        campaignId: campaign.campaignId || "",
                                     }));
                                 }
                             }}

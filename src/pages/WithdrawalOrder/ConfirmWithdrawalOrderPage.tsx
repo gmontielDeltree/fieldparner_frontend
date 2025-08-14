@@ -149,7 +149,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
 
 
     return (
-        <TemplateLayout key="new-withdrawal-order" viewMap={true}>
+        <TemplateLayout key="new-withdrawal-order" viewMap={false}>
             <Loading key="loading-deposit" loading={isLoading} />
             <Paper
                 variant="outlined"

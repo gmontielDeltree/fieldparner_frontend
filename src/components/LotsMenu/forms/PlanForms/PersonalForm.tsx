@@ -280,10 +280,28 @@ function PersonalFormUnified({
           </>
         ) : (
           <Grid item xs={12} sm={6}>
-            <AutocompleteCultivo
-              value={formData.detalles?.cultivo || ''}
-              onChange={(value) => onFieldChange('cultivo', value)}
-            />
+            {mode === 'execute' && (
+              formData.tipo === 'aplicacion' || formData.tipo === 'application' ||
+              formData.tipo === 'cosecha' || formData.tipo === 'harvesting'
+            ) ? (
+              <TextField
+                fullWidth
+                label={t('Crop')}
+                value={formData.detalles?.cultivo?.descriptionES || 
+                       formData.detalles?.cultivo?.descriptionEN || 
+                       formData.detalles?.cultivo?.name || 
+                       t('No crop selected')}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                }}
+              />
+            ) : (
+              <AutocompleteCultivo
+                value={formData.detalles?.cultivo || ''}
+                onChange={(value) => onFieldChange('cultivo', value)}
+              />
+            )}
           </Grid>
         )}
 
@@ -380,6 +398,7 @@ function PersonalFormUnified({
 
         {mode === 'execute' ? (
           <>
+            {/* Campo Depósito solo aparece en la ejecución de Cosecha - T2-74 */}
             {(formData.tipo === 'cosecha' || formData.tipo === 'harvesting') && (
               <Grid item xs={12} sm={6}>
                 <AutocompleteDeposito
@@ -425,6 +444,8 @@ function PersonalFormUnified({
                 unit="ha"
                 value={formData.detalles?.hectareas || 0}
                 onChange={(e) => onFieldChange('hectareas', e.target.value)}
+                allowNegative={false}
+                allowDecimals={true}
               />
             </Grid>
           </>
@@ -435,6 +456,8 @@ function PersonalFormUnified({
               unit="ha"
               value={formData.detalles?.hectareas || 0}
               onChange={(e) => onFieldChange('hectareas', e.target.value)}
+              allowNegative={false}
+              allowDecimals={true}
             />
           </Grid>
         )}
@@ -448,6 +471,8 @@ function PersonalFormUnified({
               value={+formData.detalles?.rinde_obtenido || 0}
               onChange={(e) => onFieldChange('rinde_obtenido', e.target.value)}
               unit="ton/ha"
+              allowNegative={false}
+              allowDecimals={true}
             />
           </Grid>
         )}
