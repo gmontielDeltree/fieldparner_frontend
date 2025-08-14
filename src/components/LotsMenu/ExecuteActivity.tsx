@@ -473,48 +473,63 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   const processHarvestStockMovements = async (executionDetails: any) => {
     // T2-76: Grabar cultivo en stock al ejecutar cosecha
-    const cropInfo = executionDetails.detalles?.cultivo;
-    const rindeObtenido = executionDetails.detalles?.rinde_obtenido;
-    const depositoInfo = executionDetails.detalles?.deposito;
-    
-    if (cropInfo && rindeObtenido && depositoInfo) {
-      // Crear movimiento de entrada para el cultivo cosechado
-      const harvestMovement: StockMovement = {
-        movement: t('harvestEntry'),
-        accountId: user?.accountId || '',
-        supplyId: cropInfo._id, // Usar el ID del cultivo
-        userId: user?.id || '',
-        depositId: depositoInfo._id,
-        location: depositoInfo.location || '',
-        nroLot: '',
-        creationDate: new Date().toISOString(),
-        dueDate: '',
-        typeMovement: TypeMovement.Labores,
-        isIncome: true,
-        isCrop: true, // T2-76: Marcar como cultivo
-        detail: t('harvestEntry'),
-        operationDate: new Date().toISOString(),
-        amount: Number(rindeObtenido) * Number(executionDetails.detalles?.hectareas || 0), // Total cosechado
-        voucher: '',
-        currency: 'ARS',
-        totalValue: 0,
-        hours: '0',
-        campaignId: executionDetails.campaña?.campaignId || '',
-      };
+    const cultivo = executionDetails.detalles?.cultivo
+    const deposito = executionDetails.detalles?.deposito
+    const rindeObtenido = executionDetails.detalles?.rinde_obtenido
+    const hectareas = executionDetails.detalles?.hectareas || 0
 
-      try {
-        // Crear manualmente el movimiento de stock para cultivos (no usar hook de insumos)
-        await createCropStockMovement(harvestMovement, cropInfo, depositoInfo);
-        console.log(t('harvestMovementCreated', { cropName: cropInfo.name }));
-      } catch (error) {
-        console.error(t('harvestMovementError', { cropName: cropInfo.name }), error);
-        throw error;
-      }
+    if (!cultivo) {
+      console.error('Crop information is missing for harvest', executionDetails)
+      return
     }
 
-    // Los insumos en cosecha se procesan igual que en otras actividades
-    // (como movimientos de salida), no aquí como entradas
-    // Esta sección se eliminó para evitar duplicación de movimientos
+    if (!deposito) {
+      console.error('Deposit information is missing for harvest', executionDetails)
+      return
+    }
+
+    if (!rindeObtenido || rindeObtenido <= 0) {
+      console.error('Yield obtained is missing or invalid for harvest', executionDetails)
+      return
+    }
+
+    // Calcular la cantidad total cosechada (rendimiento * hectáreas)
+    const cantidadTotal = Number(rindeObtenido) * Number(hectareas)
+
+    const harvestMovement: StockMovement = {
+      movement: t('harvestEntry'),
+      accountId: user?.accountId || '',
+      supplyId: cultivo._id || cultivo.id,
+      userId: user?.id || '',
+      depositId: deposito._id || deposito.id,
+      location: deposito.location || '',
+      nroLot: '',
+      creationDate: new Date().toISOString(),
+      dueDate: '',
+      typeMovement: TypeMovement.Labores,
+      isIncome: true,
+      isCrop: true, // T2-76: Marcar como cultivo, no insumo
+      detail: t('harvestEntry') + ' - ' + (cultivo.descriptionES || cultivo.name || ''),
+      operationDate: new Date().toISOString(),
+      amount: cantidadTotal,
+      voucher: '',
+      currency: 'ARS',
+      totalValue: 0,
+      hours: '0',
+      campaignId: executionDetails.campaña?.campaignId || '',
+    }
+
+    try {
+      // Usar la función createCropStockMovement de staging si existe, sino usar addNewStockMovement
+      await createCropStockMovement(harvestMovement, cultivo, deposito)
+      console.log(t('Harvest stock movement created successfully for crop'), cultivo.name || cultivo.descriptionES)
+    } catch (error) {
+      console.error(
+        t('movementError', { supplyName: cultivo.name || cultivo.descriptionES }),
+        error,
+      )
+      throw error
+    }
   }
 
   const createCropStockMovement = async (movement: StockMovement, cropInfo: any, depositoInfo: any) => {

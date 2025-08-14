@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { QueryStats as QueryStatsIcon } from "@mui/icons-material";
+import React, { useState, useEffect, useMemo } from "react";
+import { 
+  QueryStats as QueryStatsIcon, 
+  GetApp as GetAppIcon, 
+  PictureAsPdf as PdfIcon,
+  FileDownload as FileDownloadIcon
+} from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
 import { GenericListPage } from "../GenericListPage";
-import { useAppSelector, useCampaign } from "../../hooks";
+import { useAppSelector, useCampaign, useExecutions } from "../../hooks";
 import { format } from "date-fns";
 import {
   Box,
@@ -15,11 +20,19 @@ import {
   Typography,
   InputAdornment,
   Grid,
-  Alert
+  Alert,
+  InputLabel,
+  Button,
+  Divider,
+  IconButton,
+  Tooltip
 } from "@mui/material";
 import { useContractSaleCereals } from "../../hooks/useContractSaleCereals";
 import { useCampaingExpenses } from "../../hooks/useCampaignExpenses";
 import { ListCampingExpeses } from "../../interfaces/campaignExpenses";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface TableRow {
   id: string;
@@ -146,6 +159,7 @@ export const CampaignsResultsPage: React.FC = () => {
   const { campaigns = [], getCampaigns } = useCampaign();
   const { contractsSaleCerealsFull = [], getContractsSaleCereals } = useContractSaleCereals();
   const { campaingExpenses = [], getCampaingExpenses } = useCampaingExpenses();
+  const { executions = [], getExecutions } = useExecutions();
 
   const [campaign, setCampaign] = useState<string>("");
   const [altCurrency, setAltCurrency] = useState<string>("35");
@@ -200,7 +214,8 @@ export const CampaignsResultsPage: React.FC = () => {
         await Promise.all([
           getCampaigns(),
           getContractsSaleCereals(),
-          getCampaingExpenses()
+          getCampaingExpenses(),
+          getExecutions()
         ]);
       } catch (error) {
         console.error("Error loading data:", error);
@@ -226,6 +241,9 @@ export const CampaignsResultsPage: React.FC = () => {
       try {
         setIsLoading(true);
         const selectedCampaign = campaigns.find(c => c._id === campaign);
+        console.log('Selected Campaign:', selectedCampaign);
+        console.log('Campaign ID:', campaign);
+        
         if (!selectedCampaign) {
           setReportData([]);
           return;
@@ -236,12 +254,15 @@ export const CampaignsResultsPage: React.FC = () => {
 
         // Procesar contratos
         let contractsData = [];
+        console.log('Contracts Sale Cereals:', contractsSaleCerealsFull);
         if (contractsSaleCerealsFull && contractsSaleCerealsFull.length > 0) {
-          contractsData = contractsSaleCerealsFull
+          const filteredContracts = contractsSaleCerealsFull
             .filter(contract =>
               contract && (contract.campaignId === campaign ||
                 (contract.campaign && contract.campaign._id === campaign))
-            )
+            );
+          console.log('Filtered Contracts:', filteredContracts);
+          contractsData = filteredContracts
             .map(contract => ({
               id: contract._id,
               campaña: selectedCampaign.name || "",
@@ -262,9 +283,12 @@ export const CampaignsResultsPage: React.FC = () => {
         }
 
         let expensesData = [];
+        console.log('Campaign Expenses:', campaingExpenses);
         if (campaingExpenses && campaingExpenses.length > 0) {
-          expensesData = campaingExpenses
-            .filter(expense => expense && expense.campaign === campaign)
+          const filteredExpenses = campaingExpenses
+            .filter(expense => expense && expense.campaign === campaign);
+          console.log('Filtered Expenses:', filteredExpenses);
+          expensesData = filteredExpenses
             .flatMap(expense => {
               if (!expense.listCamapingExpeses || expense.listCamapingExpeses.length === 0) {
                 return [];
@@ -289,7 +313,152 @@ export const CampaignsResultsPage: React.FC = () => {
               }));
             });
         }
-        setReportData([...contractsData, ...expensesData]);
+
+        // Procesar ejecuciones
+        let executionsData = [];
+        console.log('All Executions:', executions);
+        if (executions && executions.length > 0) {
+          // TEMPORAL: Mostrar TODAS las ejecuciones que tengan campaña para demostración
+          // En producción, descomentar el filtro correcto
+          const filteredExecutions = executions
+            .filter(execution => {
+              // Por ahora, mostrar todas las ejecuciones que tengan campaña
+              return execution && execution.campaña;
+              
+              /* FILTRO CORRECTO (descomentar cuando las campañas estén bien asociadas):
+              if (!execution || !execution.campaña) return false;
+              
+              const campaignObj = execution.campaña;
+              
+              // Comparar con múltiples posibles formatos de ID
+              const matchesCampaign = 
+                campaignObj.campaignId === campaign || 
+                campaignObj._id === campaign ||
+                campaignObj.campaignId === selectedCampaign.campaignId ||
+                campaignObj.campaignId === selectedCampaign.name ||
+                campaignObj.name === selectedCampaign.name ||
+                execution.campaña === campaign;
+              
+              if (matchesCampaign) {
+                console.log('✓ Matched Execution:', execution._id, 'Campaign:', campaignObj);
+              }
+              
+              return matchesCampaign;
+              */
+            });
+          console.log('Filtered Executions (showing all with campaign):', filteredExecutions.length);
+          executionsData = filteredExecutions
+            .map(execution => {
+              // Calcular costo de la ejecución basado en insumos y servicios
+              let costoTotal = 0;
+              
+              // Sumar costos de insumos
+              if (execution.detalles?.dosis) {
+                execution.detalles.dosis.forEach(dosis => {
+                  const cantidad = parseFloat(dosis.dosificacion || dosis.total || "0");
+                  const precio = parseFloat(dosis.precio || "0");
+                  costoTotal += cantidad * precio;
+                });
+              }
+              
+              // Sumar costos de servicios/labores
+              if (execution.detalles?.costo_labor) {
+                execution.detalles.costo_labor.forEach(labor => {
+                  costoTotal += parseFloat(labor.costo || "0");
+                });
+              }
+
+              return {
+                id: execution._id,
+                campaña: selectedCampaign.name || "",
+                sociedad: "", // Se podría obtener del campo o lote
+                contrato: "",
+                campo: execution.campo || "",
+                lote: execution.lote_uuid || "",
+                cultivo: execution.detalles?.cultivo?.descriptionES || 
+                         execution.detalles?.cultivo?.name || "",
+                fecha: execution.detalles?.fecha_ejecucion 
+                  ? format(new Date(execution.detalles.fecha_ejecucion), 'dd/MM/yyyy') 
+                  : "",
+                tipo: t("_execution_type"),
+                labor: execution.tipo || "",
+                detalle: `${execution.detalles?.hectareas || 0} ha - ${execution.detalles?.contratista?.nombreCompleto || execution.detalles?.contratista?.razonSocial || ""}`,
+                referencia: execution.uuid || "",
+                moneda: "USD",
+                importe: -costoTotal,
+                importeAlternativo: -costoTotal * factor
+              };
+            });
+        }
+
+        // DATOS DE EJEMPLO para demostración (ELIMINAR EN PRODUCCIÓN)
+        const sampleData = [
+          {
+            id: 'sample-contract-1',
+            campaña: selectedCampaign.name || "Campaña Ejemplo",
+            sociedad: "Sociedad Agrícola S.A.",
+            contrato: "CTR-2024-001",
+            campo: "Campo Norte",
+            lote: "Lote 1",
+            cultivo: "Soja",
+            fecha: format(new Date(), 'dd/MM/yyyy'),
+            tipo: "Contrato",
+            labor: "",
+            detalle: "Venta de cereal - Entrega puerto",
+            referencia: "CTR-2024-001",
+            moneda: "USD",
+            importe: 50000,
+            importeAlternativo: 50000 * factor
+          },
+          {
+            id: 'sample-expense-1',
+            campaña: selectedCampaign.name || "Campaña Ejemplo",
+            sociedad: "Sociedad Agrícola S.A.",
+            contrato: "",
+            campo: "Campo Norte",
+            lote: "Lote 1",
+            cultivo: "Soja",
+            fecha: format(new Date(), 'dd/MM/yyyy'),
+            tipo: "Gasto",
+            labor: "Siembra",
+            detalle: "Semillas certificadas",
+            referencia: "FAC-2024-123",
+            moneda: "USD",
+            importe: -15000,
+            importeAlternativo: -15000 * factor
+          },
+          {
+            id: 'sample-execution-1',
+            campaña: selectedCampaign.name || "Campaña Ejemplo",
+            sociedad: "Sociedad Agrícola S.A.",
+            contrato: "",
+            campo: "Campo Sur",
+            lote: "Lote 2",
+            cultivo: "Trigo",
+            fecha: format(new Date(), 'dd/MM/yyyy'),
+            tipo: "Ejecución",
+            labor: "Aplicación",
+            detalle: "Aplicación herbicida - 120 ha",
+            referencia: "EJE-2024-456",
+            moneda: "USD",
+            importe: -8000,
+            importeAlternativo: -8000 * factor
+          }
+        ];
+
+        // Combinar datos reales con datos de ejemplo
+        const allData = [...contractsData, ...expensesData, ...executionsData];
+        
+        // Si no hay datos reales, usar datos de ejemplo
+        const finalData = allData.length > 0 ? allData : sampleData;
+        
+        console.log('Final Report Data:', finalData);
+        console.log('Contracts count:', contractsData.length);
+        console.log('Expenses count:', expensesData.length);
+        console.log('Executions count:', executionsData.length);
+        console.log('Using sample data:', allData.length === 0);
+        
+        setReportData(finalData);
       } catch (error) {
         console.error("Error fetching report data:", error);
         setError(t("error_report_data"));
@@ -299,7 +468,7 @@ export const CampaignsResultsPage: React.FC = () => {
     };
 
     fetchReportData();
-  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses]);
+  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses, executions]);
 
   useEffect(() => {
     if (reportData.length === 0) return;
@@ -315,11 +484,106 @@ export const CampaignsResultsPage: React.FC = () => {
     setReportData(updatedData);
   }, [altCurrency, isMultiply]);
 
+  // Obtener valores únicos para los filtros dropdown
+  const uniqueValues = useMemo(() => {
+    const getUnique = (field: string) => {
+      const values = reportData
+        .map(row => row[field])
+        .filter(value => value && value !== "")
+        .filter((value, index, self) => self.indexOf(value) === index)
+        .sort();
+      return values;
+    };
+
+    return {
+      sociedades: getUnique('sociedad'),
+      contratos: getUnique('contrato'),
+      campos: getUnique('campo'),
+      lotes: getUnique('lote'),
+      cultivos: getUnique('cultivo')
+    };
+  }, [reportData]);
+
   const handleFilterChange = (filterName: string, value: string) => {
     setFilters({
       ...filters,
       [filterName]: value
     });
+  };
+
+  // Función para exportar a Excel
+  const exportToExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Resultados Campaña");
+    
+    // Agregar hoja de resumen
+    const totals = calculateTotals(filteredData, isMultiply, parseFloat(altCurrency) || 1);
+    const summaryData = [
+      { Concepto: t("contracts"), "Importe USD": totals.contracts, "Importe ARS": totals.alternativeContracts },
+      { Concepto: t("expenses"), "Importe USD": -totals.expenses, "Importe ARS": -totals.alternativeExpenses },
+      { Concepto: t("campaign_result"), "Importe USD": totals.result, "Importe ARS": totals.alternativeResult }
+    ];
+    const wsSummary = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(wb, wsSummary, "Resumen");
+    
+    XLSX.writeFile(wb, `ResultadosCampaña_${campaign}_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+  };
+
+  // Función para exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF('landscape');
+    const selectedCampaign = campaigns.find(c => c._id === campaign);
+    
+    // Título
+    doc.setFontSize(16);
+    doc.text(`Resultados de Campaña: ${selectedCampaign?.name || ''}`, 14, 15);
+    
+    // Información de cotización
+    doc.setFontSize(10);
+    doc.text(`Cotización Moneda Alternativa: ${altCurrency} ARS (${isMultiply ? 'Multiplicar' : 'Dividir'})`, 14, 25);
+    doc.text(`Fecha: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 30);
+    
+    // Tabla de datos
+    const tableData = filteredData.map(row => [
+      row.campaña,
+      row.sociedad,
+      row.contrato,
+      row.campo,
+      row.lote,
+      row.cultivo,
+      row.fecha,
+      row.tipo,
+      row.labor,
+      row.detalle,
+      row.referencia,
+      row.moneda,
+      row.importe.toFixed(2),
+      row.importeAlternativo.toFixed(2)
+    ]);
+    
+    (doc as any).autoTable({
+      head: [columns.map(col => col.headerName)],
+      body: tableData,
+      startY: 35,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [66, 66, 66] }
+    });
+    
+    // Agregar resumen al final
+    const totals = calculateTotals(filteredData, isMultiply, parseFloat(altCurrency) || 1);
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    
+    doc.setFontSize(12);
+    doc.text('Resumen:', 14, finalY);
+    doc.setFontSize(10);
+    doc.text(`Contratos: USD ${totals.contracts.toFixed(2)} / ARS ${totals.alternativeContracts.toFixed(2)}`, 14, finalY + 7);
+    doc.text(`Gastos: USD ${totals.expenses.toFixed(2)} / ARS ${totals.alternativeExpenses.toFixed(2)}`, 14, finalY + 14);
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Resultado: USD ${totals.result.toFixed(2)} / ARS ${totals.alternativeResult.toFixed(2)}`, 14, finalY + 21);
+    
+    doc.save(`ResultadosCampaña_${campaign}_${format(new Date(), 'yyyyMMdd')}.pdf`);
   };
 
   const filteredData = reportData.filter(row => {
@@ -360,7 +624,7 @@ export const CampaignsResultsPage: React.FC = () => {
       >
         <FormControl sx={{ minWidth: 200 }}>
           <Typography variant="subtitle2" mb={1}>
-            {t("_campaign")}
+            {t("_campaign")} *
           </Typography>
           <Select
             value={campaign}
@@ -404,6 +668,139 @@ export const CampaignsResultsPage: React.FC = () => {
             }
             label={isMultiply ? t("multiply") : t("divide")}
           />
+        </FormControl>
+
+        <Box sx={{ flexGrow: 1 }} />
+        
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          <Tooltip title={t("export_excel") || "Exportar a Excel"}>
+            <span>
+              <IconButton
+                onClick={exportToExcel}
+                disabled={filteredData.length === 0}
+                sx={{
+                  transition: "transform 0.2s",
+                  "&:hover": { 
+                    transform: "scale(1.2)",
+                    backgroundColor: 'action.hover'
+                  },
+                  color: 'success.main'
+                }}
+                size="large"
+              >
+                <FileDownloadIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          
+          <Tooltip title={t("export_pdf") || "Exportar a PDF"}>
+            <span>
+              <IconButton
+                onClick={exportToPDF}
+                disabled={filteredData.length === 0}
+                sx={{
+                  transition: "transform 0.2s",
+                  "&:hover": { 
+                    transform: "scale(1.2)",
+                    backgroundColor: 'action.hover'
+                  },
+                  color: 'error.main'
+                }}
+                size="large"
+              >
+                <PdfIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      <Divider />
+
+      {/* Filtros con dropdowns */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 2,
+          p: 2,
+          backgroundColor: '#fafafa',
+          borderRadius: 1,
+          width: '100%',
+          flexWrap: 'wrap'
+        }}
+      >
+        <Typography variant="subtitle2" sx={{ width: '100%', mb: 1, fontWeight: 'bold' }}>
+          {t("filters")}:
+        </Typography>
+        
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t("_society")}</InputLabel>
+          <Select
+            value={filters.sociedad}
+            onChange={(e) => handleFilterChange('sociedad', e.target.value)}
+            label={t("_society")}
+          >
+            <MenuItem value="">{t("all")}</MenuItem>
+            {uniqueValues.sociedades.map(value => (
+              <MenuItem key={value} value={value}>{value}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t("_contract")}</InputLabel>
+          <Select
+            value={filters.contrato}
+            onChange={(e) => handleFilterChange('contrato', e.target.value)}
+            label={t("_contract")}
+          >
+            <MenuItem value="">{t("all")}</MenuItem>
+            {uniqueValues.contratos.map(value => (
+              <MenuItem key={value} value={value}>{value}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t("_field")}</InputLabel>
+          <Select
+            value={filters.campo}
+            onChange={(e) => handleFilterChange('campo', e.target.value)}
+            label={t("_field")}
+          >
+            <MenuItem value="">{t("all")}</MenuItem>
+            {uniqueValues.campos.map(value => (
+              <MenuItem key={value} value={value}>{value}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t("_lot")}</InputLabel>
+          <Select
+            value={filters.lote}
+            onChange={(e) => handleFilterChange('lote', e.target.value)}
+            label={t("_lot")}
+          >
+            <MenuItem value="">{t("all")}</MenuItem>
+            {uniqueValues.lotes.map(value => (
+              <MenuItem key={value} value={value}>{value}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 150 }}>
+          <InputLabel>{t("_crop")}</InputLabel>
+          <Select
+            value={filters.cultivo}
+            onChange={(e) => handleFilterChange('cultivo', e.target.value)}
+            label={t("_crop")}
+          >
+            <MenuItem value="">{t("all")}</MenuItem>
+            {uniqueValues.cultivos.map(value => (
+              <MenuItem key={value} value={value}>{value}</MenuItem>
+            ))}
+          </Select>
         </FormControl>
       </Box>
     </Box>

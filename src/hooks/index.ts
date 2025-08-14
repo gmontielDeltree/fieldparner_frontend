@@ -28,6 +28,7 @@ export * from './useTransportDocument';
 export * from './useCorporateContract';
 export * from './useFormValue'
 export * from './useCertificateDeposit';
+export * from './useExecutions';
 export * from './useProductiveUnits';
 export * from './useContractSaleCereals';
 export * from './useCostsExpenses';

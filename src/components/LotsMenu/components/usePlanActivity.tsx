@@ -221,7 +221,9 @@ export const usePlanActivity = (
     }
 
     if (currentStepName === 'Insumos') {
-      if (!formData.detalles.dosis || formData.detalles.dosis.length === 0) {
+      // Para cosecha, los insumos no son obligatorios
+      const isHarvest = translatedActivityType === 'cosecha' || activityType === 'harvesting'
+      if (!isHarvest && (!formData.detalles.dosis || formData.detalles.dosis.length === 0)) {
         setMissingItem('insumos')
         setOpenConfirmDialog(true)
         return

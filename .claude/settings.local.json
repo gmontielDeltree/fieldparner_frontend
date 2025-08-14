@@ -4,6 +4,7 @@
       "Bash(npm run dev:*)",
       "Bash(npm run lint)",
       "Bash(npm run build:*)",
+      "Bash(npm install:*)",
       "mcp__puppeteer__puppeteer_navigate",
       "Bash(lsof:*)",
       "mcp__puppeteer__puppeteer_screenshot",
@@ -12,8 +13,10 @@
       "mcp__puppeteer__puppeteer_evaluate",
       "Bash(open:*)",
       "Bash(ls:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(grep:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }
