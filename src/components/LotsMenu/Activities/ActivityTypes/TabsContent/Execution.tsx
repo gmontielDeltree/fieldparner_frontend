@@ -190,10 +190,146 @@ function ExecutionContent(props) {
         )}
       </Card>
       {execution?.estado === "completada" && (
-        <PlanificationContent
-          activity={execution}
-          showEstimatedApplicationDate={false}
-        />
+        <Card
+          elevation={4}
+          sx={{
+            mt: 2,
+            backgroundColor: "rgba(255, 255, 255, 0.6)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.3)",
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6" gutterBottom sx={{ color: "primary.main", fontWeight: "bold" }}>
+              {t('executionDetails')}
+            </Typography>
+            
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, mt: 2 }}>
+              {/* Información General */}
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('executionDate')}:
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  {execution.detalles?.fecha_ejecucion 
+                    ? format(new Date(execution.detalles.fecha_ejecucion), "dd/MM/yyyy") 
+                    : t('notAvailable')}
+                </Typography>
+              </Box>
+
+              {/* Cultivo */}
+              {execution.detalles?.cultivo && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('crop')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.detalles.cultivo.descriptionES || 
+                     execution.detalles.cultivo.name || 
+                     t('notAvailable')}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Hectáreas */}
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('hectares')}:
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  {execution.detalles?.hectareas || 0} ha
+                </Typography>
+              </Box>
+
+              {/* Contratista */}
+              {execution.detalles?.contratista && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('contractor')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.detalles.contratista.nombreCompleto || 
+                     execution.detalles.contratista.razonSocial || 
+                     t('notAvailable')}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Depósito - Solo para cosecha */}
+              {execution.tipo === "cosecha" && execution.detalles?.deposito && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('deposit')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.detalles.deposito.name || 
+                     execution.detalles.deposito.nombreDeposito || 
+                     t('notAvailable')}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Rendimiento obtenido - Solo para cosecha */}
+              {execution.tipo === "cosecha" && execution.detalles?.rinde_obtenido && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('yieldObtained')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.detalles.rinde_obtenido} ton/ha
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Horarios de ejecución */}
+              {execution.detalles?.fecha_hora_inicio && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('startTime')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {format(new Date(execution.detalles.fecha_hora_inicio), "HH:mm")}
+                  </Typography>
+                </Box>
+              )}
+
+              {execution.detalles?.fecha_hora_fin && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('endTime')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {format(new Date(execution.detalles.fecha_hora_fin), "HH:mm")}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Ingeniero Agrónomo */}
+              {execution.detalles?.business && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('agronomicEngineer')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.detalles.business}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+
+            {/* Observaciones si existen */}
+            {execution.observaciones && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {t('observations')}:
+                </Typography>
+                <Typography variant="body1" sx={{ fontStyle: "italic" }}>
+                  {execution.observaciones}
+                </Typography>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
       )}
     </>
   );

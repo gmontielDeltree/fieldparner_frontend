@@ -380,12 +380,14 @@ function PersonalFormUnified({
 
         {mode === 'execute' ? (
           <>
-            <Grid item xs={12} sm={6}>
-              <AutocompleteDeposito
-                value={formData.detalles?.deposito}
-                onChange={(value) => onFieldChange('deposito', value)}
-              />
-            </Grid>
+            {(formData.tipo === 'cosecha' || formData.tipo === 'harvesting') && (
+              <Grid item xs={12} sm={6}>
+                <AutocompleteDeposito
+                  value={formData.detalles?.deposito}
+                  onChange={(value) => onFieldChange('deposito', value)}
+                />
+              </Grid>
+            )}
 
             <Grid item xs={12}>
               <SectionTitle>{t('Schedule and Area')}</SectionTitle>

@@ -362,48 +362,62 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const processHarvestStockMovements = async (executionDetails: any) => {
-    for (const dosis of executionDetails.detalles.dosis) {
-      // Fix: Check if dosis.insumo exists, if not, use dosis.selectedOption instead
-      const supplyInfo = dosis.insumo || dosis.selectedOption
+    // En cosecha, registramos el cultivo cosechado, no los insumos
+    const cultivo = executionDetails.detalles?.cultivo
+    const deposito = executionDetails.detalles?.deposito
+    const rindeObtenido = executionDetails.detalles?.rinde_obtenido
+    const hectareas = executionDetails.detalles?.hectareas || 0
 
-      // Add additional validation to prevent errors
-      if (!supplyInfo) {
-        console.error('Supply information is missing for this dose', dosis)
-        continue // Skip this dose and continue with the next one
-      }
+    if (!cultivo) {
+      console.error('Crop information is missing for harvest', executionDetails)
+      return
+    }
 
-      const newMovement: StockMovement = {
-        movement: t('harvestEntry'),
-        accountId: user?.accountId || '',
-        supplyId: supplyInfo._id, // Use the updated reference
-        userId: user?.id || '',
-        depositId: dosis.deposito._id,
-        location: '',
-        nroLot: '',
-        creationDate: new Date().toISOString(),
-        dueDate: '',
-        typeMovement: TypeMovement.Labores,
-        isIncome: true,
-        isCrop: false,
-        detail: t('harvestEntry'),
-        operationDate: new Date().toISOString(),
-        amount: Number(dosis.rinde_obtenido),
-        voucher: '',
-        currency: 'ARS',
-        totalValue: 0,
-        hours: '0',
-        campaignId: executionDetails.campaña?.campaignId || '',
-      }
+    if (!deposito) {
+      console.error('Deposit information is missing for harvest', executionDetails)
+      return
+    }
 
-      try {
-        await addNewStockMovement(newMovement, supplyInfo as any, dosis.deposito)
-      } catch (error) {
-        console.error(
-          t('movementError', { supplyName: supplyInfo.name }),
-          error,
-        )
-        throw error
-      }
+    if (!rindeObtenido || rindeObtenido <= 0) {
+      console.error('Yield obtained is missing or invalid for harvest', executionDetails)
+      return
+    }
+
+    // Calcular la cantidad total cosechada (rendimiento * hectáreas)
+    const cantidadTotal = Number(rindeObtenido) * Number(hectareas)
+
+    const newMovement: StockMovement = {
+      movement: t('harvestEntry'),
+      accountId: user?.accountId || '',
+      supplyId: cultivo._id || cultivo.id,
+      userId: user?.id || '',
+      depositId: deposito._id || deposito.id,
+      location: '',
+      nroLot: '',
+      creationDate: new Date().toISOString(),
+      dueDate: '',
+      typeMovement: TypeMovement.Labores,
+      isIncome: true,
+      isCrop: true, // Marcamos como cultivo, no insumo
+      detail: t('harvestEntry') + ' - ' + (cultivo.descriptionES || cultivo.name || ''),
+      operationDate: new Date().toISOString(),
+      amount: cantidadTotal,
+      voucher: '',
+      currency: 'ARS',
+      totalValue: 0,
+      hours: '0',
+      campaignId: executionDetails.campaña?.campaignId || '',
+    }
+
+    try {
+      await addNewStockMovement(newMovement, cultivo as any, deposito)
+      console.log(t('Harvest stock movement created successfully for crop'), cultivo.name || cultivo.descriptionES)
+    } catch (error) {
+      console.error(
+        t('movementError', { supplyName: cultivo.name || cultivo.descriptionES }),
+        error,
+      )
+      throw error
     }
   }
 
