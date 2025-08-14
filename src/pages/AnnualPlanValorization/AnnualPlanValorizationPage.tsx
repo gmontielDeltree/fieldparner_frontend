@@ -243,8 +243,72 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     }
   };
 
+  const handleLoteChange = (loteValue: string) => {
+    console.log(`🔄 handleLoteChange: ${loteValue}`);
+    console.log(`🔄 Current formData.loteId: ${formData.loteId}`);
+    
+    const selectedField = fields.find(f => f._id === formData.campoId);
+    const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === loteValue);
+    
+    if (selectedLot) {
+      const newHectareas = selectedLot.properties.hectareas || 0;
+      console.log('📍 Lote seleccionado:', {
+        lote: selectedLot.properties.nombre,
+        hectareas: newHectareas
+      });
+      
+      // Actualizar directamente con todos los valores necesarios
+      setFormData(prev => {
+        const newFormData = {
+          ...prev,
+          loteId: loteValue,
+          has: newHectareas
+        };
+        console.log('🔄 New formData after lote change:', {
+          loteId: newFormData.loteId,
+          has: newFormData.has
+        });
+        return newFormData;
+      });
+
+      // Actualizar insumos/servicios si existen
+      if (insumos.length > 0 || servicios.length > 0) {
+        const updatedInsumos = insumos.map(insumo => ({
+          ...insumo,
+          valorTotal: (insumo.valorUnidad || 0) * (insumo.cantidadHa || 0) * newHectareas
+        }));
+        const updatedServicios = servicios.map(servicio => ({
+          ...servicio,
+          valorTotal: (servicio.valorUnidad || 0) * newHectareas
+        }));
+        
+        setInsumos(updatedInsumos);
+        setServicios(updatedServicios);
+        
+        // Recalcular totales
+        setTimeout(() => recalcularTotalesConDatos(updatedInsumos, updatedServicios), 0);
+      }
+    } else {
+      // Si no encuentra el lote, solo actualizar el loteId
+      console.log('⚠️ Lote no encontrado en la lista, actualizando solo loteId');
+      setFormData(prev => {
+        const newFormData = {
+          ...prev,
+          loteId: loteValue,
+          has: 0
+        };
+        console.log('🔄 New formData (lote not found):', {
+          loteId: newFormData.loteId,
+          has: newFormData.has
+        });
+        return newFormData;
+      });
+    }
+  };
+
   const handleFieldChange = (field: keyof FormData, value: any) => {
     console.log(`🔄 handleFieldChange: ${field} = ${value}`);
+    console.log(`🔄 Current formData.loteId: ${formData.loteId}`);
     
     // Crear objeto con los nuevos datos
     let updatedFormData = { ...formData, [field]: value };
@@ -290,42 +354,12 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           const selectedField = fields.find(f => f._id === value);
           if (selectedField && selectedField.lotes) {
             setAvailableLotes(selectedField.lotes);
+            // Solo resetear el loteId si el campo realmente cambió
             updatedFormData = {
               ...updatedFormData,
-              loteId: '',
+              loteId: '', // Es correcto resetear aquí porque cambió el campo
               has: 0
             };
-          }
-        }
-        break;
-
-      case 'loteId':
-        const selectedField = fields.find(f => f._id === updatedFormData.campoId);
-        const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === value);
-        if (selectedLot) {
-          const newHectareas = selectedLot.properties.hectareas || 0;
-          console.log('📍 Lote seleccionado:', {
-            lote: selectedLot.properties.nombre,
-            hectareas: newHectareas
-          });
-          
-          updatedFormData.has = newHectareas;
-
-          // Recalcular valores si hay insumos/servicios
-          if (insumos.length > 0 || servicios.length > 0) {
-            const updatedInsumos = insumos.map(insumo => ({
-              ...insumo,
-              valorTotal: (insumo.valorUnidad || 0) * (insumo.cantidadHa || 0) * newHectareas
-            }));
-            const updatedServicios = servicios.map(servicio => ({
-              ...servicio,
-              valorTotal: (servicio.valorUnidad || 0) * newHectareas
-            }));
-            
-            setInsumos(updatedInsumos);
-            setServicios(updatedServicios);
-            
-            setTimeout(() => recalcularTotalesConDatos(updatedInsumos, updatedServicios), 0);
           }
         }
         break;
@@ -410,47 +444,56 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       gastosTotal
     });
 
-    // Calcular rendimiento (rinde histórico en kg/ha * hectáreas * cotización futura)
-    const rindeKgHa = formData.rindeHistorico * 100; // Convertir quintales a kg
-    const rendimientoTotal = rindeKgHa * formData.has * (formData.cotizFutCer / 1000); // Cotización es por tonelada
+    // Usar setFormData con función callback para preservar el estado actual
+    setFormData(currentFormData => {
+      console.log('💰 Current formData in callback:', {
+        loteId: currentFormData.loteId,
+        has: currentFormData.has
+      });
+      
+      // Calcular rendimiento (rinde histórico en kg/ha * hectáreas * cotización futura)
+      const rindeKgHa = currentFormData.rindeHistorico * 100; // Convertir quintales a kg
+      const rendimientoTotal = rindeKgHa * currentFormData.has * (currentFormData.cotizFutCer / 1000); // Cotización es por tonelada
 
-    // Calcular tendencia
-    const tendencia = rendimientoTotal - gastosTotal;
+      // Calcular tendencia
+      const tendencia = rendimientoTotal - gastosTotal;
 
-    // Calcular valores en moneda alternativa
-    let gastosMonAlt = 0;
-    let rendimientoMonAlt = 0;
-    let tendenciaMonAlt = 0;
+      // Calcular valores en moneda alternativa
+      let gastosMonAlt = 0;
+      let rendimientoMonAlt = 0;
+      let tendenciaMonAlt = 0;
 
-    if (formData.cotizMonAlt > 0) {
-      if (formData.operacMonAlt === 'dividir') {
-        gastosMonAlt = gastosTotal / formData.cotizMonAlt;
-        rendimientoMonAlt = rendimientoTotal / formData.cotizMonAlt;
-        tendenciaMonAlt = tendencia / formData.cotizMonAlt;
-      } else {
-        gastosMonAlt = gastosTotal * formData.cotizMonAlt;
-        rendimientoMonAlt = rendimientoTotal * formData.cotizMonAlt;
-        tendenciaMonAlt = tendencia * formData.cotizMonAlt;
+      if (currentFormData.cotizMonAlt > 0) {
+        if (currentFormData.operacMonAlt === 'dividir') {
+          gastosMonAlt = gastosTotal / currentFormData.cotizMonAlt;
+          rendimientoMonAlt = rendimientoTotal / currentFormData.cotizMonAlt;
+          tendenciaMonAlt = tendencia / currentFormData.cotizMonAlt;
+        } else {
+          gastosMonAlt = gastosTotal * currentFormData.cotizMonAlt;
+          rendimientoMonAlt = rendimientoTotal * currentFormData.cotizMonAlt;
+          tendenciaMonAlt = tendencia * currentFormData.cotizMonAlt;
+        }
       }
-    }
 
-    const newFormData = {
-      ...formData,
-      gastosMonLocal: gastosTotal,
-      gastosMonAlt: gastosMonAlt,
-      rendimientoMonLocal: rendimientoTotal,
-      rendimientoMonAlt: rendimientoMonAlt,
-      tendenciaMonLocal: tendencia,
-      tendenciaMonAlt: tendenciaMonAlt,
-    };
-    
-    console.log('💰 Updating formData with new values:', {
-      gastosMonLocal: gastosTotal,
-      rendimientoMonLocal: rendimientoTotal,
-      tendenciaMonLocal: tendencia
+      const newFormData = {
+        ...currentFormData, // Usar el estado actual, no el capturado
+        gastosMonLocal: gastosTotal,
+        gastosMonAlt: gastosMonAlt,
+        rendimientoMonLocal: rendimientoTotal,
+        rendimientoMonAlt: rendimientoMonAlt,
+        tendenciaMonLocal: tendencia,
+        tendenciaMonAlt: tendenciaMonAlt,
+      };
+      
+      console.log('💰 Updating formData with new values:', {
+        loteId: newFormData.loteId,
+        gastosMonLocal: gastosTotal,
+        rendimientoMonLocal: rendimientoTotal,
+        tendenciaMonLocal: tendencia
+      });
+      
+      return newFormData;
     });
-    
-    setFormData(newFormData);
   };
 
   const handleSave = async () => {
@@ -1125,6 +1168,15 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           </Box>
         </Box>
 
+        {/* Debug Info - TEMPORAL */}
+        <Card sx={{ mb: 2, bgcolor: '#f5f5f5' }}>
+          <CardContent>
+            <Typography variant="caption" component="pre">
+              DEBUG: loteId = "{formData.loteId}" | availableLotes = {availableLotes.length} | campoId = "{formData.campoId}"
+            </Typography>
+          </CardContent>
+        </Card>
+
         {/* Sección 1: Parámetros */}
         <Card sx={{ mb: 3 }}>
           <CardContent>
@@ -1192,19 +1244,49 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                 <FormControl fullWidth size="small">
                   <InputLabel>{t("lot")}</InputLabel>
                   <Select
-                    value={formData.loteId || ''}
+                    value={formData.loteId}
                     onChange={(e) => {
-                      console.log('🚀 Lote onChange triggered:', e.target.value);
-                      handleFieldChange('loteId', e.target.value);
+                      console.log('🎯 Select onChange triggered with value:', e.target.value);
+                      console.log('🎯 Current formData.loteId before change:', formData.loteId);
+                      console.log('🎯 Available lotes for matching:', availableLotes.map(l => l.properties.nombre));
+                      handleLoteChange(e.target.value as string);
                     }}
                     label={t("lot")}
                     disabled={!formData.campoId}
+                    MenuProps={{
+                      PaperProps: {
+                        style: {
+                          maxHeight: 300,
+                        },
+                      },
+                    }}
+                    sx={{ 
+                      '& .MuiSelect-select': { 
+                        color: formData.loteId ? 'inherit' : 'transparent' 
+                      } 
+                    }}
                   >
-                    {availableLotes.map((lote) => (
-                      <MenuItem key={lote.properties.uuid || lote.properties.nombre} value={lote.properties.nombre}>
-                        {lote.properties.nombre}
+                    {availableLotes.length === 0 ? (
+                      <MenuItem value="" disabled>
+                        {t("no_lots_available")}
                       </MenuItem>
-                    ))}
+                    ) : (
+                      availableLotes.map((lote, index) => {
+                        console.log(`🔍 Rendering MenuItem ${index}:`, {
+                          key: lote.properties.uuid || lote.properties.nombre,
+                          value: lote.properties.nombre,
+                          matches_current: lote.properties.nombre === formData.loteId
+                        });
+                        return (
+                          <MenuItem 
+                            key={lote.properties.uuid || lote.properties.nombre} 
+                            value={lote.properties.nombre}
+                          >
+                            {lote.properties.nombre}
+                          </MenuItem>
+                        );
+                      })
+                    )}
                   </Select>
                 </FormControl>
               </Grid>
@@ -1234,7 +1316,17 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   type="number"
                   label={t("historical_yield_qq_ha")}
                   value={formData.rindeHistorico}
-                  onChange={(e) => handleFieldChange('rindeHistorico', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow typing, don't parse immediately
+                    setFormData(prev => ({ ...prev, rindeHistorico: value === '' ? 0 : parseFloat(value) || 0 }));
+                  }}
+                  onBlur={(e) => {
+                    // Ensure clean number on blur and recalculate
+                    const value = parseFloat(e.target.value) || 0;
+                    setFormData(prev => ({ ...prev, rindeHistorico: value }));
+                    setTimeout(() => recalcularTotales(), 0);
+                  }}
                 />
               </Grid>
               <Grid item xs={12} md={3}>
@@ -1245,7 +1337,17 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   type="number"
                   label={t("future_cereal_quote")}
                   value={formData.cotizFutCer}
-                  onChange={(e) => handleFieldChange('cotizFutCer', parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Allow typing, don't parse immediately
+                    setFormData(prev => ({ ...prev, cotizFutCer: value === '' ? 0 : parseFloat(value) || 0 }));
+                  }}
+                  onBlur={(e) => {
+                    // Ensure clean number on blur and recalculate
+                    const value = parseFloat(e.target.value) || 0;
+                    setFormData(prev => ({ ...prev, cotizFutCer: value }));
+                    setTimeout(() => recalcularTotales(), 0);
+                  }}
                   helperText={t("local_currency_per_ton")}
                 />
               </Grid>
@@ -1272,7 +1374,15 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                     type="number"
                     label={t("alternative_currency_quote")}
                     value={formData.cotizMonAlt}
-                    onChange={(e) => handleFieldChange('cotizMonAlt', parseFloat(e.target.value) || 0)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData(prev => ({ ...prev, cotizMonAlt: value === '' ? 0 : parseFloat(value) || 0 }));
+                    }}
+                    onBlur={(e) => {
+                      const value = parseFloat(e.target.value) || 0;
+                      setFormData(prev => ({ ...prev, cotizMonAlt: value }));
+                      setTimeout(() => recalcularTotales(), 0);
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>

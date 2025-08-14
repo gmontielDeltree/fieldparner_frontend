@@ -110,22 +110,35 @@ export const ListAnnualPlanValorization: React.FC = () => {
     {
       field: "actions",
       headerName: "",
-      flex: 1,
+      width: 200,
+      minWidth: 180,
       sortable: false,
       renderCell: (params: { row: IAnnualPlanValorization }) => (
-        <Box display="flex" justifyContent="center" gap={1}>
+        <Box 
+          display="flex" 
+          justifyContent="center" 
+          gap={0.5}
+          sx={{ 
+            width: '100%',
+            overflow: 'visible',
+            '& .MuiIconButton-root': {
+              padding: '6px',
+              '&:hover': { 
+                transform: 'scale(1.1)',
+                transition: 'transform 0.2s'
+              }
+            }
+          }}
+        >
           {params.row.status === 'abierto' && (
             <Tooltip title={t("start_valorization")}>
               <IconButton
                 aria-label={t("start_valorization")}
                 onClick={() => onClickStartValorization(params.row)}
                 color="primary"
-                sx={{
-                  transition: "transform 0.2s",
-                  "&:hover": { transform: "scale(1.2)" },
-                }}
+                size="small"
               >
-                <PlayArrowIcon />
+                <PlayArrowIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           )}
@@ -133,37 +146,28 @@ export const ListAnnualPlanValorization: React.FC = () => {
             <IconButton
               aria-label={t("icon_edit")}
               onClick={() => onClickEditValorization(params.row)}
-              sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
-              }}
+              size="small"
             >
-              <EditIcon />
+              <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title={t("export_to_excel")}>
             <IconButton
               aria-label={t("export_to_excel")}
               onClick={() => onClickExportValorization(params.row)}
-              sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
-              }}
               color="success"
+              size="small"
             >
-              <FileDownloadIcon />
+              <FileDownloadIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title={t("icon_delete")}>
             <IconButton
               aria-label={t("icon_delete")}
               onClick={() => handleDeleteValorization(params.row)}
-              sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
-              }}
+              size="small"
             >
-              <DeleteIcon />
+              <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>

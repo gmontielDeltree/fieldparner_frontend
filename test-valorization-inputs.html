@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Valorization Inputs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        label {
+            display: inline-block;
+            width: 200px;
+            font-weight: bold;
+        }
+        select, input {
+            padding: 5px;
+            width: 250px;
+        }
+        .console-log {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 2px 0;
+            font-size: 12px;
+        }
+        .error { color: red; }
+        .info { color: blue; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Test de Inputs - Valorización Plan Anual</h1>
+    
+    <div class="test-section">
+        <h2>Prueba 1: Select de Lote</h2>
+        <p>El problema reportado es que el select de Lote se borra inmediatamente después de seleccionar una opción.</p>
+        
+        <div class="form-group">
+            <label>Campaña:</label>
+            <select id="campaign">
+                <option value="">Seleccione...</option>
+                <option value="camp1">Campaña 2024/2025</option>
+                <option value="camp2">Campaña 2023/2024</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Campo:</label>
+            <select id="field">
+                <option value="">Seleccione...</option>
+                <option value="field1">Campo Norte</option>
+                <option value="field2">Campo Sur</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Lote:</label>
+            <select id="lot">
+                <option value="">Seleccione...</option>
+                <option value="lot1">Lote A</option>
+                <option value="lot2">Lote B</option>
+                <option value="lot3">Lote C</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Hectáreas:</label>
+            <input type="text" id="hectares" readonly value="0">
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Prueba 2: Input de Rinde Histórico</h2>
+        <p>El problema reportado es que solo permite escribir un número.</p>
+        
+        <div class="form-group">
+            <label>Rinde histórico (qq/ha):</label>
+            <input type="number" id="historicalYield" value="0">
+        </div>
+        
+        <div class="form-group">
+            <label>Test con onChange agresivo:</label>
+            <input type="number" id="aggressiveOnChange" value="0">
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Prueba 3: Input de Cotización Futura</h2>
+        <p>También parece tener problemas según el reporte.</p>
+        
+        <div class="form-group">
+            <label>Cotiz futura cereal:</label>
+            <input type="number" id="futureQuote" value="0">
+        </div>
+    </div>
+    
+    <div class="console-log" id="console">
+        <h3>Console Log:</h3>
+    </div>
+
+    <script>
+        // Logger function
+        function log(message, type = 'info') {
+            const consoleDiv = document.getElementById('console');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+
+        // Test 1: Lot select issue
+        const lotSelect = document.getElementById('lot');
+        const hectaresInput = document.getElementById('hectares');
+        
+        // Simulating the React component behavior
+        lotSelect.addEventListener('change', (e) => {
+            log(`Lot onChange triggered: ${e.target.value}`, 'info');
+            
+            // Simulate what happens in the React component
+            setTimeout(() => {
+                // This simulates the state update
+                log(`State update simulation`, 'info');
+                
+                // Simulate if there's a problem with the select value being reset
+                // Uncomment the next line to simulate the bug
+                // lotSelect.value = '';
+                
+                // Update hectares based on lot selection
+                const hectaresMap = {
+                    'lot1': 50,
+                    'lot2': 75,
+                    'lot3': 100
+                };
+                
+                if (hectaresMap[e.target.value]) {
+                    hectaresInput.value = hectaresMap[e.target.value];
+                    log(`Hectares updated to: ${hectaresMap[e.target.value]}`, 'success');
+                }
+            }, 0);
+        });
+
+        // Test 2: Historical yield input issue
+        const historicalYieldInput = document.getElementById('historicalYield');
+        
+        historicalYieldInput.addEventListener('input', (e) => {
+            log(`Historical yield input: ${e.target.value}`, 'info');
+            
+            // Simulate parseFloat behavior that might cause issues
+            const parsedValue = parseFloat(e.target.value) || 0;
+            log(`Parsed value: ${parsedValue}`, 'info');
+            
+            // Don't set the value back immediately - this could cause issues
+            // e.target.value = parsedValue;
+        });
+
+        // Aggressive onChange simulation
+        const aggressiveInput = document.getElementById('aggressiveOnChange');
+        
+        aggressiveInput.addEventListener('input', (e) => {
+            // This simulates the problematic behavior
+            const value = parseFloat(e.target.value) || 0;
+            e.target.value = value; // This could cause the single digit issue
+            log(`Aggressive onChange - set value to: ${value}`, 'error');
+        });
+
+        // Test 3: Future quote input
+        const futureQuoteInput = document.getElementById('futureQuote');
+        
+        futureQuoteInput.addEventListener('input', (e) => {
+            log(`Future quote input: ${e.target.value}`, 'info');
+        });
+
+        // Campaign and Field selects
+        document.getElementById('campaign').addEventListener('change', (e) => {
+            log(`Campaign changed: ${e.target.value}`, 'info');
+            // Reset dependent fields
+            document.getElementById('field').value = '';
+            document.getElementById('lot').value = '';
+            document.getElementById('hectares').value = '0';
+        });
+
+        document.getElementById('field').addEventListener('change', (e) => {
+            log(`Field changed: ${e.target.value}`, 'info');
+            // Reset lot
+            document.getElementById('lot').value = '';
+            document.getElementById('hectares').value = '0';
+        });
+
+        log('Test page loaded and ready', 'success');
+    </script>
+</body>
+</html>
