@@ -45,8 +45,8 @@ export const initializeOrderData = async ({
                         lotActive?.properties?.campo_nombre ||
                         lotActive?.properties?.campo_parent_nombre
                 };
-
-                await getOrderWithDepositsAndSuppliesByOrder(order.order);
+                //Este no iria
+                // await getOrderWithDepositsAndSuppliesByOrder(order.order);
                 return orderWithFieldName;
             }
         }
@@ -114,7 +114,7 @@ export const processActivityData = (activity, user) => {
         // Filter those NOT marked as withdrawn
         .filter(d => !d.retired)
         .map((dose, idx) => {
-            const dosificacion = parseFloat(dose.dosificacion || "0");
+            const dosificacion = parseFloat(dose.total || "0");
             return {
                 _id: `dose-${idx}`,
                 accountId: user?.accountId || "",

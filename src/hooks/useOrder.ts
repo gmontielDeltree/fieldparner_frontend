@@ -135,11 +135,14 @@ export const useOrder = () => {
             error && setError(error);
         }
     }
-    
-    //TODO: validar que si crea la orden de retiro , modifique la reserva de stock del insumo
-    const createWithdrawalOrder = async (newWithdrawalOrder: WithdrawalOrder, inputsToBeWithdrawan: DepositSupplyOrder[]) => {
+
+    const createWithdrawalOrder = async (
+        newWithdrawalOrder: WithdrawalOrder,
+        inputsToBeWithdrawan: DepositSupplyOrder[],
+        movement = WithdrawalOrderType.Manual) => {
         setIsLoading(true);
         try {
+
             if (!user) { dispatch(onLogout(t("session_expired"))); return; }
 
             let lastNumerator: Numerator = {
@@ -148,7 +151,7 @@ export const useOrder = () => {
                 lastNumerator: 1
             };
             const lastNumeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
-            
+
             if (!lastNumeratorFound) {
                 await putLastNumerator(lastNumerator, true);
                 const numeratorFound = await getLastNumerator(user.accountId, NumeratorType.Client);
@@ -173,7 +176,7 @@ export const useOrder = () => {
 
             const docsStock = responseStock.docs;
             let updatesStock: Stock[] = [];
-            
+
             inputsToBeWithdrawan.forEach(w => {
                 if (w.supplyId) {
                     docsStock.forEach(s => {
@@ -205,7 +208,7 @@ export const useOrder = () => {
                 detail: `Cantidad reservada del insumo: ${w.originalAmount}`,
                 voucher: nroOrder.toString(),
                 isIncome: false,
-                movement: WithdrawalOrderType.Manual,
+                movement,
                 operationDate: newWithdrawalOrder.creationDate,
                 typeMovement: TypeMovement.OrdenRetiro,
             } as StockMovement));
@@ -242,10 +245,10 @@ export const useOrder = () => {
         }
     }
 
-    const getOrderWithDepositsAndSupplies = async (order: number) => {
+    const getOrderDetailByNumber = async (order: number) => {
         setIsLoading(true);
         try {
-            
+
             if (!user) throw new Error(t("user_not_found"));
 
             const responseAll = await Promise.all([
@@ -279,6 +282,7 @@ export const useOrder = () => {
                     },
                 })
             ]);
+
             //Campaign y Business
             if (responseAll) {
                 const withdrawalOrder = responseAll[0].docs[0] as WithdrawalOrder;
@@ -293,30 +297,39 @@ export const useOrder = () => {
                         ...withdrawalOrder, campaign, withdraw
                     }));
                 }
-                setDepositsSuppliesOrder(
-                    depositAndSuppliesOrder.map(d => {
-                        const deposit = deposits.find(de => de._id === d.depositId);
-                        const supply = supplies.find(s => s._id === d.supplyId);
-                        if (!deposit || !supply) throw new Error("Deposit or Supply not found");
-                        return {
-                            ...d,
-                            deposit,
-                            supply,
-                        } as DepositSupplyOrderItem;
-                    })
-                );
+                const suppliesOfTheOrder = depositAndSuppliesOrder.map(d => {
+                    const deposit = deposits.find(de => de._id === d.depositId);
+                    const supply = supplies.find(s => s._id === d.supplyId);
+                    if (!deposit || !supply) throw new Error("Deposit or Supply not found");
+                    return {
+                        ...d,
+                        deposit,
+                        supply,
+                    } as DepositSupplyOrderItem;
+                });
+                setDepositsSuppliesOrder(suppliesOfTheOrder);
+                return {
+                    withdrawalOrder,
+                    suppliesOfTheOrder
+                }
+            }
+            return {
+                withdrawalOrder: null,
+                suppliesOfTheOrder: []
             }
 
-            setIsLoading(false);
         } catch (error) {
             console.log(`Error al obtener los detalle de la orden de retiro: ${error}`);
-            setIsLoading(false);
             error && setError(error);
         }
+        finally {
+            setIsLoading(false);
+        }
     }
-    // todo: descontar el stock reservado del insumo, y restarlo en el stock actual.
+
     const confirmWithdrawalOrder = async (inputsToBeWithdrawan: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
+        
         try {
             if (!user) throw new Error(t("user_not_found"));
             if (!withdrawalOrderActive) throw new Error(t("withdrawal_order_not_found"));
@@ -324,7 +337,7 @@ export const useOrder = () => {
 
             const newWithdrawals: WithdrawalsByDepositSupply[] = inputsToBeWithdrawan.map(w => ({
                 accountId: w.accountId,
-                amount: Number(w.amount),
+                amount: Number(w.amount || 0),
                 depositSupplyOrderId: w._id,
                 order: w.order,
                 withdrawalDate,
@@ -334,7 +347,7 @@ export const useOrder = () => {
             //Sumamos a la cantidad retirada, el monto q va a retirar
             let updateDepositSupplies: DepositSupplyOrder[] = inputsToBeWithdrawan.map(w => {
                 const { amount, ...newObject } = w;
-                let withdrawalAmount = Number(w.withdrawalAmount) + Number(amount);
+                let withdrawalAmount = Number(w.withdrawalAmount || 0) + Number(amount || 0);
                 delete newObject.supply;
                 delete newObject.deposit;
                 return {
@@ -353,7 +366,7 @@ export const useOrder = () => {
             if (!responseStock) throw new Error("Stock not found");
             const docsStock = responseStock.docs;
             let updateStockSupplies: Stock[] = [];
-            
+
             //Actualizamos el stock actual del insumo, descontando el monto que retira
             //Ademas, descontamos del stock reservado el monto que retira
             //inputsToBeWithdrawan.amount
@@ -366,7 +379,7 @@ export const useOrder = () => {
                             w.location === s.location &&
                             w.nroLot === s.nroLot) {
                             updateStockSupplies.push({
-                                ...s, 
+                                ...s,
                                 currentStock: (Number(s.currentStock) - Number(w.amount)),
                                 reservedStock: (Number(s.reservedStock) - Number(w.amount))
                             });
@@ -537,10 +550,10 @@ export const useOrder = () => {
             if (!withdrawalOrder) throw new Error(t("withdrawal_order_not_found"));
 
             let isComplete = true;
-
+            
             const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
                 accountId: w.accountId,
-                amount: Number(w.amount),
+                amount: Number(w.amount || 0),
                 depositSupplyOrderId: w._id,
                 order: w.order,
                 withdrawalDate,
@@ -548,7 +561,7 @@ export const useOrder = () => {
 
             let updateDepositSupplies: DepositSupplyOrder[] = listWithdrawals.map(w => {
                 const { amount, ...newObject } = w;
-                let withdrawalAmount = Number(w.withdrawalAmount) + Number(amount);
+                let withdrawalAmount = Number(w.withdrawalAmount || 0) + Number(amount || 0);
                 delete newObject.supply;
                 delete newObject.deposit;
                 return {
@@ -556,13 +569,42 @@ export const useOrder = () => {
                     withdrawalAmount
                 };
             });
-
+            
             updateDepositSupplies.forEach(u => {
                 if (Number(u.originalAmount) > Number(u.withdrawalAmount)) {
                     isComplete = false;
                     return;
                 }
             });
+
+            const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
+            if (!responseStock) throw new Error("Stock not found");
+            const docsStock = responseStock.docs;
+            let updateStockSupplies: Stock[] = [];
+
+            //Actualizamos el stock actual del insumo, descontando el monto que retira
+            //Ademas, descontamos del stock reservado el monto que retira
+            //inputsToBeWithdrawan.amount
+            listWithdrawals.forEach(w => {
+                if (w.supplyId) {
+                    docsStock.forEach(s => {
+                        if (withdrawalOrder.campaignId === s.campaignId &&
+                            w.depositId === s.depositId &&
+                            w.supplyId === s.id &&
+                            w.location === s.location &&
+                            w.nroLot === s.nroLot) {
+                            updateStockSupplies.push({
+                                ...s,
+                                currentStock: (Number(s.currentStock) - Number(w.amount || w.withdrawalAmount || 0)),
+                                reservedStock: (Number(s.reservedStock) - Number(w.amount || w.withdrawalAmount || 0))
+                            });
+                        }
+                    });
+                }
+            });
+            if (updateStockSupplies.length) {
+                await dbContext.stock.bulkDocs(updateStockSupplies);
+            }
 
             let newMovements = listWithdrawals.map(w => ({
                 accountId: user.accountId,
@@ -676,7 +718,7 @@ export const useOrder = () => {
         confirmWithdrawalOrder,
         confirmAutomaticWithdrawalOrder,
         deleteWithdrawalOrder,
-        getOrderWithDepositsAndSupplies,
+        getOrderDetailByNumber,
         createLaborOrder,
         confirmLaborOrder,
         getLaborOrder,

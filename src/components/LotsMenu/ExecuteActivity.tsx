@@ -22,7 +22,7 @@ import { keyframes } from '@emotion/react'
 import { useTheme } from '@mui/material/styles'
 import { Ejecucion, Actividad } from '../../interfaces/activity'
 import uuid4 from 'uuid4'
-import { HarvestType, StockMovement, TypeMovement } from '../../types'
+import { HarvestType, StockMovement, TypeMovement, WithdrawalOrder } from '../../types'
 import {
   useAppSelector,
   useOrder,
@@ -52,6 +52,7 @@ import {
   Check,
 } from 'lucide-react'
 import ValidationAlert from './ValidationAlert'
+import { getShortDate } from '../../helpers/dates'
 
 // Keep the raw activity types with the standard Spanish values
 const ACTIVITY_TYPES = {
@@ -97,7 +98,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     existingActivity || getEmptyExecution(),
   )
   const { addNewStockMovement, getStock } = useStockMovement()
-  const { confirmAutomaticWithdrawalOrder } = useOrder()
+  const { getOrderDetailByNumber, confirmAutomaticWithdrawalOrder } = useOrder();
   const { getSupplies } = useSupply()
   const [activeStep, setActiveStep] = useState(0)
   const [isSaving, setIsSaving] = useState(false)
@@ -476,7 +477,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     const cropInfo = executionDetails.detalles?.cultivo;
     const rindeObtenido = executionDetails.detalles?.rinde_obtenido;
     const depositoInfo = executionDetails.detalles?.deposito;
-    
+
     if (cropInfo && rindeObtenido && depositoInfo) {
       // Crear movimiento de entrada para el cultivo cosechado
       const harvestMovement: StockMovement = {
@@ -566,18 +567,18 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           lastUpdate: new Date().toISOString(),
           reservedStock: 0
         };
-        
+
         const stockResult = await db.stock.post(newStock);
         console.log('✅ Nuevo stock de cultivo creado:', stockResult);
       }
-      
+
       return true;
     } catch (error) {
       console.error('❌ Error creando movimiento de stock para cultivo:', error);
       throw error;
     }
   };
-
+  //TODO: revisar si es necesario dejar este metodo , ya q se hace todo en initConfirmWithdrawal
   const removeReservedStock = async (dosis: any) => {
     console.log(t('removingStock'))
 
@@ -598,7 +599,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         accountId: user.accountId,
         order: dosis.orden_de_retiro.order
       });
-      
+
       const withdrawalOrderResponse = await db.withdrawalOrders.find({
         selector: {
           "$and": [
@@ -621,14 +622,14 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       }
 
       const withdrawalOrder = withdrawalOrderResponse.docs[0];
-      
+
       // Get the corresponding deposit supply order
       console.log('Searching for deposit supply order with query:', {
         accountId: user.accountId,
         order: withdrawalOrder.order,
         supplyId: (dosis.insumo || dosis.selectedOption)?._id
       });
-      
+
       const depositSupplyResponse = await db.depositSupplyOrder.find({
         selector: {
           "$and": [
@@ -681,6 +682,17 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }
   }
 
+  const initConfirmWithdrawal = async (confirmOrder: WithdrawalOrder) => {
+    //Buscamos la orden de retiro y sus insumos a retirar:
+    const orderDetails = await getOrderDetailByNumber(confirmOrder.order);
+    console.log("Detalles de la orden de retiro: ", orderDetails);
+    if (!orderDetails || !orderDetails.withdrawalOrder || !orderDetails.suppliesOfTheOrder) {
+      console.error("No se encontraron detalles para la orden de retiro.");
+      return;
+    }
+    await confirmAutomaticWithdrawalOrder(orderDetails.withdrawalOrder, orderDetails.suppliesOfTheOrder, getShortDate());
+  };
+
   const handleSave = async () => {
     // Prevent multiple clicks
     if (isSaving) {
@@ -690,7 +702,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
     // Set saving state immediately
     setIsSaving(true);
-    
+
     let executionDetails = { ...formData };
     executionDetails.detalles.fecha_ejecucion = new Date().toISOString();
     executionDetails.estado = 'completada';
@@ -793,7 +805,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
         // T2-70: Usar cantidad total en lugar de cantidadxHa para descuento de stock
         // T2-71: Grabar depósito al descontar stock
-        
+
         // Debug: Log para verificar valores disponibles
         console.log('🔍 DEBUG DESCUENTO STOCK:')
         console.log('  dosis.total:', dosis.total)
@@ -801,7 +813,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         console.log('  dosis.dosis:', dosis.dosis)
         console.log('  dosis.orden_de_retiro:', dosis.orden_de_retiro)
         console.log('  dosis completo:', dosis)
-        
+
         // Verificar si existe stock actual antes de intentar crear el movimiento
         const stockQuery = {
           id: supplyInfo._id,
@@ -812,18 +824,18 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           location: dosis.ubicacion
         };
         console.log('  🔍 Consultando stock con query:', stockQuery);
-        
+
         try {
           const stockResponse = await getStock(stockQuery);
           console.log('  📦 Stock encontrado:', stockResponse);
         } catch (error) {
           console.log('  ❌ Error consultando stock:', error);
         }
-        
+
         // Usar cantidad total, priorizando 'total' que es el campo correcto
         const stockAmount = Number(dosis.total || dosis.dosificacion || dosis.dosis)
         console.log('  📊 Cantidad a descontar del stock:', stockAmount)
-        
+
         const newMovement: StockMovement = {
           movement: t('executionExit'),
           accountId: user?.accountId || '',
@@ -846,14 +858,14 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           hours: '0',
           campaignId: executionDetails.campaña?.campaignId || '',
         };
-
+        
         try {
           console.log(t('newMovement'), newMovement);
-          
-          // Si existe una orden de retiro, usar confirmWithdrawalOrder en lugar de addNewStockMovement
+
           if (dosis.orden_de_retiro) {
             console.log('Usando orden de retiro existente para:', supplyInfo.name);
-            await removeReservedStock(dosis);
+            // await removeReservedStock(dosis);
+            initConfirmWithdrawal(dosis.orden_de_retiro as WithdrawalOrder);
           } else {
             // Si no hay orden de retiro, usar el flujo normal de stock movement
             console.log('No hay orden de retiro, usando flujo normal de stock para:', supplyInfo.name);

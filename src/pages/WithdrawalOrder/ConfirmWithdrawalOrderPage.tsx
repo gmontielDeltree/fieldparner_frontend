@@ -91,7 +91,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
     const [listWithdrawals, setListWithdrawals] = useState<DepositSupplyOrderItem[]>([]);
     const { isLoading,
         depositsSuppliesOrder,
-        getOrderWithDepositsAndSupplies,
+        getOrderDetailByNumber,
         confirmWithdrawalOrder } = useOrder();
     const { t } = useTranslation();
 
@@ -143,7 +143,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
 
     useEffect(() => {
         if (orderId) {
-            getOrderWithDepositsAndSupplies(Number(orderId));
+            getOrderDetailByNumber(Number(orderId));
         }
     }, [orderId])
 
@@ -196,7 +196,7 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                             variant="outlined"
                             type="text"
                             label={t("_campaign")}
-                            value={withdrawalOrderActive?.campaign?.description}
+                            value={withdrawalOrderActive?.campaign?.name || withdrawalOrderActive?.campaign?.campaignId}
                             InputProps={{
                                 startAdornment: <InputAdornment position="start" />,
                             }}
