@@ -399,7 +399,7 @@ function PersonalFormUnified({
         {mode === 'execute' ? (
           <>
             {/* Campo Depósito solo aparece en la ejecución de Cosecha - T2-74 */}
-            {formData.tipo === 'cosecha' && (
+            {(formData.tipo === 'cosecha' || formData.tipo === 'harvesting') && (
               <Grid item xs={12} sm={6}>
                 <AutocompleteDeposito
                   value={formData.detalles?.deposito}
