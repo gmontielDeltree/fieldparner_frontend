@@ -9,7 +9,7 @@ import Button from "@mui/material/Button";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { useTranslation } from "react-i18next";
 import { ContractorRepository } from "../../../classes/ContractorRepository";
-import { Business, Supply } from "@types";
+import { Business, Supply, UnidadesDeMedida, TypeSupplies } from "../../../types";
 import { SuppliesRepository } from "../../../classes/SuppliesRepository";
 import { paramsToObject } from "lightgallery/plugins/video/lg-video-utils";
 import {
@@ -22,8 +22,15 @@ import {
   MenuItem,
   Select,
   Typography,
+  Grid,
+  FormControl,
+  InputLabel,
+  Paper,
+  FormHelperText,
 } from "@mui/material";
 import FilterAltTwoToneIcon from "@mui/icons-material/FilterAltTwoTone";
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 const filter = createFilterOptions<FilmOptionType>({ limit: 50 });
 
@@ -31,10 +38,32 @@ interface SupplyOptionType extends Supply {
   inputValue?: string;
 }
 
-export const AutocompleteSupplies = ({ value, onChange }) => {
+export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
   const [_value, setValue] = React.useState<SupplyOptionType | null>(value);
   const [open, toggleOpen] = React.useState(false);
   const { t } = useTranslation();
+
+  // Get activity color based on type
+  const getActivityColor = () => {
+    switch (activityType) {
+      case 'siembra':
+      case 'sowing':
+        return '#10b981';
+      case 'aplicacion':
+      case 'application':
+        return '#3b82f6';
+      case 'cosecha':
+      case 'harvesting':
+        return '#f59e0b';
+      case 'preparado':
+      case 'preparation':
+        return '#6b7280';
+      default:
+        return '#3b82f6'; // Default blue color
+    }
+  };
+
+  const activityColor = getActivityColor();
 
   const [supplyRepo, _] = useState(new SuppliesRepository());
   const [supplies, setSupplies] = useState<Supply[]>([]);
@@ -44,6 +73,8 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
   const [dialogValue, setDialogValue] = React.useState({
     name: "",
     type: "",
+    replenishmentPoint: "",
+    unitMeasurement: "",
   });
 
   useEffect(() => {
@@ -62,6 +93,8 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
     setDialogValue({
       name: "",
       type: "",
+      replenishmentPoint: "",
+      unitMeasurement: "",
     });
     toggleOpen(false);
   };
@@ -78,6 +111,8 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
       .add({
         name: dialogValue.name,
         type: dialogValue.type,
+        replenishmentPoint: dialogValue.replenishmentPoint,
+        unitMeasurement: dialogValue.unitMeasurement,
       })
       .then((doc) => {
         setValue(doc);
@@ -189,52 +224,208 @@ export const AutocompleteSupplies = ({ value, onChange }) => {
           />
         )}
       />
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog 
+        open={open} 
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+          }
+        }}
+      >
         <form onSubmit={handleSubmit}>
-          <DialogTitle>
+          <DialogTitle sx={{ 
+            background: activityColor,
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            padding: '1.5rem',
+          }}>
+            <AddCircleOutlineIcon sx={{ fontSize: 30 }} />
             {t("_quick_add")} {t("_supply")}
           </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {t(
-                "you_can_edit_more_details_later_in_the_supplies_menu_on_the_sidebar"
-              )}
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              value={dialogValue.name}
-              onChange={(event) =>
-                setDialogValue({
-                  ...dialogValue,
-                  name: event.target.value,
-                })
-              }
-              label={t("name")}
-              type="text"
-              variant="standard"
-            />
+          <DialogContent sx={{ mt: 3, px: 3 }}>
+            <Box sx={{ 
+              mb: 3, 
+              p: 2, 
+              backgroundColor: '#f8f9fa',
+              borderRadius: 2,
+              border: '1px solid #e0e0e0'
+            }}>
+              <Typography variant="body2" color="text.secondary" sx={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1 
+              }}>
+                <InfoOutlinedIcon fontSize="small" />
+                {t("you_can_edit_more_details_later_in_the_supplies_menu_on_the_sidebar")}
+              </Typography>
+            </Box>
+            
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth required>
+                  <InputLabel id="tipo-insumo-quick">{t("_type")}</InputLabel>
+                  <Select
+                    labelId="tipo-insumo-quick"
+                    value={dialogValue.type}
+                    label={t("_type")}
+                    onChange={(event) =>
+                      setDialogValue({
+                        ...dialogValue,
+                        type: event.target.value,
+                      })
+                    }
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: activityColor,
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: activityColor,
+                        },
+                      },
+                    }}
+                  >
+                    {TypeSupplies().map((supply) => (
+                      <MenuItem key={supply} value={supply}>
+                        {supply}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              value={dialogValue.type}
-              onChange={(event) =>
-                setDialogValue({
-                  ...dialogValue,
-                  type: event.target.value,
-                })
-              }
-              label={t("_type")}
-              type="text"
-              variant="standard"
-            />
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  autoFocus
+                  required
+                  fullWidth
+                  value={dialogValue.name}
+                  onChange={(event) =>
+                    setDialogValue({
+                      ...dialogValue,
+                      name: event.target.value,
+                    })
+                  }
+                  label={t("_supply")}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#667eea',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#667eea',
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  value={dialogValue.replenishmentPoint}
+                  onChange={(event) =>
+                    setDialogValue({
+                      ...dialogValue,
+                      replenishmentPoint: event.target.value,
+                    })
+                  }
+                  label={t("reorder_point")}
+                  variant="outlined"
+                  type="number"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#667eea',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#667eea',
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel id="unidad-medida-quick">{t("unit_of_measure")}</InputLabel>
+                  <Select
+                    labelId="unidad-medida-quick"
+                    value={dialogValue.unitMeasurement}
+                    label={t("unit_of_measure")}
+                    onChange={(event) =>
+                      setDialogValue({
+                        ...dialogValue,
+                        unitMeasurement: event.target.value,
+                      })
+                    }
+                    MenuProps={{ PaperProps: { style: { maxHeight: 200 } } }}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        '&:hover fieldset': {
+                          borderColor: activityColor,
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: activityColor,
+                        },
+                      },
+                    }}
+                  >
+                    {UnidadesDeMedida().map((um, index) => (
+                      <MenuItem key={`${um}-${index}`} value={um}>
+                        {um}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>{t("_Cancel")}</Button>
-            <Button type="submit">{t("_Add")}</Button>
+          <DialogActions sx={{ 
+            px: 3, 
+            pb: 3, 
+            pt: 2,
+            gap: 1 
+          }}>
+            <Button 
+              onClick={handleClose}
+              variant="outlined"
+              sx={{ 
+                borderRadius: 2,
+                px: 3,
+                borderColor: '#6b7280',
+                color: '#6b7280',
+                '&:hover': {
+                  borderColor: '#4b5563',
+                  backgroundColor: 'rgba(107, 114, 128, 0.04)',
+                }
+              }}
+            >
+              {t("_Cancel")}
+            </Button>
+            <Button 
+              type="submit"
+              variant="contained"
+              sx={{ 
+                borderRadius: 2,
+                px: 3,
+                background: '#10b981',
+                '&:hover': {
+                  background: '#059669',
+                }
+              }}
+            >
+              {t("_Add")}
+            </Button>
           </DialogActions>
         </form>
       </Dialog>
