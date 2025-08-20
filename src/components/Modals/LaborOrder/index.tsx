@@ -120,7 +120,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
         // Log updated state after a short delay to allow state to update
         setTimeout(logPrintButtonState, 100);
     };
-
+    console.log('activity', activity)
     // Imprime y fija en `activity` las dosis como retiradas
     const handlePrint = async () => {
         console.log("Print button clicked. Current state:", {
@@ -128,7 +128,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
             withdrawalItemsCount: withdrawalItems.length,
             hasPrinted
         });
-
+        debugger;
         setHasPrinted(true);
 
         // 1) Tomo los nombres impresos
@@ -192,23 +192,23 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                 };
 
                 // Preparar items de la orden
-                const depositSupplyOrders = withdrawalItems.map(item => ({
+                const depositSupplyOrders = activity?.detalles?.dosis.map(item => ({
                     accountId: user.accountId || "",
-                    depositId: item.deposit?._id || "",
-                    supplyId: item.supply?._id || "",
-                    crop: activity?.tipo || "",
-                    location: item.location || "",
-                    nroLot: item.nroLot || "",
+                    depositId: item?.deposito?._id || "",
+                    supplyId: item?.insumo?._id || "",
+                    crop: null,
+                    location: item?.ubicacion || "",
+                    nroLot: item?.nro_lote || "",
                     order: activeOrder.order || 0,
-                    withdrawalAmount: 0,
-                    originalAmount: Number(item.amount || 0),
+                    withdrawalAmount: Number(item.total || 0),
+                    originalAmount: Number(item.total || 0),
                 }));
 
                 console.log("Creating withdrawal order:", withdrawalOrder);
                 console.log("With deposit supply orders:", depositSupplyOrders);
 
                 // Crear la orden
-                const success = await createWithdrawalOrder(withdrawalOrder, depositSupplyOrders);
+                const success = await createWithdrawalOrder(withdrawalOrder, depositSupplyOrders, WithdrawalOrderType.Automatica);
                 if (success) {
                     NotificationService.showSuccess(
                         t("withdrawal_order_created_successfully"),

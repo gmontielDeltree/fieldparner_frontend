@@ -228,6 +228,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
                 key={`supply-${selectedSupply?.id || 'empty'}`}
                 value={selectedSupply}
                 onChange={handleSelectChange}
+                activityType={formData?.tipo}
               />
             </Grid>
             <Grid item xs={6}>

@@ -121,6 +121,7 @@ export const ListStockPage: React.FC = () => {
     else getSupplyStockByDeposits();
   }, [tabValue]);
 
+  console.log('stockBySupplies', stockBySupplies)
   return (
     <Container sx={{ marginLeft: { xs: 0, sm: 3 } }} maxWidth="lg">
       {isLoading && <Loading loading={true} />}
@@ -210,7 +211,7 @@ export const ListStockPage: React.FC = () => {
                         />
                       </TableCellStyled>
                       <TableCellStyled align="center">
-                        <Chip label={stock?.dataSupply?.reservedStock} variant="outlined" />
+                        <Chip label={stock.reservedStock} variant="outlined" />
                       </TableCellStyled>
                       <TableCellStyled align="center">
                         <Chip

@@ -23,7 +23,7 @@ export const HistoryWithdrawOrderModal: React.FC = () => {
         historyWithdrawOrder,
         depositsSuppliesOrder,
         getHistoryWithdrawOrder,
-        getOrderWithDepositsAndSupplies } = useOrder();
+        getOrderDetailByNumber } = useOrder();
 
     const columns: ColumnProps[] = [
         { text: t("_date"), align: "left" },
@@ -44,7 +44,7 @@ export const HistoryWithdrawOrderModal: React.FC = () => {
     useEffect(() => {
         const initiGetHistoryWithdrawOrder = async (order: number) => {
             await Promise.all([
-                getOrderWithDepositsAndSupplies(order),
+                getOrderDetailByNumber(order),
                 getHistoryWithdrawOrder(order)
             ])
         };

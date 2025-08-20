@@ -2,17 +2,15 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'
 import { Button, Grid } from '@mui/material'
-import area from '@turf/area'
 import { addFieldsToMapSingleLayer } from '../helpers/mapHelpers'
 import NewsBar from '../components/NewsBar'
 import MapComponent from '../components/Map'
-import uuid4 from 'uuid4'
-import { Field, Lot } from '../interfaces/field'
+import { Field } from '../interfaces/field'
 import { useDispatch, useSelector } from 'react-redux'
 import { setMap, selectMap } from '../redux/map/mapSlice'
 import { selectDraw } from '../redux/draw/drawSlice'
 import { RootState } from '../redux/store'
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Devices } from '../components/Sensors/sensores'
 import { addDepositosToMap } from '../../owncomponents/mapa-principal/depositos-layer'
 import { useDeposit, useField } from '../hooks'
@@ -22,21 +20,22 @@ import { touchEvent } from '../../owncomponents/helpers'
 import FieldsSideMenu from '../components/FieldsSideMenu'
 import { useTranslation } from 'react-i18next'
 import { Actividad } from '../interfaces/activity'
-import { format, isBefore, isToday, parseISO } from 'date-fns'
-import { hideFieldList } from '../redux/fieldsList'
+import { format, isBefore, parseISO } from 'date-fns'
 import '../classes/engine/Engine'
 import { selectSyncStatus } from '../redux/syncStatus'
 
 export const FieldsPage: React.FC = () => {
   const map = useSelector(selectMap)
   const { fields, getFields } = useField()
-  const [activitiesCache, setActivitiesCache] = useState<{
-    [key: string]: Array<{ actividad: Actividad; ejecucion_id: string }>
-  }>({})
-  const [hoveredLotId, setHoveredLotId] = useState<string | null>(null)
+  // Cache con TTL para refrescar actividades rápidamente al crear/ejecutar
+  type ActivityPair = { actividad: Actividad; ejecucion_id: string | undefined }
+  type ActivityCacheEntry = { data: ActivityPair[]; ts: number }
+  const [activitiesCache, setActivitiesCache] = useState<{ [key: string]: ActivityCacheEntry }>({})
+  const CACHE_TTL_MS = 5000
+  // const [hoveredLotId, setHoveredLotId] = useState<string | null>(null)
 
   const db = dbContext.fields
-  const [selectedField, setSelectedField] = useState<any | null>(null)
+  const [selectedField, _setSelectedField] = useState<any | null>(null)
   const selectedFieldRef = useRef<Field | null>(null)
   const draw = useSelector(selectDraw)
   const dispatch = useDispatch()
@@ -52,7 +51,7 @@ export const FieldsPage: React.FC = () => {
   }
 
   const target = useRef(null)
-  useResizeObserver(target, (entry) => {
+  useResizeObserver(target, (_entry) => {
     if (map) {
       console.count('map resize obs')
       map.resize()
@@ -80,6 +79,31 @@ export const FieldsPage: React.FC = () => {
     setActivitiesCache({})
     console.log('FieldsPage - Updating by sync')
   }, [syncStatus])
+
+  // Invalidate activities cache on DB changes related to activities/executions
+  useEffect(() => {
+    if (!db || !db.changes) return
+    try {
+      const changes = db
+        .changes({ since: 'now', live: true, include_docs: true })
+        .on('change', (change: any) => {
+          const id: string = change?.id || ''
+          if (
+            id.startsWith('actividad:') ||
+            id.startsWith('ejecucion:') ||
+            id.startsWith('planactividad:')
+          ) {
+            setActivitiesCache({})
+          }
+        })
+        .on('error', () => { })
+      return () => {
+        try { changes.cancel() } catch { /* noop */ }
+      }
+    } catch (e) {
+      // noop
+    }
+  }, [db])
 
   const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
     if (alldocs.rows.length > 0) {
@@ -110,13 +134,20 @@ export const FieldsPage: React.FC = () => {
       })
   }
 
-  const getActivities = async (uuid_del_lote) => {
-    let acts: Actividad[] = await gbl_docs_starting(
+  // Helper para parsear fechas (string | Date | undefined) a string ISO
+  const toIsoDateString = (d: string | Date | undefined): string => {
+    if (!d) return new Date().toISOString()
+    return typeof d === 'string' ? d : d.toISOString()
+  }
+
+  const getActivities = async (uuid_del_lote: string) => {
+    const actsRaw = await gbl_docs_starting(
       'actividad',
       true,
       true,
       true,
     ).then(only_docs)
+    const acts: Actividad[] = (actsRaw as any[]).filter(Boolean) as Actividad[]
 
     let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
     let _actividades_docs = s.reverse()
@@ -126,7 +157,7 @@ export const FieldsPage: React.FC = () => {
       endkey: 'ejecucion:\ufff0',
     })
 
-    let respuesta: { actividad: Actividad; ejecucion_id: string }[] = []
+    let respuesta: { actividad: Actividad; ejecucion_id: string | undefined }[] = []
 
     if (result.rows) {
       _actividades_docs.forEach((actividad) => {
@@ -138,16 +169,20 @@ export const FieldsPage: React.FC = () => {
         let fecha_1 = a.ejecucion_id
           ? parseISO(a.ejecucion_id.split(':')[1])
           : parseISO(
-            a.actividad.tipo === 'nota'
-              ? a.actividad.fecha
-              : a.actividad.detalles.fecha_ejecucion_tentativa,
+            toIsoDateString(
+              a.actividad.tipo === 'nota'
+                ? (a.actividad.fecha as any)
+                : (a.actividad.detalles as any).fecha_ejecucion_tentativa,
+            ),
           )
         let fecha_2 = b.ejecucion_id
           ? parseISO(b.ejecucion_id.split(':')[1])
           : parseISO(
-            b.actividad.tipo === 'nota'
-              ? b.actividad.fecha
-              : b.actividad.detalles.fecha_ejecucion_tentativa,
+            toIsoDateString(
+              b.actividad.tipo === 'nota'
+                ? (b.actividad.fecha as any)
+                : (b.actividad.detalles as any).fecha_ejecucion_tentativa,
+            ),
           )
         return isBefore(fecha_1, fecha_2) ? 1 : -1
       })
@@ -156,15 +191,16 @@ export const FieldsPage: React.FC = () => {
     return respuesta ? respuesta : []
   }
 
-  const getActivitiesWithCache = async (uuid_del_lote) => {
-    if (activitiesCache[uuid_del_lote]) {
-      return activitiesCache[uuid_del_lote]
+  const getActivitiesWithCache = async (uuid_del_lote: string) => {
+    const entry = activitiesCache[uuid_del_lote]
+    if (entry && Date.now() - entry.ts < CACHE_TTL_MS) {
+      return entry.data
     }
 
     const activities = await getActivities(uuid_del_lote)
     setActivitiesCache((prev) => ({
       ...prev,
-      [uuid_del_lote]: activities,
+      [uuid_del_lote]: { data: activities, ts: Date.now() },
     }))
 
     return activities
@@ -193,7 +229,8 @@ export const FieldsPage: React.FC = () => {
       document.body.appendChild(tooltip)
     }
 
-    addFieldsToMapSingleLayer(map, fields)
+    // Cast para evitar conflictos de tipos entre definiciones de Field
+    addFieldsToMapSingleLayer(map, fields as any)
 
     let currentLoteId: string | null = null
     let debounceTimeout: NodeJS.Timeout | null = null
@@ -254,7 +291,9 @@ export const FieldsPage: React.FC = () => {
             )
               return false
             const date = parseISO(
-              actividad.detalles?.fecha_ejecucion_tentativa || actividad.fecha,
+              toIsoDateString(
+                (actividad.detalles as any)?.fecha_ejecucion_tentativa || (actividad as any).fecha,
+              ),
             )
             return isBefore(now, date)
           })
@@ -268,7 +307,9 @@ export const FieldsPage: React.FC = () => {
             )
               return false
             const date = parseISO(
-              actividad.detalles?.fecha_ejecucion_tentativa || actividad.fecha,
+              toIsoDateString(
+                (actividad.detalles as any)?.fecha_ejecucion_tentativa || (actividad as any).fecha,
+              ),
             )
             return isBefore(date, now)
           })
@@ -321,8 +362,10 @@ export const FieldsPage: React.FC = () => {
               .map(({ actividad }) => {
                 const fecha = format(
                   parseISO(
-                    actividad.detalles?.fecha_ejecucion_tentativa ||
-                    actividad.fecha,
+                    toIsoDateString(
+                      (actividad.detalles as any)?.fecha_ejecucion_tentativa ||
+                      (actividad as any).fecha,
+                    ),
                   ),
                   'dd/MM/yyyy',
                 )
@@ -367,7 +410,7 @@ export const FieldsPage: React.FC = () => {
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M4 7V4h16v3M9 20h6M12 4v16"></path>
                           </svg>
-                          ${actividad.detalles?.cultivo?.descriptionES ||
+                           ${(actividad.detalles as any)?.cultivo?.descriptionES ||
                     t('notSpecified')
                     }
                         </div>
@@ -386,7 +429,7 @@ export const FieldsPage: React.FC = () => {
                             ${actividad.detalles.dosis
                         .map(
                           (d) =>
-                            `${d.insumo?.name || ''}: ${d.dosis || ''} ${d.insumo?.unitMeasurement || ''
+                            `${d.insumo?.name || ''}: ${d.dosis || ''} ${(d.insumo as any)?.unitMeasurement || ''
                             }`,
                         )
                         .join(', ')}
@@ -427,8 +470,10 @@ export const FieldsPage: React.FC = () => {
               .map(({ actividad }) => {
                 const fecha = format(
                   parseISO(
-                    actividad.detalles?.fecha_ejecucion_tentativa ||
-                    actividad.fecha,
+                    toIsoDateString(
+                      (actividad.detalles as any)?.fecha_ejecucion_tentativa ||
+                      (actividad as any).fecha,
+                    ),
                   ),
                   'dd/MM/yyyy',
                 )
@@ -613,11 +658,11 @@ export const FieldsPage: React.FC = () => {
     }
   }, [map, handleMapClick])
 
-  const handleDirectLotSelection = (lot, field) => {
+  const handleDirectLotSelection = (lot: any, field: Field) => {
     navigate(`${field._id}/${lot.id}`)
   }
 
-  const handleSelectField = (field) => {
+  const handleSelectField = (field: Field) => {
     console.log('Field selected from menu:', field)
     navigate(field._id)
   }
@@ -634,7 +679,7 @@ export const FieldsPage: React.FC = () => {
     <>
       <FieldsSideMenu
         open={isVisible}
-        fields={fields}
+        fields={fields as unknown as Field[]}
         onSelectField={handleSelectField}
         onSelectLot={handleDirectLotSelection}
       />

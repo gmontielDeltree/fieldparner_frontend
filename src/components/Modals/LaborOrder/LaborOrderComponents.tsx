@@ -44,7 +44,7 @@ interface RowSupplyProps {
 export const RowSupply = ({ row, handleDelete }) => {
     const { t } = useTranslation();
     const theme = useTheme();
-
+    console.log('row', row)
     return (
         <ItemRow
             key={row._id}

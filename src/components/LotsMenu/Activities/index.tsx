@@ -17,6 +17,9 @@ import ordenDefinition from '../../../utils/ordenDefinition'
 import { dbContext } from '../../../services'
 import ModernHeader from './ModernHeader'
 import { useTranslation } from "react-i18next";
+import { useOrder } from '../../../hooks'
+import { WithdrawalOrder } from '@types'
+import { getShortDate } from '../../../helpers/dates'
 
 const Alert = styled(MuiAlert)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -46,6 +49,7 @@ export const Activities = ({
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarSeverity, setSnackbarSeverity] = useState('success')
   const { t } = useTranslation();
+  const { getOrderDetailByNumber, confirmAutomaticWithdrawalOrder } = useOrder();
 
   const handleSnackbarClose = (event: any, reason: string) => {
     if (reason === 'clickaway') {
@@ -95,8 +99,28 @@ export const Activities = ({
         setOpenSnackbar(true)
       })
   }
+  
+  const initConfirmWithdrawal = async (confirmOrder: WithdrawalOrder) => {
+    //Buscamos la orden de retiro y sus insumos a retirar:
+    const orderDetails = await getOrderDetailByNumber(confirmOrder.order);
+    console.log("Detalles de la orden de retiro: ", orderDetails);
+    if (!orderDetails || !orderDetails.withdrawalOrder || !orderDetails.suppliesOfTheOrder) {
+      console.error("No se encontraron detalles para la orden de retiro.");
+      setUserMessage(t('errorConfirmingActivity'));
+      setSnackbarSeverity('error');
+      return;
+    }
+    await confirmAutomaticWithdrawalOrder(orderDetails.withdrawalOrder, orderDetails.suppliesOfTheOrder, getShortDate());
+  };
 
   const handleConfirmExecution = (activity) => {
+    const withdrawalOrder = activitiesData[0]?.actividad?.detalles?.dosis[0]?.orden_de_retiro;
+    console.log("orden de retiro a confirmar: ", withdrawalOrder);
+    if (withdrawalOrder === undefined || withdrawalOrder === null) {
+      console.error("No se encontró la orden de retiro.");
+      return;
+    }
+    initConfirmWithdrawal(withdrawalOrder);
     let executionDetails = {
       detalles: {
         fecha_ejecucion: new Date().toISOString(),

@@ -222,8 +222,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
       case t('supplies'):
         // Para cosecha, los insumos no son obligatorios
-        if (spanishActivityType !== 'cosecha' && (!formDetails.dosis || formDetails.dosis.length === 0)) {
-          fields.push(t('atLeastOneSupply'))
+        if (spanishActivityType !== 'cosecha' && activityType !== 'harvesting') {
+          if (!formDetails.dosis || formDetails.dosis.length === 0) {
+            fields.push(t('atLeastOneSupply'))
+          }
         }
         break
 
@@ -280,13 +282,14 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
       case t('supplies'):
         // Para cosecha, los insumos no son obligatorios
-        if (
-          spanishActivityType !== 'cosecha' &&
-          (!formData.detalles ||
-          !formData.detalles.dosis ||
-          formData.detalles.dosis.length === 0)
-        ) {
-          missingFields++
+        if (spanishActivityType !== 'cosecha' && activityType !== 'harvesting') {
+          if (
+            !formData.detalles ||
+            !formData.detalles.dosis ||
+            formData.detalles.dosis.length === 0
+          ) {
+            missingFields++
+          }
         }
         break
 

@@ -5,6 +5,8 @@ import {
   HarvestType,
   ApplicationType,
   WithdrawalOrderType,
+  WithdrawalOrder,
+  OrderStatus,
 } from '../../../types'
 
 // Define the standard Spanish activity types
@@ -38,6 +40,7 @@ const normalizeActivityType = (tipo) => {
 };
 
 export const reserveSupplyStock = async (
+  contratista,
   dosis,
   user,
   selectedCampaign,
@@ -61,15 +64,16 @@ export const reserveSupplyStock = async (
 
   console.log('reserveSupplyStock: selectedCampaign data:', selectedCampaign);
   
-  const newWithdrawalOrder = {
+  const newWithdrawalOrder: WithdrawalOrder = {
     accountId: user.accountId,
     type: WithdrawalOrderType.Automatica,
     creationDate: new Date().toISOString(),
     order: 0,
     reason: 'Reserva de stock',
-    campaignId: selectedCampaign?._id,
+    campaignId: selectedCampaign?.campaignId,
     field: field, // Use field from insumo
-    state: 'pending',
+    state: OrderStatus.Pending,
+    withdrawId: contratista._id,
   }
   
   console.log('reserveSupplyStock: newWithdrawalOrder data:', newWithdrawalOrder);
@@ -78,6 +82,8 @@ export const reserveSupplyStock = async (
     order: 0,
     accountId: user.accountId,
     deposit: dosis.deposito,
+    depositId: dosis.deposito._id,
+    supplyId: dosis.insumo._id,
     location: dosis.ubicacion,
     supply: dosis.insumo,
     nroLot: dosis.nro_lote,
@@ -197,6 +203,7 @@ export const saveActivity = async (
               
               // Attempt to reserve stock
               const withdrawalOrder = await reserveSupplyStock(
+                actividad.detalles.contratista,
                 dosis,
                 user,
                 selectedCampaign,
