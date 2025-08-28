@@ -85,11 +85,11 @@ function LaboratoryForm({ lot, formData, setFormData }) {
                 }}
               >
                 <MenuItem value="">
-                  <em>Seleccionar laboratorio</em>
+                  <em>{t("selectLaboratory")}</em>
                 </MenuItem>
                 {businesses.map((business) => (
                   <MenuItem key={business._id} value={business._id}>
-                    {business.razonSocial || business.nombreComercial || business.name}
+                    {business.razonSocial || business.nombreComercial || business.name || "Sin nombre"}
                   </MenuItem>
                 ))}
               </Select>

@@ -40,6 +40,11 @@ export const AutocompleteDeposito = ({ value, onChange }) => {
 
   const [_value, setValue] = React.useState<CropOptionType | null>(value || null);
 
+  // Sync internal state when parent value changes
+  useEffect(() => {
+    setValue(value || null);
+  }, [value]);
+
   useEffect(()=>{
     // console.log("_value",_value)
     onChange(_value)
