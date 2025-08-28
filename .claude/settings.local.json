@@ -14,7 +14,10 @@
       "Bash(open:*)",
       "Bash(ls:*)",
       "Bash(npm run:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git stash show:*)",
+      "Bash(git add:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

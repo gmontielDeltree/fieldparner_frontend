@@ -468,7 +468,7 @@ function PersonalFormUnified({
               size="small"
               fullWidth
               label={t('Yield Obtained (ton/ha)')}
-              value={+formData.detalles?.rinde_obtenido || 0}
+              value={formData.detalles?.rinde_obtenido || ''}
               onChange={(e) => onFieldChange('rinde_obtenido', e.target.value)}
               unit="ton/ha"
               allowNegative={false}

@@ -99,6 +99,11 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
     toggleOpen(false);
   };
 
+  // Sync internal state when parent value changes
+  useEffect(() => {
+    setValue(value);
+  }, [value]);
+
   useEffect(() => {
     // console.log("_value",_value)
     onChange(_value);
