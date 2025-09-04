@@ -138,8 +138,12 @@ const CreateCampaignModal = ({
   };
 
   const handleCreate = () => {
+    console.log('🚀 CreateCampaign - handleCreate called');
+    console.log('🚀 CreateCampaign - zafras to save:', zafras);
+    console.log('🚀 CreateCampaign - zafras length:', zafras.length);
+    
     if (editMode) {
-      onCreate({
+      const campaignData = {
         ...initialData,
         campaignId: name,
         name,
@@ -149,9 +153,11 @@ const CreateCampaignModal = ({
         endDate,
         state,
         zafra: zafras, // Ahora enviamos el array de zafras
-      });
+      };
+      console.log('🚀 CreateCampaign - Sending campaign data (edit):', campaignData);
+      onCreate(campaignData);
     } else {
-      onCreate({
+      const campaignData = {
         campaignId: name,
         name,
         description,
@@ -160,7 +166,9 @@ const CreateCampaignModal = ({
         endDate,
         state,
         zafra: zafras, // Ahora enviamos el array de zafras
-      });
+      };
+      console.log('🚀 CreateCampaign - Sending campaign data (create):', campaignData);
+      onCreate(campaignData);
     }
     // Reset form
     setName("");

@@ -58,6 +58,10 @@ export const useCampaign = () => {
 
   const addCampaign = async (campaignData: Campaign) => {
     console.log("campaignData: ", campaignData);
+    console.log("📦 useCampaign - zafra received:", campaignData.zafra);
+    console.log("📦 useCampaign - zafra type:", typeof campaignData.zafra);
+    console.log("📦 useCampaign - zafra is array?:", Array.isArray(campaignData.zafra));
+    
     setIsLoading(true);
     try {
       if (import.meta.env.PROD && !user) throw new Error("User not found");
@@ -68,8 +72,12 @@ export const useCampaign = () => {
         accountId: import.meta.env.PROD
           ? user?.accountId
           : "ec3590d5c24e5bec5a21299d30013596",
-        creationDate: new Date().toISOString()
+        creationDate: new Date().toISOString(),
+        zafra: campaignData.zafra || [] // Asegurar que zafra se incluya
       };
+      
+      console.log("📦 useCampaign - Campaign to save in DB:", newCampaign);
+      console.log("📦 useCampaign - Campaign zafra field:", newCampaign.zafra);
 
       await dbContext.campaigns.put(newCampaign);
       await getCampaigns();

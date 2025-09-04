@@ -88,6 +88,10 @@ const CampaignMenu: React.FC = () => {
 
   const handleCreateAndEditCampaign = async (campaign: Campaign) => {
     console.log('Handling campaign create/edit:', campaign)
+    console.log('🎯 CampaignMenu - Received zafra:', campaign.zafra)
+    console.log('🎯 CampaignMenu - Zafra type:', typeof campaign.zafra)
+    console.log('🎯 CampaignMenu - Is Array?:', Array.isArray(campaign.zafra))
+    
     try {
       if (campaign._rev) {
         console.log('Editing existing campaign:', campaign)
@@ -102,6 +106,7 @@ const CampaignMenu: React.FC = () => {
       campaign._id = `campaign:${uuid}`
       campaign.campaignId = `campaign:${uuid}`
       console.log('Creating new campaign with ID:', campaign._id)
+      console.log('🎯 CampaignMenu - Campaign to save:', campaign)
       await addCampaign(campaign)
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
       saveCampaignToLS(campaign) // Guardar en localStorage
