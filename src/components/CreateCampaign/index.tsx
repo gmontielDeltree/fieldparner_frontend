@@ -64,59 +64,30 @@ const CreateCampaignModal = ({
   const generateZafraOptions = () => {
     const baseOptions = [];
     
-    // Si hay fechas de campaña, generar años agrícolas relevantes
+    // Opciones de zafras simplificadas
+    const zafrasPredefinidas = [
+      { value: "fina_invierno", label: "Fina Invierno", category: "Zafras", months: [4,5,6,7] },
+      { value: "fina_verano", label: "Fina Verano", category: "Zafras", months: [10,11,0,1] },
+      { value: "gruesa_verano", label: "Gruesa Verano", category: "Zafras", months: [10,11,0,1,2] },
+      { value: "gruesa_invierno", label: "Gruesa Invierno", category: "Zafras", months: [4,5,6,7,8] },
+    ];
+    
+    // Si hay fechas de campaña, marcar las recomendadas
     if (startDate && endDate) {
-      const startYear = new Date(startDate).getFullYear();
-      const endYear = new Date(endDate).getFullYear();
-      
-      // Agregar años agrícolas que se superponen con el período de la campaña
-      for (let year = startYear - 1; year <= endYear; year++) {
-        baseOptions.push({
-          value: `${year}/${year + 1}`,
-          label: `${year}/${year + 1}`,
-          category: "Año Agrícola",
-          recommended: year >= startYear && year <= endYear
-        });
-      }
-      
-      // Determinar estaciones basadas en los meses
       const startMonth = new Date(startDate).getMonth();
       const endMonth = new Date(endDate).getMonth();
       
-      // Sugerir temporadas según el período
-      const seasonOptions = [
-        { value: "gruesa", label: "Gruesa (Oct-Mar)", category: "Temporada", months: [9,10,11,0,1,2] },
-        { value: "fina", label: "Fina (Abr-Sep)", category: "Temporada", months: [3,4,5,6,7,8] },
-        { value: "invierno", label: "Invierno (May-Ago)", category: "Temporada", months: [4,5,6,7] },
-        { value: "verano", label: "Verano (Nov-Feb)", category: "Temporada", months: [10,11,0,1] },
-      ];
-      
-      seasonOptions.forEach(season => {
-        const isRelevant = season.months.some(m => 
+      zafrasPredefinidas.forEach(zafra => {
+        const isRelevant = zafra.months.some(m => 
           (startMonth <= endMonth && m >= startMonth && m <= endMonth) ||
           (startMonth > endMonth && (m >= startMonth || m <= endMonth))
         );
-        baseOptions.push({ ...season, recommended: isRelevant });
+        baseOptions.push({ ...zafra, recommended: isRelevant });
       });
     } else {
-      // Sin fechas, mostrar opciones genéricas
-      baseOptions.push(
-        { value: `${currentYear - 1}/${currentYear}`, label: `${currentYear - 1}/${currentYear}`, category: "Año Agrícola" },
-        { value: `${currentYear}/${currentYear + 1}`, label: `${currentYear}/${currentYear + 1}`, category: "Año Agrícola" },
-        { value: `${currentYear + 1}/${currentYear + 2}`, label: `${currentYear + 1}/${currentYear + 2}`, category: "Año Agrícola" },
-        { value: "gruesa", label: "Gruesa (Oct-Mar)", category: "Temporada" },
-        { value: "fina", label: "Fina (Abr-Sep)", category: "Temporada" },
-        { value: "invierno", label: "Invierno (May-Ago)", category: "Temporada" },
-        { value: "verano", label: "Verano (Nov-Feb)", category: "Temporada" },
-      );
+      // Sin fechas, mostrar todas las opciones sin recomendación
+      baseOptions.push(...zafrasPredefinidas);
     }
-    
-    // Siempre agregar opciones de ciclo
-    baseOptions.push(
-      { value: "primera", label: "Primera", category: "Ciclo" },
-      { value: "segunda", label: "Segunda", category: "Ciclo" },
-      { value: "tercera", label: "Tercera", category: "Ciclo" },
-    );
     
     return baseOptions;
   };
@@ -477,13 +448,19 @@ const CreateCampaignModal = ({
                   Puedes agregar múltiples zafras o ciclos productivos
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                  • <strong>Año Agrícola:</strong> Período completo de cultivo (ej: 2024/2025)
+                  • <strong>Fina Invierno:</strong> Cultivos de invierno de ciclo corto
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Temporada:</strong> Gruesa (verano), Fina (invierno)
+                  • <strong>Fina Verano:</strong> Cultivos de verano de ciclo corto
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Ciclo:</strong> Primera, Segunda o Tercera siembra del año
+                  • <strong>Gruesa Verano:</strong> Cultivos de verano de ciclo largo
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                  • <strong>Gruesa Invierno:</strong> Cultivos de invierno de ciclo largo
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
+                  • <strong>Personalizada:</strong> Define tu propia zafra o período
                 </Typography>
               </Box>
             </Alert>

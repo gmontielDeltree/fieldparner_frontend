@@ -47,6 +47,7 @@ function PersonalFormUnified({
   showActivityType = false,
   mode = 'plan',
   activities = [],
+  selectedCampaign = null,
 }) {
   const { t } = useTranslation();
 
@@ -346,14 +347,35 @@ function PersonalFormUnified({
         {(formData.tipo === 'siembra' || formData.tipo === 'sowing' ||
           formData.tipo === 'preparado' || formData.tipo === 'preparation') && (
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label={t('Zafra')}
-                value={formData.detalles?.zafra || ''}
-                onChange={(e) => onFieldChange('zafra', e.target.value)}
-                placeholder={t('Ingrese la zafra')}
-                helperText={t('Información de la zafra correspondiente a la planificación anual')}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="zafra-label">{t('Zafra')}</InputLabel>
+                <Select
+                  labelId="zafra-label"
+                  id="zafra"
+                  value={formData.detalles?.zafra || ''}
+                  label={t('Zafra')}
+                  onChange={(e) => onFieldChange('zafra', e.target.value)}
+                >
+                  {selectedCampaign?.zafra && Array.isArray(selectedCampaign.zafra) ? (
+                    selectedCampaign.zafra.map((zafra) => (
+                      <MenuItem key={zafra} value={zafra}>
+                        {zafra}
+                      </MenuItem>
+                    ))
+                  ) : selectedCampaign?.zafra && typeof selectedCampaign.zafra === 'string' ? (
+                    <MenuItem value={selectedCampaign.zafra}>
+                      {selectedCampaign.zafra}
+                    </MenuItem>
+                  ) : (
+                    <MenuItem disabled value="">
+                      <em>{t('No hay zafras disponibles en la campaña')}</em>
+                    </MenuItem>
+                  )}
+                </Select>
+                <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
+                  {t('Seleccione la zafra de la campaña actual')}
+                </Typography>
+              </FormControl>
             </Grid>
           )}
 
