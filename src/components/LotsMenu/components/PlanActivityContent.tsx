@@ -14,6 +14,7 @@ interface PlanActivityContentProps {
   formData: any
   lotActivities: any
   setFormData: React.Dispatch<React.SetStateAction<any>>
+  selectedCampaign?: any
 }
 
 const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
@@ -24,6 +25,7 @@ const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
   formData,
   lotActivities,
   setFormData,
+  selectedCampaign,
 }) => {
   let adjustedStep = step
   if (activityType !== 'sowing' && step > 1) {
@@ -39,6 +41,7 @@ const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
           activities={lotActivities}
           setFormData={setFormData}
           showActivityType={activityType === 'application'}
+          selectedCampaign={selectedCampaign}
         />
       )
     case 1:

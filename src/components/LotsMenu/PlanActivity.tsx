@@ -789,6 +789,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             db={db}
             formData={formData}
             setFormData={setFormData}
+            selectedCampaign={selectedCampaign}
           />
         </CardBody>
 

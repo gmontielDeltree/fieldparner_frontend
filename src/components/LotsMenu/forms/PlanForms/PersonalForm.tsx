@@ -25,7 +25,7 @@ import { NumberFieldWithUnits } from '../../components/NumberField'
 import { AutocompleteCultivo } from '../../components/AutocompleteCultivo'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
-import { useBusiness } from '../../../../hooks'
+import { useBusiness, useAppSelector } from '../../../../hooks'
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -47,8 +47,19 @@ function PersonalFormUnified({
   showActivityType = false,
   mode = 'plan',
   activities = [],
+  selectedCampaign = null,
 }) {
   const { t } = useTranslation();
+  
+  // Obtener la campaña seleccionada del store si no viene por props
+  const campaignFromStore = useAppSelector((state) => state.campaign.selectedCampaign);
+  const campaign = selectedCampaign || campaignFromStore;
+  
+  // Debug log para verificar la campaña
+  console.log('🔍 PersonalForm - campaign:', campaign);
+  console.log('🔍 PersonalForm - campaign.zafra:', campaign?.zafra);
+  console.log('🔍 PersonalForm - selectedCampaign prop:', selectedCampaign);
+  console.log('🔍 PersonalForm - campaignFromStore:', campaignFromStore);
 
   // Se utiliza el operador opcional para evitar error si formData.detalles es undefined
   const [fertilizationChecked, setFertilizationChecked] = useState(
@@ -346,14 +357,35 @@ function PersonalFormUnified({
         {(formData.tipo === 'siembra' || formData.tipo === 'sowing' ||
           formData.tipo === 'preparado' || formData.tipo === 'preparation') && (
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label={t('Zafra')}
-                value={formData.detalles?.zafra || ''}
-                onChange={(e) => onFieldChange('zafra', e.target.value)}
-                placeholder={t('Ingrese la zafra')}
-                helperText={t('Información de la zafra correspondiente a la planificación anual')}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="zafra-label">{t('Zafra')}</InputLabel>
+                <Select
+                  labelId="zafra-label"
+                  id="zafra"
+                  value={formData.detalles?.zafra || ''}
+                  label={t('Zafra')}
+                  onChange={(e) => onFieldChange('zafra', e.target.value)}
+                >
+                  {campaign?.zafra && Array.isArray(campaign.zafra) ? (
+                    campaign.zafra.map((zafra) => (
+                      <MenuItem key={zafra} value={zafra}>
+                        {zafra}
+                      </MenuItem>
+                    ))
+                  ) : campaign?.zafra && typeof campaign.zafra === 'string' ? (
+                    <MenuItem value={campaign.zafra}>
+                      {campaign.zafra}
+                    </MenuItem>
+                  ) : (
+                    <MenuItem disabled value="">
+                      <em>{t('No hay zafras disponibles en la campaña')}</em>
+                    </MenuItem>
+                  )}
+                </Select>
+                <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
+                  {t('Seleccione la zafra de la campaña actual')}
+                </Typography>
+              </FormControl>
             </Grid>
           )}
 

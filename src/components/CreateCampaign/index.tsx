@@ -55,6 +55,7 @@ const CreateCampaignModal = ({
   const [currentZafra, setCurrentZafra] = useState("");
   const [customZafra, setCustomZafra] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [showZafraWarning, setShowZafraWarning] = useState(false);
   const { t } = useTranslation();
 
   // Lista de zafras comunes y sugerencias
@@ -64,59 +65,30 @@ const CreateCampaignModal = ({
   const generateZafraOptions = () => {
     const baseOptions = [];
     
-    // Si hay fechas de campaña, generar años agrícolas relevantes
+    // Opciones de zafras simplificadas
+    const zafrasPredefinidas = [
+      { value: "fina_invierno", label: "Fina Invierno", category: "Zafras", months: [4,5,6,7] },
+      { value: "fina_verano", label: "Fina Verano", category: "Zafras", months: [10,11,0,1] },
+      { value: "gruesa_verano", label: "Gruesa Verano", category: "Zafras", months: [10,11,0,1,2] },
+      { value: "gruesa_invierno", label: "Gruesa Invierno", category: "Zafras", months: [4,5,6,7,8] },
+    ];
+    
+    // Si hay fechas de campaña, marcar las recomendadas
     if (startDate && endDate) {
-      const startYear = new Date(startDate).getFullYear();
-      const endYear = new Date(endDate).getFullYear();
-      
-      // Agregar años agrícolas que se superponen con el período de la campaña
-      for (let year = startYear - 1; year <= endYear; year++) {
-        baseOptions.push({
-          value: `${year}/${year + 1}`,
-          label: `${year}/${year + 1}`,
-          category: "Año Agrícola",
-          recommended: year >= startYear && year <= endYear
-        });
-      }
-      
-      // Determinar estaciones basadas en los meses
       const startMonth = new Date(startDate).getMonth();
       const endMonth = new Date(endDate).getMonth();
       
-      // Sugerir temporadas según el período
-      const seasonOptions = [
-        { value: "gruesa", label: "Gruesa (Oct-Mar)", category: "Temporada", months: [9,10,11,0,1,2] },
-        { value: "fina", label: "Fina (Abr-Sep)", category: "Temporada", months: [3,4,5,6,7,8] },
-        { value: "invierno", label: "Invierno (May-Ago)", category: "Temporada", months: [4,5,6,7] },
-        { value: "verano", label: "Verano (Nov-Feb)", category: "Temporada", months: [10,11,0,1] },
-      ];
-      
-      seasonOptions.forEach(season => {
-        const isRelevant = season.months.some(m => 
+      zafrasPredefinidas.forEach(zafra => {
+        const isRelevant = zafra.months.some(m => 
           (startMonth <= endMonth && m >= startMonth && m <= endMonth) ||
           (startMonth > endMonth && (m >= startMonth || m <= endMonth))
         );
-        baseOptions.push({ ...season, recommended: isRelevant });
+        baseOptions.push({ ...zafra, recommended: isRelevant });
       });
     } else {
-      // Sin fechas, mostrar opciones genéricas
-      baseOptions.push(
-        { value: `${currentYear - 1}/${currentYear}`, label: `${currentYear - 1}/${currentYear}`, category: "Año Agrícola" },
-        { value: `${currentYear}/${currentYear + 1}`, label: `${currentYear}/${currentYear + 1}`, category: "Año Agrícola" },
-        { value: `${currentYear + 1}/${currentYear + 2}`, label: `${currentYear + 1}/${currentYear + 2}`, category: "Año Agrícola" },
-        { value: "gruesa", label: "Gruesa (Oct-Mar)", category: "Temporada" },
-        { value: "fina", label: "Fina (Abr-Sep)", category: "Temporada" },
-        { value: "invierno", label: "Invierno (May-Ago)", category: "Temporada" },
-        { value: "verano", label: "Verano (Nov-Feb)", category: "Temporada" },
-      );
+      // Sin fechas, mostrar todas las opciones sin recomendación
+      baseOptions.push(...zafrasPredefinidas);
     }
-    
-    // Siempre agregar opciones de ciclo
-    baseOptions.push(
-      { value: "primera", label: "Primera", category: "Ciclo" },
-      { value: "segunda", label: "Segunda", category: "Ciclo" },
-      { value: "tercera", label: "Tercera", category: "Ciclo" },
-    );
     
     return baseOptions;
   };
@@ -127,6 +99,11 @@ const CreateCampaignModal = ({
 
   useEffect(() => {
     if (initialData && editMode) {
+      console.log('🔧 CreateCampaign - Loading initial data for edit:', initialData);
+      console.log('🔧 CreateCampaign - Initial zafra value:', initialData.zafra);
+      console.log('🔧 CreateCampaign - Initial zafra type:', typeof initialData.zafra);
+      console.log('🔧 CreateCampaign - Is zafra array?:', Array.isArray(initialData.zafra));
+      
       setName(initialData.name);
       setDescription(initialData.description);
       setZoneId(initialData.zoneId);
@@ -136,13 +113,18 @@ const CreateCampaignModal = ({
       // Si zafra es string, convertir a array. Si es array, usar directamente
       if (initialData.zafra) {
         if (typeof initialData.zafra === 'string') {
+          console.log('🔧 CreateCampaign - Converting string zafra to array');
           setZafras([initialData.zafra]);
         } else if (Array.isArray(initialData.zafra)) {
+          console.log('🔧 CreateCampaign - Setting zafra array:', initialData.zafra);
           setZafras(initialData.zafra);
         }
+      } else {
+        console.log('🔧 CreateCampaign - No zafra found in initial data, setting empty array');
+        setZafras([]);
       }
     }
-  }, [initialData]);
+  }, [initialData, editMode]);
 
   const handleAddZafra = () => {
     const zafraToAdd = showCustomInput ? customZafra.trim() : currentZafra;
@@ -167,8 +149,20 @@ const CreateCampaignModal = ({
   };
 
   const handleCreate = () => {
+    console.log('🚀 CreateCampaign - handleCreate called');
+    console.log('🚀 CreateCampaign - zafras to save:', zafras);
+    console.log('🚀 CreateCampaign - zafras length:', zafras.length);
+    
+    // Verificar si no hay zafras y mostrar warning
+    if (zafras.length === 0) {
+      setShowZafraWarning(true);
+      // Auto-ocultar el warning después de 5 segundos
+      setTimeout(() => setShowZafraWarning(false), 5000);
+      return; // No continuar con la creación
+    }
+    
     if (editMode) {
-      onCreate({
+      const campaignData = {
         ...initialData,
         campaignId: name,
         name,
@@ -178,9 +172,11 @@ const CreateCampaignModal = ({
         endDate,
         state,
         zafra: zafras, // Ahora enviamos el array de zafras
-      });
+      };
+      console.log('🚀 CreateCampaign - Sending campaign data (edit):', campaignData);
+      onCreate(campaignData);
     } else {
-      onCreate({
+      const campaignData = {
         campaignId: name,
         name,
         description,
@@ -189,7 +185,9 @@ const CreateCampaignModal = ({
         endDate,
         state,
         zafra: zafras, // Ahora enviamos el array de zafras
-      });
+      };
+      console.log('🚀 CreateCampaign - Sending campaign data (create):', campaignData);
+      onCreate(campaignData);
     }
     // Reset form
     setName("");
@@ -202,6 +200,7 @@ const CreateCampaignModal = ({
     setCurrentZafra("");
     setCustomZafra("");
     setShowCustomInput(false);
+    setShowZafraWarning(false);
   };
 
   function onDeleteHandler(
@@ -387,20 +386,36 @@ const CreateCampaignModal = ({
                     </li>
                   )}
                 />
-                <Tooltip title="Agregar zafra seleccionada">
-                  <IconButton 
-                    color="primary" 
-                    onClick={handleAddZafra}
-                    disabled={!currentZafra}
-                    sx={{ 
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      '&:hover': { bgcolor: 'primary.dark' },
-                      '&:disabled': { bgcolor: 'grey.300' }
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
+                <Tooltip title={currentZafra ? "Clic para agregar esta zafra" : "Primero seleccione una zafra"}>
+                  <span>
+                    <Button 
+                      variant="contained"
+                      color="primary" 
+                      onClick={handleAddZafra}
+                      disabled={!currentZafra}
+                      startIcon={<AddIcon />}
+                      sx={{ 
+                        minWidth: 100,
+                        animation: currentZafra && zafras.length === 0 ? 'pulse 1.5s infinite' : 'none',
+                        '@keyframes pulse': {
+                          '0%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                          '50%': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 4px 8px rgba(25, 118, 210, 0.4)',
+                          },
+                          '100%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                        }
+                      }}
+                    >
+                      Agregar
+                    </Button>
+                  </span>
                 </Tooltip>
                 <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
                 <Tooltip title="Agregar zafra personalizada">
@@ -433,20 +448,36 @@ const CreateCampaignModal = ({
                   placeholder="Ej: 2026/2027, Otoño, Tardía..."
                   autoFocus
                 />
-                <Tooltip title="Agregar">
-                  <IconButton 
-                    color="primary" 
-                    onClick={handleAddZafra}
-                    disabled={!customZafra.trim()}
-                    sx={{ 
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      '&:hover': { bgcolor: 'primary.dark' },
-                      '&:disabled': { bgcolor: 'grey.300' }
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
+                <Tooltip title={customZafra.trim() ? "Clic para agregar esta zafra" : "Escriba el nombre de la zafra"}>
+                  <span>
+                    <Button 
+                      variant="contained"
+                      color="primary" 
+                      onClick={handleAddZafra}
+                      disabled={!customZafra.trim()}
+                      startIcon={<AddIcon />}
+                      sx={{ 
+                        minWidth: 100,
+                        animation: customZafra.trim() && zafras.length === 0 ? 'pulse 1.5s infinite' : 'none',
+                        '@keyframes pulse': {
+                          '0%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                          '50%': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 4px 8px rgba(25, 118, 210, 0.4)',
+                          },
+                          '100%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                        }
+                      }}
+                    >
+                      Agregar
+                    </Button>
+                  </span>
                 </Tooltip>
                 <Tooltip title="Cancelar">
                   <IconButton 
@@ -477,13 +508,19 @@ const CreateCampaignModal = ({
                   Puedes agregar múltiples zafras o ciclos productivos
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                  • <strong>Año Agrícola:</strong> Período completo de cultivo (ej: 2024/2025)
+                  • <strong>Fina Invierno:</strong> Cultivos de invierno de ciclo corto
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Temporada:</strong> Gruesa (verano), Fina (invierno)
+                  • <strong>Fina Verano:</strong> Cultivos de verano de ciclo corto
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Ciclo:</strong> Primera, Segunda o Tercera siembra del año
+                  • <strong>Gruesa Verano:</strong> Cultivos de verano de ciclo largo
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
+                  • <strong>Gruesa Invierno:</strong> Cultivos de invierno de ciclo largo
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
+                  • <strong>Personalizada:</strong> Define tu propia zafra o período
                 </Typography>
               </Box>
             </Alert>
@@ -513,6 +550,28 @@ const CreateCampaignModal = ({
             <MenuItem value={"Inactive"}>{t("inactive")}</MenuItem>
           </Select>
         </FormControl>
+        
+        {/* Warning si no hay zafras */}
+        {showZafraWarning && (
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              mx: 2, 
+              mb: 2,
+              '& .MuiAlert-icon': { fontSize: 24 }
+            }}
+            onClose={() => setShowZafraWarning(false)}
+          >
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                ⚠️ {t('Debe agregar al menos una zafra')}
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                {t('Seleccione una zafra y haga clic en el botón "+" para agregarla antes de guardar')}
+              </Typography>
+            </Box>
+          </Alert>
+        )}
       </DialogContent>
       <DialogActions>
         {/* {editMode && onDelete && */}
