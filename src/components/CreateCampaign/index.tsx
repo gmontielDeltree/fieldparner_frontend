@@ -98,6 +98,11 @@ const CreateCampaignModal = ({
 
   useEffect(() => {
     if (initialData && editMode) {
+      console.log('🔧 CreateCampaign - Loading initial data for edit:', initialData);
+      console.log('🔧 CreateCampaign - Initial zafra value:', initialData.zafra);
+      console.log('🔧 CreateCampaign - Initial zafra type:', typeof initialData.zafra);
+      console.log('🔧 CreateCampaign - Is zafra array?:', Array.isArray(initialData.zafra));
+      
       setName(initialData.name);
       setDescription(initialData.description);
       setZoneId(initialData.zoneId);
@@ -107,13 +112,18 @@ const CreateCampaignModal = ({
       // Si zafra es string, convertir a array. Si es array, usar directamente
       if (initialData.zafra) {
         if (typeof initialData.zafra === 'string') {
+          console.log('🔧 CreateCampaign - Converting string zafra to array');
           setZafras([initialData.zafra]);
         } else if (Array.isArray(initialData.zafra)) {
+          console.log('🔧 CreateCampaign - Setting zafra array:', initialData.zafra);
           setZafras(initialData.zafra);
         }
+      } else {
+        console.log('🔧 CreateCampaign - No zafra found in initial data, setting empty array');
+        setZafras([]);
       }
     }
-  }, [initialData]);
+  }, [initialData, editMode]);
 
   const handleAddZafra = () => {
     const zafraToAdd = showCustomInput ? customZafra.trim() : currentZafra;

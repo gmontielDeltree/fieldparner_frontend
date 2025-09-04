@@ -95,11 +95,21 @@ export const useCampaign = () => {
   };
 
   const updateCampaign = async (campaign: Campaign) => {
+    console.log("📝 useCampaign - Updating campaign:", campaign);
+    console.log("📝 useCampaign - Update zafra:", campaign.zafra);
     setIsLoading(true);
     try {
       if (import.meta.env.PROD && !user) throw new Error("User not found");
 
-      await dbContext.campaigns.put(campaign);
+      // Asegurar que zafra se preserve
+      const campaignToUpdate = {
+        ...campaign,
+        zafra: campaign.zafra || []
+      };
+      
+      console.log("📝 useCampaign - Campaign to update in DB:", campaignToUpdate);
+
+      await dbContext.campaigns.put(campaignToUpdate);
       await getCampaigns();
       NotificationService.showUpdated({}, t("campaign_updated_successfully"));
     } catch (error) {

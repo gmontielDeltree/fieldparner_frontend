@@ -211,6 +211,9 @@ const CampaignMenu: React.FC = () => {
 
   const handleEditClick = (campaignToEdit: Campaign) => {
     console.log('Edit clicked for campaign:', campaignToEdit._id)
+    console.log('🎨 Campaign to edit full object:', campaignToEdit)
+    console.log('🎨 Campaign zafra field:', campaignToEdit.zafra)
+    console.log('🎨 Campaign zafra type:', typeof campaignToEdit.zafra)
     setCampaignToEdit(campaignToEdit)
     setIsEditModalOpen(true)
     handleCloseMenu()
