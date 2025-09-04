@@ -141,16 +141,40 @@ export const useSupply = () => {
                             { isDefault: true }
                         ]
                     }
-                })
+                }),
+                // AGREGAR: También buscar cultivos
+                dbContext.crops.allDocs({ include_docs: true })
             ]);
             
-            const [suppliesStock, supplies] = promisesResult;
+            const [suppliesStock, supplies, cropsResult] = promisesResult;
+            
+            // Convertir cultivos al formato de supplies
+            const crops = cropsResult.rows.map(row => ({
+                ...row.doc,
+                _id: row.doc._id || row.id,
+                name: row.doc.descriptionES || row.doc.descriptionEN || 'Cultivo',
+                supplyType: 'Cultivo',
+                isCrop: true,
+                // Agregar otros campos necesarios para compatibilidad
+                accountId: user?.accountId,
+                unit: row.doc.unit || 'kg'
+            }));
             const supplyIds = suppliesStock.docs.map(s => s.id);//Obtenemos los id de insumos
             const groupSupplyIds = Array.from(new Set(supplyIds));//Agrupamos por id de insumo
+            
+            // Combinar supplies y crops en un solo array
+            const allItems = [...supplies.docs, ...crops];
+            
             groupSupplyIds.forEach(id => {
                 const foundSupplyStock = suppliesStock.docs.filter(m => (m.id === id)); //Obtenemos todo los stock de ese insumo
-                const foundSupply = supplies.docs.find(m => (m._id === id));
-                if (!foundSupply) return;
+                
+                // Buscar tanto en supplies como en crops
+                const foundSupply = allItems.find(m => (m._id === id));
+                
+                if (!foundSupply) {
+                    console.log('⚠️ No se encontró supply/crop para el stock con ID:', id);
+                    return;
+                }
                 const totalCurrentStock = foundSupplyStock.reduce((acc, stock) => acc + stock.currentStock, 0);
                 const totalReservedStock = foundSupplyStock.reduce((acc, stock) => acc + stock.reservedStock, 0);
                 stockBySupplies.push({
@@ -189,9 +213,22 @@ export const useSupply = () => {
                             { isDefault: true }
                         ]
                     }
-                })
+                }),
+                // AGREGAR: También buscar cultivos
+                dbContext.crops.allDocs({ include_docs: true })
             ]);
-            const [stockBySupplies, responseDeposits, responseSupplies] = responseAll;
+            const [stockBySupplies, responseDeposits, responseSupplies, cropsResult] = responseAll;
+            
+            // Convertir cultivos al formato de supplies
+            const crops = cropsResult.rows.map(row => ({
+                ...row.doc,
+                _id: row.doc._id || row.id,
+                name: row.doc.descriptionES || row.doc.descriptionEN || 'Cultivo',
+                supplyType: 'Cultivo',
+                isCrop: true,
+                accountId: user?.accountId,
+                unit: row.doc.unit || 'kg'
+            }));
             //Obtenemos los idDepositos y agrupamos
             const depositsId = stockBySupplies.docs.map(s => s.depositId);
             const groupDepositsId = Array.from(new Set(depositsId));
@@ -201,8 +238,16 @@ export const useSupply = () => {
                 const idInsumosDelDepositoConStock = foundDepositStock.map(s => s.id); //Insumos que tienen stock en ese deposito
                 const groupInsumosId = Array.from(new Set(idInsumosDelDepositoConStock)); //Agrupamos por id de insumo
                 groupInsumosId.forEach(idInsumo => {
-                    const foundSupply = responseSupplies.docs.find(m => (m._id === idInsumo)); //Obtenemos el insumo
-                    if (!foundSupply) return;
+                    // Combinar supplies y crops en un solo array
+                    const allItems = [...responseSupplies.docs, ...crops];
+                    
+                    // Buscar tanto en supplies como en crops
+                    const foundSupply = allItems.find(m => (m._id === idInsumo)); //Obtenemos el insumo o cultivo
+                    
+                    if (!foundSupply) {
+                        console.log('⚠️ No se encontró supply/crop para el stock con ID:', idInsumo);
+                        return;
+                    }
                     const foundDeposit = responseDeposits.docs.find(m => (m._id === depositId)); // Obtenemos el deposito
                     if (!foundDeposit) return;
                     const totalCurrentStock = foundDepositStock.filter(x => x.id === idInsumo).reduce((acc, stock) => acc + stock.currentStock, 0);

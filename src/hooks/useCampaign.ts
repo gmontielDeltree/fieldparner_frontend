@@ -18,23 +18,33 @@ export const useCampaign = () => {
       if (import.meta.env.PROD) {
         if (!user) throw new Error("User not found");
       }
-      // accountId: import.meta.env.PROD
-      // ? user?.accountId
-      // : "ec3590d5c24e5bec5a21299d30013596"
+      
+      const accountId = import.meta.env.PROD
+        ? user?.accountId
+        : "ec3590d5c24e5bec5a21299d30013596";
+      
+      console.log("Getting campaigns for accountId:", accountId);
+      
       const result = await dbContext.campaigns.find({
         selector: {
-          accountId: user?.accountId
+          accountId: accountId
         }
       });
 
-      if (result.docs.length) {
-        const documents: Campaign[] = result.docs.map((doc) => doc as Campaign);
-        setCampaigns(documents);
+      console.log("Found campaigns:", result.docs.length);
+      
+      const documents: Campaign[] = result.docs.map((doc) => doc as Campaign);
+      setCampaigns(documents);
+      
+      // Siempre actualizar el estado, incluso si no hay documentos
+      if (result.docs.length === 0) {
+        console.log("No campaigns found for account");
+        setCampaigns([]);
       }
 
       setIsLoading(false);
     } catch (error) {
-      console.error(error);
+      console.error("Error getting campaigns:", error);
       NotificationService.showError(
         t("no_campaigns_record"),
         {},
@@ -42,6 +52,7 @@ export const useCampaign = () => {
       );
       setIsLoading(false);
       setError(error);
+      setCampaigns([]); // Asegurar que se limpia el estado en caso de error
     }
   };
 
