@@ -171,7 +171,7 @@ export const VehiclePage: React.FC = () => {
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!validateRequiredFields()) return;
-
+ 
       if (formulario._id) {
         updateVehicle(formulario);
         handleUpdateFiles();

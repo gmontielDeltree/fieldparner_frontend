@@ -128,7 +128,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
             withdrawalItemsCount: withdrawalItems.length,
             hasPrinted
         });
-        debugger;
+    
         setHasPrinted(true);
 
         // 1) Tomo los nombres impresos

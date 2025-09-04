@@ -59,8 +59,14 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
         }));
     }
 
-
-
+    const updateMaintenance = (id: string, updatedMaintenance: Mantenimiento) => {
+        setVehiculo(prevState => ({
+            ...prevState,
+            maintenances: prevState.maintenances.map(
+                x => x.id === id ? updatedMaintenance : x
+            )
+        }));
+    };
 
     return (
         <>
@@ -148,10 +154,11 @@ export const Mantenimientos: React.FC<MantenimientosProps> = ({
             <Box component="div" sx={{ mt: 3 }}>
                 <MaintenanceTable
                     key="table-mantenimiento"
-                    columns={[t('date'), t('kilometers'), t('description'), t('observations'), t('nextMaintenance')]}
+                    columns={[ t('realized'), t('date'), t('kilometers'), t('description'), t('observations'), t('nextMaintenance')]}
                     rows={vehiculo.maintenances}
                     handleAddRow={handleAddMaintenance}
                     deleteRow={handleDeleteMaintenance}
+                    updateMaintenance={updateMaintenance}
                 />
             </Box>
         </>

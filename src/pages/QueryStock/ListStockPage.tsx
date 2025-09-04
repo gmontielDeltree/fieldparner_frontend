@@ -72,7 +72,7 @@ export const ListStockPage: React.FC = () => {
     stockBySupplies,
     stockByDeposits,
     getSupplyStockByDeposits,
-    getStockBySupplies,
+    getStockData,
   } = useSupply();
   const [tabValue, setTabValue] = React.useState(0);
   // const [showStockValueZero, setShowStockValueZero] = React.useState(false);
@@ -117,7 +117,7 @@ export const ListStockPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (tabValue === 0) getStockBySupplies();
+    if (tabValue === 0) getStockData();
     else getSupplyStockByDeposits();
   }, [tabValue]);
 

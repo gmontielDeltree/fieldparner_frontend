@@ -1256,6 +1256,7 @@
   "back": "Voltar",
   "no_services_found": "Nenhum serviço encontrado",
   "no_services_in_campaign_activities": "As atividades desta campanha não possuem serviços associados.",
-  "create_planning_activities_with_services": "Para obter valores reais, crie atividades planejadas que incluam serviços no módulo de planejamento."
+  "create_planning_activities_with_services": "Para obter valores reais, crie atividades planejadas que incluam serviços no módulo de planejamento.",
+  "realized": "Feito"
 }
 

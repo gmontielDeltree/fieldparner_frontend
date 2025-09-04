@@ -27,11 +27,12 @@ export interface TypeVehicle extends Document {
 
 export interface Mantenimiento {
   id: string;
-  fecha: string;
+  fechaCreado: string;
   kilometros: number;
   descripcion: string;
   observacion: string | null;
-  proximo: string;
+  fechaProximoMantenimiento: string;
+  realizado: boolean;
 }
 
 export interface RowMantenimiento extends Mantenimiento {

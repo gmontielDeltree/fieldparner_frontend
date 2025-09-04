@@ -7,11 +7,13 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Fab, Grid, IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
-import { Add as AddIcon, Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material';
-import { Mantenimiento, RowData } from '@types';
+import { Checkbox, Fab, IconButton, TextField, Tooltip } from '@mui/material';
+import { Add as AddIcon, Delete as DeleteIcon, } from '@mui/icons-material';
+import { Mantenimiento } from '@types';
 import { useForm } from '../../hooks';
-import { useTranslation } from 'react-i18next';
+
+import uuid4 from 'uuid4';
+
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -24,7 +26,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     },
 }));
 
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
+const StyledTableRow = styled(TableRow)(() => ({
     // '&:nth-of-type(odd)': {
     //     backgroundColor: theme.palette.action.hover,
     // },
@@ -40,35 +42,41 @@ export interface MaintenanceTableProps {
     rows: Mantenimiento[];
     handleAddRow: (value: Mantenimiento) => void;
     deleteRow: (id: string) => void;
+    updateMaintenance: (id: string, updatedMaintenance: Mantenimiento) => void;
 }
 
 const initialState: Mantenimiento = {
-    id: new Date().getTime().toString(),
-    fecha: '',
+    id: '',
+    fechaCreado: '',
     kilometros: 0,
     descripcion: '',
     observacion: '',
-    proximo: ''
+    fechaProximoMantenimiento: '',
+    realizado: false
 };
 
 const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
     columns,
     rows,
     handleAddRow,
-    deleteRow }) => {
+    deleteRow,
+    updateMaintenance
+}) => {
 
-    const { fecha,
+    const { fechaCreado,
         kilometros,
         descripcion,
         observacion,
-        proximo,
+        fechaProximoMantenimiento,
         formulario,
+        realizado,
         reset,
-        handleInputChange } = useForm<Mantenimiento>(initialState);
+        handleInputChange,
+        handleCheckboxChange } = useForm<Mantenimiento>(initialState);
 
     const handleAddMantenimiento = (): void => {
-        if (!fecha && (kilometros !== 0) && !descripcion && !proximo) return;
-        handleAddRow(formulario);
+        if (!fechaCreado && (kilometros !== 0) && !descripcion && !fechaProximoMantenimiento) return;
+        handleAddRow({ ...formulario, id: uuid4() });
         reset();
     }
 
@@ -87,13 +95,20 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                 </TableHead>
                 <TableBody>
                     <StyledTableRow key="new-maintenace">
+                        <StyledTableCell align='center' sx={{ minWidth: 150, maxWidth: 180 }}>
+                            <Checkbox
+                                name="realizado"
+                                checked={realizado}
+                                onChange={handleCheckboxChange}
+                            />
+                        </StyledTableCell>
                         <StyledTableCell sx={{ minWidth: 150, maxWidth: 180 }}>
                             <TextField
                                 variant="outlined"
                                 size='small'
                                 type='date'
-                                name="fecha"
-                                value={fecha}
+                                name="fechaCreado"
+                                value={fechaCreado}
                                 onChange={handleInputChange}
                                 fullWidth />
                         </StyledTableCell>
@@ -133,8 +148,8 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                                 variant="outlined"
                                 size='small'
                                 type='date'
-                                name="proximo"
-                                value={proximo}
+                                name="fechaProximoMantenimiento"
+                                value={fechaProximoMantenimiento}
                                 onChange={handleInputChange}
                                 fullWidth />
                         </StyledTableCell>
@@ -143,6 +158,7 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                                 color="success"
                                 aria-label="add"
                                 size='small'
+                                disabled={!fechaCreado || (kilometros === 0) || !descripcion || !fechaProximoMantenimiento}
                                 onClick={handleAddMantenimiento}
                             >
                                 <AddIcon />
@@ -151,6 +167,15 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                     </StyledTableRow>
                     {rows.map((row) => (
                         <StyledTableRow key={row.id}>
+                            <TableCell align='center' sx={{ p: '5px', minWidth: 100, maxWidth: 100 }}>
+                                {<Checkbox
+                                    name="realizado"
+                                    checked={row.realizado}
+                                    onChange={(_e, checked) => {
+                                        updateMaintenance(row.id, { ...row, realizado: checked });
+                                    }}
+                                />}
+                            </TableCell>
                             <TableCell
                                 align='center'
                                 sx={{
@@ -158,57 +183,19 @@ const MaintenanceTable: React.FC<MaintenanceTableProps> = ({
                                     minWidth: 150,
                                     maxWidth: 180
                                 }}>
-                                {/* <TextField
-                                    variant="outlined"
-                                    size='small'
-                                    type='date'
-                                    name="fecha"
-                                    value={row.fecha}
-                                    // onChange={handleInputChange}
-                                    // InputProps={{
-                                    //     startAdornment: <InputAdornment position="start" />,
-                                    // }}
-                                    fullWidth /> */}
-                                {row.fecha}
+                                {row.fechaCreado}
                             </TableCell>
                             <TableCell align='center' sx={{ p: '5px', minWidth: 100, maxWidth: 110 }}>
-                                {/* <TextField
-                                    variant="outlined"
-                                    size='small'
-                                    type='text'
-                                    name="kilometros"
-                                    value={row.kilometros} /> */}
                                 {row.kilometros}
                             </TableCell>
                             <TableCell align='center' sx={{ p: '5px', minWidth: 300, maxWidth: 350 }}>
-                                {/* <TextField
-                                    variant="outlined"
-                                    type='text'
-                                    size='small'
-                                    name="descripcion"
-                                    value={row.descripcion}
-                                    fullWidth /> */}
                                 {row.descripcion}
                             </TableCell>
                             <TableCell align='center' sx={{ p: '5px', minWidth: 250, maxWidth: 300 }}>
-                                {/* <TextField
-                                    variant="outlined"
-                                    type='text'
-                                    size='small'
-                                    name="observacion"
-                                    value={row.observacion}
-                                    fullWidth /> */}
                                 {row.observacion}
                             </TableCell>
                             <TableCell align='center' sx={{ p: '5px', minWidth: 150, maxWidth: 180 }}>
-                                {/* <TextField
-                                    variant="outlined"
-                                    size='small'
-                                    type='date'
-                                    name="proximo"
-                                    value={row.fecha}
-                                    fullWidth /> */}
-                                {row.proximo}
+                                {row.fechaProximoMantenimiento}
                             </TableCell>
                             <TableCell align='center' sx={{ p: '5px' }}>
                                 <Tooltip title="Eliminar">

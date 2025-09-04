@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { showFieldList, hideFieldList } from '../../redux/fieldsList'
 import { useAppSelector, useAuthStore } from '../../hooks'
+import { useNotifications } from '../../contexts/NotificationContext'
 import { useNavigate } from 'react-router-dom'
 import {
   Badge,
@@ -36,6 +37,7 @@ import {
 import { NavBarProps } from '../../types'
 import CompanyNavBar from '../CompanyNavBar'
 import CampaignMenu from './components/CampaignMenu'
+import { NotificationPopover } from '../Notifications'
 
 // Animación para el fondo "parpadeante" o con un sutil cambio de color
 const backgroundPulse = keyframes({
@@ -84,8 +86,8 @@ export const NavBar: React.FC<NavBarProps> = ({
 }) => {
   const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
-  const [hasNotifications, setHasNotifications] = useState(true)
-  const [notificationCount, setNotificationCount] = useState(3)
+  const { unreadCount, isConnected } = useNotifications()
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLElement | null>(null)
   const [language, setLanguage] = useState(
     localStorage.getItem('language') || 'es',
   )
@@ -96,6 +98,7 @@ export const NavBar: React.FC<NavBarProps> = ({
     null,
   )
   const isLanguageMenuOpen = Boolean(languageAnchorEl)
+  const isNotificationPopoverOpen = Boolean(notificationAnchorEl)
 
   useEffect(() => {
     i18n.changeLanguage(localStorage.getItem('language') || 'es')
@@ -116,9 +119,12 @@ export const NavBar: React.FC<NavBarProps> = ({
     setLanguageAnchorEl(null)
   }
 
-  const handleNotificationClick = () => {
-    setHasNotifications(!hasNotifications)
-    setNotificationCount(hasNotifications ? 0 : 3)
+  const handleNotificationClick = (event: React.MouseEvent<HTMLElement>) => {
+    setNotificationAnchorEl(event.currentTarget)
+  }
+
+  const handleNotificationClose = () => {
+    setNotificationAnchorEl(null)
   }
 
   const handleLogout = () => {
@@ -239,7 +245,7 @@ export const NavBar: React.FC<NavBarProps> = ({
               leaveDelay={200}
             >
               <IconButton
-                color={hasNotifications ? 'secondary' : 'default'}
+                color={unreadCount > 0 ? 'secondary' : 'default'}
                 onClick={handleNotificationClick}
                 sx={{
                   ml: 2,
@@ -247,18 +253,41 @@ export const NavBar: React.FC<NavBarProps> = ({
                   '&:hover': {
                     transform: 'scale(1.1)',
                   },
-                  ...(hasNotifications ? pulseAnimation : {}),
+                  ...(unreadCount > 0 ? pulseAnimation : {}),
+                  position: 'relative',
                 }}
               >
-                <Badge badgeContent={notificationCount} color="error">
-                  {hasNotifications ? (
+                <Badge badgeContent={unreadCount} color="error">
+                  {unreadCount > 0 ? (
                     <NotificationsActive />
                   ) : (
                     <Notifications />
                   )}
                 </Badge>
+                {/* Indicador de conexión */}
+                {isConnected && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 20,
+                      width: 8,
+                      height: 8,
+                      backgroundColor: 'success.main',
+                      borderRadius: '50%',
+                      zIndex: 1,
+                    }}
+                  />
+                )}
               </IconButton>
             </Tooltip>
+
+            {/* Popover de notificaciones */}
+            <NotificationPopover
+              anchorEl={notificationAnchorEl}
+              open={isNotificationPopoverOpen}
+              onClose={handleNotificationClose}
+            />
 
             {/* CampaignMenu */}
             <CampaignMenu />

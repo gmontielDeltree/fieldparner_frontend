@@ -132,7 +132,7 @@ export const useAuthStore = () => {
     const token = localStorage.getItem("accessToken");
     const refreshToken = localStorage.getItem("refreshToken");
     const userSession = localStorage.getItem("user_session");
-
+    
     if (!token || !refreshToken || !userSession) return dispatch(onLogout(""));
 
     dispatch(onChecking());
@@ -156,7 +156,8 @@ export const useAuthStore = () => {
 
       if (response.status === HttpStatusCode.Created) {
         const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
-        localStorage.setItem("accessToken", response.data.AccessToken);
+        //Si no devuelve AccessToken, se utiliza el token actual
+        localStorage.setItem("accessToken", response.data.AccessToken || token);
         localStorage.setItem("token_expiration", expiresIn.toString());
       }
     } catch (error) {

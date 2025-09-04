@@ -11,7 +11,7 @@ export const AppRouter: React.FC = () => {
         { path: "*", element:<Navigate to="/init/*" replace />}
     ],);
 
-    console.count("AppRouter Render")
+    
     return <RouterProvider router={router} />
 
 }

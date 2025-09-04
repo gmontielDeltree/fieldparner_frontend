@@ -4,6 +4,7 @@ interface ImportMetaEnv {
     readonly VITE_AUTH_API: string;
     readonly VITE_COUCHDB_URL: string;
     readonly VITE_COGS_SERVER_URL: string;
+    readonly VITE_SOCKET_URL: string;
     // more env variables...
   }
   
