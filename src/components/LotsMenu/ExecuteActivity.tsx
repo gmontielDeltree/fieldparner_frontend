@@ -473,24 +473,31 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const processHarvestStockMovements = async (executionDetails: any) => {
+    console.log('📦 PROCESANDO MOVIMIENTO DE STOCK DE COSECHA');
+    
     // T2-76: Grabar cultivo en stock al ejecutar cosecha
     const cultivo = executionDetails.detalles?.cultivo
     const deposito = executionDetails.detalles?.deposito
     const rindeObtenido = executionDetails.detalles?.rinde_obtenido
     const hectareas = executionDetails.detalles?.hectareas || 0
 
+    console.log('  - Cultivo:', cultivo);
+    console.log('  - Depósito:', deposito);
+    console.log('  - Rinde obtenido:', rindeObtenido);
+    console.log('  - Hectáreas:', hectareas);
+
     if (!cultivo) {
-      console.error('Crop information is missing for harvest', executionDetails)
+      console.error('❌ Crop information is missing for harvest', executionDetails)
       return
     }
 
     if (!deposito) {
-      console.error('Deposit information is missing for harvest', executionDetails)
+      console.error('❌ Deposit information is missing for harvest', executionDetails)
       return
     }
 
     if (!rindeObtenido || rindeObtenido <= 0) {
-      console.error('Yield obtained is missing or invalid for harvest', executionDetails)
+      console.error('❌ Yield obtained is missing or invalid for harvest', executionDetails)
       return
     }
 
@@ -520,10 +527,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       campaignId: executionDetails.campaña?.campaignId || '',
     }
 
+    console.log('📊 Movimiento de stock a crear:', harvestMovement);
+    
     try {
       // Usar la función createCropStockMovement de staging si existe, sino usar addNewStockMovement
       await createCropStockMovement(harvestMovement, cultivo, deposito)
-      console.log(t('Harvest stock movement created successfully for crop'), cultivo.name || cultivo.descriptionES)
+      console.log('✅ Harvest stock movement created successfully for crop', cultivo.name || cultivo.descriptionES)
     } catch (error) {
       console.error(
         t('movementError', { supplyName: cultivo.name || cultivo.descriptionES }),
@@ -862,12 +871,25 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       }
     }
 
+    // Debug: Log para verificar el tipo de actividad
+    console.log('🌾 VERIFICACIÓN COSECHA:');
+    console.log('  - executionDetails.tipo:', executionDetails.tipo);
+    console.log('  - HarvestType:', HarvestType);
+    console.log('  - ¿Es cosecha?:', executionDetails.tipo === HarvestType);
+    console.log('  - Datos cosecha:', {
+      cultivo: executionDetails.detalles?.cultivo,
+      deposito: executionDetails.detalles?.deposito,
+      rindeObtenido: executionDetails.detalles?.rinde_obtenido,
+      hectareas: executionDetails.detalles?.hectareas
+    });
+
     if (executionDetails.tipo === HarvestType) {
+      console.log('✅ INICIANDO processHarvestStockMovements');
       try {
         await processHarvestStockMovements(executionDetails);
       } catch (error) {
         console.error(
-          t('harvestError'),
+          '❌ ERROR EN processHarvestStockMovements:',
           error,
         );
 

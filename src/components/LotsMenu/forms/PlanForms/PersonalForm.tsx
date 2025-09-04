@@ -25,7 +25,7 @@ import { NumberFieldWithUnits } from '../../components/NumberField'
 import { AutocompleteCultivo } from '../../components/AutocompleteCultivo'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
-import { useBusiness } from '../../../../hooks'
+import { useBusiness, useAppSelector } from '../../../../hooks'
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -50,6 +50,16 @@ function PersonalFormUnified({
   selectedCampaign = null,
 }) {
   const { t } = useTranslation();
+  
+  // Obtener la campaña seleccionada del store si no viene por props
+  const campaignFromStore = useAppSelector((state) => state.campaign.selectedCampaign);
+  const campaign = selectedCampaign || campaignFromStore;
+  
+  // Debug log para verificar la campaña
+  console.log('🔍 PersonalForm - campaign:', campaign);
+  console.log('🔍 PersonalForm - campaign.zafra:', campaign?.zafra);
+  console.log('🔍 PersonalForm - selectedCampaign prop:', selectedCampaign);
+  console.log('🔍 PersonalForm - campaignFromStore:', campaignFromStore);
 
   // Se utiliza el operador opcional para evitar error si formData.detalles es undefined
   const [fertilizationChecked, setFertilizationChecked] = useState(
@@ -356,15 +366,15 @@ function PersonalFormUnified({
                   label={t('Zafra')}
                   onChange={(e) => onFieldChange('zafra', e.target.value)}
                 >
-                  {selectedCampaign?.zafra && Array.isArray(selectedCampaign.zafra) ? (
-                    selectedCampaign.zafra.map((zafra) => (
+                  {campaign?.zafra && Array.isArray(campaign.zafra) ? (
+                    campaign.zafra.map((zafra) => (
                       <MenuItem key={zafra} value={zafra}>
                         {zafra}
                       </MenuItem>
                     ))
-                  ) : selectedCampaign?.zafra && typeof selectedCampaign.zafra === 'string' ? (
-                    <MenuItem value={selectedCampaign.zafra}>
-                      {selectedCampaign.zafra}
+                  ) : campaign?.zafra && typeof campaign.zafra === 'string' ? (
+                    <MenuItem value={campaign.zafra}>
+                      {campaign.zafra}
                     </MenuItem>
                   ) : (
                     <MenuItem disabled value="">
