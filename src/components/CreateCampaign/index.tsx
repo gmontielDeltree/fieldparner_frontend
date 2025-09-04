@@ -55,6 +55,7 @@ const CreateCampaignModal = ({
   const [currentZafra, setCurrentZafra] = useState("");
   const [customZafra, setCustomZafra] = useState("");
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [showZafraWarning, setShowZafraWarning] = useState(false);
   const { t } = useTranslation();
 
   // Lista de zafras comunes y sugerencias
@@ -152,6 +153,14 @@ const CreateCampaignModal = ({
     console.log('🚀 CreateCampaign - zafras to save:', zafras);
     console.log('🚀 CreateCampaign - zafras length:', zafras.length);
     
+    // Verificar si no hay zafras y mostrar warning
+    if (zafras.length === 0) {
+      setShowZafraWarning(true);
+      // Auto-ocultar el warning después de 5 segundos
+      setTimeout(() => setShowZafraWarning(false), 5000);
+      return; // No continuar con la creación
+    }
+    
     if (editMode) {
       const campaignData = {
         ...initialData,
@@ -191,6 +200,7 @@ const CreateCampaignModal = ({
     setCurrentZafra("");
     setCustomZafra("");
     setShowCustomInput(false);
+    setShowZafraWarning(false);
   };
 
   function onDeleteHandler(
@@ -376,20 +386,36 @@ const CreateCampaignModal = ({
                     </li>
                   )}
                 />
-                <Tooltip title="Agregar zafra seleccionada">
-                  <IconButton 
-                    color="primary" 
-                    onClick={handleAddZafra}
-                    disabled={!currentZafra}
-                    sx={{ 
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      '&:hover': { bgcolor: 'primary.dark' },
-                      '&:disabled': { bgcolor: 'grey.300' }
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
+                <Tooltip title={currentZafra ? "Clic para agregar esta zafra" : "Primero seleccione una zafra"}>
+                  <span>
+                    <Button 
+                      variant="contained"
+                      color="primary" 
+                      onClick={handleAddZafra}
+                      disabled={!currentZafra}
+                      startIcon={<AddIcon />}
+                      sx={{ 
+                        minWidth: 100,
+                        animation: currentZafra && zafras.length === 0 ? 'pulse 1.5s infinite' : 'none',
+                        '@keyframes pulse': {
+                          '0%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                          '50%': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 4px 8px rgba(25, 118, 210, 0.4)',
+                          },
+                          '100%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                        }
+                      }}
+                    >
+                      Agregar
+                    </Button>
+                  </span>
                 </Tooltip>
                 <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
                 <Tooltip title="Agregar zafra personalizada">
@@ -422,20 +448,36 @@ const CreateCampaignModal = ({
                   placeholder="Ej: 2026/2027, Otoño, Tardía..."
                   autoFocus
                 />
-                <Tooltip title="Agregar">
-                  <IconButton 
-                    color="primary" 
-                    onClick={handleAddZafra}
-                    disabled={!customZafra.trim()}
-                    sx={{ 
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      '&:hover': { bgcolor: 'primary.dark' },
-                      '&:disabled': { bgcolor: 'grey.300' }
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
+                <Tooltip title={customZafra.trim() ? "Clic para agregar esta zafra" : "Escriba el nombre de la zafra"}>
+                  <span>
+                    <Button 
+                      variant="contained"
+                      color="primary" 
+                      onClick={handleAddZafra}
+                      disabled={!customZafra.trim()}
+                      startIcon={<AddIcon />}
+                      sx={{ 
+                        minWidth: 100,
+                        animation: customZafra.trim() && zafras.length === 0 ? 'pulse 1.5s infinite' : 'none',
+                        '@keyframes pulse': {
+                          '0%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                          '50%': {
+                            transform: 'scale(1.05)',
+                            boxShadow: '0 4px 8px rgba(25, 118, 210, 0.4)',
+                          },
+                          '100%': {
+                            transform: 'scale(1)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                          },
+                        }
+                      }}
+                    >
+                      Agregar
+                    </Button>
+                  </span>
                 </Tooltip>
                 <Tooltip title="Cancelar">
                   <IconButton 
@@ -508,6 +550,28 @@ const CreateCampaignModal = ({
             <MenuItem value={"Inactive"}>{t("inactive")}</MenuItem>
           </Select>
         </FormControl>
+        
+        {/* Warning si no hay zafras */}
+        {showZafraWarning && (
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              mx: 2, 
+              mb: 2,
+              '& .MuiAlert-icon': { fontSize: 24 }
+            }}
+            onClose={() => setShowZafraWarning(false)}
+          >
+            <Box>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                ⚠️ {t('Debe agregar al menos una zafra')}
+              </Typography>
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                {t('Seleccione una zafra y haga clic en el botón "+" para agregarla antes de guardar')}
+              </Typography>
+            </Box>
+          </Alert>
+        )}
       </DialogContent>
       <DialogActions>
         {/* {editMode && onDelete && */}
