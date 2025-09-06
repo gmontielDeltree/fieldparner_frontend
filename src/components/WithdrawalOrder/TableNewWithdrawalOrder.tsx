@@ -46,7 +46,7 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
     } = useForm(initialFormValues);
     const { isLoading: supplyLoading,
         stockBySupplies, //Data de stock por cada insumo 
-        getStockBySupplies } = useSupply();
+        getStockData } = useSupply();
     const {
         isLoading: depositLoading,
         deposits,
@@ -72,7 +72,7 @@ export const TableNewWithdrawalOrder: React.FC<Props> = ({
     };
 
     useEffect(() => {
-        getStockBySupplies();
+        getStockData();
         getDeposits();
     }, [])
 

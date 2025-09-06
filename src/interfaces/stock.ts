@@ -11,7 +11,7 @@ export interface Stock extends Document {
     accountId: string;
     depositId: string;
     location: string;
-    nroLot: string;
+    nroLot?: string;
     campaignId: string;
     fieldId: string;
     fieldLot: string;
