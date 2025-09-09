@@ -52,6 +52,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
   const [ubicacion, setUbicacion] = useState('')
   const [rows, setRows] = useState([])
   const [deposito, setDeposito] = useState<any>()
+  const [formKey, setFormKey] = useState(0) // Add key for forcing re-render
 
   const { isLoading, supplies, getSupplies } = useSupply()
   const { getCrops, crops } = useCrops()
@@ -124,6 +125,8 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
       setNroLote('')
       setUbicacion('')
     }
+    // Force re-render of autocomplete components
+    setFormKey(prev => prev + 1)
   }
 
   const handleSelectChange = (event: any) => {
@@ -132,11 +135,13 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
 
   const handleDosificacionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
+    // Allow typing decimal separator without immediately calculating
     setDosificacion(value)
     
-    // Calculate total only if both values are valid numbers
-    if (value !== '' && !isNaN(Number(value)) && formData.detalles.hectareas) {
-      const calculatedTotal = (Number(value) * formData.detalles.hectareas).toFixed(2)
+    // Only calculate if we have a valid number (not ending with decimal separator)
+    const numValue = parseFloat(value)
+    if (value !== '' && !isNaN(numValue) && formData.detalles.hectareas && !value.endsWith('.') && !value.endsWith(',')) {
+      const calculatedTotal = (numValue * formData.detalles.hectareas).toFixed(2)
       console.log('📊 Cálculo de total:', {
         dosificacion: value,
         hectareas: formData.detalles.hectareas,
@@ -182,12 +187,14 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
 
   const handleTotalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
+    // Allow typing decimal separator without immediately calculating
     setTotal(value)
     
-    // Calculate dosificacion only if both values are valid numbers
-    if (value !== '' && !isNaN(Number(value)) && formData.detalles.hectareas) {
+    // Only calculate if we have a valid number (not ending with decimal separator)
+    const numValue = parseFloat(value)
+    if (value !== '' && !isNaN(numValue) && formData.detalles.hectareas && !value.endsWith('.') && !value.endsWith(',')) {
       setDosificacion(
-        (Number(value) / formData.detalles.hectareas).toFixed(2),
+        (numValue / formData.detalles.hectareas).toFixed(2),
       )
     } else if (value === '') {
       setDosificacion('')
@@ -225,7 +232,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={6}>
               <AutocompleteSupplies
-                key={`supply-${selectedSupply?.id || 'empty'}`}
+                key={`supply-${formKey}-${selectedSupply?._id || 'empty'}`}
                 value={selectedSupply}
                 onChange={handleSelectChange}
                 activityType={formData?.tipo}
@@ -246,7 +253,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={mode === 'plan' ? 12 : 4}>
               <AutocompleteDeposito
-                key={`deposit-${deposito?.id || 'empty'}`}
+                key={`deposit-${formKey}-${deposito?._id || 'empty'}`}
                 value={deposito}
                 onChange={handleDepositoChange}
               />
@@ -257,7 +264,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
                   <FormControl fullWidth>
                     <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
                     <Select
-                      key={`location-${deposito?.id || 'empty'}`}
+                      key={`location-${formKey}-${deposito?._id || 'empty'}`}
                       labelId="ubicacion-label"
                       label={t('location')}
                       value={ubicacion}
@@ -295,7 +302,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
               <NumberFieldWithUnits
                 fullWidth
                 label={t('quantity') + ' x ' + t('hectares')}
-                value={dosificacion === '' ? '' : Number(dosificacion)}
+                value={dosificacion}
                 onChange={handleDosificacionChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
                 allowNegative={false}
@@ -306,7 +313,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
               <NumberFieldWithUnits
                 fullWidth
                 label={t('totalQuantity')}
-                value={total === '' ? '' : Number(total)}
+                value={total}
                 onChange={handleTotalChange}
                 unit={selectedSupply?.unitMeasurement || 'unit'}
                 allowNegative={false}

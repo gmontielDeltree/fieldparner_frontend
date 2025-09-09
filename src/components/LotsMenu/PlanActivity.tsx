@@ -789,6 +789,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             db={db}
             formData={formData}
             setFormData={setFormData}
+            selectedCampaign={selectedCampaign}
           />
         </CardBody>
 
@@ -838,12 +839,17 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
                 color="primary"
                 onClick={() => {
                   const currentStepValidation = getStepValidationStatus(activeStep)
+                  console.log('Validation status:', currentStepValidation)
                   if (!currentStepValidation.isValid) {
                     const missingFields = getMissingFieldsMessages(activeStep)
+                    console.log('Missing fields:', missingFields)
+                    console.log('Current step:', steps[activeStep])
                     setMissingFieldsList(missingFields)
                     setShowValidationNotification(true)
+                    console.log('showValidationNotification set to true')
                     return
                   }
+                  console.log('About to call handleNext with steps:', steps)
                   handleNext(steps)
                 }}
                 className="d-flex align-items-center gap-2"

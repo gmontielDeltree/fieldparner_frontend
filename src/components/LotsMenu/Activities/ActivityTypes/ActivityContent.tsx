@@ -254,7 +254,7 @@ const ActivityContent = ({
 
               {isGroundSample && activity?.laboratorio && (
                 <Typography sx={{ fontSize: 14 }} color="text.secondary">
-                  {t('laboratory')}: {activity.laboratorio}
+                  {t('laboratory')}: {activity.laboratorio?.razonSocial || activity.laboratorio?.nombreComercial || activity.laboratorio?.name || activity.laboratorio}
                 </Typography>
               )}
             </Box>
@@ -324,7 +324,7 @@ const ActivityContent = ({
                 <strong>{t('sampleDate')}:</strong> {formattedPlanificadaDate}
               </Typography>
               <Typography>
-                <strong>{t('laboratory')}:</strong> {activity.laboratorio || t('notSpecified')}
+                <strong>{t('laboratory')}:</strong> {activity.laboratorio?.razonSocial || activity.laboratorio?.nombreComercial || activity.laboratorio?.name || activity.laboratorio || t('notSpecified')}
               </Typography>
               <Typography>
                 <strong>{t('reference')}:</strong> {activity.refDocLab || t('notSpecified')}

@@ -17,6 +17,8 @@ import {
   Menu,
   MenuItem,
   Box,
+  Dialog,
+  DialogContent,
 } from '@mui/material'
 import { styled, keyframes } from '@mui/system'
 import { useTranslation } from 'react-i18next'
@@ -33,11 +35,13 @@ import {
   NotificationsActive,
   MenuOutlined,
   ExitToApp,
+  CalendarMonth,
 } from '@mui/icons-material'
 import { NavBarProps } from '../../types'
 import CompanyNavBar from '../CompanyNavBar'
 import CampaignMenu from './components/CampaignMenu'
 import { NotificationPopover } from '../Notifications'
+import { ActivitiesCalendar } from '../ActivitiesCalendar'
 
 // Animación para el fondo "parpadeante" o con un sutil cambio de color
 const backgroundPulse = keyframes({
@@ -99,6 +103,7 @@ export const NavBar: React.FC<NavBarProps> = ({
   )
   const isLanguageMenuOpen = Boolean(languageAnchorEl)
   const isNotificationPopoverOpen = Boolean(notificationAnchorEl)
+  const [calendarOpen, setCalendarOpen] = useState(false)
 
   useEffect(() => {
     i18n.changeLanguage(localStorage.getItem('language') || 'es')
@@ -159,15 +164,16 @@ export const NavBar: React.FC<NavBarProps> = ({
   })
 
   return (
-    <GlassAppBar
-      position="fixed"
-      sx={{
-        ...(open && {
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-        }),
-      }}
-    >
+    <>
+      <GlassAppBar
+        position="fixed"
+        sx={{
+          ...(open && {
+            width: { sm: `calc(100% - ${drawerWidth}px)` },
+            ml: { sm: `${drawerWidth}px` },
+          }),
+        }}
+      >
       <Toolbar>
         <IconButton
           color="default"
@@ -238,6 +244,34 @@ export const NavBar: React.FC<NavBarProps> = ({
                 sx={avatarStyle()}
               />
             </ButtonBase>
+
+            {/* Calendar Button */}
+            <Tooltip
+              title="Calendario de Actividades"
+              enterDelay={500}
+              leaveDelay={200}
+            >
+              <IconButton
+                onClick={() => setCalendarOpen(true)}
+                sx={{
+                  marginRight: '18px',
+                  width: 40,
+                  height: 40,
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  color: '#1976d2',
+                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                  border: '2px solid rgba(25, 118, 210, 0.3)',
+                  '&:hover': {
+                    transform: 'scale(1.1)',
+                    backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                    border: '2px solid rgba(25, 118, 210, 0.5)',
+                  },
+                }}
+              >
+                <CalendarMonth sx={{ fontSize: 24 }} />
+              </IconButton>
+            </Tooltip>
 
             <Tooltip
               title={t('notifications')}
@@ -382,5 +416,25 @@ export const NavBar: React.FC<NavBarProps> = ({
         </Grid>
       </Toolbar>
     </GlassAppBar>
+
+    {/* Activities Calendar Dialog */}
+    <Dialog
+      open={calendarOpen}
+      onClose={() => setCalendarOpen(false)}
+      maxWidth="lg"
+      fullWidth
+      PaperProps={{
+        sx: {
+          height: '90vh',
+          borderRadius: 2,
+          overflow: 'hidden',
+        },
+      }}
+    >
+      <DialogContent sx={{ p: 0, height: '100%' }}>
+        <ActivitiesCalendar onClose={() => setCalendarOpen(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }

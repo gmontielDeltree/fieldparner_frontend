@@ -53,6 +53,25 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
     const theme = useTheme();
     const dispatch = useAppDispatch();
 
+    // Helper function to get campaign display name
+    const getCampaignDisplayName = (campaign) => {
+        if (!campaign) return t("noAvailable");
+
+        // Try different properties in order of preference
+        if (campaign.name && campaign.name.trim() !== '') return campaign.name;
+        if (campaign.description && campaign.description.trim() !== '') return campaign.description;
+        if (campaign.nombreComercial && campaign.nombreComercial.trim() !== '') return campaign.nombreComercial;
+
+        // If campaignId looks like a GUID, try to format it nicely
+        if (campaign.campaignId && campaign.campaignId.includes('-')) {
+            // This is likely a GUID, not a readable name
+            return `${t("campaign")} ${campaign.campaignId.substring(0, 8)}...`;
+        }
+
+        // Last resort - return campaignId as is
+        return campaign.campaignId || t("noAvailable");
+    };
+
     const [loading, setLoading] = useState(false);
     const [withdrawalItems, setWithdrawalItems] = useState<DepositSupplyOrderItem[]>([]);
     const [activeOrder, setActiveOrder] = useState<WithdrawalOrder | null>(null);
@@ -61,6 +80,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
 
     const [retiredSupplies, setRetiredSupplies] = useState<any[]>([]);
     const [removedSupplies, setRemovedSupplies] = useState<any[]>([]);
+    const [fullCampaign, setFullCampaign] = useState<any>(null);
 
     const { user } = useAppSelector((state) => state.auth);
     const { showModal } = useAppSelector((state) => state.ui);
@@ -69,7 +89,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
 
     const { getLaborOrder, getOrderWithDepositsAndSuppliesByOrder, createWithdrawalOrder } = useOrder();
     const { getBusinesses } = useBusiness();
-    const { getCampaigns } = useCampaign();
+    const { getCampaigns, campaigns = [] } = useCampaign();
     const { creationDate, handleInputChange } = useForm({ creationDate: getShortDate() });
     const { pdfInstance, updatePDF } = useLaborOrderPDF(activeOrder, withdrawalItems);
 
@@ -164,12 +184,27 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                     ? selectedCampaign._id.split(':')[1]
                     : selectedCampaign._id || "";
 
-                const contractorId = activity?.detalles?.contratista?._id?.includes(':')
-                    ? activity.detalles.contratista._id.split(':')[1]
-                    : activity?.detalles?.contratista?._id ||
-                        activity?.contratista?._id?.includes(':')
-                        ? activity.contratista._id.split(':')[1]
-                        : activity?.contratista?._id || "";
+                // Buscar el ID del contratista en múltiples ubicaciones posibles
+                let contractorId = "";
+                const possibleContractorSources = [
+                    activity?.detalles?.contratista,
+                    activity?.contratista,
+                    activity?.detalles?.contractor
+                ];
+
+                for (const contractor of possibleContractorSources) {
+                    if (contractor?._id) {
+                        contractorId = contractor._id.includes(':')
+                            ? contractor._id.split(':')[1]
+                            : contractor._id;
+                        break;
+                    } else if (contractor?.id) {
+                        contractorId = contractor.id.includes(':')
+                            ? contractor.id.split(':')[1]
+                            : contractor.id;
+                        break;
+                    }
+                }
 
                 console.log("Using cleaned IDs:", {
                     campaignId,
@@ -254,7 +289,21 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                 console.log("Fetching business and campaign data");
                 await Promise.all([getBusinesses(), getCampaigns()]);
 
-                console.log("Selected campaign:", selectedCampaign);
+                console.log("Selected campaign full object:", selectedCampaign);
+                console.log("Campaign properties:", {
+                    "_id": selectedCampaign?._id,
+                    "campaignId": selectedCampaign?.campaignId,
+                    "name": selectedCampaign?.name,
+                    "description": selectedCampaign?.description,
+                    "All keys": selectedCampaign ? Object.keys(selectedCampaign) : []
+                });
+                console.log("Campaign display name will be:", selectedCampaign?.name || selectedCampaign?.description || "FALLBACK");
+
+                console.log("Activity contractor data:", {
+                    "detalles.contratista": activity?.detalles?.contratista,
+                    "contratista": activity?.contratista,
+                    "detalles.contractor": activity?.detalles?.contractor
+                });
                 if (selectedCampaign) {
                     console.log("Initializing order data with:", {
                         lotActive,
@@ -322,6 +371,25 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
         initialize();
         return () => setFadeIn(false);
     }, [showModal]);
+
+    // Find full campaign when campaigns list updates
+    useEffect(() => {
+        if (selectedCampaign && campaigns && campaigns.length > 0) {
+            const foundCampaign = campaigns.find(c =>
+                c._id === selectedCampaign._id ||
+                c.campaignId === selectedCampaign.campaignId ||
+                c._id === `campaign:${selectedCampaign.campaignId}` ||
+                `campaign:${c.campaignId}` === selectedCampaign._id
+            );
+            if (foundCampaign) {
+                console.log("Found full campaign with name:", foundCampaign.name);
+                setFullCampaign(foundCampaign);
+            } else {
+                console.log("Could not find full campaign in campaigns list");
+                setFullCampaign(selectedCampaign);
+            }
+        }
+    }, [campaigns, selectedCampaign]);
 
     // Actualizo el PDF cada vez que cambian los items
     useEffect(() => {
@@ -446,7 +514,7 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                                 <InfoCard
                                     icon={<CalendarIcon />}
                                     title={t("campaign")}
-                                    value={selectedCampaign?.campaignId?.toString().toUpperCase()}
+                                    value={selectedCampaign?.name || selectedCampaign?.description || 'Sin campaña'}
                                     color="primary"
                                 />
                             </Grid>
@@ -485,9 +553,14 @@ export const LaborOrderModal = ({ activity, fieldName }) => {
                                     title={t("contractor")}
                                     value={
                                         activity?.detalles?.contratista?.nombreCompleto ||
+                                        activity?.detalles?.contratista?.razonSocial ||
+                                        activity?.detalles?.contratista?.name ||
                                         activity?.contratista?.nombreCompleto ||
+                                        activity?.contratista?.razonSocial ||
+                                        activity?.contratista?.name ||
+                                        activity?.detalles?.contractor?.nombreCompleto ||
                                         activity?.detalles?.contractor?.razonSocial ||
-                                        "No disponible"
+                                        t("noAvailable")
                                     }
                                     color="error"
                                 />
