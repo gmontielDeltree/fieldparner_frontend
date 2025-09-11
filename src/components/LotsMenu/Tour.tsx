@@ -17,12 +17,14 @@ import {
   Container,
   Row,
   Col,
+  Progress,
 } from 'reactstrap'
 import {
   MapIcon,
   MapPin,
   Clipboard,
   ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import AgricultureIcon from '@mui/icons-material/Assignment'
 
@@ -49,6 +51,8 @@ const Tour: React.FC<TourProps> = ({
   const isEditing = existingNote && Object.keys(existingNote).length > 0
   const { selectedCampaign } = useAppSelector((state) => state.campaign)
   const removeMarkerFunctionsRef = useRef<(() => void)[]>([])
+  const [activeStep, setActiveStep] = useState(0)
+  const [maxStepReached, setMaxStepReached] = useState(0)
 
   useEffect(() => {
     if (existingNote) {
@@ -137,6 +141,89 @@ const Tour: React.FC<TourProps> = ({
     return '#22c55e' // verde para recorrido
   }
 
+  // Define steps for the tour
+  const steps = [
+    { label: t('generalInformation'), key: 'general' },
+    { label: t('pointsAndObservations'), key: 'points' },
+    { label: t('reviewAndSave'), key: 'review' },
+  ]
+
+  const handleNext = () => {
+    const nextStep = activeStep + 1
+    setActiveStep(nextStep)
+    if (nextStep > maxStepReached) {
+      setMaxStepReached(nextStep)
+    }
+  }
+
+  const handleBack = () => {
+    setActiveStep(activeStep - 1)
+  }
+
+  const handleStepClick = (step: number) => {
+    if (step <= maxStepReached) {
+      setActiveStep(step)
+    }
+  }
+
+  const getStepContent = () => {
+    switch (activeStep) {
+      case 0:
+        // General information step
+        return (
+          <div>
+            <h5 className="mb-3">{t('generalInformation')}</h5>
+            <TourForm
+              lot={lot}
+              formData={formData}
+              setFormData={setFormData}
+              tourSave={handleRemoveMarkers}
+            />
+          </div>
+        )
+      case 1:
+        // Points and observations step
+        return (
+          <div>
+            <h5 className="mb-3">{t('pointsAndObservations')}</h5>
+            {existingNote &&
+              formData.features.map((feature, index) => (
+                <PlaceMarker
+                  key={index}
+                  selectedLot={{
+                    geometry: {
+                      type: 'Point',
+                      coordinates: feature.properties.posicion,
+                    },
+                  }}
+                  setCoordinates={(newPosition) =>
+                    handleSetCoordinates(index, newPosition)
+                  }
+                  isDraggable={true}
+                  onRemoveMarkers={(removeFunc) => {
+                    removeMarkerFunctionsRef.current.push(removeFunc)
+                  }}
+                />
+              ))}
+          </div>
+        )
+      case 2:
+        // Review and save step
+        return (
+          <div>
+            <h5 className="mb-3">{t('reviewAndSave')}</h5>
+            <div className="p-3 bg-light rounded">
+              <p><strong>{t('nameLabel')}:</strong> {formData.nombre || '-'}</p>
+              <p><strong>{t('dateLabel')}:</strong> {formData.fecha ? new Date(formData.fecha).toLocaleDateString() : '-'}</p>
+              <p><strong>{t('pointsCount')}:</strong> {formData.features?.length || 0}</p>
+            </div>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
   // Define the activity icons for ActivityHeader
   const activityIcons = {
     tour: <AgricultureIcon sx={{ fontSize: 50, color: 'white' }} />
@@ -169,55 +256,76 @@ const Tour: React.FC<TourProps> = ({
           />
         </CardHeader>
 
+        {/* Progress Bar */}
+        <div className="px-4 pt-3">
+          <Progress 
+            value={(activeStep / (steps.length - 1)) * 100} 
+            className="mb-3"
+            style={{ height: '8px' }}
+          />
+          <div className="d-flex justify-content-between mb-3">
+            {steps.map((step, index) => (
+              <div 
+                key={index}
+                className="text-center"
+                style={{ cursor: index <= maxStepReached ? 'pointer' : 'not-allowed' }}
+                onClick={() => handleStepClick(index)}
+              >
+                <div 
+                  className={`rounded-circle d-inline-flex align-items-center justify-content-center ${
+                    index === activeStep ? 'bg-primary text-white' : 
+                    index < activeStep ? 'bg-success text-white' : 
+                    index <= maxStepReached ? 'bg-secondary text-white' : 'bg-light text-muted'
+                  }`}
+                  style={{ width: '30px', height: '30px', fontSize: '14px' }}
+                >
+                  {index + 1}
+                </div>
+                <div className="small mt-1">{step.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Content */}
         <CardBody className="p-4">
-          <TourForm
-            lot={lot}
-            formData={formData}
-            setFormData={setFormData}
-            tourSave={handleRemoveMarkers}
-          />
-
-          {existingNote &&
-            formData.features.map((feature, index) => (
-              <PlaceMarker
-                key={index}
-                selectedLot={{
-                  geometry: {
-                    type: 'Point',
-                    coordinates: feature.properties.posicion,
-                  },
-                }}
-                setCoordinates={(newPosition) =>
-                  handleSetCoordinates(index, newPosition)
-                }
-                isDraggable={true}
-                onRemoveMarkers={(removeFunc) => {
-                  removeMarkerFunctionsRef.current.push(removeFunc)
-                }}
-              />
-            ))}
+          {getStepContent()}
         </CardBody>
 
         {/* Actions */}
         <CardFooter className="bg-light d-flex justify-content-between align-items-center p-4">
           <Button
             color="light"
-            onClick={backToActivites}
+            onClick={activeStep === 0 ? backToActivites : handleBack}
             className="d-flex align-items-center gap-2"
           >
             <ChevronLeft size={16} />
-            {t('backButton')}
+            {activeStep === 0 ? t('backButton') : t('previousStep')}
           </Button>
 
-          <Button
-            color="success"
-            onClick={handleSave}
-            className="d-flex align-items-center gap-2"
-          >
-            <Clipboard size={16} />
-            {isEditing ? t('updateButton') : t('saveButton')} {t('tourLabel')}
-          </Button>
+          <div className="d-flex gap-2">
+            {activeStep < steps.length - 1 && (
+              <Button
+                color="primary"
+                onClick={handleNext}
+                className="d-flex align-items-center gap-2"
+              >
+                {t('nextStep')}
+                <ChevronRight size={16} />
+              </Button>
+            )}
+            
+            {activeStep === steps.length - 1 && (
+              <Button
+                color="success"
+                onClick={handleSave}
+                className="d-flex align-items-center gap-2"
+              >
+                <Clipboard size={16} />
+                {isEditing ? t('updateButton') : t('saveButton')} {t('tourLabel')}
+              </Button>
+            )}
+          </div>
         </CardFooter>
       </Card>
 

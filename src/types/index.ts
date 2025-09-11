@@ -235,6 +235,7 @@ export interface Supply extends Document {
   eiqValue?: string;
   senasaId?: string;
   documentFile?: string;
+  documentFileName?: string;
   isDefault?: boolean;
 }
 
