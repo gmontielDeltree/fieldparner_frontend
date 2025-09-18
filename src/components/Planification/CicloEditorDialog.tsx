@@ -259,12 +259,10 @@ export default function CicloEditorDialog({
               console.log('Creando ciclo:', { cultivo, selectedZafra, startDate, endDate });
               if (cultivo) {
                 if (checkRangeIsValid(startDate, endDate)) {
-                  // TODO: Actualizar saveCiclo para incluir la zafra seleccionada
-                  // Por ahora guardamos sin la zafra, pero esto debería actualizarse en el backend
-                  saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate);
+                  // Pasar la zafra seleccionada a saveCiclo
+                  saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate, selectedZafra);
 
-                  // Log para verificar que tenemos la zafra seleccionada
-                  console.log('💾 Guardando ciclo con zafra:', selectedZafra);
+                  console.log('✅ Ciclo guardado con zafra:', selectedZafra);
 
                   onSave();
                   handleClose();

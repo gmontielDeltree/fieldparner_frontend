@@ -63,7 +63,8 @@ export interface ICiclosPlanificacion extends FPDocument {
     campanaId:string,
     campoId:string,
     loteId:string,
-    cultivoId : string
+    cultivoId : string,
+    zafra?: string  // Zafra seleccionada de la campaña
 }
 
 export interface IPlanificacion extends FPDocument {
