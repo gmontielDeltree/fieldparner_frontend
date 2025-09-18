@@ -17,12 +17,16 @@ import {
   Container,
   Row,
   Col,
+  Progress,
 } from 'reactstrap'
 import {
   MapIcon,
   MapPin,
   Clipboard,
   ChevronLeft,
+  ChevronRight,
+  Check,
+  AlertCircle,
 } from 'lucide-react'
 import AgricultureIcon from '@mui/icons-material/Assignment'
 
@@ -49,6 +53,17 @@ const Tour: React.FC<TourProps> = ({
   const isEditing = existingNote && Object.keys(existingNote).length > 0
   const { selectedCampaign } = useAppSelector((state) => state.campaign)
   const removeMarkerFunctionsRef = useRef<(() => void)[]>([])
+
+  // Stepper state
+  const [activeStep, setActiveStep] = useState(0)
+  const [maxStepReached, setMaxStepReached] = useState(0)
+
+  // Define the steps for Tour
+  const steps = [
+    t('generalInfo'),
+    t('inspectionPoints'),
+    t('summary'),
+  ]
 
   useEffect(() => {
     if (existingNote) {
@@ -137,6 +152,64 @@ const Tour: React.FC<TourProps> = ({
     return '#22c55e' // verde para recorrido
   }
 
+  // Step navigation functions
+  const handleNext = () => {
+    if (activeStep < steps.length - 1) {
+      const nextStep = activeStep + 1
+      setActiveStep(nextStep)
+      setMaxStepReached(Math.max(maxStepReached, nextStep))
+    }
+  }
+
+  const handleBack = () => {
+    if (activeStep > 0) {
+      setActiveStep(activeStep - 1)
+    }
+  }
+
+  const handleStepClick = (index: number) => {
+    if (index <= maxStepReached) {
+      setActiveStep(index)
+    }
+  }
+
+  const getStepStatus = (stepIndex: number) => {
+    if (stepIndex === activeStep) return 'current'
+    if (stepIndex < activeStep) return 'complete'
+    if (stepIndex <= maxStepReached) return 'available'
+    return 'upcoming'
+  }
+
+  const getStepStyle = (status: string) => {
+    const tourColor = getTourColor()
+    switch (status) {
+      case 'complete':
+        return {
+          background: tourColor,
+          color: 'white',
+          border: 'none',
+        }
+      case 'current':
+        return {
+          background: 'white',
+          color: tourColor,
+          border: `2px solid ${tourColor}`,
+        }
+      case 'upcoming':
+        return {
+          background: '#f3f4f6',
+          color: '#6b7280',
+          border: 'none',
+        }
+      default:
+        return {
+          background: '#e5e7eb',
+          color: '#6b7280',
+          border: 'none',
+        }
+    }
+  }
+
   // Define the activity icons for ActivityHeader
   const activityIcons = {
     tour: <AgricultureIcon sx={{ fontSize: 50, color: 'white' }} />
@@ -169,6 +242,67 @@ const Tour: React.FC<TourProps> = ({
           />
         </CardHeader>
 
+        {/* Stepper */}
+        <div className="px-4 py-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            {steps.map((step, index) => {
+              const status = getStepStatus(index)
+
+              return (
+                <div
+                  key={step}
+                  className="text-center position-relative"
+                  style={{ flex: 1 }}
+                >
+                  <div
+                    onClick={() => handleStepClick(index)}
+                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      cursor: index <= maxStepReached ? 'pointer' : 'default',
+                      transition: 'all 0.2s',
+                      ...getStepStyle(status),
+                    }}
+                  >
+                    {status === 'complete' ? (
+                      <Check size={20} />
+                    ) : (
+                      <span style={{ fontWeight: '600' }}>{index + 1}</span>
+                    )}
+                  </div>
+
+                  <div className="mt-2">
+                    <small
+                      className="text-muted"
+                      style={{
+                        fontWeight: status === 'current' ? '600' : '400',
+                      }}
+                    >
+                      {step}
+                    </small>
+                  </div>
+
+                  {index < steps.length - 1 && (
+                    <Progress
+                      value={index < activeStep ? 100 : 0}
+                      color="success"
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '50%',
+                        width: '100%',
+                        height: '2px',
+                        zIndex: -1,
+                      }}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Content */}
         <CardBody className="p-4">
           <TourForm
@@ -176,6 +310,7 @@ const Tour: React.FC<TourProps> = ({
             formData={formData}
             setFormData={setFormData}
             tourSave={handleRemoveMarkers}
+            activeStep={activeStep}
           />
 
           {existingNote &&
@@ -201,23 +336,48 @@ const Tour: React.FC<TourProps> = ({
 
         {/* Actions */}
         <CardFooter className="bg-light d-flex justify-content-between align-items-center p-4">
-          <Button
-            color="light"
-            onClick={backToActivites}
-            className="d-flex align-items-center gap-2"
-          >
-            <ChevronLeft size={16} />
-            {t('backButton')}
-          </Button>
+          <div className="d-flex gap-2">
+            <Button
+              color="light"
+              onClick={backToActivites}
+              className="d-flex align-items-center gap-2"
+            >
+              <ChevronLeft size={16} />
+              {t('cancel')}
+            </Button>
+            {activeStep > 0 && (
+              <Button
+                color="light"
+                onClick={handleBack}
+                className="d-flex align-items-center gap-2"
+              >
+                <ChevronLeft size={16} />
+                {t('previous')}
+              </Button>
+            )}
+          </div>
 
-          <Button
-            color="success"
-            onClick={handleSave}
-            className="d-flex align-items-center gap-2"
-          >
-            <Clipboard size={16} />
-            {isEditing ? t('updateButton') : t('saveButton')} {t('tourLabel')}
-          </Button>
+          <div className="d-flex gap-2">
+            {activeStep < steps.length - 1 ? (
+              <Button
+                color="primary"
+                onClick={handleNext}
+                className="d-flex align-items-center gap-2"
+              >
+                {t('next')}
+                <ChevronRight size={16} />
+              </Button>
+            ) : (
+              <Button
+                color="success"
+                onClick={handleSave}
+                className="d-flex align-items-center gap-2"
+              >
+                <Clipboard size={16} />
+                {isEditing ? t('updateButton') : t('saveButton')} {t('tourLabel')}
+              </Button>
+            )}
+          </div>
         </CardFooter>
       </Card>
 
