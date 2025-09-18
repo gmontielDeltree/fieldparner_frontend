@@ -1255,5 +1255,10 @@
   "no_services_found": "No se encontraron servicios",
   "no_services_in_campaign_activities": "Las actividades de esta campaña no tienen servicios asociados.",
   "create_planning_activities_with_services": "Para obtener valores reales, cree actividades planificadas que incluyan servicios en el módulo de planificación.",
-  "realized": "Realizado"
+  "realized": "Realizado",
+  "createMode": "Modo Creación",
+  "editMode": "Modo Edición",
+  "profitable": "Rentable",
+  "notProfitable": "No rentable",
+  "hectaresSelected": "Hectáreas seleccionadas"
 }

@@ -1251,5 +1251,10 @@
   "no_services_found": "No services found",
   "no_services_in_campaign_activities": "The activities in this campaign do not have associated services.",
   "create_planning_activities_with_services": "To get real values, create planned activities that include services in the planning module.",
-  "realized": "Realized"
+  "realized": "Realized",
+  "createMode": "Create Mode",
+  "editMode": "Edit Mode",
+  "profitable": "Profitable",
+  "notProfitable": "Not profitable",
+  "hectaresSelected": "Selected hectares"
 }
