@@ -352,19 +352,38 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         if (value !== formData.campanaId) {
           console.log('🎯 Nueva campaña seleccionada:', value);
 
-          // Cargar zafras/ciclos de la campaña
-          const campaignCycles = ciclos.ciclos?.filter(c => c.campanaId === value) || [];
-          const uniqueZafras = new Map();
+          // Obtener zafras directamente de la campaña seleccionada
+          const campaign = campaigns.find(c => c._id === value);
+          if (campaign && campaign.zafra) {
+            // Si zafra es un array, usarlo directamente, si es string, convertir a array
+            const zafrasFromCampaign = Array.isArray(campaign.zafra)
+              ? campaign.zafra
+              : (typeof campaign.zafra === 'string' ? [campaign.zafra] : []);
 
-          campaignCycles.forEach(ciclo => {
-            if (ciclo.cultivoId) {
-              const crop = crops.find(c => c._id === ciclo.cultivoId);
-              const zafraName = crop ? `Zafra ${crop.name}` : `Zafra ${ciclo.cultivoId}`;
-              uniqueZafras.set(ciclo.cultivoId, { id: ciclo.cultivoId, name: zafraName });
-            }
-          });
+            // Convertir a formato esperado por el select
+            const zafrasArray = zafrasFromCampaign.map((zafra, index) => ({
+              id: `zafra_${index}`,
+              name: zafra
+            }));
 
-          setAvailableZafras(Array.from(uniqueZafras.values()));
+            setAvailableZafras(zafrasArray);
+            console.log('🎯 Zafras de la campaña:', zafrasArray);
+          } else {
+            // Si la campaña no tiene zafras definidas, usar el método anterior como fallback
+            const campaignCycles = ciclos.ciclos?.filter(c => c.campanaId === value) || [];
+            const uniqueZafras = new Map();
+
+            campaignCycles.forEach(ciclo => {
+              if (ciclo.cultivoId) {
+                const crop = crops.find(c => c._id === ciclo.cultivoId);
+                const zafraName = crop ? `Zafra ${crop.name}` : `Zafra ${ciclo.cultivoId}`;
+                uniqueZafras.set(ciclo.cultivoId, { id: ciclo.cultivoId, name: zafraName });
+              }
+            });
+
+            setAvailableZafras(Array.from(uniqueZafras.values()));
+            console.log('🎯 Zafras calculadas (fallback):', Array.from(uniqueZafras.values()));
+          }
           setAvailableCampos(fields);
           setAvailableLotes([]);
 
