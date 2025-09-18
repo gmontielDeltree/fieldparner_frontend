@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
-  Button,
-  Card,
-  CardContent,
+  Button as MuiButton,
+  Card as MuiCard,
+  CardContent as MuiCardContent,
   Container,
   Grid,
   Typography,
@@ -21,18 +21,40 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Alert,
+  Alert as MuiAlert,
   CircularProgress,
   FormControlLabel,
   Radio,
   RadioGroup,
   Autocomplete,
 } from "@mui/material";
-import { 
+import {
   ArrowBack as ArrowBackIcon,
   Assessment as AssessmentIcon,
-  FileDownload as FileDownloadIcon
+  FileDownload as FileDownloadIcon,
+  Check as CheckIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Button,
+  Progress,
+  Alert,
+  Spinner,
+} from 'reactstrap';
+import {
+  Check,
+  ChevronRight,
+  ChevronLeft,
+  X,
+  AlertCircle,
+  TrendingUp,
+  DollarSign,
+  Package,
+} from 'lucide-react';
 import { useTranslation } from "react-i18next";
 import { TemplateLayout, Loading } from "../../components";
 import { useAnnualPlanValorization } from "../../hooks/useAnnualPlanValorization";
@@ -90,13 +112,17 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const { getLineasInsumos, getLineasServicios } = usePlanActividad();
   const ciclos = useListaDeCiclos();
   const { getLaborFromId } = useLabores();
-  const { 
-    createAnnualPlanValorization, 
+  const {
+    createAnnualPlanValorization,
     updateAnnualPlanValorization,
-    getAnnualPlanValorizations 
+    getAnnualPlanValorizations
   } = useAnnualPlanValorization();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Step management for better UX
+  const [activeStep, setActiveStep] = useState(0);
+  const [maxStepReached, setMaxStepReached] = useState(0);
   
   // Mock data - esto vendría de la base de datos
   const [annualPlan, setAnnualPlan] = useState<any | null>(null);
@@ -127,6 +153,13 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const [availableZafras, setAvailableZafras] = useState<any[]>([]);
   const [availableCampos, setAvailableCampos] = useState<Field[]>([]);
   const [availableLotes, setAvailableLotes] = useState<Lot[]>([]);
+
+  // Define steps for the valorization flow
+  const steps = [
+    { label: t('valorization_parameters'), key: 'parameters' },
+    { label: t('value_loading'), key: 'values' },
+    { label: t('trend'), key: 'trend' },
+  ];
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -576,6 +609,35 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
   const handleCancel = () => {
     navigate("/init/overview/annual-plan-valorization");
+  };
+
+  const handleNext = () => {
+    const nextStep = activeStep + 1;
+    setActiveStep(nextStep);
+    if (nextStep > maxStepReached) {
+      setMaxStepReached(nextStep);
+    }
+  };
+
+  const handleBack = () => {
+    if (activeStep > 0) {
+      setActiveStep(activeStep - 1);
+    } else {
+      navigate("/init/overview/annual-plan-valorization");
+    }
+  };
+
+  const handleStepClick = (step: number) => {
+    if (step <= maxStepReached) {
+      setActiveStep(step);
+    }
+  };
+
+  const getStepStatus = (stepIndex: number) => {
+    if (stepIndex === activeStep) return 'current';
+    if (stepIndex < activeStep) return 'complete';
+    if (stepIndex <= maxStepReached) return 'available';
+    return 'upcoming';
   };
 
   // Función removida - ya no necesitamos el botón refresh
@@ -1149,6 +1211,396 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     return tipos[tipo] || 'Actividad';
   };
 
+  const getStepStyle = (status: string) => {
+    switch (status) {
+      case 'complete':
+        return {
+          background: '#22c55e',
+          color: 'white',
+          border: 'none',
+        };
+      case 'current':
+        return {
+          background: 'white',
+          color: '#22c55e',
+          border: '2px solid #22c55e',
+        };
+      case 'upcoming':
+        return {
+          background: '#f3f4f6',
+          color: '#6b7280',
+          border: 'none',
+        };
+      default:
+        return {
+          background: '#e5e7eb',
+          color: '#6b7280',
+          border: 'none',
+        };
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0: // Parameters step
+        return renderParametersStep();
+      case 1: // Values step
+        return renderValuesStep();
+      case 2: // Trend step
+        return renderTrendStep();
+      default:
+        return null;
+    }
+  };
+
+  const renderParametersStep = () => (
+    <>
+      <Typography variant="h6" gutterBottom>
+        {t("valorization_parameters")}
+      </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth size="small">
+            <InputLabel>{t("campaign")}</InputLabel>
+            <Select
+              value={formData.campanaId}
+              onChange={(e) => handleFieldChange('campanaId', e.target.value)}
+              label={t("campaign")}
+            >
+              {campaigns.map((campaign) => (
+                <MenuItem key={campaign._id} value={campaign._id}>
+                  {campaign.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth size="small">
+            <InputLabel>{t("harvest")}</InputLabel>
+            <Select
+              value={formData.zafra}
+              onChange={(e) => handleFieldChange('zafra', e.target.value)}
+              label={t("harvest")}
+              disabled={!formData.campanaId || availableZafras.length === 0}
+            >
+              {availableZafras.length === 0 ? (
+                <MenuItem value="" disabled>
+                  {t("no_harvests_available")}
+                </MenuItem>
+              ) : (
+                availableZafras.map((zafra) => (
+                  <MenuItem key={zafra.id} value={zafra.name}>
+                    {zafra.name}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth size="small">
+            <InputLabel>{t("field")}</InputLabel>
+            <Select
+              value={formData.campoId}
+              onChange={(e) => handleFieldChange('campoId', e.target.value)}
+              label={t("field")}
+              disabled={!formData.campanaId || !formData.zafra}
+            >
+              {availableCampos.map((campo) => (
+                <MenuItem key={campo._id} value={campo._id}>
+                  {campo.nombre}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth size="small">
+            <InputLabel>{t("lot")}</InputLabel>
+            <Select
+              value={formData.loteId}
+              onChange={(e) => handleLoteChange(e.target.value as string)}
+              label={t("lot")}
+              disabled={!formData.campoId}
+            >
+              {availableLotes.length === 0 ? (
+                <MenuItem value="" disabled>
+                  {t("no_lots_available")}
+                </MenuItem>
+              ) : (
+                availableLotes.map((lote) => (
+                  <MenuItem key={lote.properties.uuid || lote.properties.nombre} value={lote.properties.nombre}>
+                    {lote.properties.nombre}
+                  </MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <TextField
+            fullWidth
+            size="small"
+            label={t("hectares")}
+            value={formData.has}
+            InputProps={{ readOnly: true }}
+          />
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <TextField
+            fullWidth
+            size="small"
+            label={t("crop")}
+            value={getCropName()}
+            InputProps={{ readOnly: true }}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            fullWidth
+            size="small"
+            required
+            type="number"
+            label={t("historical_yield_qq_ha")}
+            value={formData.rindeHistorico}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                setFormData(prev => ({ ...prev, rindeHistorico: value === '' ? 0 : parseFloat(value) || 0 }));
+              }
+            }}
+            onBlur={() => setTimeout(() => recalcularTotales(), 0)}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <TextField
+            fullWidth
+            size="small"
+            required
+            type="number"
+            label={t("future_cereal_quote")}
+            value={formData.cotizFutCer}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                setFormData(prev => ({ ...prev, cotizFutCer: value === '' ? 0 : parseFloat(value) || 0 }));
+              }
+            }}
+            onBlur={() => setTimeout(() => recalcularTotales(), 0)}
+            helperText={t("local_currency_per_ton")}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Autocomplete
+            size="small"
+            options={countries}
+            getOptionLabel={(option) => option.currency || ''}
+            value={countries.find((c: any) => c.currency === formData.monedaAlterId) || null}
+            onChange={(e, value) => handleFieldChange('monedaAlterId', value?.currency || '')}
+            renderInput={(params) => (
+              <TextField {...params} label={t("alternative_currency")} />
+            )}
+          />
+        </Grid>
+      </Grid>
+    </>
+  );
+
+  const renderValuesStep = () => (
+    <>
+      <Typography variant="h6" gutterBottom>
+        {t("value_loading")}
+      </Typography>
+
+      {/* Insumos */}
+      <Box mb={3}>
+        <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{
+            bgcolor: 'primary.main',
+            color: 'white',
+            px: 1.5,
+            py: 0.5,
+            borderRadius: '50%',
+            fontWeight: 'bold'
+          }}>
+            A
+          </Box>
+          {t("supplies")}
+        </Typography>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t("labor")}</TableCell>
+                <TableCell>{t("item")}</TableCell>
+                <TableCell align="right">{t("quantity_ha")}</TableCell>
+                <TableCell align="right">{t("unit_value")}</TableCell>
+                <TableCell align="right">{t("total_value")}</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {insumos.map((insumo, index) => (
+                <TableRow key={insumo._id}>
+                  <TableCell>{insumo.labor}</TableCell>
+                  <TableCell>{insumo.item}</TableCell>
+                  <TableCell align="right">{formatNumber(insumo.cantidadHa || 0, 2)} Kg/Ha</TableCell>
+                  <TableCell align="right">
+                    <TextField
+                      size="small"
+                      type="number"
+                      value={insumo.valorUnidad || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          handleInsumoValorChange(index, parseFloat(value) || 0);
+                        }
+                      }}
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        startAdornment: <span style={{ marginRight: 4 }}>$</span>
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    {formatCurrency(insumo.valorTotal || 0)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      {/* Servicios */}
+      <Box>
+        <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="span" sx={{
+            bgcolor: 'primary.main',
+            color: 'white',
+            px: 1.5,
+            py: 0.5,
+            borderRadius: '50%',
+            fontWeight: 'bold'
+          }}>
+            B
+          </Box>
+          {t("services")}
+        </Typography>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>{t("labor")}</TableCell>
+                <TableCell>{t("item")}</TableCell>
+                <TableCell align="right">{t("quantity_ha")}</TableCell>
+                <TableCell align="right">{t("unit_value")}</TableCell>
+                <TableCell align="right">{t("total_value")}</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {servicios.map((servicio, index) => (
+                <TableRow key={servicio._id}>
+                  <TableCell>{servicio.labor}</TableCell>
+                  <TableCell>{servicio.item}</TableCell>
+                  <TableCell align="right">$/Ha</TableCell>
+                  <TableCell align="right">
+                    <TextField
+                      size="small"
+                      type="number"
+                      value={servicio.valorUnidad || ''}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                          handleServicioValorChange(index, parseFloat(value) || 0);
+                        }
+                      }}
+                      sx={{ width: 120 }}
+                      InputProps={{
+                        startAdornment: <span style={{ marginRight: 4 }}>$</span>
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    {formatCurrency(servicio.valorTotal || 0)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+
+      {formData.has > 0 && (
+        <MuiAlert severity="info" sx={{ mt: 3 }}>
+          <Typography variant="caption" display="block">
+            <strong>{t("hectares_selected")}: {formatNumber(formData.has, 2)} ha</strong>
+          </Typography>
+        </MuiAlert>
+      )}
+    </>
+  );
+
+  const renderTrendStep = () => {
+    const totales = calcularTotalesEnTiempoReal();
+    return (
+      <>
+        <Typography variant="h6" gutterBottom>
+          {t("trend")} ($)
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {t("expenses")}
+              </Typography>
+              <Typography variant="h5">
+                ARS {formatNumber(totales.gastosTotal)}
+              </Typography>
+              <Typography variant="caption" display="block" color="text.secondary">
+                {t("supplies")}: {formatCurrency(totales.gastosInsumos)} | {t("services")}: {formatCurrency(totales.gastosServicios)}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                {t("yield")}
+              </Typography>
+              <Typography variant="h5">
+                ARS {formatNumber(totales.rendimientoTotal)}
+              </Typography>
+              <Typography variant="caption" display="block" color="text.secondary">
+                {formData.rindeHistorico} qq/ha × {formData.has} ha × ${formData.cotizFutCer}/tn
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                p: 2,
+                border: '2px solid',
+                borderColor: totales.tendencia >= 0 ? 'success.main' : 'error.main',
+                borderRadius: 1,
+                bgcolor: totales.tendencia >= 0 ? 'success.light' : 'error.light',
+              }}
+            >
+              <Typography variant="subtitle2" color="text.secondary">
+                {t("trend")}
+              </Typography>
+              <Typography variant="h4" color={totales.tendencia >= 0 ? 'success.dark' : 'error.dark'}>
+                ARS {formatNumber(totales.tendencia)}
+              </Typography>
+              <Typography variant="caption" display="block" color="text.secondary">
+                {totales.tendencia >= 0 ? '✅ ' + t('profitable') : '❌ ' + t('not_profitable')}
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </>
+    );
+  };
+
   if (loading) {
     return <Loading loading />;
   }
@@ -1156,76 +1608,161 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   return (
     <TemplateLayout viewMap={false}>
       <Container maxWidth="xl" sx={{ py: 2 }}>
-        <Box mb={3}>
-          <Button
-            startIcon={<ArrowBackIcon />}
-            onClick={handleBack}
-            sx={{ mb: 2 }}
+        <Card className="shadow-lg">
+          {/* Header */}
+          <CardHeader
+            className="p-0"
+            style={{
+              background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+              borderTopLeftRadius: '0.5rem',
+              borderTopRightRadius: '0.5rem',
+            }}
           >
-            {t("back")}
-          </Button>
-          
-          <Box display="flex" alignItems="center" gap={2} mb={3}>
-            <AssessmentIcon sx={{ fontSize: 40 }} />
-            <Typography variant="h4" fontWeight="bold">
-              {t("annual_plan_valorization")}
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Debug Info - TEMPORAL */}
-        <Card sx={{ mb: 2, bgcolor: '#f5f5f5' }}>
-          <CardContent>
-            <Typography variant="caption" component="pre">
-              DEBUG: loteId = "{formData.loteId}" | availableLotes = {availableLotes.length} | campoId = "{formData.campoId}"
-            </Typography>
-          </CardContent>
-        </Card>
-
-        {/* Sección 1: Parámetros */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              {t("section")} 1: {t("valorization_parameters")}
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>{t("campaign")}</InputLabel>
-                  <Select
-                    value={formData.campanaId}
-                    onChange={(e) => handleFieldChange('campanaId', e.target.value)}
-                    label={t("campaign")}
+            <div className="p-4">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="d-flex align-items-center gap-3">
+                  <div
+                    className="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
+                    style={{ width: '60px', height: '60px' }}
                   >
-                    {campaigns.map((campaign) => (
-                      <MenuItem key={campaign._id} value={campaign._id}>
-                        {campaign.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>{t("harvest")}</InputLabel>
-                  <Select
-                    value={formData.zafra}
-                    onChange={(e) => handleFieldChange('zafra', e.target.value)}
-                    label={t("harvest")}
-                    disabled={!formData.campanaId || availableZafras.length === 0}
+                    <TrendingUp size={35} color="white" />
+                  </div>
+                  <div className="text-white">
+                    <h4 className="mb-0 fw-bold">{t("annual_plan_valorization")}</h4>
+                    <small className="opacity-75">
+                      {isEditMode ? t('edit_mode') : t('create_mode')}
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+
+          {/* Stepper */}
+          <div className="px-4 py-4">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              {steps.map((step, index) => {
+                const status = getStepStatus(index);
+                return (
+                  <div
+                    key={step.key}
+                    className="text-center position-relative"
+                    style={{ flex: 1 }}
                   >
-                    {availableZafras.length === 0 ? (
-                      <MenuItem value="" disabled>
-                        {t("no_harvests_available")}
-                      </MenuItem>
-                    ) : (
-                      availableZafras.map((zafra) => (
-                        <MenuItem key={zafra.id} value={zafra.name}>
-                          {zafra.name}
-                        </MenuItem>
-                      ))
+                    <div
+                      onClick={() => handleStepClick(index)}
+                      className="rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        cursor: index <= maxStepReached ? 'pointer' : 'default',
+                        transition: 'all 0.2s',
+                        ...getStepStyle(status),
+                      }}
+                    >
+                      {status === 'complete' ? (
+                        <Check size={20} />
+                      ) : (
+                        <span style={{ fontWeight: '600' }}>{index + 1}</span>
+                      )}
+                    </div>
+
+                    <div className="mt-2">
+                      <small
+                        className="text-muted"
+                        style={{
+                          fontWeight: status === 'current' ? '600' : '400',
+                        }}
+                      >
+                        {step.label}
+                      </small>
+                    </div>
+
+                    {index < steps.length - 1 && (
+                      <Progress
+                        value={index < activeStep ? 100 : 0}
+                        color="success"
+                        style={{
+                          position: 'absolute',
+                          top: '20px',
+                          left: '50%',
+                          width: '100%',
+                          height: '2px',
+                          zIndex: -1,
+                        }}
+                      />
                     )}
-                  </Select>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Content */}
+          <CardBody className="p-4">
+            {renderStepContent()}
+          </CardBody>
+
+          {/* Actions */}
+          <CardFooter className="bg-light d-flex justify-content-between align-items-center p-4">
+            <Button
+              color="light"
+              onClick={handleBack}
+              className="d-flex align-items-center gap-2"
+            >
+              <ChevronLeft size={16} />
+              {activeStep === 0 ? t('back') : t('previous')}
+            </Button>
+
+            <div className="d-flex gap-2">
+              {activeStep < steps.length - 1 && (
+                <Button
+                  color="success"
+                  onClick={handleNext}
+                  className="d-flex align-items-center gap-2"
+                >
+                  {t('next')}
+                  <ChevronRight size={16} />
+                </Button>
+              )}
+
+              {activeStep === steps.length - 1 && (
+                <>
+                  {isEditMode && (
+                    <Button
+                      color="outline-success"
+                      onClick={handleExportToExcel}
+                      className="d-flex align-items-center gap-2"
+                    >
+                      <Package size={16} />
+                      {t('export_to_excel')}
+                    </Button>
+                  )}
+                  <Button
+                    color="success"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="d-flex align-items-center gap-2"
+                  >
+                    {saving ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      <Check size={16} />
+                    )}
+                    {t('save')}
+                  </Button>
+                </>
+              )}
+            </div>
+          </CardFooter>
+        </Card>
+      </Container>
+    </TemplateLayout>
+  );
+};
+
+const handleBackOld
+ = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} md={3}>
