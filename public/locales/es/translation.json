@@ -1264,5 +1264,15 @@
   "editMode": "Modo Edición",
   "profitable": "Rentable",
   "notProfitable": "No rentable",
-  "hectaresSelected": "Hectáreas seleccionadas"
+  "hectaresSelected": "Hectáreas seleccionadas",
+  "excelTools": "Herramientas Excel",
+  "excelToolsDescription": "Importe o exporte las variables del análisis de suelo",
+  "downloadTemplate": "Plantilla",
+  "importExcel": "Importar Excel",
+  "exportExcel": "Exportar Excel",
+  "exportSuccess": "Archivo exportado exitosamente",
+  "exportError": "Error al exportar el archivo",
+  "importSuccess": "Datos importados exitosamente",
+  "importError": "Error al importar el archivo",
+  "templateDownloaded": "Plantilla descargada exitosamente"
 }

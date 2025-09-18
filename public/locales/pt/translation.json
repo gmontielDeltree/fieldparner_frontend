@@ -1267,6 +1267,16 @@
   "editMode": "Modo de Edição",
   "profitable": "Rentável",
   "notProfitable": "Não rentável",
-  "hectaresSelected": "Hectares selecionados"
+  "hectaresSelected": "Hectares selecionados",
+  "excelTools": "Ferramentas Excel",
+  "excelToolsDescription": "Importe ou exporte as variáveis de análise do solo",
+  "downloadTemplate": "Modelo",
+  "importExcel": "Importar Excel",
+  "exportExcel": "Exportar Excel",
+  "exportSuccess": "Arquivo exportado com sucesso",
+  "exportError": "Erro ao exportar arquivo",
+  "importSuccess": "Dados importados com sucesso",
+  "importError": "Erro ao importar arquivo",
+  "templateDownloaded": "Modelo baixado com sucesso"
 }
 
