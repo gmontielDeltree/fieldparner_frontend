@@ -1259,10 +1259,10 @@
   "no_services_in_campaign_activities": "As atividades desta campanha não possuem serviços associados.",
   "create_planning_activities_with_services": "Para obter valores reais, crie atividades planejadas que incluam serviços no módulo de planejamento.",
   "realized": "Feito",
-  "create_mode": "Modo de Criação",
-  "edit_mode": "Modo de Edição",
+  "createMode": "Modo de Criação",
+  "editMode": "Modo de Edição",
   "profitable": "Rentável",
-  "not_profitable": "Não rentável",
-  "hectares_selected": "Hectares selecionados"
+  "notProfitable": "Não rentável",
+  "hectaresSelected": "Hectares selecionados"
 }
 

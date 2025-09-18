@@ -1534,7 +1534,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       {formData.has > 0 && (
         <MuiAlert severity="info" sx={{ mt: 3 }}>
           <Typography variant="caption" display="block">
-            <strong>{t("hectares_selected")}: {formatNumber(formData.has, 2)} ha</strong>
+            <strong>{t("hectaresSelected")}: {formatNumber(formData.has, 2)} ha</strong>
           </Typography>
         </MuiAlert>
       )}
@@ -1592,7 +1592,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                 ARS {formatNumber(totales.tendencia)}
               </Typography>
               <Typography variant="caption" display="block" color="text.secondary">
-                {totales.tendencia >= 0 ? '✅ ' + t('profitable') : '❌ ' + t('not_profitable')}
+                {totales.tendencia >= 0 ? '✅ ' + t('profitable') : '❌ ' + t('notProfitable')}
               </Typography>
             </Box>
           </Grid>
@@ -1630,7 +1630,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   <div className="text-white">
                     <h4 className="mb-0 fw-bold">{t("annual_plan_valorization")}</h4>
                     <small className="opacity-75">
-                      {isEditMode ? t('edit_mode') : t('create_mode')}
+                      {isEditMode ? t("editMode") : t("createMode")}
                     </small>
                   </div>
                 </div>
