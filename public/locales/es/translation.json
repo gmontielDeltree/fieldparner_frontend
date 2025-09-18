@@ -1274,5 +1274,6 @@
   "exportError": "Error al exportar el archivo",
   "importSuccess": "Datos importados exitosamente",
   "importError": "Error al importar el archivo",
-  "templateDownloaded": "Plantilla descargada exitosamente"
+  "templateDownloaded": "Plantilla descargada exitosamente",
+  "noFieldSpecified": "Sin campo especificado"
 }

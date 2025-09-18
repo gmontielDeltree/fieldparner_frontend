@@ -49,6 +49,7 @@ interface Activity {
     observaciones?: string
   }
   lote_uuid?: string
+  loteUuid?: string
   estado?: string
   isPlanificada?: boolean
   condiciones?: {
@@ -58,6 +59,11 @@ interface Activity {
     humedad_max?: number
     velocidad_min?: number
     velocidad_max?: number
+  }
+  // Added field/lot information
+  fieldInfo?: {
+    fieldName?: string
+    lotName?: string
   }
 }
 
@@ -89,15 +95,99 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
   const [selectedActivities, setSelectedActivities] = useState<Activity[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [loading, setLoading] = useState(true)
-  
+  const [lotsMap, setLotsMap] = useState<Map<string, any>>(new Map())
+  const [fieldsMap, setFieldsMap] = useState<Map<string, any>>(new Map())
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([])
+  const [fieldsWithActivities, setFieldsWithActivities] = useState<Map<string, string>>(new Map())
+
   const selectedCampaign = useAppSelector((state) => state.campaign.selectedCampaign)
   const effectiveCampaignId = campaignId || selectedCampaign?._id
 
   const locale = i18n.language === 'es' ? es : i18n.language === 'pt' ? ptBR : enUS
 
   useEffect(() => {
+    loadFieldsAndLots()
     loadActivities()
   }, [effectiveCampaignId])
+
+  // Reload activities when fields and lots are loaded
+  useEffect(() => {
+    if (fieldsMap.size > 0 || lotsMap.size > 0) {
+      loadActivities()
+    }
+  }, [fieldsMap, lotsMap])
+
+  // Listen for database changes to reload activities
+  useEffect(() => {
+    const db = dbContext.fields
+
+    const changesHandler = db.changes({
+      since: 'now',
+      live: true,
+      include_docs: false
+    }).on('change', (change) => {
+      // Reload when activities or campos are modified
+      if (change.id.startsWith('actividad:') ||
+          change.id.startsWith('planactividad:') ||
+          change.id.startsWith('campos_')) {
+        console.log('Database change detected, reloading...')
+        loadFieldsAndLots()
+        loadActivities()
+      }
+    })
+
+    return () => {
+      changesHandler.cancel()
+    }
+  }, [effectiveCampaignId])
+
+  const loadFieldsAndLots = async () => {
+    try {
+      const db = dbContext.fields
+
+      // Load campos (fields) with their lotes
+      const camposResult = await db.allDocs({
+        include_docs: true,
+        startkey: 'campos_',
+        endkey: 'campos_\ufff0'
+      })
+
+      console.log('Campos loaded:', camposResult.rows.length, 'campos')
+      const newFieldsMap = new Map()
+      const newLotsMap = new Map()
+
+      // Process campos and extract lotes
+      camposResult.rows.forEach(row => {
+        if (row.doc) {
+          const campo = row.doc as any
+          console.log('Processing campo:', campo._id, campo.nombre || campo.properties?.nombre || campo.name)
+          newFieldsMap.set(campo._id, campo)
+
+          // Extract lotes from campo
+          if (campo.lotes && Array.isArray(campo.lotes)) {
+            console.log(`Campo ${campo._id} has ${campo.lotes.length} lotes`)
+            campo.lotes.forEach((lote: any) => {
+              if (lote.properties?.uuid) {
+                // Store lote with reference to its campo
+                newLotsMap.set(lote.properties.uuid, {
+                  ...lote,
+                  campoId: campo._id,
+                  campoName: campo.nombre || campo.properties?.nombre || campo.name || campo._id
+                })
+                console.log('Added lote:', lote.properties.uuid, 'from campo:', campo.nombre || campo.properties?.nombre || campo.name)
+              }
+            })
+          }
+        }
+      })
+
+      console.log('Total lotes in map:', newLotsMap.size)
+      setFieldsMap(newFieldsMap)
+      setLotsMap(newLotsMap)
+    } catch (error) {
+      console.error('Error loading fields and lots:', error)
+    }
+  }
 
   const loadActivities = async () => {
     if (!effectiveCampaignId) {
@@ -126,17 +216,104 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
       const allActivities: Activity[] = []
 
       // Process regular activities
+      console.log('Processing regular activities:', regularActivitiesResult.rows.length, 'total')
+      console.log('Campaign filter - ID:', effectiveCampaignId, 'Name:', selectedCampaign?.name)
+
       regularActivitiesResult.rows.forEach((row) => {
         const doc = row.doc as any
-        if (doc && doc.campaña?.campaignId === effectiveCampaignId) {
-          allActivities.push(doc)
+        if (doc) {
+          // Check if activity matches current campaign by ID or name
+          const matchesCampaign = doc.campaña?.campaignId === effectiveCampaignId ||
+                                 doc.campaña?.campaignId === selectedCampaign?.name ||
+                                 doc.campaña?.name === selectedCampaign?.name
+
+          console.log('Activity:', {
+            id: doc._id,
+            tipo: doc.tipo,
+            campaignId: doc.campaña?.campaignId,
+            campaignName: doc.campaña?.name,
+            expectedCampaignId: effectiveCampaignId,
+            expectedCampaignName: selectedCampaign?.name,
+            matches: matchesCampaign,
+            lote_uuid: doc.lote_uuid || doc.loteUuid,
+            fecha: doc.detalles?.fecha_ejecucion_tentativa
+          })
+        }
+
+        // Match by campaign ID or campaign name
+        const matchesCampaign = doc && (
+          doc.campaña?.campaignId === effectiveCampaignId ||
+          doc.campaña?.campaignId === selectedCampaign?.name ||
+          doc.campaña?.name === selectedCampaign?.name
+        )
+
+        if (matchesCampaign) {
+          // Get lot and field information
+          const lotId = doc.lote_uuid || doc.loteUuid
+          let fieldInfo = {
+            fieldName: '',
+            lotName: ''
+          }
+
+          // Try to get lot info
+          if (lotId) {
+            // Lots are stored by UUID
+            const lot = lotsMap.get(lotId)
+            console.log('Looking for lot:', lotId, 'found:', !!lot)
+
+            if (lot) {
+              // Get lot name from properties
+              fieldInfo.lotName = lot.properties?.nombre || lot.properties?.name || ''
+
+              // Campo name was stored when we processed the data
+              fieldInfo.fieldName = lot.campoName || ''
+              console.log('Field info for activity:', fieldInfo)
+            }
+          }
+
+          allActivities.push({
+            ...doc,
+            fieldInfo
+          })
         }
       })
 
       // Process planned activities
+      console.log('Processing planned activities:', plannedActivitiesResult.rows.length, 'total')
       plannedActivitiesResult.rows.forEach((row) => {
         const doc = row.doc as any
-        if (doc && doc.campanaId === effectiveCampaignId) {
+
+        // Match by campaign ID or campaign name for planned activities
+        const matchesCampaign = doc && (
+          doc.campanaId === effectiveCampaignId ||
+          doc.campanaId === selectedCampaign?.name ||
+          doc.campaña?.campaignId === effectiveCampaignId ||
+          doc.campaña?.campaignId === selectedCampaign?.name ||
+          doc.campaña?.name === selectedCampaign?.name
+        )
+
+        if (matchesCampaign) {
+          // Get lot and field information
+          const lotId = doc.loteUuid || doc.lote_uuid
+          let fieldInfo = {
+            fieldName: '',
+            lotName: ''
+          }
+
+          // Try to get lot info
+          if (lotId) {
+            // Lots are stored by UUID
+            const lot = lotsMap.get(lotId)
+
+            if (lot) {
+              // Get lot name from properties
+              fieldInfo.lotName = lot.properties?.nombre || lot.properties?.name || ''
+
+              // Campo name was stored when we processed the data
+              fieldInfo.fieldName = lot.campoName || ''
+            }
+          }
+
           allActivities.push({
             ...doc,
             isPlanificada: true,
@@ -144,12 +321,49 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
               fecha_ejecucion_tentativa: doc.fecha,
               cultivo: doc.cultivo,
               hectareas: doc.area,
-            }
+            },
+            fieldInfo
           })
         }
       })
 
+      console.log('Total activities loaded:', allActivities.length)
+      console.log('Activities summary:', allActivities.map(a => ({
+        tipo: a.tipo,
+        fecha: a.detalles?.fecha_ejecucion_tentativa,
+        field: a.fieldInfo?.fieldName,
+        lot: a.fieldInfo?.lotName
+      })))
+
       setActivities(allActivities)
+
+      // Identify fields with activities in current month view
+      const fieldsSet = new Map<string, string>()
+      allActivities.forEach(activity => {
+        // Only count if activity has a valid date
+        const activityDateStr = activity.detalles?.fecha_ejecucion_tentativa
+        if (!activityDateStr) return
+
+        try {
+          const activityDate = parseISO(activityDateStr)
+          if (!isValid(activityDate)) return
+
+          // Get the campo ID from the lot
+          const lotId = activity.lote_uuid || activity.loteUuid
+          if (lotId) {
+            const lot = lotsMap.get(lotId)
+            if (lot?.campoId && lot?.campoName) {
+              fieldsSet.set(lot.campoId, lot.campoName)
+            }
+          }
+        } catch {
+          // Invalid date, skip
+        }
+      })
+      setFieldsWithActivities(fieldsSet)
+
+      // Initially select all fields
+      setSelectedFieldIds(Array.from(fieldsSet.keys()))
     } catch (error) {
       console.error('Error loading activities:', error)
     } finally {
@@ -175,7 +389,16 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
     return activities.filter(activity => {
       const activityDateStr = activity.detalles?.fecha_ejecucion_tentativa
       if (!activityDateStr) return false
-      
+
+      // Check if activity belongs to a selected field
+      const lotId = activity.lote_uuid || activity.loteUuid
+      if (lotId && selectedFieldIds.length > 0) {
+        const lot = lotsMap.get(lotId)
+        if (lot?.campoId && !selectedFieldIds.includes(lot.campoId)) {
+          return false
+        }
+      }
+
       try {
         const activityDate = parseISO(activityDateStr)
         return isValid(activityDate) && isSameDay(activityDate, date)
@@ -249,11 +472,11 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
                 {hasActivities && (
                   <Box sx={{ mt: 0.5, position: 'relative' }}>
                     {dayActivities.length > 1 && (
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          position: 'absolute', 
-                          top: -8, 
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
                           right: -4,
                           backgroundColor: theme.palette.primary.main,
                           color: 'white',
@@ -270,15 +493,41 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
                     )}
                     <Box sx={{ display: 'flex', gap: 0.3, flexWrap: 'wrap', justifyContent: 'center' }}>
                       {[...new Set(dayActivities.map(a => a.tipo))].slice(0, 3).map((tipo, index) => (
-                        <Box key={tipo} sx={{ position: 'relative' }}>
-                          {React.cloneElement(activityIcons[tipo] || <Event />, {
-                            sx: { 
-                              fontSize: 20, 
-                              color: activityColors[tipo] || '#9ca3af',
-                              opacity: 0.9,
-                            }
-                          })}
-                        </Box>
+                        <Tooltip
+                          key={tipo}
+                          title={
+                            <Box>
+                              <Typography variant="caption">{getActivityTranslation(tipo)}</Typography>
+                              {dayActivities
+                                .filter(a => a.tipo === tipo)
+                                .slice(0, 2)
+                                .map((act, i) => (
+                                  <Typography key={i} variant="caption" display="block" fontSize="10px">
+                                    {act.fieldInfo?.fieldName && act.fieldInfo?.lotName
+                                      ? `${act.fieldInfo.fieldName} - ${act.fieldInfo.lotName}`
+                                      : act.fieldInfo?.lotName || t('noFieldSpecified')}
+                                  </Typography>
+                                ))}
+                              {dayActivities.filter(a => a.tipo === tipo).length > 2 && (
+                                <Typography variant="caption" fontSize="10px">
+                                  +{dayActivities.filter(a => a.tipo === tipo).length - 2} más
+                                </Typography>
+                              )}
+                            </Box>
+                          }
+                          placement="top"
+                          arrow
+                        >
+                          <Box sx={{ position: 'relative', cursor: 'pointer' }}>
+                            {React.cloneElement(activityIcons[tipo] || <Event />, {
+                              sx: {
+                                fontSize: 20,
+                                color: activityColors[tipo] || '#9ca3af',
+                                opacity: 0.9,
+                              }
+                            })}
+                          </Box>
+                        </Tooltip>
                       ))}
                     </Box>
                   </Box>
@@ -334,16 +583,70 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
         )}
       </Box>
 
+      {/* Field Filter */}
+      {fieldsWithActivities.size > 0 && (
+        <Box sx={{ px: 2, pb: 1 }}>
+          <Box sx={{
+            p: 2,
+            backgroundColor: alpha(theme.palette.grey[100], 0.5),
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+          }}>
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mb: 1.5 }}>
+              Filtrar por Campo:
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {Array.from(fieldsWithActivities.entries()).map(([fieldId, fieldName]) => (
+                <Chip
+                  key={fieldId}
+                  label={fieldName}
+                  onClick={() => {
+                    setSelectedFieldIds(prev => {
+                      if (prev.includes(fieldId)) {
+                        // If removing this field and it's the last one, don't allow
+                        if (prev.length === 1) return prev
+                        return prev.filter(id => id !== fieldId)
+                      } else {
+                        return [...prev, fieldId]
+                      }
+                    })
+                  }}
+                  variant={selectedFieldIds.includes(fieldId) ? "filled" : "outlined"}
+                  color={selectedFieldIds.includes(fieldId) ? "primary" : "default"}
+                  sx={{
+                    fontWeight: selectedFieldIds.includes(fieldId) ? 600 : 400,
+                    '&:hover': {
+                      backgroundColor: selectedFieldIds.includes(fieldId)
+                        ? theme.palette.primary.dark
+                        : alpha(theme.palette.primary.main, 0.1),
+                    }
+                  }}
+                />
+              ))}
+              {selectedFieldIds.length < fieldsWithActivities.size && (
+                <Chip
+                  label="Ver todos"
+                  onClick={() => setSelectedFieldIds(Array.from(fieldsWithActivities.keys()))}
+                  variant="outlined"
+                  color="secondary"
+                  sx={{ fontStyle: 'italic' }}
+                />
+              )}
+            </Box>
+          </Box>
+        </Box>
+      )}
+
       {/* Calendar Navigation */}
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <IconButton onClick={handlePreviousMonth}>
           <ChevronLeft />
         </IconButton>
-        
+
         <Typography variant="h6" fontWeight="bold">
           {format(currentDate, 'MMMM yyyy', { locale })}
         </Typography>
-        
+
         <IconButton onClick={handleNextMonth}>
           <ChevronRight />
         </IconButton>
@@ -455,14 +758,37 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
                             <Chip label={t('planned')} size="small" color="info" variant="outlined" />
                           )}
                           {activity.estado && (
-                            <Chip 
-                              label={activity.estado} 
-                              size="small" 
+                            <Chip
+                              label={activity.estado}
+                              size="small"
                               color={activity.estado === 'completada' ? 'success' : 'default'}
                               variant="outlined"
                             />
                           )}
                         </Box>
+                        {/* Field and Lot information */}
+                        {(activity.fieldInfo?.fieldName || activity.fieldInfo?.lotName) && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              📍
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              {activity.fieldInfo.fieldName && (
+                                <Typography variant="body2" color="text.secondary">
+                                  <strong>Campo:</strong> {activity.fieldInfo.fieldName}
+                                </Typography>
+                              )}
+                              {activity.fieldInfo.fieldName && activity.fieldInfo.lotName && (
+                                <Typography variant="body2" color="text.secondary">•</Typography>
+                              )}
+                              {activity.fieldInfo.lotName && (
+                                <Typography variant="body2" color="text.secondary">
+                                  <strong>Lote:</strong> {activity.fieldInfo.lotName}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Box>
+                        )}
                       </Box>
                     </Box>
 
