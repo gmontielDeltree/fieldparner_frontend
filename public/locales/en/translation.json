@@ -1256,5 +1256,15 @@
   "editMode": "Edit Mode",
   "profitable": "Profitable",
   "notProfitable": "Not profitable",
-  "hectaresSelected": "Selected hectares"
+  "hectaresSelected": "Selected hectares",
+  "excelTools": "Excel Tools",
+  "excelToolsDescription": "Import or export soil analysis variables",
+  "downloadTemplate": "Template",
+  "importExcel": "Import Excel",
+  "exportExcel": "Export Excel",
+  "exportSuccess": "File exported successfully",
+  "exportError": "Error exporting file",
+  "importSuccess": "Data imported successfully",
+  "importError": "Error importing file",
+  "templateDownloaded": "Template downloaded successfully"
 }
