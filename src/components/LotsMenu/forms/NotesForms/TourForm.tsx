@@ -97,7 +97,7 @@ const FeatureAccordion = styled(Accordion)({
   margin: '10px 0',
 })
 
-function TourForm({ lot, formData, setFormData, tourSave }) {
+function TourForm({ lot, formData, setFormData, tourSave, activeStep = 0 }) {
   const { t } = useTranslation()
   const db = dbContext.fields
   const [isPointMode, setIsPointMode] = useState(false)
@@ -203,34 +203,19 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
     ))
   }
 
-  return (
-    <CustomPaper elevation={3}>
-      <AnimatePresence mode="wait">
-        {isPointMode ? (
+  // Function to render content based on active step
+  const renderStepContent = () => {
+    switch (activeStep) {
+      case 0: // General Information
+        return (
           <motion.div
-            key="pointForm"
+            key="generalInfo"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            <PointForm
-              lot={lot}
-              formData={formData}
-              setFormData={setFormData}
-              setIsPointMode={setIsPointMode}
-              onTourSave={tourSave}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="mainForm"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-          >
-            <Title>{t('noteTitle')}</Title>
+            <Title>{t('generalInfo')}</Title>
             <FormControl fullWidth>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12}>
@@ -245,7 +230,7 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
                       label={t('dateLabel')}
-                      value={formData.fecha || null} // Use null instead of new Date()
+                      value={formData.fecha || null}
                       onChange={(newValue) => {
                         const updatedFormData = { ...formData, fecha: newValue }
                         setFormData(updatedFormData)
@@ -253,7 +238,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <TimePicker
@@ -266,7 +250,6 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                     />
                   </LocalizationProvider>
                 </Grid>
-
                 <Grid item xs={12} sm={4}>
                   <LocalizationProvider dateAdapter={AdapterDateFns}>
                     <DatePicker
@@ -284,6 +267,38 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 </Grid>
               </Grid>
             </FormControl>
+          </motion.div>
+        )
+
+      case 1: // Inspection Points
+        if (isPointMode) {
+          return (
+            <motion.div
+              key="pointForm"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <PointForm
+                lot={lot}
+                formData={formData}
+                setFormData={setFormData}
+                setIsPointMode={setIsPointMode}
+                onTourSave={tourSave}
+              />
+            </motion.div>
+          )
+        }
+        return (
+          <motion.div
+            key="inspectionPoints"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Title>{t('inspectionPoints')}</Title>
             <Grid item xs={12}>
               <Button
                 variant="contained"
@@ -293,15 +308,78 @@ function TourForm({ lot, formData, setFormData, tourSave }) {
                 {t('newPointButton')}
               </Button>
             </Grid>
-
-            {formData.features.length > 0 ? (
-              <Grid item xs={12} style={{ marginTop: '50px' }}>
-                <Title>{t('existingPointsTitle')}</Title>
+            {formData.features.length > 0 && (
+              <Grid item xs={12} style={{ marginTop: '30px' }}>
+                <Typography variant="h6">{t('existingPointsTitle')}</Typography>
                 {renderFeatureList()}
               </Grid>
-            ) : null}
+            )}
           </motion.div>
-        )}
+        )
+
+      case 2: // Summary
+        return (
+          <motion.div
+            key="summary"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            <Title>{t('summaryAndReview')}</Title>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography variant="subtitle1" className="mb-2">
+                  {t('generalInfo')}
+                </Typography>
+                <List>
+                  <ListItem>
+                    <ListItemText
+                      primary={t('nameLabel')}
+                      secondary={formData.nombre || t('notSpecified')}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary={t('dateLabel')}
+                      secondary={formData.fecha ? new Date(formData.fecha).toLocaleDateString() : t('notSpecified')}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary={t('timeLabel')}
+                      secondary={formData.hora ? new Date(formData.hora).toLocaleTimeString() : t('notSpecified')}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary={t('nextVisitLabel')}
+                      secondary={formData.proxima_visita ? new Date(formData.proxima_visita).toLocaleDateString() : t('notSpecified')}
+                    />
+                  </ListItem>
+                </List>
+              </Grid>
+              {formData.features.length > 0 && (
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" className="mb-2">
+                    {t('inspectionPoints')} ({formData.features.length})
+                  </Typography>
+                  {renderFeatureList()}
+                </Grid>
+              )}
+            </Grid>
+          </motion.div>
+        )
+
+      default:
+        return null
+    }
+  }
+
+  return (
+    <CustomPaper elevation={3}>
+      <AnimatePresence mode="wait">
+        {renderStepContent()}
       </AnimatePresence>
     </CustomPaper>
   )
