@@ -62,16 +62,16 @@ import { useCampaign, useField, useCrops, useAppSelector } from "../../hooks";
 import { useCountry } from "../../hooks/useCountry";
 import { usePlanActividad, useListaDeCiclos } from "../../hooks/usePlanifications";
 import { useLabores } from "../../hooks/useLabores";
-import { 
-  IAnnualPlan, 
-  IInsumosxAnnualPlan, 
+import {
+  IAnnualPlan,
+  IInsumosxAnnualPlan,
   IServicxAnnualPlan,
-  IAnnualPlanValorization 
+  IAnnualPlanValorization
 } from "../../interfaces/annualPlanValorization";
-import { 
+import {
   IActividadPlanificacion,
   IInsumosPlanificacion,
-  ILaboresPlanificacion 
+  ILaboresPlanificacion
 } from "../../interfaces/planification";
 import { Campaign, Field, Lot } from "../../types";
 import { dbContext } from "../../services";
@@ -88,7 +88,7 @@ interface FormData {
   monedaAlterId: string;
   cotizMonAlt: number;
   operacMonAlt: 'multiplicar' | 'dividir';
-  
+
   // Sección 2 (calculados)
   gastosMonLocal: number;
   gastosMonAlt: number;
@@ -123,7 +123,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   // Step management for better UX
   const [activeStep, setActiveStep] = useState(0);
   const [maxStepReached, setMaxStepReached] = useState(0);
-  
+
   // Mock data - esto vendría de la base de datos
   const [annualPlan, setAnnualPlan] = useState<any | null>(null);
   const [insumos, setInsumos] = useState<IInsumosxAnnualPlan[]>([]);
@@ -279,17 +279,17 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const handleLoteChange = (loteValue: string) => {
     console.log(`🔄 handleLoteChange: ${loteValue}`);
     console.log(`🔄 Current formData.loteId: ${formData.loteId}`);
-    
+
     const selectedField = fields.find(f => f._id === formData.campoId);
     const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === loteValue);
-    
+
     if (selectedLot) {
       const newHectareas = selectedLot.properties.hectareas || 0;
       console.log('📍 Lote seleccionado:', {
         lote: selectedLot.properties.nombre,
         hectareas: newHectareas
       });
-      
+
       // Actualizar directamente con todos los valores necesarios
       setFormData(prev => {
         const newFormData = {
@@ -314,10 +314,10 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           ...servicio,
           valorTotal: (servicio.valorUnidad || 0) * newHectareas
         }));
-        
+
         setInsumos(updatedInsumos);
         setServicios(updatedServicios);
-        
+
         // Recalcular totales
         setTimeout(() => recalcularTotalesConDatos(updatedInsumos, updatedServicios), 0);
       }
@@ -342,7 +342,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const handleFieldChange = (field: keyof FormData, value: any) => {
     console.log(`🔄 handleFieldChange: ${field} = ${value}`);
     console.log(`🔄 Current formData.loteId: ${formData.loteId}`);
-    
+
     // Crear objeto con los nuevos datos
     let updatedFormData = { ...formData, [field]: value };
 
@@ -351,11 +351,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       case 'campanaId':
         if (value !== formData.campanaId) {
           console.log('🎯 Nueva campaña seleccionada:', value);
-          
+
           // Cargar zafras/ciclos de la campaña
           const campaignCycles = ciclos.ciclos?.filter(c => c.campanaId === value) || [];
           const uniqueZafras = new Map();
-          
+
           campaignCycles.forEach(ciclo => {
             if (ciclo.cultivoId) {
               const crop = crops.find(c => c._id === ciclo.cultivoId);
@@ -363,11 +363,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
               uniqueZafras.set(ciclo.cultivoId, { id: ciclo.cultivoId, name: zafraName });
             }
           });
-          
+
           setAvailableZafras(Array.from(uniqueZafras.values()));
           setAvailableCampos(fields);
           setAvailableLotes([]);
-          
+
           updatedFormData = {
             ...updatedFormData,
             zafra: '',
@@ -375,7 +375,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             loteId: '',
             has: 0
           };
-          
+
           if (value) {
             loadPlanificationData(value as string, '', '', '');
           }
@@ -411,18 +411,18 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     console.log('🔧 handleInsumoValorChange called:', { index, valor, has: formData.has });
     const updatedInsumos = [...insumos];
     console.log('🔧 Current insumo before update:', updatedInsumos[index]);
-    
+
     // Validate that valor is a valid positive number
     const validValue = isNaN(valor) || valor < 0 ? 0 : valor;
     updatedInsumos[index].valorUnidad = validValue;
-    
+
     // Calcular valor total: valor unitario * cantidad por hectárea * hectáreas totales
     const cantidadPorHa = updatedInsumos[index].cantidadHa || 0;
     const hectareas = formData.has || 0;
     const valorTotal = valor * cantidadPorHa * hectareas;
-    
+
     updatedInsumos[index].valorTotal = valorTotal;
-    
+
     console.log('🔧 Cálculo detallado:', {
       valorUnidad: valor,
       cantidadPorHa: cantidadPorHa,
@@ -430,7 +430,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       valorTotal: valorTotal,
       formula: `${valor} * ${cantidadPorHa} * ${hectareas} = ${valorTotal}`
     });
-    
+
     setInsumos(updatedInsumos);
     console.log('🔧 Calling recalcularTotales with updated insumos...');
     // Recalcular totales con los nuevos valores directamente
@@ -440,23 +440,23 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const handleServicioValorChange = (index: number, valor: number) => {
     console.log('🔨 handleServicioValorChange called:', { index, valor, has: formData.has });
     const updatedServicios = [...servicios];
-    
+
     // Validate that valor is a valid positive number
     const validValue = isNaN(valor) || valor < 0 ? 0 : valor;
     updatedServicios[index].valorUnidad = validValue;
-    
+
     // Para servicios, el valor unitario es por hectárea
     const hectareas = formData.has || 0;
     const valorTotal = valor * hectareas;
     updatedServicios[index].valorTotal = valorTotal;
-    
+
     console.log('🔨 Cálculo servicio:', {
       valorUnidad: valor,
       hectareas: hectareas,
       valorTotal: valorTotal,
       formula: `${valor} * ${hectareas} = ${valorTotal}`
     });
-    
+
     setServicios(updatedServicios);
     // Recalcular totales con los nuevos valores directamente
     recalcularTotalesConDatos(insumos, updatedServicios);
@@ -470,12 +470,12 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     console.log('💰 recalcularTotalesConDatos called');
     console.log('💰 Current insumos for calculation:', insumosData.map(i => ({ item: i.item, valorTotal: i.valorTotal })));
     console.log('💰 Current servicios for calculation:', serviciosData.map(s => ({ item: s.item, valorTotal: s.valorTotal })));
-    
+
     // Calcular gastos totales
     const gastosInsumos = insumosData.reduce((sum, item) => sum + (item.valorTotal || 0), 0);
     const gastosServicios = serviciosData.reduce((sum, item) => sum + (item.valorTotal || 0), 0);
     const gastosTotal = gastosInsumos + gastosServicios;
-    
+
     console.log('💰 Calculated totals:', {
       gastosInsumos,
       gastosServicios,
@@ -488,7 +488,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         loteId: currentFormData.loteId,
         has: currentFormData.has
       });
-      
+
       // Calcular rendimiento (rinde histórico en kg/ha * hectáreas * cotización futura)
       const rindeKgHa = currentFormData.rindeHistorico * 100; // Convertir quintales a kg
       const rendimientoTotal = rindeKgHa * currentFormData.has * (currentFormData.cotizFutCer / 1000); // Cotización es por tonelada
@@ -522,14 +522,14 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         tendenciaMonLocal: tendencia,
         tendenciaMonAlt: tendenciaMonAlt,
       };
-      
+
       console.log('💰 Updating formData with new values:', {
         loteId: newFormData.loteId,
         gastosMonLocal: gastosTotal,
         rendimientoMonLocal: rendimientoTotal,
         tendenciaMonLocal: tendencia
       });
-      
+
       return newFormData;
     });
   };
@@ -548,9 +548,9 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const selectedCampaign = campaigns.find(c => c._id === formData.campanaId);
       const selectedField = fields.find(f => f._id === formData.campoId);
       const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === formData.loteId);
-      const cultivoId = ciclos.ciclos?.find(c => 
-        c.campanaId === formData.campanaId && 
-        c.campoId === formData.campoId && 
+      const cultivoId = ciclos.ciclos?.find(c =>
+        c.campanaId === formData.campanaId &&
+        c.campoId === formData.campoId &&
         c.loteId === selectedLot?.properties.uuid
       )?.cultivoId || '';
       const selectedCrop = crops.find(c => c._id === cultivoId);
@@ -597,7 +597,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       }
 
       // TODO: Guardar también los detalles de insumos y servicios en una colección separada
-      
+
       navigate("/init/overview/annual-plan-valorization");
     } catch (error) {
       console.error("Error saving valorization:", error);
@@ -646,14 +646,14 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     try {
       // Importar dinámicamente la función de exportación
       const { exportValorizationToExcel } = await import('../../helpers/excelExport');
-      
+
       // Obtener información necesaria para la exportación
       const selectedCampaign = campaigns.find(c => c._id === formData.campanaId);
       const selectedField = fields.find(f => f._id === formData.campoId);
       const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === formData.loteId);
-      const cultivoId = ciclos.ciclos?.find(c => 
-        c.campanaId === formData.campanaId && 
-        c.campoId === formData.campoId && 
+      const cultivoId = ciclos.ciclos?.find(c =>
+        c.campanaId === formData.campanaId &&
+        c.campoId === formData.campoId &&
         c.loteId === selectedLot?.properties.uuid
       )?.cultivoId || '';
       const selectedCrop = crops.find(c => c._id === cultivoId);
@@ -746,13 +746,13 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const loadPlanificationData = async (campanaId: string, campoId: string, loteId: string, zafra: string) => {
     try {
       console.log('Loading planification data for campaign:', { campanaId, zafra });
-      
+
       // Limpiar arrays al inicio
       setInsumos([]);
       setServicios([]);
-      
+
       // Buscar TODOS los ciclos de la campaña (no solo del lote específico)
-      const allCampaignCycles = ciclos.ciclos?.filter(c => 
+      const allCampaignCycles = ciclos.ciclos?.filter(c =>
         c.campanaId === campanaId
       ) || [];
 
@@ -769,7 +769,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       // Recopilar todas las actividades de todos los ciclos de la campaña
       const db = dbContext.fields as unknown as PouchDB.Database<IActividadPlanificacion>;
       let allActivitiesIds: string[] = [];
-      
+
       for (const cycle of allCampaignCycles) {
         console.log('Cycle:', cycle._id, 'Activities:', cycle.actividadesIds);
         allActivitiesIds = [...allActivitiesIds, ...(cycle.actividadesIds || [])];
@@ -791,11 +791,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
       console.log('Activities found:', actividadesResult.rows.length);
       console.log('Activities result:', actividadesResult);
-      
+
       // Filtrar solo las actividades que tienen documento
       const validActivities = actividadesResult.rows.filter(row => row.doc && !row.error);
       console.log('Valid activities with documents:', validActivities.length);
-      
+
       // Mostrar cada actividad encontrada
       actividadesResult.rows.forEach((row, index) => {
         if (row.doc) {
@@ -825,12 +825,12 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           console.log(`Processing activity ${actividad._id}:`);
           console.log('  - insumosLineasIds:', actividad.insumosLineasIds);
           console.log('  - laboresLineasIds:', actividad.laboresLineasIds);
-          
+
           if (actividad.insumosLineasIds && actividad.insumosLineasIds.length > 0) {
             allInsumosIds.push(...actividad.insumosLineasIds);
             console.log('  - Added', actividad.insumosLineasIds.length, 'insumo IDs');
           }
-          
+
           if (actividad.laboresLineasIds && actividad.laboresLineasIds.length > 0) {
             allServiciosIds.push(...actividad.laboresLineasIds);
             console.log('  - Added', actividad.laboresLineasIds.length, 'servicio IDs');
@@ -869,7 +869,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             console.log(`🔍   - insumoId: ${linea.insumoId}`);
             console.log(`🔍   - dosis: ${linea.dosis}`);
             console.log(`🔍   - totalCantidad: ${linea.totalCantidad}`);
-            
+
             if (!linea.insumoId) {
               console.log('🔍   - Skipping: no insumoId');
               return;
@@ -886,11 +886,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
             const labor = getActivityTypeForLine(linea, actividadesResult.rows);
             console.log(`🔍   - Labor: ${labor}`);
-            
+
             // Usar la cantidad más apropiada
             const cantidad = linea.dosis || linea.totalCantidad || 0;
             console.log(`🔍   - Final cantidad to use: ${cantidad}`);
-            
+
             if (insumosGrouped.has(linea.insumoId)) {
               const existing = insumosGrouped.get(linea.insumoId)!;
               existing.totalCantidad += cantidad;
@@ -908,7 +908,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             }
           })
         );
-        
+
         console.log('🔍 Final insumosGrouped map:', insumosGrouped);
 
         // Obtener el total de hectáreas de la campaña
@@ -928,21 +928,21 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             totalHectareasCampaign += lot.properties.hectareas || 0;
           }
         }
-        
+
         console.log(`🏞️ Total hectareas in campaign: ${totalHectareasCampaign}`);
 
         // Convertir a array de IInsumosxAnnualPlan
         console.log('📋 Converting to final insumos array...');
         const insumosData: IInsumosxAnnualPlan[] = Array.from(insumosGrouped.values()).map((item, index) => {
           const cantidadPorHa = totalHectareasCampaign > 0 ? item.totalCantidad / totalHectareasCampaign : item.totalCantidad;
-          
+
           console.log(`📋 Insumo ${index + 1} conversion:`, {
             name: item.name,
             totalCantidad: item.totalCantidad,
             totalHectareasCampaign: totalHectareasCampaign,
             cantidadPorHa: cantidadPorHa
           });
-          
+
           return {
             _id: `valorization_insumo_${index}`,
             annualPlanId: 'temp_plan_id',
@@ -990,7 +990,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         await Promise.all(
           validServicios.map(async (linea, index) => {
             console.log(`Processing servicio line ${index + 1}:`, linea);
-            
+
             if (!linea.laborId) {
               console.log('  - Skipping: no laborId');
               return;
@@ -1008,7 +1008,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
             const activityType = getActivityTypeForLine(linea, actividadesResult.rows);
             console.log('  - Activity type:', activityType);
-            
+
             if (serviciosGrouped.has(linea.laborId)) {
               const existing = serviciosGrouped.get(linea.laborId)!;
               existing.totalHectareas += (linea.hectareas || 1);
@@ -1030,7 +1030,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             }
           })
         );
-        
+
         console.log('Servicios grouped map:', serviciosGrouped);
 
         // Convertir a array de IServicxAnnualPlan
@@ -1063,12 +1063,12 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       console.log(`Actividades procesadas: ${actividadesResult?.rows?.length || 0}`);
       console.log(`Total IDs de insumos: ${allInsumosIds?.length || 0}`);
       console.log(`Total IDs de servicios: ${allServiciosIds?.length || 0}`);
-      
+
       if (allServiciosIds?.length === 0) {
         console.log('⚠️  No se encontraron servicios porque las actividades de esta campaña no tienen laboresLineasIds definidos');
         console.log('💡  Esto puede ser normal si las actividades solo usan insumos o si son actividades internas');
         console.log('🔍  Iniciando investigación de actividades con servicios en toda la base de datos...');
-        
+
         // Investigar si existen actividades con servicios en toda la base de datos
         try {
           const allActivitiesResult = await dbContext.fields.allDocs({
@@ -1077,19 +1077,19 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             include_docs: true,
             limit: 100 // Limitar para evitar sobrecarga
           });
-          
+
           console.log('🔍  Total de actividades planificadas encontradas:', allActivitiesResult.rows.length);
-          
+
           let activitiesWithServices = 0;
           let activitiesWithInsumos = 0;
           let totalActivities = 0;
           const sampleActivitiesWithServices = [];
-          
+
           for (const row of allActivitiesResult.rows) {
             if (row.doc) {
               totalActivities++;
               const activity = row.doc as any;
-              
+
               if (activity.laboresLineasIds && activity.laboresLineasIds.length > 0) {
                 activitiesWithServices++;
                 if (sampleActivitiesWithServices.length < 3) {
@@ -1102,43 +1102,43 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   });
                 }
               }
-              
+
               if (activity.insumosLineasIds && activity.insumosLineasIds.length > 0) {
                 activitiesWithInsumos++;
               }
             }
           }
-          
+
           console.log('📊  ESTADÍSTICAS DE ACTIVIDADES PLANIFICADAS:');
           console.log(`     • Total de actividades: ${totalActivities}`);
-          console.log(`     • Con insumos: ${activitiesWithInsumos} (${totalActivities > 0 ? ((activitiesWithInsumos/totalActivities)*100).toFixed(1) : 0}%)`);
-          console.log(`     • Con servicios: ${activitiesWithServices} (${totalActivities > 0 ? ((activitiesWithServices/totalActivities)*100).toFixed(1) : 0}%)`);
-          
+          console.log(`     • Con insumos: ${activitiesWithInsumos} (${totalActivities > 0 ? ((activitiesWithInsumos / totalActivities) * 100).toFixed(1) : 0}%)`);
+          console.log(`     • Con servicios: ${activitiesWithServices} (${totalActivities > 0 ? ((activitiesWithServices / totalActivities) * 100).toFixed(1) : 0}%)`);
+
           if (sampleActivitiesWithServices.length > 0) {
             console.log('🎯  EJEMPLOS DE ACTIVIDADES CON SERVICIOS:');
             sampleActivitiesWithServices.forEach((sample, index) => {
               console.log(`       ${index + 1}. ${sample.id} (${sample.tipo}) - ${sample.laboresCount} servicios, ${sample.insumosCount} insumos`);
             });
-            
+
             // Si encontramos actividades con servicios, intentar cargar una como ejemplo
             const exampleActivity = sampleActivitiesWithServices[0];
             console.log('🧪  Intentando cargar servicios de actividad ejemplo:', exampleActivity.id);
-            
+
             try {
               const exampleDoc = await dbContext.fields.get(exampleActivity.id) as any;
               const exampleLaboresResult = await dbContext.fields.allDocs({
                 keys: exampleDoc.laboresLineasIds,
                 include_docs: true
               });
-              
+
               console.log('🔍  Servicios de ejemplo encontrados:', exampleLaboresResult.rows.length);
-              
+
               const serviciosEjemplo: IServicxAnnualPlan[] = [];
               for (const laborRow of exampleLaboresResult.rows) {
                 if (laborRow.doc) {
                   const lineaLabor = laborRow.doc as any;
                   const labor = getLaborFromId(lineaLabor.laborId);
-                  
+
                   serviciosEjemplo.push({
                     _id: `example_servicio_${Date.now()}_${Math.random()}`,
                     annualPlanId: 'temp_plan_id',
@@ -1156,7 +1156,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   });
                 }
               }
-              
+
               if (serviciosEjemplo.length > 0) {
                 console.log('✅  Cargando servicios de ejemplo basados en actividades reales:', serviciosEjemplo);
                 setServicios(serviciosEjemplo);
@@ -1191,8 +1191,8 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     for (const row of activities) {
       if (row.doc) {
         const actividad = row.doc as IActividadPlanificacion;
-        if (actividad.insumosLineasIds?.includes(linea._id) || 
-            actividad.laboresLineasIds?.includes(linea._id)) {
+        if (actividad.insumosLineasIds?.includes(linea._id) ||
+          actividad.laboresLineasIds?.includes(linea._id)) {
           return getActivityTypeName(actividad.tipo);
         }
       }
