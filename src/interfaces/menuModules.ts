@@ -13,6 +13,7 @@ export interface MenuModules extends Document {
   full?: string;
   light?: string;
   icon?: string | null;
+  route?: string;
 }
 
 export interface MenuModulesPermission extends MenuModules {

@@ -1,3 +1,4 @@
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -14,68 +15,216 @@ import {
 } from '@mui/material';
 import {
   ChevronLeft as ChevronLeftIcon,
-  LocalShipping as LocalShippingIcon,
-  Settings as SettingsIcon,
-  Group as GroupIcon,
-  Inventory as InventoryIcon,
-  Warehouse as WarehouseIcon,
-  SyncAlt as SyncAltIcon,
-  QueryStats as QueryStatsIcon,
-  Transform as TransformIcon,
-  Agriculture as AgricultureIcon,
-  AddLocationAlt as AddLocationAltIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
-  Security as SecurityIcon,
-  ListAlt as ListAltIcon,
-  Gite as GiteIcon,
-  Work as WorkIcon,
-  Person as PersonAddIcon,
-  Assignment as AssignmentIcon,
-  Map as MapIcon,
-  BusinessCenter as BusinessCenterIcon,
-  FireTruck as FireTruckIcon,
-  CorporateFare as CorporateFareIcon,
-  Description as DescriptionIcon,
-  ForwardToInbox as ForwardToInboxIcon,
-  LocationOn as LocationOnIcon,
-  Handshake as HandshakeIcon,
-  MonetizationOn as MonetizationOnIcon,
-  CallMissedOutgoing as CallMissedOutgoingIcon,
 } from '@mui/icons-material';
-import { Icon } from 'semantic-ui-react';
-import { SideBarProps } from '../../types';
-import { useState } from 'react';
+import { IconsViewer, Loading } from '../../components';
 import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '../../hooks';
 import { getEnvVariables } from '../../helpers/getEnvVariables';
+import { useModules, useMenuModules, useAppSelector } from '../../hooks';
 
-const keysCollapse = [
-  'seguridad',
-  'configuracion',
-  'general',
-  'agricultura',
-  'stock',
-  'cosecha',
-  'gestion',
-  'reporting',
-  'wiki',
-  'erp',
-];
+import { SideBarProps } from '../../types';
+import { MenuModules } from '../../interfaces/menuModules';
+import { Modules } from '../../interfaces/modules';
 
-//TODO: crear objeto de menu y submenus
+const parseOrder = (s?: string) => {
+  if (!s) return Number.MAX_SAFE_INTEGER;
+  const n = Number(s);
+  if (!Number.isNaN(n)) return n;
+  const m = String(s).match(/^(\d+)(?:\.(\d+))?$/);
+  if (!m) return Number.MAX_SAFE_INTEGER;
+  const major = Number(m[1]);
+  const minor = Number(m[2] || '0') / 100;
+  return major + minor;
+};
+
+const getMenuLabel = (m: MenuModules, lang: string) => {
+  const l = (lang || 'es').toLowerCase();
+  if (l.startsWith('en') && (m.menuOptionEn || '').trim()) return m.menuOptionEn!;
+  if (l.startsWith('pt') && (m.menuOptionPt || '').trim()) return m.menuOptionPt!;
+  return m.menuOption || m.menuOption || '';
+};
+
+const getModuleLabel = (mod: Modules | any, lang: string) => {
+  if (!mod) return '';
+  const l = (lang || 'es').toLowerCase();
+  if (l.startsWith('en') && (mod.moduleNameEn || '').trim()) return mod.moduleNameEn;
+  if (l.startsWith('pt') && (mod.moduleNamePt || '').trim()) return mod.moduleNamePt;
+  return mod.moduleNameEs || '';
+};
 
 export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideBarClose }) => {
-  const [openCollapse, setOpenCollapse] = useState('');
-
+  const [openCollapse, setOpenCollapse] = useState<string>('');
   const { pathname } = useLocation();
   const version = getEnvVariables().VITE_VERSION;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { user } = useAppSelector((s: any) => s.auth || {});
+
+  // backend hooks
+  const { modules, getModules } = useModules();
+  const { menuModules, getMenuModules, isLoading } = useMenuModules();
+
+  // permissions slice (app-specific)
+  const modulesPermissionsSlice = useAppSelector(
+    (s: any) => s.modulesPermissions || s.modulesUsers || s.permissions || null,
+  );
+
+  useEffect(() => {
+    getModules();
+    getMenuModules();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => console.debug('[SideBar] modules count', modules?.length), [modules]);
+  useEffect(() => console.debug('[SideBar] menuModules count', menuModules?.length), [menuModules]);
 
   const onClickMenu = (collapse: string) =>
     setOpenCollapse(collapse === openCollapse ? '' : collapse);
 
-  const { user } = useAppSelector(state => state.auth);
+  // only sidebar menu items and with a defined route
+  const sidebarMenus = useMemo(
+    () =>
+      (menuModules || [])
+        .filter(m => {
+          const mt = String((m as any).menuType || '').toLowerCase();
+          const hasRoute = !!(m.route || m.full || m.light || m.details);
+          return (
+            (mt === 'sidebar' || mt === 'sideBar'.toLowerCase() || mt === 'sidebar') && hasRoute
+          );
+        })
+        .slice()
+        .sort((a, b) => parseOrder(a.order) - parseOrder(b.order)),
+    [menuModules],
+  );
+
+  // group by module: prefer module meta (object) or match with modules list, else prefix of order
+  const grouped = useMemo(() => {
+    const g: Record<string, { moduleMeta?: any; items: MenuModules[]; numericGroup?: number }> = {};
+    const modulesById = new Map<string, any>();
+    const modulesByName = new Map<string, any>();
+
+    (modules || []).forEach((m: any) => {
+      if (m._id) modulesById.set(String(m._id), m);
+      if ((m as any).id) modulesById.set(String((m as any).id), m);
+      const nm = String(m.moduleNameEs || '')
+        .trim()
+        .toLowerCase();
+      if (nm) modulesByName.set(nm, m);
+      const nmEn = String(m.moduleNameEn || '')
+        .trim()
+        .toLowerCase();
+      if (nmEn) modulesByName.set(nmEn, m);
+    });
+
+    sidebarMenus.forEach(item => {
+      let key = '';
+      let moduleMeta: any | undefined = undefined;
+
+      // if menu.module is an object (embedded module meta)
+      if (item && typeof (item as any).module === 'object' && (item as any).module?._id) {
+        moduleMeta = (item as any).module;
+        key = String(moduleMeta._id);
+      } else {
+        // menu.module might be id or moduleName string
+        const rawModule = String(item.module ?? '').trim();
+        if (rawModule) {
+          // direct id
+          if (modulesById.has(rawModule)) {
+            moduleMeta = modulesById.get(rawModule);
+            key = String(moduleMeta._id ?? moduleMeta.id);
+          } else {
+            // name match
+            const nameKey = rawModule.toLowerCase();
+            if (modulesByName.has(nameKey)) {
+              moduleMeta = modulesByName.get(nameKey);
+              key = String(moduleMeta._id ?? moduleMeta.id);
+            } else {
+              // fallback: if menu.order has numeric prefix
+              const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
+              if (match) {
+                const grp = Number(match[1]);
+                key = `group-${grp}`;
+                if (!g[key]) g[key] = { items: [], numericGroup: grp };
+              } else {
+                // generic grouping by module string
+                key = `group-${rawModule || '0'}`;
+                if (!g[key]) g[key] = { items: [] };
+              }
+            }
+          }
+        } else {
+          // no module info: try order prefix
+          const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
+          if (match) {
+            const grp = Number(match[1]);
+            key = `group-${grp}`;
+            if (!g[key]) g[key] = { items: [], numericGroup: grp };
+          } else {
+            key = 'group-0';
+            if (!g[key]) g[key] = { items: [] };
+          }
+        }
+      }
+
+      if (moduleMeta) {
+        if (!key)
+          key = String(
+            moduleMeta._id ??
+              moduleMeta.id ??
+              moduleMeta.moduleNameEs ??
+              moduleMeta.moduleNameEn ??
+              moduleMeta.moduleNamePt,
+          );
+        if (!g[key]) g[key] = { moduleMeta, items: [] };
+        else g[key].moduleMeta = moduleMeta;
+      }
+
+      if (!g[key]) g[key] = { items: [] };
+      g[key].items.push(item);
+    });
+
+    // sort items in each group
+    Object.keys(g).forEach(k => {
+      g[k].items.sort((a, b) => parseOrder(a.order) - parseOrder(b.order));
+    });
+
+    console.debug('[SideBar] grouped keys', Object.keys(g));
+    return g;
+  }, [sidebarMenus, modules]);
+
+  const groupKeysSorted = useMemo(() => {
+    const keys = Object.keys(grouped);
+    keys.sort((a, b) => {
+      const na =
+        grouped[a].numericGroup ??
+        (a.startsWith('group-') ? Number(a.split('-')[1] || 9999) : 9999);
+      const nb =
+        grouped[b].numericGroup ??
+        (b.startsWith('group-') ? Number(b.split('-')[1] || 9999) : 9999);
+      if (na !== nb) return na - nb;
+      return a.localeCompare(b);
+    });
+    return keys;
+  }, [grouped]);
+
+  // permission check: first menu.permission, then try app slice, then admin fallback
+  const hasPermission = (m: MenuModules) => {
+    if (typeof (m as any).permission === 'boolean') return !!(m as any).permission;
+    try {
+      const mid = String((m as any).id ?? (m as any)._id ?? '');
+      if (modulesPermissionsSlice && typeof modulesPermissionsSlice === 'object') {
+        if (mid && modulesPermissionsSlice[mid] != null) return !!modulesPermissionsSlice[mid];
+        if (Array.isArray(modulesPermissionsSlice))
+          return modulesPermissionsSlice.includes ? modulesPermissionsSlice.includes(mid) : true;
+      }
+    } catch (e) {
+      // ignore
+    }
+    if (user && user.isAdmin) return true;
+    return true; // permissive fallback
+  };
+
+  const lang = i18n.language || 'es';
 
   return (
     <Box component='nav' sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
@@ -100,452 +249,77 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             <ChevronLeftIcon />
           </IconButton>
         </Box>
-        <Divider />
-        <List>
-          <ListItem key='General' disablePadding>
-            <ListItemButton
-              onClick={() => onClickMenu(keysCollapse[2])}
-              // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <ListAltIcon />
-              </ListItemIcon>
-              <ListItemText primary={t('_general')} />
-              {openCollapse === keysCollapse[2] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse
-            key={keysCollapse[2]}
-            in={openCollapse === keysCollapse[2]}
-            timeout='auto'
-            unmountOnExit
-          >
-            <List component='div' disablePadding>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/business'
-                selected={pathname.includes('/init/overview/business')}
-              >
-                <ListItemIcon>
-                  <GroupIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('social_entities_census')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/vehicle'
-                selected={pathname.includes('/init/overview/vehicle')}
-              >
-                <ListItemIcon>
-                  <LocalShippingIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('_vehicles')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/deposit'
-                selected={pathname.includes('/init/overview/deposit')}
-              >
-                <ListItemIcon>
-                  <WarehouseIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('_warehouses')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/supply'
-                selected={pathname.includes('/init/overview/supply')}
-              >
-                <ListItemIcon>
-                  <InventoryIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('supply_lots')} />
-              </ListItemButton>
 
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/origins-destinations'
-                selected={pathname.includes('/init/overview/origins-destinations')}
-              >
-                <ListItemIcon>
-                  <AddLocationAltIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('origins_destinations')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/zones'
-                selected={pathname.includes('/init/overview/zones')}
-              >
-                <ListItemIcon>
-                  <MapIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('zones_groups')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/Labors-services'
-                selected={pathname.includes('/init/overview/Labors-services')}
-              >
-                <ListItemIcon>
-                  <BusinessCenterIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('service_labors')} />
-              </ListItemButton>
-              {/* <ListItemButton sx={{ pl: 4 }}
-                component={RouterLink}
-                to="/init/overview/prices"
-                selected={pathname.includes("/init/overview/prices")}
-              >
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("market_prices")} />
-              </ListItemButton> */}
-            </List>
-          </Collapse>
-          <ListItem key='Agricultura' disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[3])}
-              // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <GiteIcon />
-              </ListItemIcon>
-              <ListItemText primary={t('_agriculture')} />
-              {openCollapse === keysCollapse[3] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse
-            key={keysCollapse[3]}
-            in={openCollapse === keysCollapse[3]}
-            timeout='auto'
-            unmountOnExit
-          >
-            <List component='div' disablePadding>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/fields/planification'
-                selected={pathname.includes('/init/overview/fields/planification')}
-              >
-                <ListItemIcon>
-                  <CallMissedOutgoingIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('annual_campaign_projection')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/certificate-deposits'
-                selected={pathname.includes('/init/overview/certificate-deposits')}
-              >
-                <ListItemIcon>
-                  <ForwardToInboxIcon />
-                </ListItemIcon>
-                <ListItemText primary={'Certificado Deposito'} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/exit-field'
-                selected={pathname.includes('/init/overview/exit-field')}
-              >
-                <ListItemIcon>
-                  <AgricultureIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('field_exits')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/transport-documents'
-                selected={pathname.includes('/init/overview/transport-documents')}
-              >
-                <ListItemIcon>
-                  <FireTruckIcon />
-                </ListItemIcon>
-                <ListItemText primary='Carta de Porte' />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/sales-cereals'
-                selected={pathname.includes('/init/overview/sales-cereals')}
-              >
-                <ListItemIcon>
-                  <HandshakeIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('title_sale_cereal')} />
-              </ListItemButton>
-            </List>
-          </Collapse>
-          <ListItem key='Stock' disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[4])}
-              // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary={t('_stock')} />
-              {openCollapse === keysCollapse[4] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse
-            key={keysCollapse[4]}
-            in={openCollapse === keysCollapse[4]}
-            timeout='auto'
-            unmountOnExit
-          >
-            <List component='div' disablePadding>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/stock-movements'
-                selected={pathname.includes('/init/overview/stock-movements')}
-              >
-                <ListItemIcon>
-                  <SyncAltIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('stock_movements')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/list-stock'
-                selected={pathname.includes('/init/overview/list-stock')}
-              >
-                <ListItemIcon>
-                  <QueryStatsIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('stock_query')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/list-orders'
-                selected={pathname.includes('/init/overview/list-orders')}
-              >
-                <ListItemIcon>
-                  <AssignmentIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('withdrawal_orders')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/value-transform'
-                selected={pathname.includes('/init/overview/value-transform')}
-              >
-                <ListItemIcon>
-                  <TransformIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('transformation_added_value')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/purchase-order'
-                selected={pathname.includes('/init/overview/purchase-order')}
-              >
-                <ListItemIcon>
-                  <Icon name='list alternate outline' size='large' />
-                </ListItemIcon>
-                <ListItemText primary={t('purchase_order')} />
-              </ListItemButton>
-            </List>
-          </Collapse>
-          <ListItem key='Gestion' disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[6])}
-              // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <WorkIcon />
-              </ListItemIcon>
-              <ListItemText primary={t('_management')} />
-              {openCollapse === keysCollapse[6] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse
-            key={keysCollapse[6]}
-            in={openCollapse === keysCollapse[6]}
-            timeout='auto'
-            unmountOnExit
-          >
-            <List component='div' disablePadding>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/corporate-companies'
-                selected={pathname.includes('/init/overview/corporate-companies')}
-              >
-                <ListItemIcon>
-                  <CorporateFareIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('corporate_companies')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/corporate-contract'
-                selected={pathname.includes('/init/overview/corporate-contract')}
-              >
-                <ListItemIcon>
-                  <DescriptionIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('corporate_contracts')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/productive-units'
-                selected={pathname.includes('init/overview/productive-units')}
-              >
-                <ListItemIcon>
-                  <MapIcon sx={{ marginRight: '-5px' }} />
-                  <LocationOnIcon
-                    sx={{ marginRight: '28px', fontSize: 'inherit', verticalAlign: 'middle' }}
-                  />
-                </ListItemIcon>
-                <ListItemText primary={t('productive_units')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/costs-expenses'
-                selected={pathname.includes('init/overview/costs-expenses')}
-              >
-                <ListItemIcon>
-                  <MonetizationOnIcon />
-                  {/* <LocationOnIcon sx={{ marginRight: "28px", fontSize: "inherit", verticalAlign: "middle" }} /> */}
-                </ListItemIcon>
-                <ListItemText primary={t('costs_expenses')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/campaign-results'
-                selected={pathname.includes('/init/overview/campaign-results')}
-              >
-                <ListItemIcon>
-                  <QueryStatsIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('campaign_results')} />
-              </ListItemButton>
-              <ListItemButton
-                sx={{ pl: 4 }}
-                component={RouterLink}
-                to='/init/overview/annual-plan-valorization'
-                selected={pathname.includes('/init/overview/annual-plan-valorization')}
-              >
-                <ListItemIcon>
-                  <MonetizationOnIcon />
-                </ListItemIcon>
-                <ListItemText primary={t('annual_plan_valorization')} />
-              </ListItemButton>
-            </List>
-          </Collapse>
-          <ListItem key='Seguridad' disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[0])}
-              // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <SecurityIcon />
-              </ListItemIcon>
-              <ListItemText primary={t('_security')} />
-              {openCollapse === keysCollapse[0] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse
-            key={keysCollapse[0]}
-            in={openCollapse === keysCollapse[0]}
-            timeout='auto'
-            unmountOnExit
-          >
-            <List component='div' disablePadding>
-              {user && user.isAdmin && (
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  component={RouterLink}
-                  to='/init/overview/users'
-                  selected={pathname.includes('/init/overview/users')}
-                >
-                  <ListItemIcon>
-                    <PersonAddIcon />
-                  </ListItemIcon>
-                  <ListItemText primary={t('users_and_permissions')} />
-                </ListItemButton>
-              )}
-            </List>
-          </Collapse>
-          {/* <ListItem key="Configuracion" disablePadding>
-            <ListItemButton
-              // component={RouterLink}
-              // to="/init/overview/fields"
-              onClick={() => onClickMenu(keysCollapse[1])}
-            // selected={pathname.includes("/init/overview/fields")}
-            >
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText primary={t("_configuration")} />
-              {openCollapse === keysCollapse[1] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </ListItemButton>
-          </ListItem>
-          <Collapse key={keysCollapse[1]}
-            in={openCollapse === keysCollapse[1]}
-            timeout="auto"
-            unmountOnExit>
-            <List component="div" disablePadding>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("crop_colors")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("user_profile")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("app_general_config")} />
-              </ListItemButton>
-              <ListItemButton sx={{ pl: 4 }}>
-                <ListItemIcon>
-                </ListItemIcon>
-                <ListItemText primary={t("_numerators")} />
-              </ListItemButton>
-            </List>
-          </Collapse> */}
+        <Divider />
+
+        <List>
+          {isLoading && (
+            <ListItem>
+              <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', p: 2 }}>
+                <Loading loading={true} />
+              </Box>
+            </ListItem>
+          )}
+
+          {!isLoading &&
+            groupKeysSorted.map(groupKey => {
+              const entry = grouped[groupKey];
+              if (!entry || !entry.items.length) return null;
+
+              const moduleMeta = entry.moduleMeta;
+              const numericGroup = entry.numericGroup;
+              const displayLabel = moduleMeta
+                ? getModuleLabel(moduleMeta, lang)
+                : t('_general') || `Grupo ${numericGroup ?? groupKey}`;
+
+              const parentIconName = moduleMeta?.icon || entry.items[0]?.icon || undefined;
+              const isOpen = openCollapse === groupKey;
+
+              const children = entry.items.filter(it => hasPermission(it));
+
+              if (!children.length) return null;
+
+              return (
+                <Box key={groupKey}>
+                  <ListItem disablePadding>
+                    <ListItemButton onClick={() => onClickMenu(groupKey)}>
+                      <ListItemIcon>
+                        <IconsViewer iconName={parentIconName || undefined} size={22} />
+                      </ListItemIcon>
+                      <ListItemText primary={displayLabel} />
+                      {isOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                    </ListItemButton>
+                  </ListItem>
+
+                  <Collapse in={isOpen} timeout='auto' unmountOnExit>
+                    <List component='div' disablePadding>
+                      {children.map((m: MenuModules) => {
+                        const to = m.route || m.full || m.light || m.details || '#';
+                        const label = getMenuLabel(m, lang) || m.menuOption || '';
+                        const selected = to !== '#' && pathname.startsWith(to);
+                        return (
+                          <ListItemButton
+                            key={`${groupKey}-${m.id ?? (m as any)._id ?? label}`}
+                            sx={{ pl: 4 }}
+                            component={to !== '#' ? RouterLink : 'button'}
+                            to={to !== '#' ? to : undefined}
+                            selected={selected}
+                          >
+                            <ListItemIcon>
+                              <IconsViewer iconName={(m as any).icon || undefined} size={20} />
+                            </ListItemIcon>
+                            <ListItemText primary={label} />
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                </Box>
+              );
+            })}
         </List>
-        <Box
-          sx={{
-            position: 'absolute',
-            bottom: 0,
-            right: 0,
-            p: 2,
-            textAlign: 'right',
-          }}
-        >
+
+        <Box sx={{ position: 'absolute', bottom: 0, right: 0, p: 2, textAlign: 'right' }}>
           <Typography variant='body1' color='gray'>
             v{version}
           </Typography>
