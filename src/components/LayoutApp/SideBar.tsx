@@ -17,7 +17,6 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
-  ListAlt as ListAltIcon,
 } from '@mui/icons-material';
 import { IconsViewer, Loading } from '../../components';
 import { useTranslation } from 'react-i18next';
@@ -39,83 +38,11 @@ const parseOrder = (s?: string) => {
   return major + minor;
 };
 
-// detecta si una cadena contiene un emoji (chequeo por codePoint alto)
-const isEmoji = (s?: string) => {
-  if (!s) return false;
-  for (const ch of Array.from(s)) {
-    const cp = ch.codePointAt(0) || 0;
-    if (cp >= 0x1f000) return true;
-  }
-  return false;
-};
-
-const normalizeName = (s?: string) => {
-  if (!s) return '';
-  return String(s)
-    .trim()
-    .replace(/[^a-zA-Z0-9]/g, '');
-};
-
-const toPascal = (s: string) => {
-  if (!s) return s;
-  // already Pascal likely — ensure first char upper
-  const raw = s.replace(/[^a-zA-Z0-9]/g, '');
-  return raw.charAt(0).toUpperCase() + raw.slice(1);
-};
-
-const resolveMuiIcon = (name?: string | null) => {
-  if (!name) return null;
-  if (isEmoji(name)) return null;
-
-  const raw = String(name || '');
-  const norm = normalizeName(raw);
-  if (!norm) return null;
-
-  const variants = [
-    raw,
-    norm,
-    toPascal(norm),
-    `${toPascal(norm)}Icon`,
-    `${toPascal(norm)}Rounded`,
-    `${toPascal(norm)}Outlined`,
-    `${toPascal(norm)}Sharp`,
-    `${toPascal(norm)}TwoTone`,
-  ];
-
-  for (const cand of variants) {
-    const IconComp = (MuiIcons as any)[cand];
-    if (IconComp) return IconComp;
-  }
-
-  // development debug to know which names fail
-  if (process.env.NODE_ENV !== 'production') {
-    // eslint-disable-next-line no-console
-    console.debug('[SideBar] icon not found for:', name, 'tried:', variants);
-  }
-  return null;
-};
-
-const RenderIcon: React.FC<{ iconName?: string | null; size?: number }> = ({
-  iconName,
-  size = 22,
-}) => {
-  if (isEmoji(iconName)) {
-    return (
-      <Box component='span' sx={{ fontSize: size, lineHeight: 1 }}>
-        {iconName}
-      </Box>
-    );
-  }
-  const IconComp = resolveMuiIcon(iconName || undefined);
-  if (IconComp) return <IconComp sx={{ fontSize: size }} />;
-  return <ListAltIcon sx={{ fontSize: size }} />;
-};
-
 const getMenuLabel = (m: MenuModules, lang: string) => {
   const l = (lang || 'es').toLowerCase();
   if (l.startsWith('en') && (m.menuOptionEn || '').trim()) return m.menuOptionEn!;
   if (l.startsWith('pt') && (m.menuOptionPt || '').trim()) return m.menuOptionPt!;
-  return m.menuOption || m.menuOptionEs || '';
+  return m.menuOption || m.menuOption || '';
 };
 
 const getModuleLabel = (mod: Modules | any, lang: string) => {
@@ -172,7 +99,6 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
 
   // group by module: prefer module meta (object) or match with modules list, else prefix of order
   const grouped = useMemo(() => {
-    const g: Record<string, { moduleMeta?: any; items: MenuModules[]; numericGroup?: number }> = {};
     const modulesById = new Map<string, any>();
     const modulesByName = new Map<string, any>();
 
@@ -189,9 +115,17 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
       if (nmEn) modulesByName.set(nmEn, m);
     });
 
-    sidebarMenus.forEach(item => {
-      let key = '';
-      let moduleMeta: any | undefined = undefined;
+    interface GroupedEntry {
+      moduleMeta?: Modules | any;
+      items: MenuModules[];
+      numericGroup?: number;
+    }
+
+    const g: Record<string, GroupedEntry> = {};
+
+    sidebarMenus.forEach((item: MenuModules) => {
+      let key: string = '';
+      let moduleMeta: Modules | any | undefined = undefined;
 
       // if menu.module is an object (embedded module meta)
       if (item && typeof (item as any).module === 'object' && (item as any).module?._id) {
@@ -199,7 +133,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
         key = String(moduleMeta._id);
       } else {
         // menu.module might be id or moduleName string
-        const rawModule = String(item.module ?? '').trim();
+        const rawModule: string = String(item.module ?? '').trim();
         if (rawModule) {
           // direct id
           if (modulesById.has(rawModule)) {
@@ -207,7 +141,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             key = String(moduleMeta._id ?? moduleMeta.id);
           } else {
             // name match
-            const nameKey = rawModule.toLowerCase();
+            const nameKey: string = rawModule.toLowerCase();
             if (modulesByName.has(nameKey)) {
               moduleMeta = modulesByName.get(nameKey);
               key = String(moduleMeta._id ?? moduleMeta.id);
@@ -215,7 +149,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
               // fallback: if menu.order has numeric prefix
               const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
               if (match) {
-                const grp = Number(match[1]);
+                const grp: number = Number(match[1]);
                 key = `group-${grp}`;
                 if (!g[key]) g[key] = { items: [], numericGroup: grp };
               } else {
@@ -229,7 +163,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           // no module info: try order prefix
           const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
           if (match) {
-            const grp = Number(match[1]);
+            const grp: number = Number(match[1]);
             key = `group-${grp}`;
             if (!g[key]) g[key] = { items: [], numericGroup: grp };
           } else {
@@ -409,7 +343,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           {isLoading && (
             <ListItem>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', p: 2 }}>
-                <Loading />
+                <Loading loading={true} />
               </Box>
             </ListItem>
           )}
