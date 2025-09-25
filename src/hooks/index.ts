@@ -26,7 +26,7 @@ export * from './useModulesPermission';
 export * from './useCompany';
 export * from './useTransportDocument';
 export * from './useCorporateContract';
-export * from './useFormValue'
+export * from './useFormValue';
 export * from './useCertificateDeposit';
 export * from './useExecutions';
 export * from './useProductiveUnits';
@@ -34,3 +34,5 @@ export * from './useContractSaleCereals';
 export * from './useCostsExpenses';
 export * from './useCampaignExpenses';
 export * from './useAnnualPlanValorization';
+export * from './useModules';
+export * from './useMenuModules';
