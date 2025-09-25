@@ -99,6 +99,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
 
   // group by module: prefer module meta (object) or match with modules list, else prefix of order
   const grouped = useMemo(() => {
+    const g: Record<string, { moduleMeta?: any; items: MenuModules[]; numericGroup?: number }> = {};
     const modulesById = new Map<string, any>();
     const modulesByName = new Map<string, any>();
 
@@ -115,17 +116,9 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
       if (nmEn) modulesByName.set(nmEn, m);
     });
 
-    interface GroupedEntry {
-      moduleMeta?: Modules | any;
-      items: MenuModules[];
-      numericGroup?: number;
-    }
-
-    const g: Record<string, GroupedEntry> = {};
-
-    sidebarMenus.forEach((item: MenuModules) => {
-      let key: string = '';
-      let moduleMeta: Modules | any | undefined = undefined;
+    sidebarMenus.forEach(item => {
+      let key = '';
+      let moduleMeta: any | undefined = undefined;
 
       // if menu.module is an object (embedded module meta)
       if (item && typeof (item as any).module === 'object' && (item as any).module?._id) {
@@ -133,7 +126,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
         key = String(moduleMeta._id);
       } else {
         // menu.module might be id or moduleName string
-        const rawModule: string = String(item.module ?? '').trim();
+        const rawModule = String(item.module ?? '').trim();
         if (rawModule) {
           // direct id
           if (modulesById.has(rawModule)) {
@@ -141,7 +134,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             key = String(moduleMeta._id ?? moduleMeta.id);
           } else {
             // name match
-            const nameKey: string = rawModule.toLowerCase();
+            const nameKey = rawModule.toLowerCase();
             if (modulesByName.has(nameKey)) {
               moduleMeta = modulesByName.get(nameKey);
               key = String(moduleMeta._id ?? moduleMeta.id);
@@ -149,7 +142,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
               // fallback: if menu.order has numeric prefix
               const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
               if (match) {
-                const grp: number = Number(match[1]);
+                const grp = Number(match[1]);
                 key = `group-${grp}`;
                 if (!g[key]) g[key] = { items: [], numericGroup: grp };
               } else {
@@ -163,7 +156,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           // no module info: try order prefix
           const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
           if (match) {
-            const grp: number = Number(match[1]);
+            const grp = Number(match[1]);
             key = `group-${grp}`;
             if (!g[key]) g[key] = { items: [], numericGroup: grp };
           } else {
@@ -213,86 +206,6 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
     });
     return keys;
   }, [grouped]);
-
-  // CORRECCIÓN DEFINITIVA: Solo mostrar grupos con módulos reales del backend
-  const visibleGroupKeys = useMemo(() => {
-    // Crear mapa completo de módulos válidos del backend
-    const validModulesMap = new Map<string, Modules>();
-    (modules || []).forEach((m: any) => {
-      if (m._id) validModulesMap.set(String(m._id).toLowerCase(), m);
-      if ((m as any).id) validModulesMap.set(String((m as any).id).toLowerCase(), m);
-
-      const names = [
-        m.moduleNameEs,
-        m.moduleNameEn,
-        m.moduleNamePt,
-        (m as any).moduleName, // por si acaso
-      ].filter(Boolean);
-
-      names.forEach((name: string) => {
-        validModulesMap.set(String(name).trim().toLowerCase(), m);
-      });
-    });
-
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.debug('[SideBar] valid modules keys:', Array.from(validModulesMap.keys()));
-    }
-
-    return groupKeysSorted.filter(k => {
-      const entry = grouped[k];
-      if (!entry || !entry.items.length) {
-        if (process.env.NODE_ENV !== 'production') {
-          // eslint-disable-next-line no-console
-          console.debug(`[SideBar] drop group ${k}: no items`);
-        }
-        return false;
-      }
-
-      // Caso 1: si ya tiene moduleMeta, verificar que exista en validModulesMap
-      if (entry.moduleMeta) {
-        const moduleId = entry.moduleMeta._id || entry.moduleMeta.id;
-        if (moduleId && validModulesMap.has(String(moduleId).toLowerCase())) {
-          return true;
-        }
-        // verificar por nombre en moduleMeta
-        const moduleNames = [
-          entry.moduleMeta.moduleNameEs,
-          entry.moduleMeta.moduleNameEn,
-          entry.moduleMeta.moduleNamePt,
-        ].filter(Boolean);
-        const okByName = moduleNames.some(name =>
-          validModulesMap.has(String(name).trim().toLowerCase()),
-        );
-        if (okByName) return true;
-
-        if (process.env.NODE_ENV !== 'production') {
-          // eslint-disable-next-line no-console
-          console.debug(`[SideBar] drop group ${k}: moduleMeta not in backend list`);
-        }
-        return false;
-      }
-
-      // Caso 2: intentar resolver desde item.module (string id o nombre) y, si se resuelve,
-      // asociar el moduleMeta al grupo para render (mutación controlada).
-      const candidate = entry.items[0]?.module;
-      if (candidate) {
-        const candidateKey = String(candidate).trim().toLowerCase();
-        const resolved = validModulesMap.get(candidateKey);
-        if (resolved) {
-          // asociar moduleMeta para usar label/icon luego
-          entry.moduleMeta = resolved;
-          return true;
-        }
-      }
-
-      if (process.env.NODE_ENV !== 'production') {
-        // eslint-disable-next-line no-console
-        console.debug(`[SideBar] drop group ${k}: cannot resolve to backend module`);
-      }
-      return false;
-    });
-  }, [groupKeysSorted, grouped, modules]);
 
   // permission check: first menu.permission, then try app slice, then admin fallback
   const hasPermission = (m: MenuModules) => {
@@ -349,7 +262,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           )}
 
           {!isLoading &&
-            visibleGroupKeys.map(groupKey => {
+            groupKeysSorted.map(groupKey => {
               const entry = grouped[groupKey];
               if (!entry || !entry.items.length) return null;
 

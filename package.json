@@ -155,7 +155,6 @@
     "mapbox-gl": "^2.15.0",
     "material-icons": "^1.10.11",
     "moment": "^2.29.3",
-    "object-assign": "^4.1.1",
     "pdfmake": "^0.2.7",
     "plotty": "^0.4.9",
     "pouchdb": "^8.0.1",
