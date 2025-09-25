@@ -280,6 +280,86 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
     return keys;
   }, [grouped]);
 
+  // CORRECCIÓN DEFINITIVA: Solo mostrar grupos con módulos reales del backend
+  const visibleGroupKeys = useMemo(() => {
+    // Crear mapa completo de módulos válidos del backend
+    const validModulesMap = new Map<string, Modules>();
+    (modules || []).forEach((m: any) => {
+      if (m._id) validModulesMap.set(String(m._id).toLowerCase(), m);
+      if ((m as any).id) validModulesMap.set(String((m as any).id).toLowerCase(), m);
+
+      const names = [
+        m.moduleNameEs,
+        m.moduleNameEn,
+        m.moduleNamePt,
+        (m as any).moduleName, // por si acaso
+      ].filter(Boolean);
+
+      names.forEach((name: string) => {
+        validModulesMap.set(String(name).trim().toLowerCase(), m);
+      });
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.debug('[SideBar] valid modules keys:', Array.from(validModulesMap.keys()));
+    }
+
+    return groupKeysSorted.filter(k => {
+      const entry = grouped[k];
+      if (!entry || !entry.items.length) {
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug(`[SideBar] drop group ${k}: no items`);
+        }
+        return false;
+      }
+
+      // Caso 1: si ya tiene moduleMeta, verificar que exista en validModulesMap
+      if (entry.moduleMeta) {
+        const moduleId = entry.moduleMeta._id || entry.moduleMeta.id;
+        if (moduleId && validModulesMap.has(String(moduleId).toLowerCase())) {
+          return true;
+        }
+        // verificar por nombre en moduleMeta
+        const moduleNames = [
+          entry.moduleMeta.moduleNameEs,
+          entry.moduleMeta.moduleNameEn,
+          entry.moduleMeta.moduleNamePt,
+        ].filter(Boolean);
+        const okByName = moduleNames.some(name =>
+          validModulesMap.has(String(name).trim().toLowerCase()),
+        );
+        if (okByName) return true;
+
+        if (process.env.NODE_ENV !== 'production') {
+          // eslint-disable-next-line no-console
+          console.debug(`[SideBar] drop group ${k}: moduleMeta not in backend list`);
+        }
+        return false;
+      }
+
+      // Caso 2: intentar resolver desde item.module (string id o nombre) y, si se resuelve,
+      // asociar el moduleMeta al grupo para render (mutación controlada).
+      const candidate = entry.items[0]?.module;
+      if (candidate) {
+        const candidateKey = String(candidate).trim().toLowerCase();
+        const resolved = validModulesMap.get(candidateKey);
+        if (resolved) {
+          // asociar moduleMeta para usar label/icon luego
+          entry.moduleMeta = resolved;
+          return true;
+        }
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug(`[SideBar] drop group ${k}: cannot resolve to backend module`);
+      }
+      return false;
+    });
+  }, [groupKeysSorted, grouped, modules]);
+
   // permission check: first menu.permission, then try app slice, then admin fallback
   const hasPermission = (m: MenuModules) => {
     if (typeof (m as any).permission === 'boolean') return !!(m as any).permission;
@@ -335,7 +415,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           )}
 
           {!isLoading &&
-            groupKeysSorted.map(groupKey => {
+            visibleGroupKeys.map(groupKey => {
               const entry = grouped[groupKey];
               if (!entry || !entry.items.length) return null;
 
