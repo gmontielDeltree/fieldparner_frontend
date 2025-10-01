@@ -16,12 +16,9 @@ export const fieldpartnerAPI = axios.create({
 
 fieldpartnerAPI.interceptors.request.use((config) => {
 
-    // config.headers = {
-    //     ...config.headers,
-    //     'x-token': localStorage.getItem('token')
-    // }
     config.headers.set('channel', 'fieldpartner_front', false);
     config.headers.set("authorization", localStorage.getItem("accessToken"));
-
+    config.headers.set("Content-Type", "application/json");
+    // config.withCredentials = true;
     return config;
 });

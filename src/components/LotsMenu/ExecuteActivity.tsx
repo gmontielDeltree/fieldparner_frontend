@@ -473,24 +473,31 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const processHarvestStockMovements = async (executionDetails: any) => {
+    console.log('📦 PROCESANDO MOVIMIENTO DE STOCK DE COSECHA');
+    
     // T2-76: Grabar cultivo en stock al ejecutar cosecha
     const cultivo = executionDetails.detalles?.cultivo
     const deposito = executionDetails.detalles?.deposito
     const rindeObtenido = executionDetails.detalles?.rinde_obtenido
     const hectareas = executionDetails.detalles?.hectareas || 0
 
+    console.log('  - Cultivo:', cultivo);
+    console.log('  - Depósito:', deposito);
+    console.log('  - Rinde obtenido:', rindeObtenido);
+    console.log('  - Hectáreas:', hectareas);
+
     if (!cultivo) {
-      console.error('Crop information is missing for harvest', executionDetails)
+      console.error('❌ Crop information is missing for harvest', executionDetails)
       return
     }
 
     if (!deposito) {
-      console.error('Deposit information is missing for harvest', executionDetails)
+      console.error('❌ Deposit information is missing for harvest', executionDetails)
       return
     }
 
     if (!rindeObtenido || rindeObtenido <= 0) {
-      console.error('Yield obtained is missing or invalid for harvest', executionDetails)
+      console.error('❌ Yield obtained is missing or invalid for harvest', executionDetails)
       return
     }
 
@@ -520,10 +527,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       campaignId: executionDetails.campaña?.campaignId || '',
     }
 
+    console.log('📊 Movimiento de stock a crear:', harvestMovement);
+    
     try {
       // Usar la función createCropStockMovement de staging si existe, sino usar addNewStockMovement
       await createCropStockMovement(harvestMovement, cultivo, deposito)
-      console.log(t('Harvest stock movement created successfully for crop'), cultivo.name || cultivo.descriptionES)
+      console.log('✅ Harvest stock movement created successfully for crop', cultivo.name || cultivo.descriptionES)
     } catch (error) {
       console.error(
         t('movementError', { supplyName: cultivo.name || cultivo.descriptionES }),
@@ -534,59 +543,18 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const createCropStockMovement = async (movement: StockMovement, cropInfo: any, depositoInfo: any) => {
-    // Crear movimiento de stock manualmente para cultivos
+    // Usar addNewStockMovement del hook que ya maneja correctamente las bases de datos
     try {
-      // 1. Crear registro en stockMovements
-      const movementResult = await db.stockMovements.post(movement);
-      console.log('✅ Movimiento de stock creado:', movementResult);
-
-      // 2. Buscar stock existente de cultivo
-      const existingStockQuery = {
-        selector: {
-          accountId: user?.accountId || '',
-          id: cropInfo._id,
-          depositId: depositoInfo._id,
-          tipo: TipoStock.CULTIVO,
-          campaignId: movement.campaignId
-        }
-      };
-
-      let existingStock = null;
-      try {
-        const stockResults = await db.stock.find(existingStockQuery);
-        existingStock = stockResults.docs.length > 0 ? stockResults.docs[0] : null;
-      } catch (error) {
-        console.log('No se encontró stock existente, se creará nuevo registro');
-      }
-
-      // 3. Crear o actualizar stock de cultivo
-      if (existingStock) {
-        // Actualizar stock existente
-        existingStock.currentStock += movement.amount;
-        existingStock.lastUpdate = new Date().toISOString();
-        await db.stock.put(existingStock);
-        console.log('✅ Stock de cultivo actualizado:', existingStock);
-      } else {
-        // Crear nuevo registro de stock
-        const newStock = {
-          accountId: user?.accountId || '',
-          id: cropInfo._id,
-          nroLot: movement.nroLot || '',
-          depositId: depositoInfo._id,
-          location: movement.location || depositoInfo.location || '',
-          currentStock: movement.amount,
-          campaignId: movement.campaignId,
-          fieldId: "",
-          fieldLot: "",
-          tipo: TipoStock.CULTIVO,
-          lastUpdate: new Date().toISOString(),
-          reservedStock: 0
-        };
-
-        const stockResult = await db.stock.post(newStock);
-        console.log('✅ Nuevo stock de cultivo creado:', stockResult);
-      }
-
+      console.log('📦 Creando movimiento de stock para cultivo:', {
+        cultivo: cropInfo.descriptionES || cropInfo.name,
+        cantidad: movement.amount,
+        deposito: depositoInfo.description
+      });
+      
+      // Usar la función addNewStockMovement que ya tiene acceso correcto a las bases de datos
+      await addNewStockMovement(movement, cropInfo, depositoInfo);
+      
+      console.log('✅ Stock de cultivo agregado correctamente');
       return true;
     } catch (error) {
       console.error('❌ Error creando movimiento de stock para cultivo:', error);
@@ -903,12 +871,25 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       }
     }
 
+    // Debug: Log para verificar el tipo de actividad
+    console.log('🌾 VERIFICACIÓN COSECHA:');
+    console.log('  - executionDetails.tipo:', executionDetails.tipo);
+    console.log('  - HarvestType:', HarvestType);
+    console.log('  - ¿Es cosecha?:', executionDetails.tipo === HarvestType);
+    console.log('  - Datos cosecha:', {
+      cultivo: executionDetails.detalles?.cultivo,
+      deposito: executionDetails.detalles?.deposito,
+      rindeObtenido: executionDetails.detalles?.rinde_obtenido,
+      hectareas: executionDetails.detalles?.hectareas
+    });
+
     if (executionDetails.tipo === HarvestType) {
+      console.log('✅ INICIANDO processHarvestStockMovements');
       try {
         await processHarvestStockMovements(executionDetails);
       } catch (error) {
         console.error(
-          t('harvestError'),
+          '❌ ERROR EN processHarvestStockMovements:',
           error,
         );
 

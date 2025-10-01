@@ -1,4 +1,4 @@
-import { Supply } from "../types";
+import { Supply, Crop } from "../types";
 import { useState } from "react";
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from '.';
@@ -81,7 +81,7 @@ export const useSupply = () => {
                     dataDeposit: foundDeposit,
                     dataSupply: supplyActive,
                     dataMovements: movements.docs
-                        .filter(m => m.depositId === stock.depositId && m.nroLot.toLowerCase() === stock.nroLot.toLowerCase()),
+                        .filter(m => m.depositId === stock.depositId && m.nroLot?.toLowerCase() === stock.nroLot?.toLowerCase()),
                     ...stock
                 });
             });
@@ -120,9 +120,9 @@ export const useSupply = () => {
         }
     }
 
-    const getStockBySupplies = async () => {
+    const getStockData = async () => {
         setIsLoading(true);
-        let stockBySupplies: StockItem[] = [];
+        let dataStock: StockItem[] = [];
         try {
             if (!user) throw new Error(t("user_not_found"));
             const promisesResult = await Promise.all([
@@ -130,7 +130,6 @@ export const useSupply = () => {
                     selector: {
                         "$and": [
                             { "accountId": user?.accountId },
-                            { "tipo": TipoStock.INSUMO },
                         ],
                     }
                 }),
@@ -141,46 +140,56 @@ export const useSupply = () => {
                             { isDefault: true }
                         ]
                     }
-                })
+                }),
+                dbContext.crops.allDocs({ include_docs: true })
             ]);
-            
-            const [suppliesStock, supplies] = promisesResult;
-            const supplyIds = suppliesStock.docs.map(s => s.id);//Obtenemos los id de insumos
-            const groupSupplyIds = Array.from(new Set(supplyIds));//Agrupamos por id de insumo
-            groupSupplyIds.forEach(id => {
-                const foundSupplyStock = suppliesStock.docs.filter(m => (m.id === id)); //Obtenemos todo los stock de ese insumo
+
+            const [resultStock, supplies, crops] = promisesResult;
+            const stockIds = resultStock.docs.map(s => s.id);//Obtenemos los id de insumos y cultivos
+            const groupStockIds = Array.from(new Set(stockIds));//Agrupamos por id
+            groupStockIds.forEach(id => {
+                const foundStock = resultStock.docs.filter(m => (m.id === id)); //Obtenemos todo el stock de ese id
+
+                // Buscar primero en supplies
                 const foundSupply = supplies.docs.find(m => (m._id === id));
-                if (!foundSupply) return;
-                const totalCurrentStock = foundSupplyStock.reduce((acc, stock) => acc + stock.currentStock, 0);
-                const totalReservedStock = foundSupplyStock.reduce((acc, stock) => acc + stock.reservedStock, 0);
-                stockBySupplies.push({
-                    ...foundSupplyStock[0],
-                    dataSupply: foundSupply,
-                    currentStock: totalCurrentStock,
-                    reservedStock: totalReservedStock,
-                });
+                if (foundSupply) {
+                    const totalCurrentStock = foundStock.reduce((acc, stock) => acc + stock.currentStock, 0);
+                    const totalReservedStock = foundStock.reduce((acc, stock) => acc + stock.reservedStock, 0);
+                    dataStock.push({
+                        ...foundStock[0],
+                        dataSupply: foundSupply,
+                        currentStock: totalCurrentStock,
+                        reservedStock: totalReservedStock,
+                    });
+                    return;
+                }
+
+                // Si no se encuentra en supplies, buscar en crops
+                const foundCrop = crops.rows.map(row => row.doc as Crop).find(m => (m._id === id));
+                if (foundCrop) {
+                    const totalCurrentStock = foundStock.reduce((acc, stock) => acc + stock.currentStock, 0);
+                    const totalReservedStock = foundStock.reduce((acc, stock) => acc + stock.reservedStock, 0);
+                    dataStock.push({
+                        ...foundStock[0],
+                        dataCrop: foundCrop,
+                        currentStock: totalCurrentStock,
+                        reservedStock: totalReservedStock,
+                    });
+                }
             });
-            setStockBySupplies(stockBySupplies);
-            setIsLoading(false);
+            setStockBySupplies(dataStock);
         } catch (error) {
-            setIsLoading(false);
             console.error(t("error_loading_documents"), error);
         }
+        finally { setIsLoading(false); }
     }
 
-    const getSupplyStockByDeposits = async () => {
+    const getStockByDeposits = async () => {
         setIsLoading(true);
         try {
-            let supplyByDeposits: StockItem[] = [];
+            let listStockFromDeposits: StockItem[] = [];
             const responseAll = await Promise.all([
-                dbContext.stock.find({
-                    selector: {
-                        "$and": [
-                            { "accountId": user?.accountId },
-                            { "tipo": TipoStock.INSUMO },
-                        ],
-                    }
-                }),
+                dbContext.stock.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
                 dbContext.supplies.find({
                     selector: {
@@ -189,41 +198,75 @@ export const useSupply = () => {
                             { isDefault: true }
                         ]
                     }
-                })
+                }),
+                // Agregar consulta de crops
+                dbContext.crops.allDocs({ include_docs: true })
             ]);
-            const [stockBySupplies, responseDeposits, responseSupplies] = responseAll;
+            const [stockBySupplies, responseDeposits, responseSupplies, cropsResult] = responseAll;
+
+            // Preparar crops como array para facilitar búsqueda
+            const crops = cropsResult.rows.map(row => row.doc as Crop);
+
             //Obtenemos los idDepositos y agrupamos
             const depositsId = stockBySupplies.docs.map(s => s.depositId);
             const groupDepositsId = Array.from(new Set(depositsId));
 
             groupDepositsId.forEach(depositId => {
                 const foundDepositStock = stockBySupplies.docs.filter(m => (m.depositId === depositId)); //Obtenemos todos los stock de ese deposito
-                const idInsumosDelDepositoConStock = foundDepositStock.map(s => s.id); //Insumos que tienen stock en ese deposito
-                const groupInsumosId = Array.from(new Set(idInsumosDelDepositoConStock)); //Agrupamos por id de insumo
+                const idInsumosDelDepositoConStock = foundDepositStock.map(s => s.id); //Insumo/cultivo que tienen stock en ese deposito
+                const groupInsumosId = Array.from(new Set(idInsumosDelDepositoConStock)); //Agrupamos por id de insumo/cultivo
+
                 groupInsumosId.forEach(idInsumo => {
-                    const foundSupply = responseSupplies.docs.find(m => (m._id === idInsumo)); //Obtenemos el insumo
-                    if (!foundSupply) return;
                     const foundDeposit = responseDeposits.docs.find(m => (m._id === depositId)); // Obtenemos el deposito
                     if (!foundDeposit) return;
+
+                    // Obtener el stock específico para determinar el tipo
+                    const stockItem = foundDepositStock.find(s => s.id === idInsumo);
+                    if (!stockItem) return;
+
                     const totalCurrentStock = foundDepositStock.filter(x => x.id === idInsumo).reduce((acc, stock) => acc + stock.currentStock, 0);
                     const totalReservedStock = foundDepositStock.filter(x => x.id === idInsumo).reduce((acc, stock) => acc + stock.reservedStock, 0);
 
-                    supplyByDeposits.push({
+                    // Determinar si es insumo o cultivo basado en el campo tipo/TipoInsumo
+                    const isSupply = stockItem.tipo === TipoStock.INSUMO || !stockItem.tipo; // Por defecto asumir insumo si no hay tipo
+                    const isCrop = stockItem.tipo === TipoStock.CULTIVO;
+
+                    let stockItemData: StockItem = {
                         ...foundDepositStock[0],
                         dataDeposit: foundDeposit,
-                        dataSupply: foundSupply,
                         currentStock: totalCurrentStock,
                         reservedStock: totalReservedStock,
-                    });
-                });
+                    };
 
-            })
-            setStockByDeposits(supplyByDeposits);
-            setIsLoading(false);
+                    if (isSupply) {
+                        // Buscar en supplies
+                        const foundSupply = responseSupplies.docs.find(m => (m._id === idInsumo));
+                        if (foundSupply) {
+                            stockItemData.dataSupply = foundSupply;
+                            listStockFromDeposits.push(stockItemData);
+                        } else {
+                            console.log('⚠️ No se encontró supply para el stock con ID:', idInsumo);
+                        }
+                    } else if (isCrop) {
+                        // Buscar en crops
+                        const foundCrop = crops.find(m => (m._id === idInsumo));
+                        if (foundCrop) {
+                            stockItemData.dataCrop = foundCrop;
+                            listStockFromDeposits.push(stockItemData);
+                        } else {
+                            console.log('⚠️ No se encontró crop para el stock con ID:', idInsumo);
+                        }
+                    } else {
+                        console.log('⚠️ Tipo de stock no reconocido para ID:', idInsumo, 'Tipo:', stockItem.tipo);
+                    }
+                });
+            });
+
+            setStockByDeposits(listStockFromDeposits);
         } catch (error) {
-            setIsLoading(false);
             console.error(t("error_loading_documents"), error);
         }
+        finally { setIsLoading(false); }
     }
 
     const createSupply = async (newSupply: Supply) => {
@@ -368,8 +411,8 @@ export const useSupply = () => {
         addReservedStock,
         removeReservedStock,
         getStockBySupplyActive,
-        getStockBySupplies,
-        getSupplyStockByDeposits,
+        getStockData,
+        getStockByDeposits,
         getStockBySupplyAndDeposit
     }
 }

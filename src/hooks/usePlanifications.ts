@@ -347,8 +347,8 @@ export const useCiclo = ({
   let db =
     dbContext.fields as unknown as PouchDB.Database<ICiclosPlanificacion>;
 
-  const saveCiclo = (campanaId, lotePId, cultivoId, startDate, endDate) => {
-    console.log(t("savingCycleLog"), campanaId, cultivoId);
+  const saveCiclo = (campanaId, lotePId, cultivoId, startDate, endDate, zafra = '') => {
+    console.log(t("savingCycleLog"), campanaId, cultivoId, 'zafra:', zafra);
     let c = { ...ciclo };
 
     if (!cicloId) {
@@ -361,6 +361,12 @@ export const useCiclo = ({
     c.fechaFin = endDate;
     c.fechaInicio = startDate;
     c.cultivoId = cultivoId;
+
+    // Agregar zafra si se proporciona
+    if (zafra) {
+      c.zafra = zafra;
+    }
+
     db.put(c).then(() => console.log(t("saveCycleLog"), c, ciclo));
     setCiclo(c);
   };

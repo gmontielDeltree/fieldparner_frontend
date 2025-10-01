@@ -20,6 +20,9 @@ const handleNumericInput = (event, allowNegative = false, allowDecimals = true) 
   // Allow empty string
   if (value === '') return value;
   
+  // For decimal numbers, allow comma as decimal separator and convert to dot
+  let normalizedValue = value.replace(',', '.');
+  
   // Create regex pattern based on options
   let pattern;
   if (allowNegative && allowDecimals) {
@@ -32,9 +35,9 @@ const handleNumericInput = (event, allowNegative = false, allowDecimals = true) 
     pattern = /^\d*$/; // No negative and no decimals
   }
   
-  // Test if the value matches the pattern
-  if (pattern.test(value)) {
-    return value;
+  // Test if the normalized value matches the pattern
+  if (pattern.test(normalizedValue)) {
+    return normalizedValue;
   }
   
   // If invalid, return the previous valid value
@@ -107,12 +110,15 @@ export const NumberFieldWithUnits = ({
         value={value}
         onChange={enhancedOnChange}
         id="outlined-start-adornment"
+        type="text"
+        inputMode="decimal"
         InputProps={{
           inputProps: {
             style: { textAlign: "right" },
             pattern: shouldAllowNegative 
-              ? (allowDecimals ? "[0-9.-]*" : "[0-9-]*")
-              : (allowDecimals ? "[0-9.]*" : "[0-9]*"),
+              ? (allowDecimals ? "-?[0-9]*[.,]?[0-9]*" : "-?[0-9]*")
+              : (allowDecimals ? "[0-9]*[.,]?[0-9]*" : "[0-9]*"),
+            step: allowDecimals ? "any" : "1",
         },
           endAdornment: <InputAdornment title={unit} position="end">{abrUnit(unit)}</InputAdornment>,
         }}

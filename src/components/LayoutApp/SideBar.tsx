@@ -31,7 +31,8 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
     getMenuLabel,
     getModuleLabel,
     grouped,
-    visibleGroupKeys,
+    //visibleGroupKeys,
+    groupKeysSorted,
     hasPermission,
     isLoading,
     version,
@@ -76,7 +77,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           )}
 
           {!isLoading &&
-            visibleGroupKeys.map(groupKey => {
+            groupKeysSorted.map(groupKey => {
               const entry = grouped[groupKey];
               if (!entry || !entry.items.length) return null;
 

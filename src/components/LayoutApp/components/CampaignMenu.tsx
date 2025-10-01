@@ -88,11 +88,16 @@ const CampaignMenu: React.FC = () => {
 
   const handleCreateAndEditCampaign = async (campaign: Campaign) => {
     console.log('Handling campaign create/edit:', campaign)
+    console.log('🎯 CampaignMenu - Received zafra:', campaign.zafra)
+    console.log('🎯 CampaignMenu - Zafra type:', typeof campaign.zafra)
+    console.log('🎯 CampaignMenu - Is Array?:', Array.isArray(campaign.zafra))
+    
     try {
       if (campaign._rev) {
         console.log('Editing existing campaign:', campaign)
         await updateCampaign(campaign)
         dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
+        saveCampaignToLS(campaign) // Guardar en localStorage
         setIsEditModalOpen(false)
         await getCampaigns()
         return
@@ -101,8 +106,10 @@ const CampaignMenu: React.FC = () => {
       campaign._id = `campaign:${uuid}`
       campaign.campaignId = `campaign:${uuid}`
       console.log('Creating new campaign with ID:', campaign._id)
+      console.log('🎯 CampaignMenu - Campaign to save:', campaign)
       await addCampaign(campaign)
       dispatch(campaignSlice.actions.setSelectedCampaign(campaign))
+      saveCampaignToLS(campaign) // Guardar en localStorage
       setIsCreateModalOpen(false)
       await getCampaigns()
     } catch (err) {
@@ -132,52 +139,39 @@ const CampaignMenu: React.FC = () => {
     }
   }
 
-  // Initial load effect
+  // Initial load effect - solo cargar campañas
   useEffect(() => {
-    console.log('CampaignMenu mounted, initializing...')
-    const initializeComponent = async () => {
-      console.log('Fetching campaigns on mount')
-      await getCampaigns()
+    console.log('CampaignMenu mounted, fetching campaigns...')
+    getCampaigns()
+  }, [])
 
+  // Effect para manejar la selección de campaña cuando las campañas se cargan
+  useEffect(() => {
+    console.log('Campaigns updated, count:', campaigns.length)
+
+    // Solo ejecutar si hay campañas y no hay campaña seleccionada
+    if (campaigns.length > 0 && !selectedCampaign) {
       const campaignFromLS = loadCampaignFromLS()
       console.log('Campaign from localStorage:', campaignFromLS)
 
       if (campaignFromLS) {
         const campaignExists = campaigns.some(c => c._id === campaignFromLS._id)
-
+        
         if (campaignExists) {
           console.log('Setting selected campaign from localStorage:', campaignFromLS._id)
           dispatch(setSelectedCampaign(campaignFromLS))
+          return
         } else {
           console.log('Campaign from localStorage not found in current campaigns')
-          if (campaigns.length > 0) {
-            const firstActiveCampaign = campaigns.find(c => c.state !== 'closed')
-            if (firstActiveCampaign) {
-              console.log('Selecting first active campaign:', firstActiveCampaign._id)
-              dispatch(setSelectedCampaign(firstActiveCampaign))
-            }
-          }
-        }
-      } else if (campaigns.length > 0) {
-        const firstActiveCampaign = campaigns.find(c => c.state !== 'closed')
-        if (firstActiveCampaign) {
-          console.log('No campaign in localStorage, selecting first active campaign:', firstActiveCampaign._id)
-          dispatch(setSelectedCampaign(firstActiveCampaign))
         }
       }
-    }
-
-    initializeComponent()
-  }, [])
-
-  useEffect(() => {
-    console.log('Campaigns updated, count:', campaigns.length)
-
-    if (!selectedCampaign && campaigns.length > 0) {
+      
+      // Si no hay campaña en localStorage o no existe, seleccionar la primera activa
       const firstActiveCampaign = campaigns.find(c => c.state !== 'closed')
       if (firstActiveCampaign) {
-        console.log('No selected campaign, selecting first active campaign:', firstActiveCampaign._id)
+        console.log('Selecting first active campaign:', firstActiveCampaign._id)
         dispatch(setSelectedCampaign(firstActiveCampaign))
+        saveCampaignToLS(firstActiveCampaign)
       }
     }
   }, [campaigns, selectedCampaign, dispatch])
@@ -217,6 +211,9 @@ const CampaignMenu: React.FC = () => {
 
   const handleEditClick = (campaignToEdit: Campaign) => {
     console.log('Edit clicked for campaign:', campaignToEdit._id)
+    console.log('🎨 Campaign to edit full object:', campaignToEdit)
+    console.log('🎨 Campaign zafra field:', campaignToEdit.zafra)
+    console.log('🎨 Campaign zafra type:', typeof campaignToEdit.zafra)
     setCampaignToEdit(campaignToEdit)
     setIsEditModalOpen(true)
     handleCloseMenu()

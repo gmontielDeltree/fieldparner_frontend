@@ -9,6 +9,7 @@ export * from './useCategory';
 export * from './useStockMovement';
 export * from './useExitField';
 export * from './useVehicle';
+export * from './useVehicleNotifications';
 export * from './useCampaign';
 export * from './useOriginDestinations';
 export * from './useUsers';
