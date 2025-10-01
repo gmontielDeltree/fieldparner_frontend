@@ -5,4 +5,5 @@ export interface Modules extends Document {
   moduleNameEn: string;
   moduleNamePt: string;
   icon: string;
+  orden: number;
 }

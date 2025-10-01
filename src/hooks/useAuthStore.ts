@@ -185,6 +185,7 @@ export const useAuthStore = () => {
   //     dispatch(onLogout(''));
   //   }
   // };
+
   const startLogout = () => {
     dispatch(startLoading());
     try {

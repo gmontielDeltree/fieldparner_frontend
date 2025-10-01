@@ -36,3 +36,4 @@ export * from './useCampaignExpenses';
 export * from './useAnnualPlanValorization';
 export * from './useModules';
 export * from './useMenuModules';
+export * from './useSystem';

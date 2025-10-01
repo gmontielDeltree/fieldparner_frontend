@@ -31,6 +31,7 @@ import { MenuModules, ModulesUsers } from '../interfaces/menuModules';
 import { LicenceUse } from '../interfaces/licencesUse';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { Company } from '../interfaces/company';
+import { System } from '../interfaces/system';
 import {
   CertificateDeposit,
   TransportDocumentByCertificateDeposit,
@@ -107,6 +108,7 @@ const dbNames = Object.freeze({
   cropStockControl: `crop-stock-control${isEnvSTG()}`,
   campaingExpenses: `campaing-expenses`,
   fieldsByProductUnit: `fields-by-product-unit${isEnvSTG()}`,
+  system: `system${isEnvSTG()}`,
 });
 
 export const dbContext = Object.freeze({
@@ -160,6 +162,7 @@ export const dbContext = Object.freeze({
   campaingExpenses: new PouchDB<CampaingExpenses>(dbNames.campaingExpenses),
   cropStockControl: new PouchDB<CropStockControl>(dbNames.cropStockControl),
   fieldsByProductUnit: new PouchDB<FieldsByProductUnit>(dbNames.fieldsByProductUnit),
+  system: new PouchDB<System>(dbNames.system),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -216,5 +219,6 @@ dbContext.campaingExpenses.sync(`${remoteCouchDBUrl}${dbNames.campaingExpenses}`
 dbContext.cropStockControl.sync(`${remoteCouchDBUrl}${dbNames.cropStockControl}`, opts);
 dbContext.companiesByContract.sync(`${remoteCouchDBUrl}${dbNames.companiesByContract}`, opts);
 dbContext.fieldsByProductUnit.sync(`${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`, opts);
+dbContext.system.sync(`${remoteCouchDBUrl}${dbNames.system}`, opts);
 
 // #endregion
