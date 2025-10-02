@@ -21,7 +21,7 @@ import { useForm, useAppDispatch, useDeposit } from "../../hooks";
 import { setDepositActive } from "../../redux/deposit";
 import { useTranslation } from "react-i18next";
 import { Deposit } from "../../types";
-import { GenericListPage } from "../GenericListPage";
+import { GenericListPage } from "../../components";
 
 export const ListDepositsPage: React.FC = () => {
   const navigate = useNavigate();

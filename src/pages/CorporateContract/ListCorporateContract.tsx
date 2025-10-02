@@ -1,31 +1,24 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import {
-  Box,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, IconButton, Tooltip } from '@mui/material';
 import 'semantic-ui-css/semantic.min.css';
 import {
   Handshake as HandshakeIcon,
   Description as DescriptionIcon,
   Edit as EditIcon,
   // Delete as DeleteIcon,
-} from "@mui/icons-material";
-import { useAppDispatch, useCorporateContract } from "../../hooks";
-import { setCorporateContractActive } from "../../redux/corporateContract";
-import { useTranslation } from "react-i18next";
-import { CorporateContract } from "../../interfaces/corporateContract";
-import { GenericListPage } from "../GenericListPage";
+} from '@mui/icons-material';
+import { useAppDispatch, useCorporateContract } from '../../hooks';
+import { setCorporateContractActive } from '../../redux/corporateContract';
+import { useTranslation } from 'react-i18next';
+import { CorporateContract } from '../../interfaces/corporateContract';
+import { GenericListPage } from '../../components';
 
 export const ListCorporateContractPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const {
-    listCorporateContract,
-    getCorporateContract,
-  } = useCorporateContract();
+  const { listCorporateContract, getCorporateContract } = useCorporateContract();
   // const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
@@ -39,24 +32,24 @@ export const ListCorporateContractPage: React.FC = () => {
   // ];
 
   const columns = [
-    { field: "idContract", headerName: t("contract_id"), flex: 1 },
-    { field: "description", headerName: t("_description"), flex: 1 },
-    { field: "totalCompany", headerName: t("_companies"), flex: 1 },
-    { field: "status", headerName: "Status", flex: 1 },
+    { field: 'idContract', headerName: t('contract_id'), flex: 1 },
+    { field: 'description', headerName: t('_description'), flex: 1 },
+    { field: 'totalCompany', headerName: t('_companies'), flex: 1 },
+    { field: 'status', headerName: 'Status', flex: 1 },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       flex: 1,
       sortable: false,
-      renderCell: (params: { row: CorporateContract; }) => (
-        <Box display="flex" justifyContent="center">
-          <Tooltip title={t("icon_edit")}>
+      renderCell: (params: { row: CorporateContract }) => (
+        <Box display='flex' justifyContent='center'>
+          <Tooltip title={t('icon_edit')}>
             <IconButton
-              aria-label={t("icon_edit")}
+              aria-label={t('icon_edit')}
               onClick={() => onClickUpdateCorporateContract(params.row)}
               sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
               }}
             >
               <EditIcon />
@@ -83,15 +76,10 @@ export const ListCorporateContractPage: React.FC = () => {
     getCorporateContract();
   }, []);
 
-
-
-
   const onClickUpdateCorporateContract = (item: CorporateContract): void => {
     dispatch(setCorporateContractActive(item));
     navigate(`/init/overview/corporate-contract/${item.idContract}`);
   };
-
-
 
   // const handleDeleteCorporateContract = (item: CorporateContract) => {
   //   if (item._id && item._rev) {
@@ -102,24 +90,21 @@ export const ListCorporateContractPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t("corporate_contracts")}
+      title={t('corporate_contracts')}
       icon={
-        <Box display="flex" alignItems="center">
+        <Box display='flex' alignItems='center'>
           <DescriptionIcon />
-          <HandshakeIcon sx={{ marginRight: "8px" }} />
+          <HandshakeIcon sx={{ marginRight: '8px' }} />
         </Box>
       }
       data={listCorporateContract}
       columns={columns}
       getData={getCorporateContract}
-      deleteData={() => { }}
+      deleteData={() => {}}
       setActiveItem={setCorporateContractActive}
-      newItemPath="/init/overview/corporate-contract/new"
-      editItemPath={(id) => `/init/overview/corporate-contract/${id}`}
+      newItemPath='/init/overview/corporate-contract/new'
+      editItemPath={id => `/init/overview/corporate-contract/${id}`}
       isLoading={false}
     />
   );
-
-
-
 };

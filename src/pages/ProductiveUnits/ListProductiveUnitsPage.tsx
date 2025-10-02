@@ -1,30 +1,26 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import {
-  Box,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Box, IconButton, Tooltip } from '@mui/material';
 import 'semantic-ui-css/semantic.min.css';
 import {
   Map as MapIcon,
-LocationOn as LocationOnIcon,
+  LocationOn as LocationOnIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from "@mui/icons-material";
-import {  useAppDispatch, useProductiveUnits } from "../../hooks";
-import { setProductiveUnitsActive } from "../../redux/productiveUntis";
-import { useTranslation } from "react-i18next";
-import { ProductUnits } from "../../interfaces/productiveUnits";
-import { GenericListPage } from "../GenericListPage";
+} from '@mui/icons-material';
+import { useAppDispatch, useProductiveUnits } from '../../hooks';
+import { setProductiveUnitsActive } from '../../redux/productiveUntis';
+import { useTranslation } from 'react-i18next';
+import { ProductUnits } from '../../interfaces/productiveUnits';
+import { GenericListPage } from '../../components';
 
 export const ListProductiveUnits: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const { isLoading } = useAppSelector((state) => state.ui);
-  const { listProductiveUnits, getProductiveUnits, removeProductiveUnits} =  useProductiveUnits();
- // const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const { listProductiveUnits, getProductiveUnits, removeProductiveUnits } = useProductiveUnits();
+  // const { filterText, handleInputChange } = useForm({ filterText: "" });
   const { t } = useTranslation();
 
   // const columns: ColumnProps[] = [
@@ -37,22 +33,22 @@ export const ListProductiveUnits: React.FC = () => {
   // ];
 
   const columns = [
-    {field: "units", headerName: t("_units"), flex: 1},
-    { field: "description", headerName: t("_description"), flex: 1 },
+    { field: 'units', headerName: t('_units'), flex: 1 },
+    { field: 'description', headerName: t('_description'), flex: 1 },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       flex: 1,
       sortable: false,
-      renderCell: (params: { row: ProductUnits; }) => (
-        <Box display="flex" justifyContent="center">
-          <Tooltip title={t("icon_edit")}>
+      renderCell: (params: { row: ProductUnits }) => (
+        <Box display='flex' justifyContent='center'>
+          <Tooltip title={t('icon_edit')}>
             <IconButton
-              aria-label={t("icon_edit")}
+              aria-label={t('icon_edit')}
               onClick={() => onClickUpdateCorporateContract(params.row)}
               sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
               }}
             >
               <EditIcon />
@@ -74,14 +70,14 @@ export const ListProductiveUnits: React.FC = () => {
       ),
     },
   ];
-  console.log('listProductiveUnits', listProductiveUnits)
+  console.log('listProductiveUnits', listProductiveUnits);
   useEffect(() => {
     getProductiveUnits();
   }, []);
-  
+
   const onClickUpdateCorporateContract = (item: ProductUnits): void => {
     dispatch(setProductiveUnitsActive(item));
-    console.log('item', item)
+    console.log('item', item);
     navigate(`/init/overview/productive-units/${item.idProductiveUnit}`);
   };
   //TODO: implement delete
@@ -90,16 +86,18 @@ export const ListProductiveUnits: React.FC = () => {
     //   removeProductiveUnits(item._id, item._rev);
     //   getProductiveUnits();
     // }
-    console.log('item', item)
+    console.log('item', item);
   };
 
   return (
     <GenericListPage
-      title={t("productive_units")}
+      title={t('productive_units')}
       icon={
-        <Box display="flex" alignItems="center">
-         <MapIcon  sx={{ marginRight: "-5px",  }}/>
-         <LocationOnIcon sx={{ marginRight: "28px",fontSize: "inherit", verticalAlign: "middle"}}/>
+        <Box display='flex' alignItems='center'>
+          <MapIcon sx={{ marginRight: '-5px' }} />
+          <LocationOnIcon
+            sx={{ marginRight: '28px', fontSize: 'inherit', verticalAlign: 'middle' }}
+          />
         </Box>
       }
       data={listProductiveUnits}
@@ -107,12 +105,9 @@ export const ListProductiveUnits: React.FC = () => {
       getData={getProductiveUnits}
       deleteData={removeProductiveUnits}
       setActiveItem={setProductiveUnitsActive}
-      newItemPath="/init/overview/productive-units/new"
-      editItemPath={(id) => `/init/overview/productive-units/${id}`}
+      newItemPath='/init/overview/productive-units/new'
+      editItemPath={id => `/init/overview/productive-units/${id}`}
       isLoading={false}
     />
   );
-
-  
-  
 };

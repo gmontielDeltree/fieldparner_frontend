@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -9,26 +9,26 @@ import {
   TextField,
   Tooltip,
   Typography,
-} from "@mui/material";
-import { Icon } from "semantic-ui-react";
+} from '@mui/material';
+import { Icon } from 'semantic-ui-react';
 import {
   Add as AddIcon,
   Search as SearchIcon,
   Edit as EditIcon,
   Map as MapIcon,
-  Delete as DeleteIcon
-} from "@mui/icons-material";
-import { useForm, useAppDispatch, useAppSelector, useZones } from "../hooks";
-import { useTranslation } from "react-i18next";
-import { setZoneActive } from "../redux/zones";
-import { Zones } from "../types";
-import { GenericListPage } from "./GenericListPage";
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
+import { useForm, useAppDispatch, useAppSelector, useZones } from '../hooks';
+import { useTranslation } from 'react-i18next';
+import { setZoneActive } from '../redux/zones';
+import { Zones } from '../types';
+import { GenericListPage } from '../components';
 
 export const ListZonesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { isLoading } = useAppSelector((state) => state.ui);
+  const { isLoading } = useAppSelector(state => state.ui);
   const { zones, getZones, removeZone } = useZones();
 
   useEffect(() => {
@@ -36,34 +36,34 @@ export const ListZonesPage: React.FC = () => {
   }, []);
 
   const columns = [
-    { field: "zone", headerName: t("_zone"), flex: 1 },
-    { field: "description", headerName: t("description"), flex: 1 },
+    { field: 'zone', headerName: t('_zone'), flex: 1 },
+    { field: 'description', headerName: t('description'), flex: 1 },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       flex: 1,
       sortable: false,
-      renderCell: (params) => (
-        <Box display="flex" justifyContent="center">
-          <Tooltip title={t("icon_edit")}>
+      renderCell: params => (
+        <Box display='flex' justifyContent='center'>
+          <Tooltip title={t('icon_edit')}>
             <IconButton
-              aria-label={t("icon_edit")}
+              aria-label={t('icon_edit')}
               onClick={() => onClickUpdateZone(params.row)}
               sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
               }}
             >
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("icon_delete")}>
+          <Tooltip title={t('icon_delete')}>
             <IconButton
-              aria-label={t("icon_delete")}
+              aria-label={t('icon_delete')}
               onClick={() => handleDeleteZone(params.row)}
               sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
               }}
             >
               <DeleteIcon />
@@ -74,7 +74,7 @@ export const ListZonesPage: React.FC = () => {
     },
   ];
 
-  const onClickAddZone = () => navigate("/init/overview/zones/new");
+  const onClickAddZone = () => navigate('/init/overview/zones/new');
 
   const handleDeleteZone = (item: Zones) => {
     if (item._id && item._rev) {
@@ -94,15 +94,15 @@ export const ListZonesPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t("_zones")}
-      icon={<MapIcon sx={{ fontSize: 40, color: "#424242" }} />}
+      title={t('_zones')}
+      icon={<MapIcon sx={{ fontSize: 40, color: '#424242' }} />}
       data={zones}
       columns={columns}
       getData={getZones}
       deleteData={removeZone}
       setActiveItem={setZoneActive}
-      newItemPath="/init/overview/zones/new"
-      editItemPath={(id) => `/init/overview/zones/${id}`}
+      newItemPath='/init/overview/zones/new'
+      editItemPath={id => `/init/overview/zones/${id}`}
     />
   );
 };

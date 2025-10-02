@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -13,19 +13,17 @@ import {
   Snackbar,
   Alert,
   AlertColor,
-} from "@mui/material";
-import {
-  Add as AddIcon,
-  Download as DownloadIcon,
-} from "@mui/icons-material";
-import { DataGrid, GridColDef, esES } from "@mui/x-data-grid";
-import { useTranslation } from "react-i18next";
-import { TemplateLayout, Loading, CloseButtonPage } from "../components";
+} from '@mui/material';
+import { Add as AddIcon, Download as DownloadIcon } from '@mui/icons-material';
+import { DataGrid, GridColDef, esES } from '@mui/x-data-grid';
+import { useTranslation } from 'react-i18next';
+import { TemplateLayout, Loading, CloseButtonPage, IconsViewer } from '../../components';
 import * as XLSX from 'xlsx';
+import { useModuleByRoute } from '../../hooks/useModuleByRoute';
 
 interface GenericListPageProps<T> {
-  title: string;
-  icon: React.ReactNode;
+  title?: string;
+  icon?: React.ReactNode;
   data: T[];
   columns: GridColDef[];
   showAddButton?: boolean;
@@ -35,8 +33,9 @@ interface GenericListPageProps<T> {
   newItemPath: string;
   editItemPath: (id: string) => string;
   isLoading: boolean;
-  headerContent?: React.ReactNode;  // New prop for header content
-  footerContent?: React.ReactNode;  // New prop for footer content
+  headerContent?: React.ReactNode; // New prop for header content
+  footerContent?: React.ReactNode; // New prop for footer content
+  moduleRoute?: string; // optional: used to auto-resolve title/icon from menuModules
 }
 
 export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
@@ -51,12 +50,20 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   newItemPath,
   editItemPath,
   isLoading,
-  headerContent,  // New prop
-  footerContent,  // New prop
+  headerContent, // New prop
+  footerContent, // New prop
+  moduleRoute,
 }: GenericListPageProps<T>) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [filterText, setFilterText] = useState("");
+  const location = useLocation();
+  const routeToResolve = moduleRoute || location.pathname || '/';
+  const { moduleTitle, moduleIcon } = useModuleByRoute(routeToResolve);
+
+  const displayTitle = title || moduleTitle || t('list') || '';
+  const displayIcon = icon || (moduleIcon ? <IconsViewer iconName={moduleIcon} size={40} /> : null);
+
+  const [filterText, setFilterText] = useState('');
   const [filteredData, setFilteredData] = useState<(T & { id: string })[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -88,19 +95,20 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   };
 
   const handleSearch = (searchText: string) => {
-    const filtered = data.filter((item) =>
-      Object.values(item).some((value) =>
-        value !== null && value !== undefined && value.toString().toLowerCase().includes(searchText.toLowerCase())
-      )
+    const filtered = data.filter(item =>
+      Object.values(item).some(
+        value =>
+          value !== null &&
+          value !== undefined &&
+          value.toString().toLowerCase().includes(searchText.toLowerCase()),
+      ),
     );
     setFilteredData(assignUniqueIds(filtered));
   };
 
   const handleExport = () => {
     try {
-      const sanitizedTitle = title
-        .replace(/[\\\/\?\*\[\]\:\s]/g, '_')
-        .substring(0, 31);
+      const sanitizedTitle = title.replace(/[\\\/\?\*\[\]\:\s]/g, '_').substring(0, 31);
 
       const worksheet = XLSX.utils.json_to_sheet(filteredData);
       const workbook = XLSX.utils.book_new();
@@ -129,88 +137,89 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   return (
     <TemplateLayout key={`overview-${title}`} viewMap={false}>
       {isLoading && <Loading loading />}
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Card elevation={5} sx={{ p: 2, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', borderRadius: '16px' }}>
+      <Container maxWidth='xl' sx={{ py: 4 }}>
+        <Card
+          elevation={5}
+          sx={{ p: 2, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', borderRadius: '16px' }}
+        >
           <CardHeader
             avatar={icon}
             title={
-              <Typography component="h2" variant="h4" sx={{ fontWeight: 'bold', color: "#424242" }}>
+              <Typography component='h2' variant='h4' sx={{ fontWeight: 'bold', color: '#424242' }}>
                 {title}
               </Typography>
             }
             action={<CloseButtonPage />}
           />
           <CardContent>
-            {headerContent && (  // Render header content if provided
-              <Box mb={3}>
-                {headerContent}
-              </Box>
+            {headerContent && ( // Render header content if provided
+              <Box mb={3}>{headerContent}</Box>
             )}
-            <Grid container spacing={3} alignItems="center">
+            <Grid container spacing={3} alignItems='center'>
               <Grid item xs={12} md={3}>
                 {showAddButton && newItemPath && (
                   <Button
-                    variant="contained"
-                    color="success"
+                    variant='contained'
+                    color='success'
                     startIcon={<AddIcon />}
                     onClick={() => navigate(newItemPath)}
                     sx={{
-                      borderRadius: "30px",
+                      borderRadius: '30px',
                       fontWeight: 'bold',
                       background: 'linear-gradient(45deg, #388e3c 30%, #66bb6a 90%)',
                       transition: 'background 0.3s ease-in-out',
-                      "&:hover": {
+                      '&:hover': {
                         background: 'linear-gradient(45deg, #66bb6a 30%, #388e3c 90%)',
                       },
                     }}
                   >
-                    {t("add_new")}
+                    {t('add_new')}
                   </Button>
                 )}
               </Grid>
               <Grid item xs={12} md={6}>
                 <TextField
-                  label={t("search")}
+                  label={t('search')}
                   value={filterText}
                   onChange={handleFilterChange}
-                  variant="outlined"
-                  size="small"
+                  variant='outlined'
+                  size='small'
                   fullWidth
                   sx={{
                     backgroundColor: 'white',
                     borderRadius: '8px',
                     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
+                    '& .MuiOutlinedInput-root': {
+                      '& fieldset': {
                         borderRadius: '8px',
                       },
                     },
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={3} display="flex" justifyContent="flex-end">
+              <Grid item xs={12} md={3} display='flex' justifyContent='flex-end'>
                 <Button
-                  variant="contained"
-                  color="primary"
+                  variant='contained'
+                  color='primary'
                   startIcon={<DownloadIcon />}
                   onClick={handleExport}
                   sx={{
-                    borderRadius: "30px",
-                    paddingLeft: "30px",
-                    paddingRight: "30px",
+                    borderRadius: '30px',
+                    paddingLeft: '30px',
+                    paddingRight: '30px',
                     fontWeight: 'bold',
                     background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
                     transition: 'background 0.3s ease-in-out',
-                    "&:hover": {
+                    '&:hover': {
                       background: 'linear-gradient(45deg, #42a5f5 30%, #1976d2 90%)',
                     },
                   }}
                 >
-                  {t("export")}
+                  {t('export')}
                 </Button>
               </Grid>
               <Grid item xs={12}>
-                <Box sx={{ height: 600, width: "100%", mt: 2 }}>
+                <Box sx={{ height: 600, width: '100%', mt: 2 }}>
                   <DataGrid
                     rows={filteredData}
                     columns={columns}
@@ -220,104 +229,102 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
                     loading={isLoading}
                     localeText={esES.components.MuiDataGrid.defaultProps.localeText}
                     sx={{
-                      "& .MuiDataGrid-columnHeaders": {
-                        backgroundColor: "#424242",
-                        color: "#fff",
+                      '& .MuiDataGrid-columnHeaders': {
+                        backgroundColor: '#424242',
+                        color: '#fff',
                         fontSize: '16px',
                         fontWeight: 'bold',
                       },
-                      "& .MuiDataGrid-columnHeader:focus-within .MuiDataGrid-sortIcon": {
-                        color: "#fff",
+                      '& .MuiDataGrid-columnHeader:focus-within .MuiDataGrid-sortIcon': {
+                        color: '#fff',
                       },
-                      "& .MuiDataGrid-sortIcon": {
-                        color: "#fff",
+                      '& .MuiDataGrid-sortIcon': {
+                        color: '#fff',
                         fontSize: '1.5rem',
                         textShadow: '0px 0px 5px rgba(0,0,0,0.5)',
                       },
-                      "& .MuiDataGrid-cell": {
-                        borderBottom: "none",
+                      '& .MuiDataGrid-cell': {
+                        borderBottom: 'none',
                         color: '#333',
                       },
-                      "& .MuiDataGrid-row:nth-of-type(odd)": {
-                        backgroundColor: "#f9f9f9",
+                      '& .MuiDataGrid-row:nth-of-type(odd)': {
+                        backgroundColor: '#f9f9f9',
                       },
-                      "& .MuiDataGrid-row:hover": {
-                        backgroundColor: "#e8f5e9",
+                      '& .MuiDataGrid-row:hover': {
+                        backgroundColor: '#e8f5e9',
                       },
                     }}
                   />
                 </Box>
               </Grid>
             </Grid>
-            {footerContent && (  // Render footer content if provided
-              <Box mt={3}>
-                {footerContent}
-              </Box>
+            {footerContent && ( // Render footer content if provided
+              <Box mt={3}>{footerContent}</Box>
             )}
           </CardContent>
         </Card>
       </Container>
 
       <Snackbar
-  open={snackbar.open}
-  autoHideDuration={4000}
-  onClose={handleCloseSnackbar}
-  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-  sx={{
-    '& .MuiAlert-root': {
-      backdropFilter: 'blur(8px)',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)', // Aumentado la opacidad
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      borderRadius: '12px',
-      '& .MuiAlert-icon': {
-        fontSize: '24px',
-      },
-      '& .MuiAlert-message': {
-        fontSize: '14px',
-        fontWeight: 500,
-        color: '#000', // Asegurando que el texto sea negro
-      },
-    },
-  }}
->
-  <Alert
-    onClose={handleCloseSnackbar}
-    severity={snackbar.severity}
-    variant="standard"
-    elevation={6}
-    sx={{
-      width: '100%',
-      animation: 'slideIn 0.5s ease-out',
-      '@keyframes slideIn': {
-        from: {
-          transform: 'translateX(100%)',
-          opacity: 0,
-        },
-        to: {
-          transform: 'translateX(0)',
-          opacity: 1,
-        },
-      },
-      '&.MuiAlert-standardSuccess': {
-        backgroundColor: '#e8f5e9', 
-        color: '#2e7d32', 
-        '& .MuiAlert-icon': {
-          color: '#2e7d32',
-        },
-      },
-      '&.MuiAlert-standardError': {
-        backgroundColor: '#ffebee', 
-        color: '#d32f2f', 
-        '& .MuiAlert-icon': {
-          color: '#d32f2f',
-        },
-      },
-    }}
-  >
-    {snackbar.message}
-  </Alert>
-</Snackbar>
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        sx={{
+          '& .MuiAlert-root': {
+            backdropFilter: 'blur(8px)',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)', // Aumentado la opacidad
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '12px',
+            '& .MuiAlert-icon': {
+              fontSize: '24px',
+            },
+            '& .MuiAlert-message': {
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#000', // Asegurando que el texto sea negro
+            },
+          },
+        }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          variant='standard'
+          elevation={6}
+          sx={{
+            width: '100%',
+            animation: 'slideIn 0.5s ease-out',
+            '@keyframes slideIn': {
+              from: {
+                transform: 'translateX(100%)',
+                opacity: 0,
+              },
+              to: {
+                transform: 'translateX(0)',
+                opacity: 1,
+              },
+            },
+            '&.MuiAlert-standardSuccess': {
+              backgroundColor: '#e8f5e9',
+              color: '#2e7d32',
+              '& .MuiAlert-icon': {
+                color: '#2e7d32',
+              },
+            },
+            '&.MuiAlert-standardError': {
+              backgroundColor: '#ffebee',
+              color: '#d32f2f',
+              '& .MuiAlert-icon': {
+                color: '#d32f2f',
+              },
+            },
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </TemplateLayout>
   );
 };
