@@ -207,18 +207,8 @@ export const useUser = () => {
     setIsLoading(true);
     try {
       const response = await fieldpartnerAPI.get(`${controller}/${userId}`);
-
+      
       if (response) {
-        // const foundUser: UserByAccount = {
-        //   email: response.data.email,
-        //   isAdmin: response.data.isAdmin,
-        //   name: response.data.name,
-        //   lastName: response.data.lastName,
-        //   language: response.data.language,
-        //   photoName: response.data.photoName,
-        //   state: response.data.state,
-        //   rol: response.data.rol
-        // };
         const foundUser = response.data as UserByAccount;
         dispatch(setUserActive(foundUser));
       }

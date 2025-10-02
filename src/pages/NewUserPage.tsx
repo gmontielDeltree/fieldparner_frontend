@@ -56,7 +56,7 @@ const initialForm: UserByAccount = {
   photoName: "",
 };
 
-//TODO: enviar la actualizacion de usuario, incluido si quiere password nueva .
+
 const policyPassword = "La contraseña debe contener al menos una letra en mayúscula, un dígito, un carácter especial y tener una longitud mínima de 8 caracteres.";
 const statusOptions = Object.values(EnumStatusUser).map(x => x as string);
 
@@ -73,6 +73,7 @@ export const NewUserPage = () => {
     newPassword: "",
   });
   const { userActive } = useAppSelector((state) => state.users);
+  const { user: authUser } = useAppSelector((state) => state.auth);
   const {
     photoName,
     formulario,
@@ -183,7 +184,8 @@ export const NewUserPage = () => {
     if (value)
       setFormulario(prevState => ({ ...prevState, state: value }));
   }
-
+  console.log('authuser', authUser?.email.toLowerCase())
+  console.log('userActive', userActive?.email);
 
   useEffect(() => {
     if (userActive) {
@@ -309,9 +311,9 @@ export const NewUserPage = () => {
                         value={formulario.language}
                         onChange={handleSelectChange}
                       >
-                        <MenuItem value="Español">Español</MenuItem>
-                        <MenuItem value="Portugués">Portugués</MenuItem>
-                        <MenuItem value="Inglés">Inglés</MenuItem>
+                        <MenuItem value="AR">Español</MenuItem>
+                        <MenuItem value="br">Portugués</MenuItem>
+                        <MenuItem value="US">Inglés</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
@@ -398,60 +400,61 @@ export const NewUserPage = () => {
                     </CardContent>
                   </Card>
                 </Box>
-                {userActive && <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }} >
-                    <Button
-                      variant="text"
-                      color="secondary"
-                      onClick={() => setShowChangePassword(!showChangePassword)}
-                      startIcon={<VpnKeyIcon />}
-                      sx={{ border: '1px solid', borderColor: '-moz-initial', borderRadius: '5px', padding: '8px 16px' }}
-                    >
-                      Cambiar clave
-                    </Button>
-                  </Box>
-                  {showChangePassword && (
-                    <>
-                      <Grid container direction="column" sx={{ mt: 1 }} spacing={1}>
-                        <Grid item xs={4}>
-                          <TextField
-                            label="Clave anterior"
-                            type="password"
-                            name="previousPassword"
-                            value={formulario.previousPassword}
-                            onChange={handleInputChange}
-                            fullWidth />
-                        </Grid>
-                        <Grid item xs={4}>
-                          <TextField
-                            label="Nueva clave"
-                            type="password"
-                            name="newPassword"
-                            value={formulario.newPassword}
-                            onChange={handleInputChange}
-                            fullWidth />
-                        </Grid>
-                        <Grid item xs={4}>
-                          <TextField
-                            label="Repetir nueva clave"
-                            type="password"
-                            value={confirmPassword}
-                            error={!!formControlError.password}
-                            helperText={formControlError.password}
-                            onChange={onChangeConfirmNewPassword}
-                            fullWidth />
-                        </Grid>
-                      </Grid><Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                        <Button variant="contained" color="primary" onClick={handleUpdatePassword}>
-                          Confirmar
-                        </Button>
-                        <Button variant="outlined" color="secondary" onClick={() => setShowChangePassword(!showChangePassword)}>
-                          Cancelar
-                        </Button>
-                      </Box>
-                    </>
-                  )}
-                </Box>}
+                {(userActive && authUser?.email.toLowerCase() === userActive?.email?.toLowerCase()) &&
+                  <Box sx={{ mb: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }} >
+                      <Button
+                        variant="text"
+                        color="secondary"
+                        onClick={() => setShowChangePassword(!showChangePassword)}
+                        startIcon={<VpnKeyIcon />}
+                        sx={{ border: '1px solid', borderColor: '-moz-initial', borderRadius: '5px', padding: '8px 16px' }}
+                      >
+                        Cambiar clave
+                      </Button>
+                    </Box>
+                    {showChangePassword && (
+                      <>
+                        <Grid container direction="column" sx={{ mt: 1 }} spacing={1}>
+                          <Grid item xs={4}>
+                            <TextField
+                              label="Clave anterior"
+                              type="password"
+                              name="previousPassword"
+                              value={formulario.previousPassword}
+                              onChange={handleInputChange}
+                              fullWidth />
+                          </Grid>
+                          <Grid item xs={4}>
+                            <TextField
+                              label="Nueva clave"
+                              type="password"
+                              name="newPassword"
+                              value={formulario.newPassword}
+                              onChange={handleInputChange}
+                              fullWidth />
+                          </Grid>
+                          <Grid item xs={4}>
+                            <TextField
+                              label="Repetir nueva clave"
+                              type="password"
+                              value={confirmPassword}
+                              error={!!formControlError.password}
+                              helperText={formControlError.password}
+                              onChange={onChangeConfirmNewPassword}
+                              fullWidth />
+                          </Grid>
+                        </Grid><Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                          <Button variant="contained" color="primary" onClick={handleUpdatePassword}>
+                            Confirmar
+                          </Button>
+                          <Button variant="outlined" color="secondary" onClick={() => setShowChangePassword(!showChangePassword)}>
+                            Cancelar
+                          </Button>
+                        </Box>
+                      </>
+                    )}
+                  </Box>}
                 {/* <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', mb: 2 }}>
                   <ScheduleIcon sx={{ mr: 1 }} />
                   <Typography variant="body1">Última sesión:</Typography>
