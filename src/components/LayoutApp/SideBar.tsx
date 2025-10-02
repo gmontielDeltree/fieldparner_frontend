@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Collapse,
@@ -19,212 +19,27 @@ import {
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
 import { IconsViewer, Loading } from '../../components';
-import { useTranslation } from 'react-i18next';
-import { getEnvVariables } from '../../helpers/getEnvVariables';
-import { useModules, useMenuModules, useAppSelector } from '../../hooks';
-
 import { SideBarProps } from '../../types';
 import { MenuModules } from '../../interfaces/menuModules';
-import { Modules } from '../../interfaces/modules';
-
-const parseOrder = (s?: string) => {
-  if (!s) return Number.MAX_SAFE_INTEGER;
-  const n = Number(s);
-  if (!Number.isNaN(n)) return n;
-  const m = String(s).match(/^(\d+)(?:\.(\d+))?$/);
-  if (!m) return Number.MAX_SAFE_INTEGER;
-  const major = Number(m[1]);
-  const minor = Number(m[2] || '0') / 100;
-  return major + minor;
-};
-
-const getMenuLabel = (m: MenuModules, lang: string) => {
-  const l = (lang || 'es').toLowerCase();
-  if (l.startsWith('en') && (m.menuOptionEn || '').trim()) return m.menuOptionEn!;
-  if (l.startsWith('pt') && (m.menuOptionPt || '').trim()) return m.menuOptionPt!;
-  return m.menuOption || m.menuOption || '';
-};
-
-const getModuleLabel = (mod: Modules | any, lang: string) => {
-  if (!mod) return '';
-  const l = (lang || 'es').toLowerCase();
-  if (l.startsWith('en') && (mod.moduleNameEn || '').trim()) return mod.moduleNameEn;
-  if (l.startsWith('pt') && (mod.moduleNamePt || '').trim()) return mod.moduleNamePt;
-  return mod.moduleNameEs || '';
-};
+import { useSidebar } from './useSidebar';
 
 export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideBarClose }) => {
-  const [openCollapse, setOpenCollapse] = useState<string>('');
-  const { pathname } = useLocation();
-  const version = getEnvVariables().VITE_VERSION;
-  const { t, i18n } = useTranslation();
-  const { user } = useAppSelector((s: any) => s.auth || {});
-
-  // backend hooks
-  const { modules, getModules } = useModules();
-  const { menuModules, getMenuModules, isLoading } = useMenuModules();
-
-  // permissions slice (app-specific)
-  const modulesPermissionsSlice = useAppSelector(
-    (s: any) => s.modulesPermissions || s.modulesUsers || s.permissions || null,
-  );
-
-  useEffect(() => {
-    getModules();
-    getMenuModules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => console.debug('[SideBar] modules count', modules?.length), [modules]);
-  useEffect(() => console.debug('[SideBar] menuModules count', menuModules?.length), [menuModules]);
-
-  const onClickMenu = (collapse: string) =>
-    setOpenCollapse(collapse === openCollapse ? '' : collapse);
-
-  // only sidebar menu items and with a defined route
-  const sidebarMenus = useMemo(
-    () =>
-      (menuModules || [])
-        .filter(m => {
-          const mt = String((m as any).menuType || '').toLowerCase();
-          const hasRoute = !!(m.route || m.full || m.light || m.details);
-          return (
-            (mt === 'sidebar' || mt === 'sideBar'.toLowerCase() || mt === 'sidebar') && hasRoute
-          );
-        })
-        .slice()
-        .sort((a, b) => parseOrder(a.order) - parseOrder(b.order)),
-    [menuModules],
-  );
-
-  // group by module: prefer module meta (object) or match with modules list, else prefix of order
-  const grouped = useMemo(() => {
-    const g: Record<string, { moduleMeta?: any; items: MenuModules[]; numericGroup?: number }> = {};
-    const modulesById = new Map<string, any>();
-    const modulesByName = new Map<string, any>();
-
-    (modules || []).forEach((m: any) => {
-      if (m._id) modulesById.set(String(m._id), m);
-      if ((m as any).id) modulesById.set(String((m as any).id), m);
-      const nm = String(m.moduleNameEs || '')
-        .trim()
-        .toLowerCase();
-      if (nm) modulesByName.set(nm, m);
-      const nmEn = String(m.moduleNameEn || '')
-        .trim()
-        .toLowerCase();
-      if (nmEn) modulesByName.set(nmEn, m);
-    });
-
-    sidebarMenus.forEach(item => {
-      let key = '';
-      let moduleMeta: any | undefined = undefined;
-
-      // if menu.module is an object (embedded module meta)
-      if (item && typeof (item as any).module === 'object' && (item as any).module?._id) {
-        moduleMeta = (item as any).module;
-        key = String(moduleMeta._id);
-      } else {
-        // menu.module might be id or moduleName string
-        const rawModule = String(item.module ?? '').trim();
-        if (rawModule) {
-          // direct id
-          if (modulesById.has(rawModule)) {
-            moduleMeta = modulesById.get(rawModule);
-            key = String(moduleMeta._id ?? moduleMeta.id);
-          } else {
-            // name match
-            const nameKey = rawModule.toLowerCase();
-            if (modulesByName.has(nameKey)) {
-              moduleMeta = modulesByName.get(nameKey);
-              key = String(moduleMeta._id ?? moduleMeta.id);
-            } else {
-              // fallback: if menu.order has numeric prefix
-              const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
-              if (match) {
-                const grp = Number(match[1]);
-                key = `group-${grp}`;
-                if (!g[key]) g[key] = { items: [], numericGroup: grp };
-              } else {
-                // generic grouping by module string
-                key = `group-${rawModule || '0'}`;
-                if (!g[key]) g[key] = { items: [] };
-              }
-            }
-          }
-        } else {
-          // no module info: try order prefix
-          const match = String(item.order || '').match(/^(\d+)(?:\.\d+)?/);
-          if (match) {
-            const grp = Number(match[1]);
-            key = `group-${grp}`;
-            if (!g[key]) g[key] = { items: [], numericGroup: grp };
-          } else {
-            key = 'group-0';
-            if (!g[key]) g[key] = { items: [] };
-          }
-        }
-      }
-
-      if (moduleMeta) {
-        if (!key)
-          key = String(
-            moduleMeta._id ??
-              moduleMeta.id ??
-              moduleMeta.moduleNameEs ??
-              moduleMeta.moduleNameEn ??
-              moduleMeta.moduleNamePt,
-          );
-        if (!g[key]) g[key] = { moduleMeta, items: [] };
-        else g[key].moduleMeta = moduleMeta;
-      }
-
-      if (!g[key]) g[key] = { items: [] };
-      g[key].items.push(item);
-    });
-
-    // sort items in each group
-    Object.keys(g).forEach(k => {
-      g[k].items.sort((a, b) => parseOrder(a.order) - parseOrder(b.order));
-    });
-
-    console.debug('[SideBar] grouped keys', Object.keys(g));
-    return g;
-  }, [sidebarMenus, modules]);
-
-  const groupKeysSorted = useMemo(() => {
-    const keys = Object.keys(grouped);
-    keys.sort((a, b) => {
-      const na =
-        grouped[a].numericGroup ??
-        (a.startsWith('group-') ? Number(a.split('-')[1] || 9999) : 9999);
-      const nb =
-        grouped[b].numericGroup ??
-        (b.startsWith('group-') ? Number(b.split('-')[1] || 9999) : 9999);
-      if (na !== nb) return na - nb;
-      return a.localeCompare(b);
-    });
-    return keys;
-  }, [grouped]);
-
-  // permission check: first menu.permission, then try app slice, then admin fallback
-  const hasPermission = (m: MenuModules) => {
-    if (typeof (m as any).permission === 'boolean') return !!(m as any).permission;
-    try {
-      const mid = String((m as any).id ?? (m as any)._id ?? '');
-      if (modulesPermissionsSlice && typeof modulesPermissionsSlice === 'object') {
-        if (mid && modulesPermissionsSlice[mid] != null) return !!modulesPermissionsSlice[mid];
-        if (Array.isArray(modulesPermissionsSlice))
-          return modulesPermissionsSlice.includes ? modulesPermissionsSlice.includes(mid) : true;
-      }
-    } catch (e) {
-      // ignore
-    }
-    if (user && user.isAdmin) return true;
-    return true; // permissive fallback
-  };
-
-  const lang = i18n.language || 'es';
+  // use the new hook (loads modules/menu/system and exposes prepared data)
+  const {
+    openCollapse,
+    onClickMenu,
+    getMenuLabel,
+    getModuleLabel,
+    grouped,
+    //visibleGroupKeys,
+    groupKeysSorted,
+    hasPermission,
+    isLoading,
+    version,
+    pathname,
+    lang,
+    t,
+  } = useSidebar();
 
   return (
     <Box component='nav' sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
@@ -275,7 +90,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
               const parentIconName = moduleMeta?.icon || entry.items[0]?.icon || undefined;
               const isOpen = openCollapse === groupKey;
 
-              const children = entry.items.filter(it => hasPermission(it));
+              const children = entry.items.filter((it: MenuModules) => hasPermission(it));
 
               if (!children.length) return null;
 
@@ -294,7 +109,12 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
                   <Collapse in={isOpen} timeout='auto' unmountOnExit>
                     <List component='div' disablePadding>
                       {children.map((m: MenuModules) => {
-                        const to = m.route || m.full || m.light || m.details || '#';
+                        const to =
+                          (m as any).route ||
+                          (m as any).full ||
+                          (m as any).light ||
+                          (m as any).details ||
+                          '#';
                         const label = getMenuLabel(m, lang) || m.menuOption || '';
                         const selected = to !== '#' && pathname.startsWith(to);
                         return (
