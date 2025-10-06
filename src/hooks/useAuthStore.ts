@@ -123,42 +123,44 @@ export const useAuthStore = () => {
     }
   };
 
-const checkAuthToken = async () => {
-  const token = localStorage.getItem('accessToken');
-  const refreshToken = localStorage.getItem('refreshToken');
-  const userSession = localStorage.getItem('user_session');
+  const checkAuthToken = async () => {
+    const token = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    const userSession = localStorage.getItem('user_session');
 
-  if (!token || !refreshToken || !userSession) return dispatch(onLogout(''));
+    if (!token || !refreshToken || !userSession) return dispatch(onLogout(''));
 
-  dispatch(onChecking());
-  try {
-    const expiration = localStorage.getItem('token_expiration');
+    dispatch(onChecking());
+    try {
+      const expiration = localStorage.getItem('token_expiration');
 
-    if (new Date().getTime() > Number(expiration)) {
+      if (new Date().getTime() > Number(expiration)) {
+        dispatch(onLogout(''));
+        return;
+      }
+
+      const lastPath = localStorage.getItem('lastPath') || '/';
+      navigate(lastPath, { replace: true });
+      const userLogin = JSON.parse(userSession || '') as User;
+      dispatch(onLogin(userLogin));
+
+      const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, {
+        refreshToken,
+      });
+
+      if (response.status === HttpStatusCode.Created) {
+        const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
+        //Si no devuelve AccessToken, se utiliza el token actual
+        localStorage.setItem('accessToken', response.data.AccessToken || token);
+        localStorage.setItem('token_expiration', expiresIn.toString());
+      }
+    } catch (error) {
+      localStorage.clear();
       dispatch(onLogout(''));
-      return;
     }
+  };
 
-    const lastPath = localStorage.getItem('lastPath') || '/';
-    navigate(lastPath, { replace: true });
-    const userLogin = JSON.parse(userSession || '') as User;
-    dispatch(onLogin(userLogin));
 
-    const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, {
-      refreshToken,
-    });
-
-    if (response.status === HttpStatusCode.Created) {
-      const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
-      //Si no devuelve AccessToken, se utiliza el token actual
-      localStorage.setItem('accessToken', response.data.AccessToken || token);
-      localStorage.setItem('token_expiration', expiresIn.toString());
-    }
-  } catch (error) {
-    localStorage.clear();
-    dispatch(onLogout(''));
-  }
-};
 
 //  const checkAuthToken = async () => {
   //  dispatch(onChecking());

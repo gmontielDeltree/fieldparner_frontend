@@ -40,3 +40,5 @@ export * from './CorporateContract/TableCorporateContract';
 export * from './ProductUnits/TableProductUnits';
 
 export * from './IconsViewer/IconsViewer';
+
+export * from './GenericListPage/GenericListPage';
