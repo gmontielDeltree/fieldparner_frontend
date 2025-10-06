@@ -308,7 +308,7 @@ export const NewStockMovementPage: React.FC = () => {
       />
       <Paper variant='outlined' sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}>
         <Box className='text-center'>
-          <SyncAltIcon />
+
         </Box>
         <Typography component='h1' variant='h4' align='center' sx={{ mt: 1, mb: 7 }}>
           {t('new_stock_movement')}

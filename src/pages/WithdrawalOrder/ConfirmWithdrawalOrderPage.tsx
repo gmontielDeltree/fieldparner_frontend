@@ -156,16 +156,9 @@ export const ConfirmWithdrawalOrderPage: React.FC = () => {
                 sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}
             >
                 <Box className="text-center">
-                    <AssignmentIcon fontSize='large' />
+
                 </Box>
-                <Typography
-                    component="h1"
-                    variant="h4"
-                    align="center"
-                    sx={{ mt: 1, mb: 7 }}
-                >
-                    {t("withdrawals")}
-                </Typography>
+
                 <Grid container spacing={2} mb={2}>
                     <Grid item xs={12} sm={3}>
                         <TextField

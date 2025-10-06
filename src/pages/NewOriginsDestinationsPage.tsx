@@ -161,10 +161,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
           alignItems="center"
           sx={{ ml: { sm: 2 }, pt: 2 }}
         >
-          <AddLocationAltIcon /><ArrowRightAltIcon fontSize='large' />
-          <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-            {t("origins_destinations")}
-          </Typography>
+
         </Box>
 
         <Paper
