@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import {
   Edit as EditIcon,
-  Build as BuildIcon,
-  Person as PersonIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { useAppDispatch, useLaborsServices } from '../hooks';
@@ -83,13 +81,7 @@ export const ListLaborsServicesPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('service_labors')}
-      icon={
-        <Box display='flex' alignItems='center'>
-          <PersonIcon sx={{ marginRight: '8px' }} />
-          <BuildIcon sx={{ marginRight: '8px', fontSize: 'small' }} />
-        </Box>
-      }
+      moduleRoute='/init/overview/Labors-services'
       data={laborsServices}
       columns={columns}
       getData={getLaborsServices}
@@ -97,6 +89,7 @@ export const ListLaborsServicesPage: React.FC = () => {
       setActiveItem={setLaborsServicesActive}
       newItemPath='/init/overview/Labors-services/new'
       editItemPath={id => `/init/overview/Labors-services/${id}`}
+      isLoading={false}
     />
   );
 };

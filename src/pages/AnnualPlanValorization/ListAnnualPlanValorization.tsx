@@ -16,7 +16,6 @@ import {
 import {
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Assessment as AssessmentIcon,
   PlayArrow as PlayArrowIcon,
   FileDownload as FileDownloadIcon,
   Analytics as AnalyticsIcon,
@@ -284,12 +283,7 @@ export const ListAnnualPlanValorization: React.FC = () => {
       </Box>
 
       <GenericListPage
-        title={t('annual_plan_valorization')}
-        icon={
-          <Box display='flex' alignItems='center'>
-            <AssessmentIcon />
-          </Box>
-        }
+        moduleRoute='/init/overview/annual-plan-valorization'
         data={filteredData}
         columns={columns}
         getData={getAnnualPlanValorizations}

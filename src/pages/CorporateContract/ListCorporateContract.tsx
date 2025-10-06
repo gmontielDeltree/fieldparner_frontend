@@ -90,13 +90,7 @@ export const ListCorporateContractPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('corporate_contracts')}
-      icon={
-        <Box display='flex' alignItems='center'>
-          <DescriptionIcon />
-          <HandshakeIcon sx={{ marginRight: '8px' }} />
-        </Box>
-      }
+      moduleRoute='/init/overview/corporate-contract'
       data={listCorporateContract}
       columns={columns}
       getData={getCorporateContract}

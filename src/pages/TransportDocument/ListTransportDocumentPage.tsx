@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import { useTransportDocument } from '../../hooks';
 
-import { FireTruck as FireTruckIcon } from '@mui/icons-material';
+
 import { GenericListPage } from '../../components';
 import { GridRenderCellParams } from '@mui/x-data-grid';
 import { Box, IconButton, Tooltip } from '@mui/material';
@@ -109,9 +109,8 @@ export const ListTransportDocumentPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title='Carta de Porte (Argentina)'
+      moduleRoute='/init/overview/transport-documents'
       isLoading={false}
-      icon={<FireTruckIcon fontSize='large' sx={{ mr: 1 }} />}
       data={transportDocumentsItem}
       columns={columns}
       getData={getTransportDocuments}

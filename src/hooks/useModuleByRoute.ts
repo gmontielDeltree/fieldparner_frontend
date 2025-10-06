@@ -21,21 +21,18 @@ export const useModuleByRoute = (route?: string | null) => {
     return route.startsWith('/') ? route : `/${route}`;
   }, [route]);
 
+  // Use strict exact match on route: route in menuModules is the identifier provided by backend
   const module = useMemo(() => {
     if (!normalizedRoute) return null;
     const list = Array.isArray(menuModules) ? menuModules : [];
-    // prefer exact route, then startsWith, then includes
-    let found = list.find(m => m.route && String(m.route) === normalizedRoute);
-    if (!found) found = list.find(m => m.route && normalizedRoute.startsWith(String(m.route)));
-    if (!found)
-      found = list.find(
-        m => m.route && String(m.route) && normalizedRoute.includes(String(m.route)),
-      );
-    return found || null;
+    const found = list.find(m => m.route && String(m.route) === normalizedRoute);
+    return (found as MenuModules) || null;
   }, [normalizedRoute, menuModules]);
 
   const moduleTitle = useMemo(() => (module ? getMenuLabel(module, lang) : ''), [module, lang]);
   const moduleIcon = module ? module.icon || null : null;
+
+  // No dev logs here: backend defines the route as the identifier; resolution is strict.
 
   return {
     module,

@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListPage } from '../../components';
 import {
-  Handshake as HandshakeIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
@@ -144,9 +143,8 @@ export const ListSalesCerealsPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('title_sale_cereal')}
+      moduleRoute='/init/overview/sales-cereals'
       isLoading={false}
-      icon={<HandshakeIcon fontSize='large' sx={{ mr: 1 }} />}
       data={contractsSaleCerealsFull}
       columns={columns}
       getData={getContractsSaleCereals}

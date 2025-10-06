@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import 'semantic-ui-css/semantic.min.css';
 import {
-  Map as MapIcon,
-  LocationOn as LocationOnIcon,
+
+
   Edit as EditIcon,
-  Delete as DeleteIcon,
+
 } from '@mui/icons-material';
 import { useAppDispatch, useProductiveUnits } from '../../hooks';
 import { setProductiveUnitsActive } from '../../redux/productiveUntis';
@@ -81,25 +81,17 @@ export const ListProductiveUnits: React.FC = () => {
     navigate(`/init/overview/productive-units/${item.idProductiveUnit}`);
   };
   //TODO: implement delete
-  const handleDeleteCorporateContract = (item: ProductUnits) => {
-    // if (item._id && item._rev) {
-    //   removeProductiveUnits(item._id, item._rev);
-    //   getProductiveUnits();
-    // }
-    console.log('item', item);
-  };
+  // const handleDeleteCorporateContract = (item: ProductUnits) => {
+  //   // if (item._id && item._rev) {
+  //   //   removeProductiveUnits(item._id, item._rev);
+  //   //   getProductiveUnits();
+  //   // }
+  //   console.log('item', item);
+  // };
 
   return (
     <GenericListPage
-      title={t('productive_units')}
-      icon={
-        <Box display='flex' alignItems='center'>
-          <MapIcon sx={{ marginRight: '-5px' }} />
-          <LocationOnIcon
-            sx={{ marginRight: '28px', fontSize: 'inherit', verticalAlign: 'middle' }}
-          />
-        </Box>
-      }
+      moduleRoute='/init/overview/productive-units'
       data={listProductiveUnits}
       columns={columns}
       getData={getProductiveUnits}

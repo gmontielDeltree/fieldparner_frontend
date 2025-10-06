@@ -11,7 +11,6 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  Transform as TransformIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
 } from '@mui/icons-material';
@@ -145,8 +144,7 @@ export const ListTransformPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('transformation_added_value')}
-      icon={<TransformIcon />}
+      moduleRoute='/init/overview/value-transform'
       data={rows}
       columns={columns}
       getData={getTransformationMovements}

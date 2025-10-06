@@ -196,8 +196,7 @@ export const ListPurchaseOrder: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('purchase_order')}
-      icon={<Icon name='list alternate outline' size='large' />}
+      moduleRoute='/init/overview/purchase-order'
       data={rows}
       columns={columns}
       getData={getPurchaseOrders}

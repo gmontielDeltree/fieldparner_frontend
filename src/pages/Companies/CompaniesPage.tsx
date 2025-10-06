@@ -99,12 +99,7 @@ export const CompaniesPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('corporate_companies')}
-      icon={
-        <Box display='flex' alignItems='center'>
-          <BusinessIcon sx={{ marginRight: '8px' }} />
-        </Box>
-      }
+      moduleRoute='/init/overview/corporate-companies'
       isLoading={isLoading}
       data={companies}
       columns={columns}

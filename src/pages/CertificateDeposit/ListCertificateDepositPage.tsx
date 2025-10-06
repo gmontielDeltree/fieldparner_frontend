@@ -113,9 +113,8 @@ export const ListCertificateDepositPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title='Certificado Deposito Granos (Argentina)'
+      moduleRoute='/init/overview/certificate-deposits'
       isLoading={false}
-      icon={<ForwardToInboxIcon fontSize='large' sx={{ mr: 1 }} />}
       data={certificateDepositsItem}
       columns={columns}
       getData={getCertificateDeposits}

@@ -105,6 +105,7 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
     <>
       <HistoryWithdrawOrderModal key='history-withdrawal-order' />
       <GenericListPage
+        moduleRoute='/init/overview/order'
         title={t('withdrawal_orders')}
         icon={<AssignmentIcon />}
         data={listWithdrawal}

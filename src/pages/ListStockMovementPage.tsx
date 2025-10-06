@@ -59,6 +59,7 @@ export const StockMovementPage: React.FC = () => {
 
   return (
     <GenericListPage<RowStockMovementItem>
+      moduleRoute='/init/overview/stock-movements'
       title={t('stock_movements')}
       icon={<SyncAltIcon />}
       data={data}

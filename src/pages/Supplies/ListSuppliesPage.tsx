@@ -1,5 +1,4 @@
 import React from 'react';
-import { Inventory as InventoryIcon } from '@mui/icons-material';
 import { useSupply } from '../../hooks';
 import { useAppDispatch } from '../../hooks'; // Asegúrate de que esta importación existe
 import { setSupplyActive } from '../../redux/supply'; // Importa la acción del slice
@@ -67,9 +66,8 @@ export const ListSuppliesPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('_supplies')}
+      moduleRoute='/init/overview/supply'
       isLoading={false}
-      icon={<InventoryIcon sx={{ fontSize: 40, color: '#424242' }} />}
       data={supplies}
       columns={columns}
       getData={getSupplies}

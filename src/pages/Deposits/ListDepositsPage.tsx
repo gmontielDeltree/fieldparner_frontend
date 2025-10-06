@@ -2,22 +2,16 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Button,
   Chip,
-  Container,
-  Grid,
   IconButton,
   Tooltip,
-  Typography,
 } from "@mui/material";
-import { Icon } from "semantic-ui-react";
+
 import {
-  Add as AddIcon,
   Edit as EditIcon,
-  Warehouse as WarehouseIcon,
   Delete as DeleteIcon
 } from "@mui/icons-material";
-import { useForm, useAppDispatch, useDeposit } from "../../hooks";
+import {  useAppDispatch, useDeposit } from "../../hooks";
 import { setDepositActive } from "../../redux/deposit";
 import { useTranslation } from "react-i18next";
 import { Deposit } from "../../types";
@@ -27,8 +21,8 @@ export const ListDepositsPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { isLoading, deposits, getDeposits, deleteDeposit, setDeposits} = useDeposit();
-  const { filterText, handleInputChange } = useForm({ filterText: "" });
+  const { deposits, getDeposits, deleteDeposit,} = useDeposit();
+
 
   useEffect(() => {
     getDeposits();
@@ -83,19 +77,19 @@ export const ListDepositsPage: React.FC = () => {
     },
   ];
 
-  const onClickSearch = (): void => {
-    if (filterText === "") {
-      getDeposits();
-      return;
-    }
-    const filteredDeposits = deposits.filter(({ description: descripcion, owner: propietario }) =>
-      (descripcion && descripcion.toLowerCase().includes(filterText.toLowerCase())) ||
-      (propietario && propietario.toLowerCase().includes(filterText.toLowerCase()))
-    );
-    setDeposits(filteredDeposits);
-  };
+  // const onClickSearch = (): void => {
+  //   if (filterText === "") {
+  //     getDeposits();
+  //     return;
+  //   }
+  //   const filteredDeposits = deposits.filter(({ description: descripcion, owner: propietario }) =>
+  //     (descripcion && descripcion.toLowerCase().includes(filterText.toLowerCase())) ||
+  //     (propietario && propietario.toLowerCase().includes(filterText.toLowerCase()))
+  //   );
+  //   setDeposits(filteredDeposits);
+  // };
 
-  const onClickAddDeposit = () => navigate("/init/overview/deposit/new");
+  //const onClickAddDeposit = () => navigate("/init/overview/deposit/new");
 
   const onClickUpdateDeposit = (item: Deposit) => {
     dispatch(setDepositActive(item));
@@ -111,8 +105,7 @@ export const ListDepositsPage: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t("_warehouses")}
-      icon={<WarehouseIcon sx={{ fontSize: 40, color: "#424242" }} />}
+      moduleRoute='/init/overview/deposit'
       data={deposits}
       columns={columns}
       getData={getDeposits}

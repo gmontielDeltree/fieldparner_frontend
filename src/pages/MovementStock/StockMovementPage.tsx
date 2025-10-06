@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { GridColDef } from '@mui/x-data-grid';
-import { SyncAlt as SyncAltIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import { Visibility as VisibilityIcon } from '@mui/icons-material';
 import { useStockMovement } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from '@mui/material';
@@ -114,9 +114,8 @@ export const StockMovementPage: React.FC = () => {
   return (
     <>
       <GenericListPage<StockMovementItem>
-        title={t('stock_movements')}
+        moduleRoute='/init/overview/stock-movements'
         isLoading={false}
-        icon={<SyncAltIcon />}
         data={rows}
         columns={columns}
         getData={getStockMovements}

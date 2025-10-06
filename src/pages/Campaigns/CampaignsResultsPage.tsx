@@ -865,8 +865,7 @@ export const CampaignsResultsPage: React.FC = () => {
   return (
     <GenericListPage
       isLoading={isLoading}
-      title={t('campaign_results')}
-      icon={<QueryStatsIcon sx={{ fontSize: 40, color: '#424242' }} />}
+      moduleRoute='init/overview/campaign-results'
       data={filteredData}
       columns={columns}
       getData={() => {}}

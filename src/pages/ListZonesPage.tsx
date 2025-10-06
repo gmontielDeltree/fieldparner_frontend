@@ -2,27 +2,20 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Button,
-  Grid,
   IconButton,
-  InputAdornment,
-  TextField,
   Tooltip,
-  Typography,
 } from '@mui/material';
-import { Icon } from 'semantic-ui-react';
+
 import {
-  Add as AddIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
-  Map as MapIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { useForm, useAppDispatch, useAppSelector, useZones } from '../hooks';
+import { useAppDispatch, useAppSelector, useZones } from '../hooks';
 import { useTranslation } from 'react-i18next';
-import { setZoneActive } from '../redux/zones';
+//import { setZoneActive } from '../redux/zones';
 import { Zones } from '../types';
 import { GenericListPage } from '../components';
+import { setZoneActive } from '../redux/zones';
 
 export const ListZonesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -74,7 +67,7 @@ export const ListZonesPage: React.FC = () => {
     },
   ];
 
-  const onClickAddZone = () => navigate('/init/overview/zones/new');
+ // const onClickAddZone = () => navigate('/init/overview/zones/new');
 
   const handleDeleteZone = (item: Zones) => {
     if (item._id && item._rev) {
@@ -88,14 +81,12 @@ export const ListZonesPage: React.FC = () => {
     navigate(`/init/overview/zones/${item._id}`);
   };
 
-  const onClickBuscar = () => {
-    // todo
-  };
+
 
   return (
     <GenericListPage
-      title={t('_zones')}
-      icon={<MapIcon sx={{ fontSize: 40, color: '#424242' }} />}
+      moduleRoute='/init/overview/zones'
+      isLoading={isLoading}
       data={zones}
       columns={columns}
       getData={getZones}

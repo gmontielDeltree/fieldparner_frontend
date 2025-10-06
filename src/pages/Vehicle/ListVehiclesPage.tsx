@@ -62,9 +62,8 @@ export const ListVehiclesPage: React.FC = () => {
 
   return (
     <GenericListPage
+      moduleRoute='/init/overview/vehicle'
       isLoading={false}
-      title={t('_vehicles')}
-      icon={<LocalShippingIcon sx={{ fontSize: 40, color: '#424242' }} />}
       data={vehicles}
       columns={columns}
       getData={getVehicles}

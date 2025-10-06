@@ -2,11 +2,9 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListPage } from '../../components';
 import {
-  Agriculture as AgricultureIcon,
-  ArrowRightAlt as ArrowRightAltIcon,
   Edit as EditIcon,
 } from '@mui/icons-material';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { IconButton, Tooltip } from '@mui/material';
 import { useExitField } from '../../hooks';
 import { GridColDef } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
@@ -113,18 +111,11 @@ export const ListExitFieldPage: React.FC = () => {
     // Implement your delete logic here
   };
 
-  // Create the icon with the combined Agriculture and ArrowRightAlt icons
-  const combinedIcon = (
-    <Box display='flex' alignItems='center'>
-      <AgricultureIcon fontSize='large' />
-      <ArrowRightAltIcon fontSize='large' />
-    </Box>
-  );
+
 
   return (
     <GenericListPage
-      title={t('field_output')}
-      icon={combinedIcon}
+      moduleRoute='/init/overview/exit-field'
       data={exitFields}
       columns={columns}
       getData={getExitFields}

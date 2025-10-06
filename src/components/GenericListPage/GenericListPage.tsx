@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { TemplateLayout, Loading, CloseButtonPage, IconsViewer } from '../../components';
 import * as XLSX from 'xlsx';
 import { useModuleByRoute } from '../../hooks/useModuleByRoute';
+import { useSidebar } from '../LayoutApp/useSidebar';
 
 interface GenericListPageProps<T> {
   title?: string;
@@ -60,8 +61,81 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
   const routeToResolve = moduleRoute || location.pathname || '/';
   const { moduleTitle, moduleIcon } = useModuleByRoute(routeToResolve);
 
-  const displayTitle = title || moduleTitle || t('list') || '';
-  const displayIcon = icon || (moduleIcon ? <IconsViewer iconName={moduleIcon} size={40} /> : null);
+  // Prefer the same source as the SideBar: useSidebar().sidebarMenus
+  const { sidebarMenus, getMenuLabel, getModuleLabel, lang, pathname: sidebarPathname, grouped } = useSidebar();
+
+  // Find the same menu the SideBar would consider active: try multiple route variants
+  const normalizeForCompare = (p?: string) => {
+    if (!p) return '';
+    let s = String(p).toLowerCase().trim();
+    // remove leading /init and any leading/trailing slashes
+    s = s.replace(/^\/init/, '');
+    s = s.replace(/^\/+/, '');
+    s = s.replace(/\/+$/, '');
+    return s;
+  };
+
+  const lastSegment = (p?: string) => {
+    const s = normalizeForCompare(p);
+    if (!s) return '';
+    const parts = s.split('/').filter(Boolean);
+    return parts.length ? parts[parts.length - 1] : s;
+  };
+
+  const currentMenu = sidebarMenus.find((m) => {
+    const cand = (m as any).route || (m as any).full || (m as any).light || (m as any).details || (m as any).id || (m as any)._id;
+    if (!cand) return false;
+
+    const candStr = String(cand);
+    const candNorm = normalizeForCompare(candStr);
+    const candLast = lastSegment(candStr);
+
+    const targets = [routeToResolve, sidebarPathname];
+    for (const t of targets) {
+      if (!t) continue;
+      const tNorm = normalizeForCompare(String(t));
+      const tLast = lastSegment(String(t));
+
+      if (!tNorm && !candNorm) continue;
+      if (tNorm === candNorm) return true;
+      if (tNorm.endsWith('/' + candNorm) || candNorm.endsWith('/' + tNorm)) return true;
+      if (tLast && candLast && tLast === candLast) return true;
+    }
+
+    return false;
+  });
+
+  // Find moduleMeta (group) that contains the currentMenu so we mimic the SideBar group title
+  let groupModuleMeta: any = null;
+  let groupKeyFound: string | null = null;
+  if (currentMenu && grouped) {
+    for (const k of Object.keys(grouped)) {
+      const entry = grouped[k];
+      if (entry && Array.isArray(entry.items) && entry.items.find((it: any) => (it._id ?? it.id ?? it.route) === (currentMenu as any)._id || (it.route === (currentMenu as any).route))) {
+        groupModuleMeta = entry.moduleMeta;
+        groupKeyFound = k;
+        break;
+      }
+    }
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.debug('[GenericListPage] routeToResolve:', routeToResolve, 'sidebarPathname:', sidebarPathname, 'foundMenu:', currentMenu, 'groupKey:', groupKeyFound, 'groupModuleMeta:', groupModuleMeta, 'moduleTitle:', moduleTitle, 'moduleIcon:', moduleIcon);
+  }
+
+  // Prefer the menu item label (menuModules) for the page title so it matches the sidebar's active item.
+  // If no menu item is found, fall back to the module/group label, then to moduleTitle, then to the generic 'list'.
+  const displayTitle =
+    title || (currentMenu ? getMenuLabel(currentMenu, lang) : groupModuleMeta ? getModuleLabel(groupModuleMeta, lang) : moduleTitle) || t('Loading...') || '';
+
+  const displayIcon =
+    icon ||
+    (currentMenu ? (
+      <IconsViewer iconName={(currentMenu as any).icon || undefined} size={40} />
+    ) : moduleIcon ? (
+      <IconsViewer iconName={moduleIcon} size={40} />
+    ) : null);
 
   const [filterText, setFilterText] = useState('');
   const [filteredData, setFilteredData] = useState<(T & { id: string })[]>([]);
@@ -108,7 +182,8 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
 
   const handleExport = () => {
     try {
-      const sanitizedTitle = title.replace(/[\\\/\?\*\[\]\:\s]/g, '_').substring(0, 31);
+      const exportTitle = displayTitle || 'export';
+      const sanitizedTitle = exportTitle.replace(/[\\\/\?\*\[\]\:\s]/g, '_').substring(0, 31);
 
       const worksheet = XLSX.utils.json_to_sheet(filteredData);
       const workbook = XLSX.utils.book_new();
@@ -143,10 +218,10 @@ export const GenericListPage = <T extends { _id?: string; _rev?: string }>({
           sx={{ p: 2, boxShadow: '0 10px 20px rgba(0,0,0,0.2)', borderRadius: '16px' }}
         >
           <CardHeader
-            avatar={icon}
+            avatar={displayIcon}
             title={
               <Typography component='h2' variant='h4' sx={{ fontWeight: 'bold', color: '#424242' }}>
-                {title}
+                {displayTitle}
               </Typography>
             }
             action={<CloseButtonPage />}

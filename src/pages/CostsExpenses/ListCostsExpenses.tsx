@@ -89,12 +89,7 @@ export const ListCostsExpenses: React.FC = () => {
 
   return (
     <GenericListPage
-      title={t('costs_expenses')}
-      icon={
-        <Box display='flex' alignItems='center'>
-          <MonetizationOnIcon />
-        </Box>
-      }
+      moduleRoute='/init/overview/costs-expenses'
       data={costsExpenses}
       columns={columns}
       getData={getCostsExpenses}
