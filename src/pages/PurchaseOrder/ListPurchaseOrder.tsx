@@ -10,7 +10,6 @@ import {
   Image,
 } from '@react-pdf/renderer';
 import { Box, IconButton, Tooltip } from '@mui/material';
-import { Icon } from 'semantic-ui-react';
 import { Edit as EditIcon, Print as PrintIcon } from '@mui/icons-material';
 import { userPurchaseOrder } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -174,7 +173,7 @@ export const ListPurchaseOrder: React.FC = () => {
     [t],
   );
 
-  const onClickNewPurchaseOrder = () => navigate('/init/overview/purchase-order/new');
+  //const onClickNewPurchaseOrder = () => navigate('/init/overview/purchase-order/new');
 
   const onClickUpdatePurchaseOrder = (item: PurchaseOrder): void => {
     navigate(`/init/overview/purchase-order/${item.nroOrder}`);

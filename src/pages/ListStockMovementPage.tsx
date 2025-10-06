@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStockMovement } from '../hooks';
 import { useTranslation } from 'react-i18next';
 import { GenericListPage } from '../components';
-import { SyncAlt as SyncAltIcon } from '@mui/icons-material';
+
 
 interface RowStockMovementItem {
   _id: string;
@@ -60,8 +60,6 @@ export const StockMovementPage: React.FC = () => {
   return (
     <GenericListPage<RowStockMovementItem>
       moduleRoute='/init/overview/stock-movements'
-      title={t('stock_movements')}
-      icon={<SyncAltIcon />}
       data={data}
       columns={columns}
       getData={getStockMovements}
