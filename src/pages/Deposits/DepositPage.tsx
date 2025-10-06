@@ -164,7 +164,7 @@ export const DepositPage: React.FC = () => {
     >
       <Paper variant="outlined" sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 }, maxWidth: "100%" }}>
         <Box textAlign="center" mb={3}>
-          <WarehouseIcon fontSize="large" />
+
         </Box>
         <Typography component="h1" variant="h4" align="center" gutterBottom>
           {depositActive

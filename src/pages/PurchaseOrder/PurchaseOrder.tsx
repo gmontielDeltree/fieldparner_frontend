@@ -27,7 +27,6 @@ import {
   Save as SaveIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { Icon } from 'semantic-ui-react';
 import { ColumnProps, DetailPurchaseOrderItem, PurchaseOrder, Supply } from '../../types';
 
 import { getShortDate } from '../../helpers/dates';
@@ -427,7 +426,7 @@ export const PurchaseOrderPage: React.FC = () => {
       <Loading key='loading-purchase' loading={isLoading} />
       <Paper variant='outlined' sx={{ my: { xs: 3, md: 3 }, p: { xs: 2, md: 3 } }}>
         <Box className='text-center'>
-          <Icon name='list alternate outline' size='large' />
+
         </Box>
         <Typography component='h1' variant='h4' align='center' sx={{ mt: 1, mb: 7 }}>
           {formValues.nroOrder === '' ? t('new_famale') : t('icon_edit')} {t('purchase_order')}

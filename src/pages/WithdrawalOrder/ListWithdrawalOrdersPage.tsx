@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useOrder } from '../../hooks';
 import { IconButton } from '@mui/material';
 import {
-  Assignment as AssignmentIcon,
   PendingActions as PendingActionsIcon,
   CheckCircle as CheckCircleIcon,
   MoreHoriz as MoreHorizIcon,

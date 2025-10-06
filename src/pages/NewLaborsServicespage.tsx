@@ -9,10 +9,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {
-  Build as BuildIcon,
-  Person as PersonIcon,
-} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Loading, TemplateLayout } from "../components";
 import { LaborsServices } from "@types";
@@ -81,11 +77,6 @@ export const NewLaborsServicesPage: React.FC = () => {
             sx={{ ml: { sm: 2 }, pt: 2 }}
           >
 
-            <PersonIcon sx={{ marginRight: '8px' }} />
-            <BuildIcon sx={{ marginRight: '8px', fontSize: 'small' }} />
-            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-              {t("service_labors")}
-            </Typography>
           </Box>
 
           <Paper

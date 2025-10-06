@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import Swal from 'sweetalert2';
 import {
-    Transform as TransformIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
@@ -414,10 +413,6 @@ export const TransformPage: React.FC = () => {
                 alignItems="center"
                 sx={{ ml: { sm: 2 }, pt: 3 }}
             >
-                <TransformIcon />
-                <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-                    {t("transformation_added_value")}
-                </Typography>
             </Box>
             <Paper variant="outlined"
                 sx={{
