@@ -206,6 +206,63 @@ const checkAuthToken = async () => {
     }
   };
 
+  const startForgotPassword = async (email: string, onSuccess?: () => void) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/forgot-password`, {
+        email,
+      });
+      
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(finishLoading());
+        dispatch(clearErrorMessage());
+        if (onSuccess) onSuccess();
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+      dispatch(finishLoading());
+    }
+  };
+
+  const startConfirmForgotPassword = async (
+    email: string,
+    confirmationCode: string,
+    newPassword: string,
+    onResult?: (success: boolean) => void,
+  ) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/confirm-forgot-password`, {
+        email,
+        confirmationCode,
+        newPassword,
+      });
+
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(clearErrorMessage());
+        dispatch(finishLoading());
+        if (onResult) onResult(true);
+        return;
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+      dispatch(finishLoading());
+      if (onResult) onResult(false);
+    }
+  };
+
   return {
     errorMessage,
     status,
@@ -216,5 +273,7 @@ const checkAuthToken = async () => {
     startRegister,
     startConfirm,
     startLogout,
+    startForgotPassword,
+    startConfirmForgotPassword,
   };
 };

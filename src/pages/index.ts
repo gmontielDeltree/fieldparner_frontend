@@ -59,3 +59,4 @@ export * from './AnnualPlanValorization/ValorizationAnalysisPage';
 export * from "./LoginPage";
 export * from "./RegisterPage";
 export * from "./ConfirmAuthPage";
+export * from "./ForgotPasswordPage";
