@@ -165,7 +165,7 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
             >
                 <Box className="text-center">
-                    <AssignmentIcon fontSize='large' />
+
                 </Box>
                 <Typography
                     component="h1"

@@ -55,14 +55,34 @@ export const IconsViewer: React.FC<{ iconName?: string | null; size?: number }> 
   iconName,
   size = 22,
 }) => {
-  if (isEmoji(iconName)) {
+  const nameStr: string | undefined = iconName == null ? undefined : String(iconName);
+
+  if (isEmoji(nameStr)) {
     return (
       <Box component='span' sx={{ fontSize: size, lineHeight: 1 }}>
-        {iconName}
+        {nameStr}
       </Box>
     );
   }
-  const IconComp = resolveMuiIcon(iconName || undefined);
+  const name = nameStr;
+
+  // If iconName looks like a URL or asset path, render an <img>
+  if (name && (name.includes('/') || name.match(/\.(png|webp|jpg|jpeg|svg)$/i))) {
+    return <Box component='img' src={name} sx={{ width: size, height: size }} />;
+  }
+
+  // If iconName contains a colon (vaadin/my-icons namespace), render a vaadin-icon webcomponent
+  if (name && name.includes(':')) {
+    // create vaadin-icon webcomponent without JSX unknown element error
+    const vnode = React.createElement('vaadin-icon', { icon: name, style: { width: size, height: size } });
+    return (
+      <Box component='span' sx={{ display: 'inline-flex', width: size, height: size }}>
+        {vnode}
+      </Box>
+    );
+  }
+
+  const IconComp = resolveMuiIcon(name || undefined);
   if (IconComp) return <IconComp sx={{ fontSize: size }} />;
   return null;
 };

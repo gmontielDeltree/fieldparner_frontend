@@ -22,6 +22,7 @@ export * from './useFormError';
 export * from './useLaborsServices';
 export * from './useNumerator';
 export * from './usePurchaseOrder';
+export * from './useModuleByRoute';
 export * from './useCountry';
 export * from './useModulesPermission';
 export * from './useCompany';

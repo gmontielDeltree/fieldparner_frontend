@@ -7,10 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { removeCorporateContractActive, setCorporateContractActive } from '../../redux/corporateContract';
 import { EnumStatusContract } from '../../interfaces/corporateContract';
 import { CorporateContract, CompanyByContract } from '../../interfaces/corporateContract';
-import {
-  Handshake as HandshakeIcon,
-  Description as DescriptionIcon
-} from '@mui/icons-material/';
+
 import NotificationService from '../../services/notificationService';
 
 const initialForm: CorporateContract = {
@@ -186,11 +183,6 @@ export const CorporateContractPage: React.FC = () => {
           ml: 5,
         }}
       >
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          <DescriptionIcon sx={{ marginRight: "-5px", fontSize: "inherit", verticalAlign: "middle" }} />
-          <HandshakeIcon sx={{ marginRight: "28px" }} />
-          {t("corporate_contracts")}
-        </Typography>
         <Paper
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, borderRadius: 3 }}
