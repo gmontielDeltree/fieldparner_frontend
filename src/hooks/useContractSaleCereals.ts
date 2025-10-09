@@ -4,6 +4,7 @@ import { onLogout } from '../redux/auth';
 import { dbContext } from '../services';
 import { useAppDispatch, useAppSelector } from './useRedux';
 import { useState } from 'react';
+import { CropStockControl } from '../interfaces/stock';
 import { Campaign, Crop, EnumStatusContract, Numerator, NumeratorType, OriginDestinations } from '../types';
 import { Company } from '../interfaces/company';
 import { Business } from '../interfaces/socialEntity';
@@ -228,6 +229,29 @@ export const useContractSaleCereals = () => {
                 }),
                 dbContext.contractDeliveryDates.bulkDocs(newDeliveryDatesData)
             ]);
+
+            // Actualizar stock comprometido en control de cultivos
+            try {
+                const selector: any = {
+                    selector: {
+                        accountId: user.accountId,
+                        licenceId: user.licenceId,
+                        campaignId: newContract.campaignId,
+                        cropId: newContract.cropId,
+                    }
+                };
+                // Si hay zafra en la campaña, intentamos reducir con zafra exacta; si no, sin zafra
+                // zafra viene de la campaña, pero el form no lo mapea aún; soporte básico sin zafra
+                const found = await dbContext.cropStockControl.find(selector);
+                if (found.docs && found.docs.length > 0) {
+                    const doc = found.docs[0] as CropStockControl & PouchDB.Core.IdMeta & PouchDB.Core.RevisionIdMeta;
+                    const currentCommitted = Number(doc.committedStock || 0);
+                    const toDiscount = Math.max(0, Number(newContract.kg) || 0);
+                    await dbContext.cropStockControl.put({ ...doc, committedStock: Math.max(0, currentCommitted - toDiscount), lastUpdate: dayjs().toISOString() });
+                }
+            } catch (e) {
+                console.warn('Crop stock control update skipped', e);
+            }
 
             setIsLoading(false);
 

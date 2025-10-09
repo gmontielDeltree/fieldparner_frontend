@@ -6,7 +6,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { GridRenderCellParams } from '@mui/x-data-grid';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Tooltip, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useContractSaleCereals } from '../../hooks';
 
@@ -31,6 +31,7 @@ export const ListSalesCerealsPage: React.FC = () => {
   const { t } = useTranslation();
 
   const { getContractsSaleCereals, contractsSaleCerealsFull } = useContractSaleCereals();
+  const [zafraFilter, setZafraFilter] = React.useState<string>("");
 
   const columns = [
     {
@@ -65,6 +66,16 @@ export const ListSalesCerealsPage: React.FC = () => {
       headerName: 'Campaña',
       flex: 1,
       renderCell: (params: GridRenderCellParams) => params.row?.campaign?.campaignId || '-',
+    },
+    {
+      field: 'zafra',
+      headerName: 'Zafra',
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => {
+        const z = (params.row?.campaign && (params.row.campaign as any).zafra) || null;
+        if (!z) return '-';
+        return Array.isArray(z) ? z.join(', ') : String(z);
+      }
     },
     {
       field: 'cropId',
@@ -145,13 +156,30 @@ export const ListSalesCerealsPage: React.FC = () => {
     <GenericListPage
       moduleRoute='/init/overview/sales-cereals'
       isLoading={false}
-      data={contractsSaleCerealsFull}
+      data={zafraFilter ? contractsSaleCerealsFull.filter(c => {
+        const z = (c.campaign as any)?.zafra;
+        return Array.isArray(z) ? z.includes(zafraFilter) : z === zafraFilter;
+      }) : contractsSaleCerealsFull}
       columns={columns}
       getData={getContractsSaleCereals}
       deleteData={() => console.log('delete')}
       setActiveItem={item => console.log('setActiveItem', item)}
       newItemPath='/init/overview/sales-cereals/new'
       editItemPath={id => `/init/overview/sales-cereals/edit/${id}`}
+      headerContent={
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>Zafra</InputLabel>
+          <Select label="Zafra" value={zafraFilter} onChange={(e) => setZafraFilter(e.target.value)}>
+            <MenuItem value="">{t('all')}</MenuItem>
+            {Array.from(new Set(contractsSaleCerealsFull
+              .map(c => (c.campaign as any)?.zafra)
+              .flatMap((z: any) => Array.isArray(z) ? z : (z ? [z] : []))
+            )).map((z: any) => (
+              <MenuItem key={z} value={z}>{z}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      }
     />
   );
 };

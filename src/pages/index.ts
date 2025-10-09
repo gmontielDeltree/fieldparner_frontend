@@ -41,6 +41,8 @@ export * from "./CorporateContract/CorporateContractPage";
 export * from "./CorporateContract/ListCorporateContract";
 export * from "./CertificateDeposit/ListCertificateDepositPage";
 export * from './CertificateDeposit/CertificateDepositPage';
+export * from './CropStockAdjust/AdjustmentsListPage';
+export * from './CropStockAdjust/NewAdjustmentPage';
 export * from './ProductiveUnits/ProductiveUnitsPage';
 export * from './ProductiveUnits/ListProductiveUnitsPage';
 export * from './SalesCereals/ContractSaleCerealsPage';
