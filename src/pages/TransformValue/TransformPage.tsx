@@ -386,10 +386,9 @@ export const TransformPage: React.FC = () => {
 
     const createTransform = async () => {
         await transformStock(
-            originTransformValues, //Movimientos de salida
-            destinationTransformValue, //Movimientos de entrada
-            stockBySupplies, //Tabla auxiliar de stock de insumos
-            stockByCrops, //Tabla auxiliar de stock de cultivos
+            originTransformValues,
+            destinationTransformValue,
+            stockBySupplies,
             detail,
             operationDate
         );
@@ -460,6 +459,18 @@ export const TransformPage: React.FC = () => {
                                 startAdornment: <InputAdornment position="start" />,
                             }}
                             fullWidth
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            variant="outlined"
+                            type="text"
+                            label="Zafra"
+                            name="zafra"
+                            onChange={() => { }}
+                            placeholder={t('select_campaign_first')}
+                            fullWidth
+                            disabled
                         />
                     </Grid>
                 </Grid>

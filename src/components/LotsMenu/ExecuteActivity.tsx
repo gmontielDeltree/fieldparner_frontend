@@ -34,6 +34,7 @@ import PersonalForm from './forms/PlanForms/PersonalForm'
 import { TipoStock } from '../../interfaces/stock'
 import Swal from 'sweetalert2'
 import { useTranslation } from "react-i18next";
+import { dbContext } from '../../services';
 import {
   Button as ReactstrapButton,
   Spinner,
@@ -97,7 +98,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const [formData, setFormData] = useState(
     existingActivity || getEmptyExecution(),
   )
-  const { addNewStockMovement, getStock } = useStockMovement()
+  const { addNewStockMovement, getStock, updateCropStockTables } = useStockMovement()
   const { getOrderDetailByNumber, confirmAutomaticWithdrawalOrder } = useOrder();
   const { getSupplies } = useSupply()
   const [activeStep, setActiveStep] = useState(0)
@@ -300,7 +301,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         }
         break
       case 1: // SuppliesForm (Insumos)
-        // T2-75: En cosecha, no es obligatorio agregar insumos
+        // En cosecha, no es obligatorio agregar insumos
         if (formData.tipo !== 'cosecha' && spanishActivityType !== 'cosecha') {
           if (
             !formData.detalles ||
@@ -473,9 +474,8 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const processHarvestStockMovements = async (executionDetails: any) => {
-    console.log('📦 PROCESANDO MOVIMIENTO DE STOCK DE COSECHA');
+    console.log('Procesando movimiento de stock de cosecha');
     
-    // T2-76: Grabar cultivo en stock al ejecutar cosecha
     const cultivo = executionDetails.detalles?.cultivo
     const deposito = executionDetails.detalles?.deposito
     const rindeObtenido = executionDetails.detalles?.rinde_obtenido
@@ -516,7 +516,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       dueDate: '',
       typeMovement: TypeMovement.Labores,
       isIncome: true,
-      isCrop: true, // T2-76: Marcar como cultivo, no insumo
+      isCrop: true,
       detail: t('harvestEntry') + ' - ' + (cultivo.descriptionES || cultivo.name || ''),
       operationDate: new Date().toISOString(),
       amount: cantidadTotal,
@@ -528,7 +528,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }
 
     console.log('📊 Movimiento de stock a crear:', harvestMovement);
-    
+
     try {
       // Usar la función createCropStockMovement de staging si existe, sino usar addNewStockMovement
       await createCropStockMovement(harvestMovement, cultivo, deposito)
@@ -543,21 +543,27 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   }
 
   const createCropStockMovement = async (movement: StockMovement, cropInfo: any, depositoInfo: any) => {
-    // Usar addNewStockMovement del hook que ya maneja correctamente las bases de datos
     try {
-      console.log('📦 Creando movimiento de stock para cultivo:', {
+      console.log('Creando movimiento de stock para cultivo:', {
         cultivo: cropInfo.descriptionES || cropInfo.name,
         cantidad: movement.amount,
         deposito: depositoInfo.description
       });
+
+      const zafra = existingActivity?.detalles?.zafra || existingActivity?.zafra || '';
+      const fieldId = lot?.campoId || existingActivity?.campoId || '';
+      const lotId = lot?.uuid || existingActivity?.lote_uuid || '';
       
-      // Usar la función addNewStockMovement que ya tiene acceso correcto a las bases de datos
-      await addNewStockMovement(movement, cropInfo, depositoInfo);
-      
-      console.log('✅ Stock de cultivo agregado correctamente');
+      // Para cultivos: actualizar tablas de stock de cultivos
+      await updateCropStockTables(movement, cropInfo, depositoInfo, { zafra, fieldId, lotId });
+
+      // Mantener stockMovements genérico para compatibilidad/auditoría
+      await dbContext.stockMovements.post(movement);
+
+      console.log('Stock de cultivo agregado correctamente');
       return true;
     } catch (error) {
-      console.error('❌ Error creando movimiento de stock para cultivo:', error);
+      console.error('Error creando movimiento de stock para cultivo:', error);
       throw error;
     }
   };
@@ -786,9 +792,6 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           continue; // Skip this dose and continue with the next one
         }
 
-        // T2-70: Usar cantidad total en lugar de cantidadxHa para descuento de stock
-        // T2-71: Grabar depósito al descontar stock
-
         // Debug: Log para verificar valores disponibles
         console.log('🔍 DEBUG DESCUENTO STOCK:')
         console.log('  dosis.total:', dosis.total)
@@ -824,9 +827,9 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           accountId: user?.accountId || '',
           supplyId: supplyInfo._id,
           userId: user?.id || '',
-          depositId: dosis.deposito?._id || '', // T2-71: Grabar depósito
-          location: dosis.ubicacion || '', // T2-71: Grabar ubicación
-          nroLot: dosis.nro_lote || '', // T2-71: Grabar nro lote
+          depositId: dosis.deposito?._id || '',
+          location: dosis.ubicacion || '',
+          nroLot: dosis.nro_lote || '',
           creationDate: new Date().toISOString(),
           dueDate: '',
           typeMovement: TypeMovement.Labores,
@@ -834,14 +837,14 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           isCrop: false,
           detail: t('executionExit'),
           operationDate: new Date().toISOString(),
-          amount: stockAmount, // T2-70: Usar cantidad total
+          amount: stockAmount,
           voucher: '',
           currency: 'ARS',
           totalValue: 0,
           hours: '0',
           campaignId: executionDetails.campaña?.campaignId || '',
         };
-        
+
         try {
           console.log(t('newMovement'), newMovement);
 
@@ -1018,7 +1021,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         break
 
       case t('supplies'):
-        // T2-75: En cosecha, no es obligatorio agregar insumos
+        // En cosecha, no es obligatorio agregar insumos
         if (formData.tipo !== 'cosecha' && spanishActivityType !== 'cosecha') {
           if (!formDetails.dosis || formDetails.dosis.length === 0) {
             fields.push(t('atLeastOneSupply'))

@@ -474,12 +474,14 @@ export interface TransformSupply {
   currentStock: number;
   hours?: string;
   employee?: string;
+  zafra?: string;
 }
 
 export interface ExitField extends Document {
   accountId: string;
   creationDate: string;
   campaignId: string;
+  zafra?: string;
   fieldId: string;
   lotId: string;
   cropId: string;
@@ -528,6 +530,7 @@ export interface Campaign extends Document {
   startDate: string;
   endDate: string;
   state: Estado;
+  zafra?: string | string[];
 }
 
 //TODO: cambiar interfaz field

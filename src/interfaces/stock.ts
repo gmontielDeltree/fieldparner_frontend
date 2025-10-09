@@ -22,7 +22,9 @@ export interface Stock extends Document {
 
 export interface CropStockControl extends Document {
     accountId: string;
+    licenceId?: string;
     campaignId: string;
+    zafra?: string;
     cropId: string;
     currentStock: number;
     committedStock: number;
