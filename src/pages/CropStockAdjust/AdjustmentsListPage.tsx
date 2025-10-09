@@ -7,7 +7,7 @@ import { dbContext } from '../../services/pouchdbService';
 import { useAppSelector } from '../../hooks/useRedux';
 import { CropMovement } from '../../interfaces/crop-movement';
 import { Crop, Deposit, Campaign } from '../../types';
-import { GenericListPage } from '../GenericListPage';
+import { GenericListPage } from '../../components';
 
 export const CropStockAdjustmentsListPage: React.FC = () => {
     const { t } = useTranslation();
@@ -68,8 +68,7 @@ export const CropStockAdjustmentsListPage: React.FC = () => {
 
     return (
         <GenericListPage
-            title={t('Movimientos Stock Cultivos')}
-            icon={<Inventory2Icon sx={{ fontSize: 40, color: '#424242' }} />}
+            moduleRoute="/init/overview/crop-stock-adjustments"
             data={rows}
             columns={columns}
             getData={loadData}
