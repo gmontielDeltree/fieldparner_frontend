@@ -105,7 +105,7 @@ export const useTransformStock = () => {
                     typeMovement: TypeMovement.Transformacion,
                 });
             });
-            
+
             // Actualizar stock: solo insumos en tabla stock (cultivos se actualizan en updateCropStockTables)
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
                 dbContext.stockMovements.bulkDocs(newMovements),

@@ -475,7 +475,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
   const processHarvestStockMovements = async (executionDetails: any) => {
     console.log('Procesando movimiento de stock de cosecha');
-    
+
     const cultivo = executionDetails.detalles?.cultivo
     const deposito = executionDetails.detalles?.deposito
     const rindeObtenido = executionDetails.detalles?.rinde_obtenido
@@ -553,7 +553,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
       const zafra = existingActivity?.detalles?.zafra || existingActivity?.zafra || '';
       const fieldId = lot?.campoId || existingActivity?.campoId || '';
       const lotId = lot?.uuid || existingActivity?.lote_uuid || '';
-      
+
       // Para cultivos: actualizar tablas de stock de cultivos
       await updateCropStockTables(movement, cropInfo, depositoInfo, { zafra, fieldId, lotId });
 
