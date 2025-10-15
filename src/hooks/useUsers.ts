@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
-import { ErrorResponseAuth, UserByAccount } from "../types";
+import { ErrorResponseAuth, UpdateUserDTO, UserByAccount } from "../types";
 import { dbContext } from "../services/pouchdbService";
 import { useAppSelector } from '.';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import { fieldpartnerAPI } from '../config';
 import { loadUsers, setUserActive } from '../redux/users';
 import { NotificationService } from "../services/notificationService";
+import { onLogout } from '../redux/auth';
 
 const controller = "/user-licence";
 
@@ -86,35 +87,53 @@ export const useUser = () => {
     }
   }
 
-  const updateUser = async (upUser: UserByAccount) => {
+  const updateUser = async (updateUser: UpdateUserDTO) => {
     setIsLoading(true);
 
+    if (!user) {
+      console.log("user not found");
+      dispatch(onLogout(t("sessionExpired"))); return;
+    }
+
     try {
-      const userId = upUser._id;
-      const bodyUser = {
-        // name: upUser.name,
-        // lastName: upUser.lastName,
-        previousPassword: upUser.previousPassword,
-        newPassword: upUser.newPassword,
-        isAdmin: upUser.isAdmin,
-        photoName: upUser.photoName,
-        rol: upUser.rol,
-        language: upUser.language,
-        state: upUser.state
-      }
-      const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, bodyUser);
-      setIsLoading(false);
+      const userId = user.id;
+
+      const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, updateUser);
 
       if (response)
-        NotificationService.showUpdated({ user: upUser.email }, t("user_label"));
+        NotificationService.showUpdated({ user: updateUser.username }, t("user_label"));
 
     } catch (error) {
       console.log(error);
       NotificationService.showError(t("user_update_error"), {}, t("error_label"));
-      setIsLoading(false);
       if (error) setError(error);
     }
+    finally {
+      setIsLoading(false);
+    }
   };
+
+  const changePassword = async (oldPassword: string, newPassword: string) => {
+    setIsLoading(true);
+    try {
+
+      if (!user) {
+        console.log("user not found");
+        dispatch(onLogout(t("sessionExpired"))); return;
+      }
+      const cognitoId = user.id;
+      await fieldpartnerAPI.post(`${controller}/change-password`, { id: cognitoId, oldPassword, newPassword });
+
+    } catch (error) {
+      console.log(error);
+      NotificationService.showError("Error al cambiar la contraseña", {}, t("error_label"));
+      if (error) setError(error);
+    }
+    finally {
+      setIsLoading(false);
+    }
+  };
+
 
   const updatePasswordUsers = async (updateUsers: UserByAccount, oldPassword: string) => {
     setIsLoading(true);
@@ -207,7 +226,7 @@ export const useUser = () => {
     setIsLoading(true);
     try {
       const response = await fieldpartnerAPI.get(`${controller}/${userId}`);
-      
+
       if (response) {
         const foundUser = response.data as UserByAccount;
         dispatch(setUserActive(foundUser));
@@ -236,6 +255,7 @@ export const useUser = () => {
     removeUsers,
     updatePasswordUsers,
     searchUsers,
-    getUserById
+    getUserById,
+    changePassword
   }
 }

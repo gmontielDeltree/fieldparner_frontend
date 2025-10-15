@@ -1278,6 +1278,8 @@
   "importSuccess": "Dados importados com sucesso",
   "importError": "Erro ao importar arquivo",
   "templateDownloaded": "Modelo baixado com sucesso",
-  "noFieldSpecified": "Nenhum campo especificado"
+  "noFieldSpecified": "Nenhum campo especificado",
+  "save_changes": "Guardar alterações",
+  "change_photo": "Alterar foto"
 }
 
