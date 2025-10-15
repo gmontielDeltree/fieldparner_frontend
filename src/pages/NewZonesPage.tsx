@@ -66,7 +66,7 @@ export const NewZonePage: React.FC = () => {
 
   return (
     <>
-      <TemplateLayout key="overview-zones" viewMap={true}>
+      <TemplateLayout key="overview-zones" viewMap={true} viewSelector={false}>
         <Loading key="loading-new-customer" loading={isLoading} />
         <Container maxWidth="md" sx={{ mb: 4 }}>
           <Box

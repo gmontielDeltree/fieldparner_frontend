@@ -67,7 +67,7 @@ export const NewLaborsServicesPage: React.FC = () => {
 
   return (
     <>
-      <TemplateLayout key="overview-labors-services" viewMap={true}>
+      <TemplateLayout key="overview-labors-services" viewMap={true} viewSelector={false}>
         <Loading key="loading-new-customer" loading={isLoading} />
         <Container maxWidth="md" sx={{ mb: 4 }}>
           <Box
