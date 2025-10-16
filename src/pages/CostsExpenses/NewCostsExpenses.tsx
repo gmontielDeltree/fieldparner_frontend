@@ -9,10 +9,6 @@ import { removeCostsExpensesActive } from '../../redux/costsExpenses';
 import Swal from 'sweetalert2';
 import { CostsExpenses } from '../../interfaces/costsExpenses';
 
-import {
-  MonetizationOn as MonetizationOnIcon,
-} from '@mui/icons-material/';
-
 const initialForm: CostsExpenses = {
   costCode: '',
   costCenter: '',
@@ -147,10 +143,7 @@ export const NewCostsExpenses: React.FC = () => {
           ml: 5
         }}
       >
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          <MonetizationOnIcon sx={{ marginRight: "25px", }} />
-          {t("costs_expenses")}
-        </Typography>
+
         <Paper
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}

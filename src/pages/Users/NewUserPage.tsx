@@ -217,15 +217,7 @@ export const NewUserPage = () => {
         ml: 5
       }}>
         <Loading key="loading-users" loading={isLoading} />
-        <Typography
-          component="h1"
-          variant="h4"
-          align="left"
-          sx={{ mt: 3, mb: 3 }}
-        >
-          <PeopleIcon sx={{ marginRight: '8px', fontSize: 'inherit', verticalAlign: 'middle' }} />
-          Usuarios
-        </Typography>
+
         <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
           <AppBar position="static">
             <Toolbar>

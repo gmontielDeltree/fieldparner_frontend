@@ -40,6 +40,7 @@ interface SupplyAndCropProps {
 const today = getShortDate();
 const initialStateNewSupply = {
   campaignId: "",
+  zafra: "",
   supplyId: "",
   cropId: "",
   depositId: "",
@@ -76,6 +77,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
   const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(
     null
   );
+  const [availableZafras, setAvailableZafras] = useState<string[]>([]);
   const { isLoading, getStock } = useStockMovement();
 
   // Determine which input fields to show
@@ -107,6 +109,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
       {
         id: uuid4(),
         campaignId: campaignSelected?._id || "",
+        zafra: (availableZafras.length ? (undefined as unknown as string) : undefined),
         deposit: depositSelected,
         supply: supplySelected,
         crop: cropSelected,
@@ -203,9 +206,33 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
               ...prev,
               campaignId: newValue?._id || "",
             }));
+            const z = (newValue && (newValue as any).zafra)
+              ? (Array.isArray((newValue as any).zafra) ? (newValue as any).zafra as string[] : [String((newValue as any).zafra)])
+              : [];
+            setAvailableZafras(z);
           }}
         />
       </Grid>
+
+      {/* 1b) Zafra de la campaña (si existe) */}
+      {availableZafras.length > 0 && (
+        <Grid item xs={12} sm={2}>
+          <FormControl fullWidth>
+            <InputLabel id="zafra-label">Zafra</InputLabel>
+            <Select
+              labelId="zafra-label"
+              id="zafra"
+              value={(initialStateNewSupply as any).zafra || ""}
+              label="Zafra"
+              onChange={(e) => setFormulario((prev) => ({ ...prev, zafra: e.target.value as string }))}
+            >
+              {availableZafras.map((z) => (
+                <MenuItem key={z} value={z}>{z}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      )}
 
       {/* 2) Toggle between Crop vs. Supply */}
       <Grid item xs={12} sm={2}>
@@ -255,8 +282,6 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
                   }));
                 }
               }}
-              // MUI will compare by _id instead of label => no duplicates
-              isOptionEqualToValue={(option, val) => option._id === val?._id}
             />
           ) : (
             <AutocompleteSupply

@@ -95,10 +95,7 @@ export const ListUsersPage: React.FC = () => {
           sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
         >
           <Box display="flex" alignItems="center">
-            < PersonAddAltIcon sx={{ marginRight: '8px' }} />
-            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-              Usuarios
-            </Typography>
+
           </Box>
           <CloseButtonPage />
         </Box>

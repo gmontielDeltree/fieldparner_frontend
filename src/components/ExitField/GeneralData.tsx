@@ -32,6 +32,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
 }) => {
     const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
     const [fieldSelected, setFieldSelected] = useState<Field | null>(null);
+    const [availableZafras, setAvailableZafras] = useState<string[]>([]);
     const [lotSelected, setLotSelected] = useState<Lot | null>(null);
 
     const onChangeField = ({ target }: SelectChangeEvent) => {
@@ -100,12 +101,35 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                             ...prevState,
                             campaignId: campaign?._id || "",
                         }));
+                        // Cargar zafras de la campaña (string o array)
+                        const z = (campaign && (campaign as any).zafra)
+                            ? (Array.isArray((campaign as any).zafra) ? (campaign as any).zafra as string[] : [String((campaign as any).zafra)])
+                            : [];
+                        setAvailableZafras(z);
                     }}
                     error={hasError('campaignId')}
                     helperText={hasError('campaignId') ? errors['campaignId'] : ''}
                     required
                 />
             </Grid>
+            {availableZafras.length > 0 && (
+                <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                        <InputLabel id="zafra-label">Zafra</InputLabel>
+                        <Select
+                            labelId="zafra-label"
+                            id="zafra"
+                            value={formValues.zafra || ''}
+                            label="Zafra"
+                            onChange={(e) => setFormValues(prev => ({ ...prev, zafra: e.target.value as string }))}
+                        >
+                            {availableZafras.map((z) => (
+                                <MenuItem key={z} value={z}>{z}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>
+            )}
             <Grid item xs={12} sm={4}>
                 <FormControl
                     key="field-select"

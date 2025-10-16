@@ -219,7 +219,7 @@ export const VehiclePage: React.FC = () => {
   };
 
   return (
-    <TemplateLayout key="vehicle-page" viewMap={true}>
+    <TemplateLayout key="vehicle-page" viewMap={true} viewSelector={false}>
       <Container maxWidth="lg" sx={{ margin: 0, mb: 1 }}>
         <Paper variant="elevation" sx={{ p: 4 }}>
           <Typography component="h2" align="center" variant="h4" sx={{ ml: { sm: 2 } }}>

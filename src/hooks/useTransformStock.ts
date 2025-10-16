@@ -1,4 +1,5 @@
 import { Movement, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
+import { useStockMovement } from ".";
 import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
@@ -8,7 +9,7 @@ import { Stock } from "../interfaces/stock";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 
-const today = getShortDate(true);
+const today = getShortDate();
 
 type TransformMovementGroup = {
     [id: string]: {
@@ -25,13 +26,14 @@ export const useTransformStock = () => {
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const { t } = useTranslation();
+    const stockMovementHook = useStockMovement();
+    const { updateCropStockTables } = stockMovementHook;
 
     //Nueva Transformacion/Valor agregado
     const transformStock = async (
         supplyOrCultiveOrigin: TransformSupply[],
         supplyOrCultiveDestination: TransformSupply[],
         stockBySupplies: Stock[],
-        stockByCrops: Stock[],
         detail: string,
         operationDate: string) => {
         setIsLoading(true);
@@ -70,6 +72,10 @@ export const useTransformStock = () => {
                     typeMovement: TypeMovement.Transformacion,
                 }
                 newMovements.push(newMovement);
+                // Si es cultivo en ORIGEN, actualizar tablas de cultivos
+                if (isCrop) {
+                    updateCropStockTables(newMovement, ts.crop, ts.deposit, { zafra: ts.zafra });
+                }
             });
             // Creamos los movimientos de insumo/cultivo, deposito ubicacion lote 
             supplyOrCultiveDestination.forEach(sa => {
@@ -99,11 +105,11 @@ export const useTransformStock = () => {
                     typeMovement: TypeMovement.Transformacion,
                 });
             });
-            //Previamente validado
-            // Actualizar en la tabla auxiliar para ese insumo/deposito/ubicacion/lote.
+
+            // Actualizar stock: solo insumos en tabla stock (cultivos se actualizan en updateCropStockTables)
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
                 dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stock.bulkDocs([...stockBySupplies, ...stockByCrops]),
+                dbContext.stock.bulkDocs(stockBySupplies),
             ];
             const responseAll = await Promise.all(promisesAll);
 

@@ -9,14 +9,10 @@ import {
   Step,
   StepLabel,
   Stepper,
-  Typography,
   Alert,
 } from '@mui/material';
 import { GeneralData, Loading, TemplateLayout, TransportDestination } from '../../components';
-import {
-  Agriculture as AgricultureIcon,
-  ArrowRightAlt as ArrowRightAltIcon,
-} from '@mui/icons-material';
+
 import { useBusiness, useExitField, useForm, useStockMovement, useVehicle } from '../../hooks';
 import { Crop, Deposit, ExitFieldItem } from '../../types';
 import { getShortDate } from '../../helpers/dates';
@@ -281,10 +277,6 @@ export const NewExitFieldPage: React.FC = () => {
       >
         <Paper variant='outlined' sx={{ p: { xs: 2, md: 1 } }}>
           <Box component='div' display='flex' alignItems='center' sx={{ ml: { sm: 2 }, pt: 2 }}>
-            <AgricultureIcon fontSize='large' /> <ArrowRightAltIcon fontSize='large' />
-            <Typography component='h2' variant='h4' sx={{ ml: { sm: 2 } }}>
-              {t('field_output')}
-            </Typography>
           </Box>
           <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
             {steps.map(label => (

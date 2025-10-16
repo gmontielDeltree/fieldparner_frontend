@@ -350,7 +350,7 @@ export const TransportDocumentPage: React.FC = () => {
         sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
       >
         <Typography component="h2" variant="h4" align="left" sx={{ mb: 1 }}>
-          {documentToEdit._id ? t("id_modification") : t("id_new")} {t("id_transport_document")}
+          {documentToEdit._id ? t("id_modification") : ""} {t("id_transport_document")}
         </Typography>
         <Typography variant="h5" align='left' sx={{ mb: 3 }}>
           {steps[activeStep].text}

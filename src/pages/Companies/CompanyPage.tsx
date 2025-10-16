@@ -21,7 +21,6 @@ import {
   BrokenImage as BrokenImageIcon,
   Cancel as CancelIcon,
   PhotoCamera as PhotoCameraIcon,
-  People as PeopleIcon,
 } from '@mui/icons-material';
 import uuid4 from 'uuid4';
 import { uploadFile } from '../../helpers/fileUpload';
@@ -374,17 +373,6 @@ export const CompanyPage = () => {
         }}
       >
         <Loading key="loading-users" loading={isLoading} />
-        <Typography
-          component="h1"
-          variant="h4"
-          align="left"
-          sx={{ mt: 3, mb: 3 }}
-        >
-          <PeopleIcon
-            sx={{ marginRight: "8px", fontSize: "inherit", verticalAlign: "middle" }}
-          />
-          {t("corporate_companies")}
-        </Typography>
         <Paper
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}

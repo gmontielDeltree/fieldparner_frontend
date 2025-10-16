@@ -7,10 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { removeProductiveUnitsActive, setProductiveUnitsActive } from '../../redux/productiveUntis';
 import { ProductUnits, FieldsByProductUnit } from '../../interfaces/productiveUnits';
 
-import {
-  Map as MapIcon,
-  LocationOn as LocationOnIcon,
-} from '@mui/icons-material/';
 import NotificationService from '../../services/notificationService';
 
 const initialForm: ProductUnits = {
@@ -112,11 +108,7 @@ export const NewProductiveUnits: React.FC = () => {
           ml: 5
         }}
       >
-        <Typography variant="h4" sx={{ mb: 3 }}>
-          <MapIcon sx={{ marginRight: "-5px", fontSize: "inherit", verticalAlign: "middle" }} />
-          <LocationOnIcon sx={{ marginRight: "28px" }} />
-          {t("productive_units")}
-        </Typography>
+
         <Paper
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
