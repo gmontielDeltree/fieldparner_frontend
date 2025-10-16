@@ -80,8 +80,6 @@ export const useStockMovement = () => {
                         ...(request.id && { cropId: request.id }),
                         ...(request.campaignId && { campaignId: request.campaignId }),
                         ...(request.depositId && { depositId: request.depositId }),
-                        ...(request.location && { location: request.location }),
-                        ...(request.nroLot && { nroLot: request.nroLot }),
                     }
                 };
                 const responseCropDeposits = await dbContext.cropDeposits.find(cropQuery);
@@ -432,10 +430,9 @@ export const useStockMovement = () => {
                     accountId: user.accountId,
                     licenceId: user.licenceId,
                     campaignId: movement.campaignId,
+                    zafra: extras?.zafra,
                     depositId: deposit?._id || movement.depositId,
                     cropId: crop?._id || movement.cropId || movement.supplyId,
-                    location: movement.location || '',
-                    nroLot: movement.nroLot || ''
                 }
             } as any;
             const found = await dbContext.cropDeposits.find(depositQuery);
@@ -452,8 +449,6 @@ export const useStockMovement = () => {
                     zafra: extras?.zafra,
                     depositId: deposit?._id || movement.depositId,
                     cropId: crop?._id || movement.cropId || movement.supplyId,
-                    location: movement.location || '',
-                    nroLot: movement.nroLot || '',
                     fieldId: extras?.fieldId,
                     lotId: extras?.lotId,
                     currentStockKg: Number(movement.amount || 0) * (movement.isIncome ? 1 : -1),
