@@ -16,7 +16,7 @@ export * from './ExitField/ListExitFieldPage';
 export * from './ExitField/NewExitFieldPage';
 export * from './ListOriginsDestinationsPage';
 export * from './NewOriginsDestinationsPage';
-export * from './ListUsersPage';
+export * from './Users/ListUsersPage';
 export * from './SatellitePage';
 export * from './DevicePage';
 export * from './PricesPage';
@@ -53,6 +53,8 @@ export * from './Campaigns/CampaignsResultsPage';
 export * from './AnnualPlanValorization/ListAnnualPlanValorization';
 export * from './AnnualPlanValorization/AnnualPlanValorizationPage';
 export * from './AnnualPlanValorization/ValorizationAnalysisPage';
+export * from './Users/ListUsersPage';
+export * from './Users/NewUserPage';
 
 
 
@@ -61,3 +63,4 @@ export * from './AnnualPlanValorization/ValorizationAnalysisPage';
 export * from "./LoginPage";
 export * from "./RegisterPage";
 export * from "./ConfirmAuthPage";
+export * from "./ForgotPasswordPage";

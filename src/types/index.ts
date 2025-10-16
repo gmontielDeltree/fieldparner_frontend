@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Business } from '../interfaces/socialEntity';
-import { ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 import { TipoStock } from '../interfaces/stock';
 import { Company } from '../interfaces/company';
 
@@ -157,6 +156,8 @@ export interface User {
   licenceId: string;
   isAdmin: boolean;
   countryId: string;
+  photoName: string;
+  language: string;
   currency: string;
   email: string;
 }
@@ -854,3 +855,32 @@ export type GetControlStockCropRequest = {
   campaignId?: string;
   cropId?: string;
 };
+
+export interface PasswordValidation {
+  hasUppercase: boolean;
+  hasDigit: boolean;
+  hasSpecialChar: boolean;
+  hasMinLength: boolean;
+  passwordsMatch: boolean;
+}
+
+export type PasswordStrengthColor = 'error' | 'warning' | 'success';
+
+export interface ProfileFormData {
+  userName: string;
+  language: 'es' | 'en' | 'pt';
+  avatar?: File | null;
+  photoName: string;
+}
+
+export interface PasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface UpdateUserDTO {
+  username: string;
+  language: string;
+  photoName?: string;
+}

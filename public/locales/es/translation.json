@@ -1275,5 +1275,7 @@
   "importSuccess": "Datos importados exitosamente",
   "importError": "Error al importar el archivo",
   "templateDownloaded": "Plantilla descargada exitosamente",
-  "noFieldSpecified": "Sin campo especificado"
+  "noFieldSpecified": "Sin campo especificado",
+  "save_changes": "Guardar cambios",
+  "change_photo": "Cambiar foto"
 }

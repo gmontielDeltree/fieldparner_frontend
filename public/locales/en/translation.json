@@ -1271,5 +1271,7 @@
   "importSuccess": "Data imported successfully",
   "importError": "Error importing file",
   "templateDownloaded": "Template downloaded successfully",
-  "noFieldSpecified": "No field specified"
+  "noFieldSpecified": "No field specified",
+  "save_changes": "Save changes",
+  "change_photo": "Change photo"
 }
