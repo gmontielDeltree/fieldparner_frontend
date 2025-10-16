@@ -23,6 +23,7 @@ import englishFlagIcon from '../../images/icons/usa_flag.png'
 import brazilFlagIcon from '../../images/icons/brazil_flag.png'
 import { urlImg } from '../../config';
 import { useTranslation } from 'react-i18next';
+import { Loading } from '../Loading';
 
 
 
@@ -43,7 +44,8 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   const [formData, setFormData] = useState<ProfileFormData>({
     userName: user.username,
     language: user.language as 'es' | 'en' | 'pt',
-    avatar: null
+    avatar: null,
+    photoName: user.photoName
   });
   const [urlFile, setUrlFile] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -73,8 +75,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
     if (file) {
-      console.log(file);
-      setFormData(prev => ({ ...prev, avatar: file }));
+      setFormData(prev => ({ ...prev, avatar: file, photoName: file.name }));
       setUrlFile(URL.createObjectURL(file));
     }
   };
@@ -109,6 +110,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
       }}
     >
       <Box sx={{ p: 3 }}>
+        <Loading key="loading-user" loading={loading} />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Typography variant="h6">{t("user_profile")}</Typography>
           <IconButton onClick={handleClose}>

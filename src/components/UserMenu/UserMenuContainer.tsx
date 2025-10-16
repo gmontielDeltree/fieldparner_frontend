@@ -3,12 +3,11 @@ import UserMenu from './UserMenu';
 import ProfileDrawer from './ProfileDrawer';
 import SettingsDrawer from './SettingsDrawer';
 import LogoutDialog from './LogoutDialog';
-import { useUser, useUserMenu } from '../../hooks';
+import { useAuthStore, useUser, useUserMenu } from '../../hooks';
 // import { userService } from '@/services/userService';
-import { User, ProfileFormData, PasswordData } from '../../types';
+import { User, ProfileFormData, PasswordData, UpdateUserDTO } from '../../types';
 import { uploadFile } from '../../helpers/fileUpload';
 import { useTranslation } from 'react-i18next';
-import { Loading } from '../Loading';
 import NotificationService from '../../services/notificationService';
 
 interface UserMenuContainerProps {
@@ -21,7 +20,7 @@ const UserMenuContainer: React.FC<UserMenuContainerProps> = ({
   user,
   onLogout
 }) => {
-  // const { enqueueSnackbar } = useSnackbar();
+
   const { i18n, t } = useTranslation()
   const {
     profileDrawerOpen,
@@ -35,23 +34,37 @@ const UserMenuContainer: React.FC<UserMenuContainerProps> = ({
     closeLogoutDialog
   } = useUserMenu();
 
-  const { isLoading, updateUser, changePassword } = useUser();
+  const { checkAuthToken } = useAuthStore();
+  const { updateUser, changePassword } = useUser();
 
   const handleLanguageChange = (newLanguage: string) => {
     i18n.changeLanguage(newLanguage)
     localStorage.setItem('language', newLanguage)
   }
 
+  const reloadUserSession = (updateData: UpdateUserDTO) => {
+    if (user) {
+      const updatedUser = { ...user, ...updateData };
+      console.log('updatedUser', updatedUser)
+      localStorage.setItem('user_session', JSON.stringify(updatedUser));
+    }
+    checkAuthToken();
+  }
 
   const handleSaveProfile = async (data: ProfileFormData): Promise<void> => {
     try {
-      if (data.avatar) await uploadFile(data.avatar);
-      await updateUser({
+      const updateDataUser = {
         username: data.userName,
         language: data.language,
-        photoName: data.avatar?.name
-      });
+        photoName: data.avatar?.name ?? user.photoName
+      };
+      //Si existe el archivo de foto, validar que sea diferente a la actual y subirla
+      if (data.avatar && data?.photoName !== user?.photoName) await uploadFile(data.avatar);
+
+      await updateUser(updateDataUser);
       handleLanguageChange(data.language);
+      reloadUserSession(updateDataUser);
+      NotificationService.showSuccess("Perfil actualizado con éxito", {}, t("success_label"));
 
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -61,7 +74,7 @@ const UserMenuContainer: React.FC<UserMenuContainerProps> = ({
 
   const handleChangePassword = async (data: PasswordData): Promise<void> => {
     try {
-      
+
       await changePassword(data.currentPassword, data.newPassword);
       NotificationService.showSuccess("Contraseña cambiada con éxito", {}, t("success_label"));
     } catch (error) {
@@ -82,7 +95,6 @@ const UserMenuContainer: React.FC<UserMenuContainerProps> = ({
 
   return (
     <>
-      <Loading key="loading-user" loading={isLoading} />
       <UserMenu
         user={user}
         onProfileClick={openProfileDrawer}

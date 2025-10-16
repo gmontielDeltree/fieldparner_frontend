@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { showFieldList, hideFieldList } from '../../redux/fieldsList'
 import { useAppSelector, useAuthStore } from '../../hooks'
@@ -14,8 +14,6 @@ import {
   Typography,
   Avatar,
   ButtonBase,
-  Menu,
-  MenuItem,
   Box,
   Dialog,
   DialogContent,
@@ -26,15 +24,11 @@ import { RootState } from '../../redux/store'
 import iconoCampo from '../../images/icons/iconodecampo2D.png'
 import integrationsIcon from '../../images/icons/integrations.png'
 import logoImage from '/assets/images/logos/agrootolss_logo_sol.png'
-import spanishFlagIcon from '../../images/icons/spain_flag.png'
-import englishFlagIcon from '../../images/icons/usa_flag.png'
-import brazilFlagIcon from '../../images/icons/brazil_flag.png'
 
 import {
   Notifications,
   NotificationsActive,
   MenuOutlined,
-  ExitToApp,
   CalendarMonth,
 } from '@mui/icons-material'
 import { NavBarProps } from '../../types'
@@ -42,6 +36,7 @@ import CompanyNavBar from '../CompanyNavBar'
 import CampaignMenu from './components/CampaignMenu'
 import { NotificationPopover } from '../Notifications'
 import { ActivitiesCalendar } from '../ActivitiesCalendar'
+import UserMenuContainer from '../UserMenu/UserMenuContainer'
 
 // Animación para el fondo "parpadeante" o con un sutil cambio de color
 const backgroundPulse = keyframes({
@@ -83,6 +78,7 @@ const pulseAnimation = {
   },
 }
 
+
 export const NavBar: React.FC<NavBarProps> = ({
   drawerWidth = 240,
   open,
@@ -92,37 +88,14 @@ export const NavBar: React.FC<NavBarProps> = ({
   const { user } = useAppSelector((state) => state.auth)
   const { unreadCount, isConnected } = useNotifications()
   const [notificationAnchorEl, setNotificationAnchorEl] = useState<HTMLElement | null>(null)
-  const [language, setLanguage] = useState(
-    localStorage.getItem('language') || 'es',
-  )
+
   const { startLogout } = useAuthStore()
   const dispatch = useDispatch()
-  const { t, i18n } = useTranslation()
-  const [languageAnchorEl, setLanguageAnchorEl] = useState<null | HTMLElement>(
-    null,
-  )
-  const isLanguageMenuOpen = Boolean(languageAnchorEl)
+  const { t } = useTranslation()
+
   const isNotificationPopoverOpen = Boolean(notificationAnchorEl)
   const [calendarOpen, setCalendarOpen] = useState(false)
 
-  useEffect(() => {
-    i18n.changeLanguage(localStorage.getItem('language') || 'es')
-  }, [i18n])
-
-  const handleLanguageMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setLanguageAnchorEl(event.currentTarget)
-  }
-
-  const handleLanguageChange = (newLanguage: string) => {
-    i18n.changeLanguage(newLanguage)
-    setLanguage(newLanguage)
-    setLanguageAnchorEl(null)
-    localStorage.setItem('language', newLanguage)
-  }
-
-  const handleLanguageMenuClose = () => {
-    setLanguageAnchorEl(null)
-  }
 
   const handleNotificationClick = (event: React.MouseEvent<HTMLElement>) => {
     setNotificationAnchorEl(event.currentTarget)
@@ -174,267 +147,199 @@ export const NavBar: React.FC<NavBarProps> = ({
           }),
         }}
       >
-      <Toolbar>
-        <IconButton
-          color="default"
-          edge="start"
-          onClick={handleSideBarOpen}
-          sx={{
-            mr: 2,
-            transition: 'transform 0.3s ease',
-            ...(open && { display: 'none' }),
-            '&:hover': {
-              transform: 'scale(1.1)',
-            },
-          }}
-        >
-          <MenuOutlined />
-        </IconButton>
+        <Toolbar>
+          <IconButton
+            color="default"
+            edge="start"
+            onClick={handleSideBarOpen}
+            sx={{
+              mr: 2,
+              transition: 'transform 0.3s ease',
+              ...(open && { display: 'none' }),
+              '&:hover': {
+                transform: 'scale(1.1)',
+              },
+            }}
+          >
+            <MenuOutlined />
+          </IconButton>
 
-        <Grid
-          container
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          wrap="nowrap"
-        >
-          <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-            {/* Logo y FieldPartner */}
-            <Avatar
-              alt="Logo"
-              src={logoImage}
-              sx={{ width: 40, height: 40, mr: 1 }}
-            />
-            <Typography
-              onClick={() => navigate('/init/overview/fields')}
-              variant="h6"
-              noWrap
-              component="div"
-              sx={{
-                color: 'black',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                marginRight: '32px',
-                '&:hover': {
-                  color: '#1976d2',
-                  transition: 'color 0.3s',
-                },
-              }}
-            >
-              FieldPartner
-            </Typography>
-
-            <ButtonBase
-              onClick={selectAvatar}
-              sx={{ borderRadius: '50%', marginRight: '18px' }}
-              title="Campos"
-            >
-              <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
-            </ButtonBase>
-            <ButtonBase
-              onClick={() => navigate('/init/overview/fields/integrations')}
-              sx={{ borderRadius: '50%', marginRight: '18px' }}
-              title="Integraciones"
-            >
+          <Grid
+            container
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            wrap="nowrap"
+          >
+            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+              {/* Logo y FieldPartner */}
               <Avatar
-                alt="Integrations"
-                src={integrationsIcon}
-                sx={avatarStyle()}
+                alt="Logo"
+                src={logoImage}
+                sx={{ width: 40, height: 40, mr: 1 }}
               />
-            </ButtonBase>
-
-            {/* Calendar Button */}
-            <Tooltip
-              title="Calendario de Actividades"
-              enterDelay={500}
-              leaveDelay={200}
-            >
-              <IconButton
-                onClick={() => setCalendarOpen(true)}
+              <Typography
+                onClick={() => navigate('/init/overview/fields')}
+                variant="h6"
+                noWrap
+                component="div"
                 sx={{
-                  marginRight: '18px',
-                  width: 40,
-                  height: 40,
-                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  color: '#1976d2',
-                  backgroundColor: 'rgba(25, 118, 210, 0.1)',
-                  border: '2px solid rgba(25, 118, 210, 0.3)',
+                  color: 'black',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginRight: '32px',
                   '&:hover': {
-                    transform: 'scale(1.1)',
-                    backgroundColor: 'rgba(25, 118, 210, 0.2)',
-                    boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                    border: '2px solid rgba(25, 118, 210, 0.5)',
+                    color: '#1976d2',
+                    transition: 'color 0.3s',
                   },
                 }}
               >
-                <CalendarMonth sx={{ fontSize: 24 }} />
-              </IconButton>
-            </Tooltip>
+                FieldPartner
+              </Typography>
 
-            <Tooltip
-              title={t('notifications')}
-              enterDelay={500}
-              leaveDelay={200}
-            >
-              <IconButton
-                color={unreadCount > 0 ? 'secondary' : 'default'}
-                onClick={handleNotificationClick}
-                sx={{
-                  ml: 2,
-                  transition: 'transform 0.3s ease',
-                  '&:hover': {
-                    transform: 'scale(1.1)',
-                  },
-                  ...(unreadCount > 0 ? pulseAnimation : {}),
-                  position: 'relative',
-                }}
+              <ButtonBase
+                onClick={selectAvatar}
+                sx={{ borderRadius: '50%', marginRight: '18px' }}
+                title="Campos"
               >
-                <Badge badgeContent={unreadCount} color="error">
-                  {unreadCount > 0 ? (
-                    <NotificationsActive />
-                  ) : (
-                    <Notifications />
+                <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
+              </ButtonBase>
+              <ButtonBase
+                onClick={() => navigate('/init/overview/fields/integrations')}
+                sx={{ borderRadius: '50%', marginRight: '18px' }}
+                title="Integraciones"
+              >
+                <Avatar
+                  alt="Integrations"
+                  src={integrationsIcon}
+                  sx={avatarStyle()}
+                />
+              </ButtonBase>
+
+              {/* Calendar Button */}
+              <Tooltip
+                title="Calendario de Actividades"
+                enterDelay={500}
+                leaveDelay={200}
+              >
+                <IconButton
+                  onClick={() => setCalendarOpen(true)}
+                  sx={{
+                    marginRight: '18px',
+                    width: 40,
+                    height: 40,
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    color: '#1976d2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.1)',
+                    border: '2px solid rgba(25, 118, 210, 0.3)',
+                    '&:hover': {
+                      transform: 'scale(1.1)',
+                      backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                      boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                      border: '2px solid rgba(25, 118, 210, 0.5)',
+                    },
+                  }}
+                >
+                  <CalendarMonth sx={{ fontSize: 24 }} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip
+                title={t('notifications')}
+                enterDelay={500}
+                leaveDelay={200}
+              >
+                <IconButton
+                  color={unreadCount > 0 ? 'secondary' : 'default'}
+                  onClick={handleNotificationClick}
+                  sx={{
+                    ml: 2,
+                    transition: 'transform 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.1)',
+                    },
+                    ...(unreadCount > 0 ? pulseAnimation : {}),
+                    position: 'relative',
+                  }}
+                >
+                  <Badge badgeContent={unreadCount} color="error">
+                    {unreadCount > 0 ? (
+                      <NotificationsActive />
+                    ) : (
+                      <Notifications />
+                    )}
+                  </Badge>
+                  {/* Indicador de conexión */}
+                  {isConnected && (
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 20,
+                        width: 8,
+                        height: 8,
+                        backgroundColor: 'success.main',
+                        borderRadius: '50%',
+                        zIndex: 1,
+                      }}
+                    />
                   )}
-                </Badge>
-                {/* Indicador de conexión */}
-                {isConnected && (
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 20,
-                      width: 8,
-                      height: 8,
-                      backgroundColor: 'success.main',
-                      borderRadius: '50%',
-                      zIndex: 1,
-                    }}
-                  />
-                )}
-              </IconButton>
-            </Tooltip>
+                </IconButton>
+              </Tooltip>
 
-            {/* Popover de notificaciones */}
-            <NotificationPopover
-              anchorEl={notificationAnchorEl}
-              open={isNotificationPopoverOpen}
-              onClose={handleNotificationClose}
-            />
-
-            {/* CampaignMenu */}
-            <CampaignMenu />
-          </Grid>
-
-          <Grid item sm={4}>
-            <CompanyNavBar key="combobox-companies" />
-          </Grid>
-
-          <Grid item className="d-flex align-items-center">
-            <Typography variant="h6" display="inline-block" sx={{ mr: 1 }}>
-              {user?.username}
-            </Typography>
-
-            <IconButton
-              color="inherit"
-              aria-label="change-language"
-              onClick={handleLanguageMenu}
-              sx={{
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.1)',
-                },
-              }}
-            >
-              <img
-                src={
-                  language === 'es'
-                    ? spanishFlagIcon
-                    : language === 'en'
-                      ? englishFlagIcon
-                      : brazilFlagIcon
-                }
-                alt={language}
-                style={{ width: '24px', height: '24px' }}
+              {/* Popover de notificaciones */}
+              <NotificationPopover
+                anchorEl={notificationAnchorEl}
+                open={isNotificationPopoverOpen}
+                onClose={handleNotificationClose}
               />
-            </IconButton>
 
-            {/* Language Menu */}
-            <Menu
-              anchorEl={languageAnchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={isLanguageMenuOpen}
-              onClose={handleLanguageMenuClose}
-            >
-              <MenuItem onClick={() => handleLanguageChange('es')}>
-                <img
-                  src={spanishFlagIcon}
-                  alt="Spanish"
-                  style={{ width: '24px', height: '24px' }}
-                />
-              </MenuItem>
-              <MenuItem onClick={() => handleLanguageChange('en')}>
-                <img
-                  src={englishFlagIcon}
-                  alt="English"
-                  style={{ width: '24px', height: '24px' }}
-                />
-              </MenuItem>
-              <MenuItem onClick={() => handleLanguageChange('pt')}>
-                <img
-                  src={brazilFlagIcon}
-                  alt="Brazilian"
-                  style={{ width: '24px', height: '24px' }}
-                />
-              </MenuItem>
-            </Menu>
+              {/* CampaignMenu */}
+              <CampaignMenu />
+            </Grid>
 
-            <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="logout"
-              onClick={handleLogout}
-              sx={{
-                ml: 1,
-                transition: 'transform 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.1)',
-                },
-              }}
-            >
-              <ExitToApp />
-            </IconButton>
+            <Grid item sm={4}>
+              <CompanyNavBar key="combobox-companies" />
+            </Grid>
+
+            <Grid item className="d-flex align-items-center">
+              <Typography variant="h6" display="inline-block" sx={{ mr: 1 }}>
+                {user?.username}
+              </Typography>
+
+              {
+                user && (<UserMenuContainer
+                  user={user}
+                  onUserUpdate={() => { }}
+                  onLogout={handleLogout}
+                />)
+              }
+
+            </Grid>
           </Grid>
-        </Grid>
-      </Toolbar>
-    </GlassAppBar>
+        </Toolbar>
+      </GlassAppBar>
 
-    {/* Activities Calendar Dialog */}
-    <Dialog
-      open={calendarOpen}
-      onClose={() => setCalendarOpen(false)}
-      maxWidth="lg"
-      fullWidth
-      PaperProps={{
-        sx: {
-          height: '90vh',
-          borderRadius: 2,
-          overflow: 'hidden',
-        },
-      }}
-    >
-      <DialogContent sx={{ p: 0, height: '100%' }}>
-        <ActivitiesCalendar onClose={() => setCalendarOpen(false)} />
-      </DialogContent>
-    </Dialog>
+      {/* Activities Calendar Dialog */}
+      <Dialog
+        open={calendarOpen}
+        onClose={() => setCalendarOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: '90vh',
+            borderRadius: 2,
+            overflow: 'hidden',
+          },
+        }}
+      >
+        <DialogContent sx={{ p: 0, height: '100%' }}>
+          <ActivitiesCalendar onClose={() => setCalendarOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

@@ -22,11 +22,11 @@ import {
   Typography
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, useForm, useFormError, useUser } from '../hooks';
-import { Loading } from '../components';
-import { EnumStatusUser, UserByAccount, UserRols } from '../types';
+import { useAppDispatch, useAppSelector, useForm, useFormError, useUser } from '../../hooks';
+import { Loading } from '../../components';
+import { EnumStatusUser, UserByAccount, UserRols } from '../../types';
 // import { v4 as uuidv4 } from 'uuid';
-import { removeUsersActive } from '../redux/users';
+import { removeUsersActive } from '../../redux/users';
 import {
   AddCircle as AddCircleIcon,
   BrokenImage as BrokenImageIcon,
@@ -39,8 +39,8 @@ import {
   Info as InfoIcon,
 } from '@mui/icons-material';
 import uuid4 from 'uuid4';
-import { uploadFile } from '../helpers/fileUpload';
-import { urlImg } from '../config';
+import { uploadFile } from '../../helpers/fileUpload';
+import { urlImg } from '../../config';
 
 
 const initialForm: UserByAccount = {
@@ -105,7 +105,7 @@ export const NewUserPage = () => {
 
   const handleUpdatePassword = async () => {
     if (formulario._id) {
-      updateUser(formulario);
+      // updateUser(formulario);
       dispatch(removeUsersActive());
       navigate("/init/overview/users");
     }
@@ -138,7 +138,7 @@ export const NewUserPage = () => {
 
   const handleUpdateUsers = () => {
     if (formulario._id) {
-      updateUser(formulario);
+      // updateUser(formulario);
       dispatch(removeUsersActive());
       navigate("/init/overview/users");
     }
