@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import {
   ListVehiclesPage,
@@ -78,7 +78,11 @@ export const OverviewRoutes: React.FC = () => {
   const { pathname, search } = useLocation();
 
   const lastPath = useMemo(() => pathname + search, [pathname, search]);
-  localStorage.setItem("lastPath", lastPath);
+  
+  useEffect(() => {
+    localStorage.setItem("lastPath", lastPath);
+  }, [lastPath]);
+
 
   return (
     <AppLayout key="app-layout">

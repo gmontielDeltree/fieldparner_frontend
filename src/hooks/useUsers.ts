@@ -9,6 +9,7 @@ import { fieldpartnerAPI } from '../config';
 import { loadUsers, setUserActive } from '../redux/users';
 import { NotificationService } from "../services/notificationService";
 import { onLogout } from '../redux/auth';
+import { NewUserDto } from '../interfaces/user-accounts';
 
 const controller = "/user-licence";
 
@@ -24,14 +25,14 @@ export const useUser = () => {
   const { user } = useAppSelector((state) => state.auth);
 
 
-  const createUser = async (userDto: UserByAccount) => {
+  const createUser = async (userDto: NewUserDto) => {
     setIsLoading(true);
     try {
 
       if (!user) throw new Error(t("user_not_found"));
 
-      const newUser: UserByAccount = { ...userDto, accountId: user.accountId };
-      const response = await fieldpartnerAPI.post(`${controller}`, newUser);
+      // const newUser: UserByAccount = { ...userDto, accountId: user.accountId };
+      const response = await fieldpartnerAPI.post(`${controller}`, userDto);
 
       if (response)
         NotificationService.showSuccess(t("user_registered_pending_email"), {}, t("user_label"));
@@ -68,7 +69,11 @@ export const useUser = () => {
     setIsLoading(true);
     try {
       //Obtener usuarios por id cuenta
-      const response = await fieldpartnerAPI.get(`${controller}`);
+      const response = await fieldpartnerAPI.get(`${controller}`, {
+        headers: {
+          "Authorization": localStorage.getItem("accessToken")
+        }
+      });
 
       if (response) {
         const documents: UserByAccount[] = response.data.map((row: any) => row as UserByAccount);
@@ -135,48 +140,48 @@ export const useUser = () => {
   };
 
 
-  const updatePasswordUsers = async (updateUsers: UserByAccount, oldPassword: string) => {
-    setIsLoading(true);
+  // const updatePasswordUsers = async (updateUsers: UserByAccount, oldPassword: string) => {
+  //   setIsLoading(true);
 
-    console.log(t("update_password_executing"));
+  //   console.log(t("update_password_executing"));
 
-    if (!updateUsers.password?.trim()) {
-      setConceptoError(true);
-      setIsLoading(false);
-      return;
-    }
+  //   if (!updateUsers.password?.trim()) {
+  //     setConceptoError(true);
+  //     setIsLoading(false);
+  //     return;
+  //   }
 
-    try {
-      // Obtener el usuario actual de la base de datos
-      const currentUser = await dbContext.users.get(updateUsers.password);
-      if (!currentUser) {
-        setIsLoading(false);
-        NotificationService.showError(t("user_not_found"), {}, t("error_label"));
-        return;
-      }
+  //   try {
+  //     // Obtener el usuario actual de la base de datos
+  //     const currentUser = await dbContext.users.get(updateUsers.password);
+  //     if (!currentUser) {
+  //       setIsLoading(false);
+  //       NotificationService.showError(t("user_not_found"), {}, t("error_label"));
+  //       return;
+  //     }
 
-      // Comprobar si la contraseña anterior coincide
-      if (currentUser.password !== oldPassword) {
-        setIsLoading(false);
-        NotificationService.showError(t("previous_password_mismatch"), {}, t("error_label"));
-        return;
-      }
+  //     // Comprobar si la contraseña anterior coincide
+  //     if (currentUser.password !== oldPassword) {
+  //       setIsLoading(false);
+  //       NotificationService.showError(t("previous_password_mismatch"), {}, t("error_label"));
+  //       return;
+  //     }
 
-      // Actualizar la contraseña
-      const response = await dbContext.users.put(updateUsers);
-      setIsLoading(false);
+  //     // Actualizar la contraseña
+  //     const response = await dbContext.users.put(updateUsers);
+  //     setIsLoading(false);
 
-      if (response.ok)
-        NotificationService.showSuccess(t("password_updated"), {}, t("success_label"));
+  //     if (response.ok)
+  //       NotificationService.showSuccess(t("password_updated"), {}, t("success_label"));
 
-      navigate('/init/overview/users/');
-    } catch (error) {
-      console.log(error);
-      NotificationService.showError(t("password_update_error"), {}, t("error_label"));
-      setIsLoading(false);
-      if (error) setError(error);
-    }
-  };
+  //     navigate('/init/overview/users/');
+  //   } catch (error) {
+  //     console.log(error);
+  //     NotificationService.showError(t("password_update_error"), {}, t("error_label"));
+  //     setIsLoading(false);
+  //     if (error) setError(error);
+  //   }
+  // };
 
   const removeUsers = async (UsersId: string, removeUsers: string) => {
 
@@ -239,6 +244,24 @@ export const useUser = () => {
     }
   }
 
+  const disableUser = async (userId: string, username: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, { state: 'Inactiva' });
+
+      if (response) {
+        NotificationService.showSuccess(t("user_disabled_successfully", { user: username }), {}, t("user_label"));
+        await getUsers(); // Reload users list
+      }
+    } catch (error) {
+      console.log(error);
+      NotificationService.showError(t("user_disable_error"), {}, t("error_label"));
+      if (error) setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
 
   return {
     //* Propiedades
@@ -253,9 +276,10 @@ export const useUser = () => {
     setUsers,
     updateUser,
     removeUsers,
-    updatePasswordUsers,
+    // updatePasswordUsers,
     searchUsers,
     getUserById,
-    changePassword
+    changePassword,
+    disableUser
   }
 }

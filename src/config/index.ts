@@ -14,6 +14,7 @@ export const fieldpartnerAPI = axios.create({
     baseURL: baseURL,
 });
 
+//TODO: crear metodo para refrescar token
 fieldpartnerAPI.interceptors.request.use((config) => {
 
     config.headers.set('channel', 'fieldpartner_front', false);

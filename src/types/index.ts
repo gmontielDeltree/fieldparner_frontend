@@ -154,7 +154,8 @@ export interface User {
   username: string;
   accountId: string;
   licenceId: string;
-  isAdmin: boolean;
+  isAdmin: boolean; //TODO: esto se remueve y pasamos a validar por rol [ADM, USER]
+  rol: string;
   countryId: string;
   photoName: string;
   language: string;
@@ -167,8 +168,9 @@ export interface ResponseAuthLogin {
   auth: Authenticate;
 }
 export interface ResponseAuthRenew {
-  AccessToken: string;
-  ExpiresIn: number;
+  accessToken: string;
+  expiration: number;
+  refreshToken?: string;
 }
 
 export interface UserRegister {
@@ -262,18 +264,14 @@ export interface CompaniesState {
 export interface UserByAccount extends Document {
   accountId?: string;
   username?: string;
-  // name: string;
   email: string;
-  password?: string;
   isAdmin: boolean;
-  // lastName: string;
   language: string;
   rol: string;
   state: string;
   photoName: string;
-  previousPassword?: string;
-  newPassword?: string;
 }
+
 export interface UsersState {
   userActive: UserByAccount | null;
   users: UserByAccount[];
@@ -799,9 +797,9 @@ export enum NumeratorType {
   ContractSaleCereal = 'Contrato de Venta de Cereal',
 }
 
-export enum UserRols {
-  Administrator = 'ADM',
-  User = 'USER',
+export enum UserRole {
+  ADMIN = 'ADM',
+  USER = 'USER',
 }
 
 export enum EnumStatusUser {

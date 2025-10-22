@@ -34,6 +34,8 @@ export * from './FormSection/FormSection';
 export * from './LocalidadSelect/LocalidadSelect';
 // export * from './CompatibilityValidator/CompatibilityValidator';
 export { default as UserPermissionsModal } from './Modals/UserPermissionsModal';
+export { default as ConfirmDialog } from './LotsMenu/components/ConfirmDialog';
+export { default as ConfirmDisableUserDialog } from './Modals/ConfirmDisableUserDialog';
 
 export * from './TopBar/TopBarCustom';
 export * from './CorporateContract/TableCorporateContract';
@@ -42,3 +44,5 @@ export * from './ProductUnits/TableProductUnits';
 export * from './IconsViewer/IconsViewer';
 
 export * from './GenericListPage/GenericListPage';
+
+export * from './ModulePermissionsSelector';

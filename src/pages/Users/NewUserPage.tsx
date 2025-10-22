@@ -19,12 +19,19 @@ import {
   TextField,
   Toolbar,
   Tooltip,
-  Typography
+  Typography,
+  Stepper,
+  Step,
+  StepLabel,
+  Alert,
+  AlertTitle,
+  Divider,
+  Chip,
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, useForm, useFormError, useUser } from '../../hooks';
-import { Loading } from '../../components';
-import { EnumStatusUser, UserByAccount, UserRols } from '../../types';
+import { useAppDispatch, useAppSelector, useForm, useFormError, useMenuModules, useUser } from '../../hooks';
+import { Loading, ModulePermissionsSelector } from '../../components';
+import { EnumStatusUser, UserByAccount, UserRole } from '../../types';
 // import { v4 as uuidv4 } from 'uuid';
 import { removeUsersActive } from '../../redux/users';
 import {
@@ -37,36 +44,42 @@ import {
   People as PeopleIcon,
   Edit as EditIcon,
   Info as InfoIcon,
+  ArrowBack as ArrowBackIcon,
+  ArrowForward as ArrowForwardIcon,
+  Check as CheckIcon,
+  Lock as LockIcon,
+  Email as EmailIcon,
 } from '@mui/icons-material';
 import uuid4 from 'uuid4';
 import { uploadFile } from '../../helpers/fileUpload';
 import { urlImg } from '../../config';
+import { NewUserDto } from '../../interfaces/user-accounts';
 
 
-const initialForm: UserByAccount = {
+const initialForm: NewUserDto = {
   username: '',
-  // lastName: '',
   email: '',
-  password: '',
   language: '',
-  isAdmin: false,
-  accountId: '',
-  state: EnumStatusUser.Inactiva,
-  rol: UserRols.User,
+  password: '',
+  rol: UserRole.USER,
   photoName: "",
+  modulePermissions: [],
 };
 
 
 const policyPassword = "La contraseña debe contener al menos una letra en mayúscula, un dígito, un carácter especial y tener una longitud mínima de 8 caracteres.";
 const statusOptions = Object.values(EnumStatusUser).map(x => x as string);
 
+const steps = ['Información del Usuario', 'Permisos y Módulos', 'Revisión y Confirmación'];
+
 export const NewUserPage = () => {
-  const { id: userId } = useParams();
+  // const { id: userId } = useParams();
   const navigate = useNavigate();
-  const { isLoading, createUser, updateUser, getUserById } = useUser();
+  const { isLoading, createUser } = useUser();
   const dispatch = useAppDispatch();
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [showChangePassword, setShowChangePassword] = useState<boolean>(false);
+  
+  const [activeStep, setActiveStep] = useState(0);
   const { formControlError, handleFormValueChange } = useFormError({
     password: "",
     confirmPassword: "",
@@ -82,6 +95,8 @@ export const NewUserPage = () => {
     handleSelectChange,
     reset,
   } = useForm(initialForm);
+  const { menuModules, getMenuModules } = useMenuModules();
+  
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -103,13 +118,13 @@ export const NewUserPage = () => {
     }
   }
 
-  const handleUpdatePassword = async () => {
-    if (formulario._id) {
-      // updateUser(formulario);
-      dispatch(removeUsersActive());
-      navigate("/init/overview/users");
-    }
-  };
+  // const handleUpdatePassword = async () => {
+  //   if (formulario._id) {
+  //     // updateUser(formulario);
+  //     dispatch(removeUsersActive());
+  //     navigate("/init/overview/users");
+  //   }
+  // };
 
   const uploadImgUser = async (fileInput: Blob) => {
     try {
@@ -136,13 +151,13 @@ export const NewUserPage = () => {
     setFormulario(({ ...formulario, photoName: "" }));
   };
 
-  const handleUpdateUsers = () => {
-    if (formulario._id) {
-      // updateUser(formulario);
-      dispatch(removeUsersActive());
-      navigate("/init/overview/users");
-    }
-  };
+  // const handleUpdateUsers = () => {
+  //   if (formulario._id) {
+  //     // updateUser(formulario);
+  //     dispatch(removeUsersActive());
+  //     navigate("/init/overview/users");
+  //   }
+  // };
 
   const handleAddUser = async () => {
     await createUser(formulario);
@@ -157,13 +172,13 @@ export const NewUserPage = () => {
     reset();
   };
 
-  const onChangeConfirmNewPassword = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirmPassword(target.value);
-    if (formulario.newPassword !== target.value)
-      handleFormValueChange(target.name, "Las contraseñas no coinciden.");
-    else
-      handleFormValueChange(target.name, "");
-  }
+  // const onChangeConfirmNewPassword = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
+  //   setConfirmPassword(target.value);
+  //   if (formulario.newPassword !== target.value)
+  //     handleFormValueChange(target.name, "Las contraseñas no coinciden.");
+  //   else
+  //     handleFormValueChange(target.name, "");
+  // }
 
   const validateSave = () => {
     let errors = Object.values(formControlError);
@@ -172,13 +187,53 @@ export const NewUserPage = () => {
     return isError;
   }
 
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 0:
+        // Validar que los campos requeridos estén completos
+        if (!formulario.username || !formulario.email || !formulario.password || !confirmPassword) {
+          return false;
+        }
+        // Validar que no haya errores en los campos
+        if (validateSave()) {
+          return false;
+        }
+        return true;
+      case 1:
+        // Paso de permisos - siempre válido (los permisos son opcionales)
+        return true;
+      case 2:
+        // Paso de revisión - siempre válido
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const handleNext = () => {
+    if (validateStep(activeStep)) {
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handlePermissionsChange = (permissions: number[]) => {
+    setFormulario({ ...formulario, modulePermissions: permissions });
+  };
+
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    if (!validateSave()) {
-      userActive ? handleUpdateUsers() : handleAddUser()
-    }
   }
+
+  const handleFinalSubmit = async () => {
+    if (!validateSave()) {
+      await handleAddUser();
+    }
+  };
 
   const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
     if (value)
@@ -187,20 +242,10 @@ export const NewUserPage = () => {
   console.log('authuser', authUser?.email.toLowerCase())
   console.log('userActive', userActive?.email);
 
-  useEffect(() => {
-    if (userActive) {
-      setFormulario(userActive);
-    } else {
-      setFormulario(initialForm);
-    }
-  }, [userActive, setFormulario]);
-
 
   useEffect(() => {
-    if (userId) {
-      getUserById(userId);
-    }
-  }, [userId])
+    getMenuModules();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -208,40 +253,35 @@ export const NewUserPage = () => {
     }
   }, [dispatch])
 
-  return (
-    <>
-      <Container maxWidth="md" sx={{
-        mt: 4,
-        p: { sm: 1, md: 1 },
-        mb: 1,
-        ml: 5
-      }}>
-        <Loading key="loading-users" loading={isLoading} />
+  const renderStepContent = (step: number) => {
+    switch (step) {
+      case 0:
+        return (
+          <Box>
+            {/* Alertas informativas */}
+            <Alert severity="info" sx={{ mb: 3 }} icon={<EmailIcon />}>
+              <AlertTitle>Estado inicial del usuario</AlertTitle>
+              El usuario se creará con estado <strong>Inactivo</strong> hasta que confirme su cuenta mediante el correo electrónico que recibirá.
+            </Alert>
 
-        <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}>
-          <AppBar position="static">
-            <Toolbar>
-              {
-                userActive ? <EditIcon fontSize='medium' /> : <AddCircleIcon fontSize='medium' />
-              }
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1, ml: 2 }}>
-                {userActive ? "Editar" : "Nuevo"} Usuario
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          <form onSubmit={onSubmit}>
-            <Grid container spacing={1} p={1} mt={1}>
-              <Grid container direction="column" xs={7}>
-                <Grid container spacing={1.5} sx={{ pt: 6 }}>
+            <Alert severity="warning" sx={{ mb: 3 }} icon={<LockIcon />}>
+              <AlertTitle>Contraseña temporal</AlertTitle>
+              La contraseña que estás configurando es <strong>temporal</strong>. El usuario deberá cambiarla en su primer inicio de sesión.
+            </Alert>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={7}>
+                <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
-                      label="Nombre"
+                      label="Nombre completo"
                       type="text"
                       name="username"
                       value={formulario.username}
                       onChange={handleInputChange}
                       required
                       fullWidth
+                      placeholder="Ej: Juan Pérez"
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -252,49 +292,44 @@ export const NewUserPage = () => {
                       name="email"
                       value={formulario.email}
                       onChange={handleInputChange}
-                      placeholder='correo@gmail.com'
+                      placeholder='correo@ejemplo.com'
                       required
                       fullWidth
-                      InputProps={{
-                        startAdornment: <InputAdornment position="start" />,
-                      }}
                     />
                   </Grid>
-                  {!userActive &&
-                    <>
-                      <Grid item xs={6}>
-                        <TextField
-                          label="Contraseña"
-                          type="password"
-                          name="password"
-                          error={!!formControlError["password"]}
-                          helperText={formControlError["password"]}
-                          value={formulario.password}
-                          InputProps={{
-                            endAdornment: <InputAdornment position="end">
-                              <Tooltip title={policyPassword}>
-                                <InfoIcon />
-                              </Tooltip>
-                            </InputAdornment>,
-                          }}
-                          onChange={handlePasswordChange}
-                          fullWidth />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                          label="Repetir contraseña"
-                          type="password"
-                          name="confirmPassword"
-                          error={!!formControlError["confirmPassword"]}
-                          helperText={formControlError["confirmPassword"]}
-                          value={confirmPassword}
-                          onChange={handlePasswordChange}
-                          fullWidth />
-                      </Grid>
-                    </>
-                  }
-                  <Grid item xs={4}>
-                    <FormControl fullWidth >
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Contraseña temporal"
+                      type="password"
+                      name="password"
+                      error={!!formControlError["password"]}
+                      helperText={formControlError["password"]}
+                      value={formulario.password}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="end">
+                          <Tooltip title={policyPassword}>
+                            <InfoIcon />
+                          </Tooltip>
+                        </InputAdornment>,
+                      }}
+                      onChange={handlePasswordChange}
+                      required
+                      fullWidth />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Confirmar contraseña"
+                      type="password"
+                      name="confirmPassword"
+                      error={!!formControlError["confirmPassword"]}
+                      helperText={formControlError["confirmPassword"]}
+                      value={confirmPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      fullWidth />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth required>
                       <InputLabel>Idioma</InputLabel>
                       <Select
                         id="language"
@@ -303,14 +338,14 @@ export const NewUserPage = () => {
                         value={formulario.language}
                         onChange={handleSelectChange}
                       >
-                        <MenuItem value="AR">Español</MenuItem>
-                        <MenuItem value="br">Portugués</MenuItem>
-                        <MenuItem value="US">Inglés</MenuItem>
+                        <MenuItem value="es">Español</MenuItem>
+                        <MenuItem value="pt">Portugués</MenuItem>
+                        <MenuItem value="en">Inglés</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={4}>
-                    <FormControl fullWidth >
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth required>
                       <InputLabel>Rol</InputLabel>
                       <Select
                         id="admin"
@@ -319,27 +354,19 @@ export const NewUserPage = () => {
                         value={formulario.rol}
                         onChange={handleSelectChange}
                       >
-                        <MenuItem value={UserRols.User}>Usuario</MenuItem>
-                        <MenuItem value={UserRols.Administrator}>Administrador</MenuItem>
+                        <MenuItem value={UserRole.USER}>Usuario</MenuItem>
+                        <MenuItem value={UserRole.ADMIN}>Administrador</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={4}>
-                    <Autocomplete
-                      value={formulario.state}
-                      onChange={onChangeStatus}
-                      options={statusOptions}
-                      // getOptionLabel={(option) => option.label}
-                      renderInput={(params) => (
-                        <TextField {...params} label="Estado" variant="outlined" />
-                      )}
-                      fullWidth
-                    />
-                  </Grid>
                 </Grid>
               </Grid>
-              <Grid container direction="column" xs={5}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: "center", alignItems: 'center', mb: 2 }}>
+
+              <Grid item xs={12} md={5}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                    Foto de perfil (opcional)
+                  </Typography>
                   <Card sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -348,7 +375,8 @@ export const NewUserPage = () => {
                     width: 200,
                     height: 240,
                     maxWidth: 200,
-                    maxHeight: 240
+                    maxHeight: 240,
+                    mt: 1
                   }}>
                     {photoName ? (
                       <CardMedia
@@ -372,7 +400,7 @@ export const NewUserPage = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
                         <label htmlFor="file-upload" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
                           <PhotoCameraIcon sx={{ mr: 1 }} />
-                          <Typography variant="body1" sx={{ p: 0 }}>Subir foto</Typography>
+                          <Typography variant="body2" sx={{ p: 0 }}>Subir foto</Typography>
                           <input
                             id="file-upload"
                             key="file-user"
@@ -392,85 +420,177 @@ export const NewUserPage = () => {
                     </CardContent>
                   </Card>
                 </Box>
-                {(userActive && authUser?.email.toLowerCase() === userActive?.email?.toLowerCase()) &&
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center' }} >
-                      <Button
-                        variant="text"
-                        color="secondary"
-                        onClick={() => setShowChangePassword(!showChangePassword)}
-                        startIcon={<VpnKeyIcon />}
-                        sx={{ border: '1px solid', borderColor: '-moz-initial', borderRadius: '5px', padding: '8px 16px' }}
-                      >
-                        Cambiar clave
-                      </Button>
-                    </Box>
-                    {showChangePassword && (
-                      <>
-                        <Grid container direction="column" sx={{ mt: 1 }} spacing={1}>
-                          <Grid item xs={4}>
-                            <TextField
-                              label="Clave anterior"
-                              type="password"
-                              name="previousPassword"
-                              value={formulario.previousPassword}
-                              onChange={handleInputChange}
-                              fullWidth />
-                          </Grid>
-                          <Grid item xs={4}>
-                            <TextField
-                              label="Nueva clave"
-                              type="password"
-                              name="newPassword"
-                              value={formulario.newPassword}
-                              onChange={handleInputChange}
-                              fullWidth />
-                          </Grid>
-                          <Grid item xs={4}>
-                            <TextField
-                              label="Repetir nueva clave"
-                              type="password"
-                              value={confirmPassword}
-                              error={!!formControlError.password}
-                              helperText={formControlError.password}
-                              onChange={onChangeConfirmNewPassword}
-                              fullWidth />
-                          </Grid>
-                        </Grid><Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                          <Button variant="contained" color="primary" onClick={handleUpdatePassword}>
-                            Confirmar
-                          </Button>
-                          <Button variant="outlined" color="secondary" onClick={() => setShowChangePassword(!showChangePassword)}>
-                            Cancelar
-                          </Button>
-                        </Box>
-                      </>
-                    )}
-                  </Box>}
-                {/* <Box sx={{ display: 'flex', justifyContent: "center", alignItems: 'center', mb: 2 }}>
-                  <ScheduleIcon sx={{ mr: 1 }} />
-                  <Typography variant="body1">Última sesión:</Typography>
-                  {ultimaConexion && (
-                    <Typography variant="body1" sx={{ ml: 1 }}>{ultimaConexion.toLocaleString()}</Typography>
-                  )}
-                </Box> */}
               </Grid>
             </Grid>
-            <Box sx={{ display: 'flex', justifyContent: 'space-evenly', alignItems: 'center', mt: 2 }}>
+          </Box>
+        );
+
+      case 1:
+        return (
+          <Box>
+            <ModulePermissionsSelector
+              selectedPermissions={formulario.modulePermissions || []}
+              onPermissionsChange={handlePermissionsChange}
+              menuModules={menuModules}
+              isLoading={isLoading}
+              disabled={false}
+            />
+          </Box>
+        );
+
+      case 2:
+        return (
+          <Box>
+            <Alert severity="success" sx={{ mb: 3 }} icon={<CheckIcon />}>
+              <AlertTitle>Revisión de datos</AlertTitle>
+              Por favor, revisa la información antes de crear el usuario.
+            </Alert>
+
+            <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                Información del Usuario
+              </Typography>
+              <Divider sx={{ mb: 2 }} />
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Nombre completo</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>{formulario.username}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Email</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>{formulario.email}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Idioma</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {formulario.language === 'es' ? 'Español' : formulario.language === 'pt' ? 'Portugués' : 'Inglés'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Rol</Typography>
+                  <Chip
+                    label={formulario.rol === UserRole.ADMIN ? 'Administrador' : 'Usuario'}
+                    color={formulario.rol === UserRole.ADMIN ? 'primary' : 'default'}
+                    size="small"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Estado inicial</Typography>
+                  <Chip
+                    label="Inactivo (Pendiente confirmación)"
+                    color="warning"
+                    size="small"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">Foto de perfil</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    {photoName ? 'Configurada' : 'Sin foto'}
+                  </Typography>
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="body2" color="text.secondary">Permisos asignados</Typography>
+                  <Chip
+                    label={`${formulario.modulePermissions?.length || 0} módulo${(formulario.modulePermissions?.length || 0) !== 1 ? 's' : ''}`}
+                    color={formulario.modulePermissions && formulario.modulePermissions.length > 0 ? 'success' : 'default'}
+                    size="small"
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
+
+            <Alert severity="info" icon={<InfoIcon />}>
+              Al confirmar, se enviará un correo electrónico al usuario con instrucciones para activar su cuenta y cambiar su contraseña temporal.
+            </Alert>
+          </Box>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <Container maxWidth="lg" sx={{
+        mt: 4,
+        p: { sm: 1, md: 2 },
+        mb: 4,
+      }}>
+        <Loading key="loading-users" loading={isLoading} />
+
+        <Paper elevation={3} sx={{ my: { xs: 3, md: 4 }, p: { xs: 2, md: 4 } }}>
+          <AppBar position="static" sx={{ borderRadius: 1 }}>
+            <Toolbar>
+              {userActive ? <EditIcon fontSize='medium' /> : <AddCircleIcon fontSize='medium' />}
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1, ml: 2 }}>
+                {userActive ? "Editar" : "Crear Nuevo"} Usuario
+              </Typography>
+            </Toolbar>
+          </AppBar>
+
+          {/* Stepper */}
+          <Box sx={{ mt: 4, mb: 4 }}>
+            <Stepper activeStep={activeStep}>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
+
+          <form onSubmit={onSubmit}>
+            {/* Contenido del paso actual */}
+            <Box sx={{ minHeight: 400, mb: 3 }}>
+              {renderStepContent(activeStep)}
+            </Box>
+
+            {/* Botones de navegación */}
+            <Divider sx={{ mb: 3 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Button
-                variant="contained"
+                variant="outlined"
                 color="inherit"
-                onClick={onClickCancel}>
+                onClick={onClickCancel}
+                startIcon={<CancelIcon />}
+              >
                 Cancelar
               </Button>
-              <Button
-                type='submit'
-                variant="contained"
-                color="success"
-              // onClick={userActive ? handleUpdateUsers : handleAddUser}
-              >
-                {!userActive ? "Guardar" : "Actualizar"}{' '}
-              </Button>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {activeStep > 0 && (
+                  <Button
+                    variant="outlined"
+                    onClick={handleBack}
+                    startIcon={<ArrowBackIcon />}
+                  >
+                    Atrás
+                  </Button>
+                )}
+
+                {activeStep < steps.length - 1 ? (
+                  <Button
+                    variant="contained"
+                    onClick={handleNext}
+                    endIcon={<ArrowForwardIcon />}
+                    disabled={!validateStep(activeStep)}
+                  >
+                    Siguiente
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    onClick={handleFinalSubmit}
+                    startIcon={<CheckIcon />}
+                    disabled={!validateStep(activeStep)}
+                  >
+                    Crear Usuario
+                  </Button>
+                )}
+              </Box>
             </Box>
           </form>
         </Paper>
