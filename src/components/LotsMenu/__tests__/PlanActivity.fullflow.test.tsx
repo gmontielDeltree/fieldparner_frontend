@@ -49,9 +49,9 @@ const planRef: any = {
     setOpenSnackbar: vi.fn(),
     snackbarMessage: '',
     setSnackbarMessage: vi.fn(),
-    activeStep: 4,
+    activeStep: 5,  // Último paso (observations) para que muestre el botón "save"
     setActiveStep: vi.fn(),
-    maxStepReached: 4,
+    maxStepReached: 5,  // Todos los pasos completados
     setMaxStepReached: vi.fn(),
     handleCloseSnackbar: vi.fn(),
     handleNext: vi.fn(),
