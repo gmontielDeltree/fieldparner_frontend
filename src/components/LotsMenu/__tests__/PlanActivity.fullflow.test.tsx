@@ -120,7 +120,8 @@ async function seedDatabases() {
     await dbContext.crops.post({ _id: 'crop-1', accountId: 'acc-1', descriptionES: 'Soja' } as any)
 }
 
-describe('PlanActivity - full sowing flow with stock checks', () => {
+// Skip en CI, ejecutar solo si RUN_HEAVY_TESTS=1
+describe.skipIf(process.env.RUN_HEAVY_TESTS !== '1')('PlanActivity - full sowing flow with stock checks', () => {
     beforeAll(async () => {
         vi.clearAllMocks()
         initInMemoryDbs()
@@ -135,10 +136,7 @@ describe('PlanActivity - full sowing flow with stock checks', () => {
         }
     })
 
-    const runHeavy = process.env.RUN_HEAVY_TESTS === '1' || process.env.VITE_RUN_HEAVY_TESTS === '1'
-    const maybeIt: any = runHeavy ? it : it.skip
-
-    maybeIt('plans sowing, reserves supply, executes withdrawal, plans again referencing previous, and executes harvest updating crop stock', async () => {
+    it('plans sowing, reserves supply, executes withdrawal, plans again referencing previous, and executes harvest updating crop stock', async () => {
         const store = makeStore()
 
         // Activity DB for plan documents
