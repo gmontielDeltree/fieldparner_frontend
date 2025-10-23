@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { MemoryRouter } from 'react-router-dom'
 import { useStockMovement } from '../../../hooks/useStockMovement'
+import { TipoStock } from '../../../interfaces/stock'
 import PouchDB from 'pouchdb'
 import PouchDBFind from 'pouchdb-find'
 import PouchDBMemory from 'pouchdb-adapter-memory'
@@ -42,7 +43,7 @@ describe('Siembra sin orden de retiro - descuenta usando total exacto', () => {
         await dbContext.stockMovements.createIndex({ index: { fields: ['accountId'] } } as any)
 
         await dbContext.deposits.post({ _id: 'dep-1', accountId: 'acc-1', description: 'Dep 1' } as any)
-        await dbContext.stock.post({ accountId: 'acc-1', id: 'sup-1', depositId: 'dep-1', location: '', nroLot: 'L1', currentStock: 100, reservedStock: 0, campaignId: 'camp-1', tipo: 'INSUMO' } as any)
+        await dbContext.stock.post({ accountId: 'acc-1', id: 'sup-1', depositId: 'dep-1', location: '', nroLot: 'L1', currentStock: 100, reservedStock: 0, campaignId: 'camp-1', tipo: TipoStock.INSUMO } as any)
     })
 
     it('consume 12 unidades (total) y no 6 (dosificación x ha)', async () => {
