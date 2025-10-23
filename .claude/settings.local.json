@@ -1,30 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run dev:*)",
-      "Bash(npm run lint)",
-      "Bash(npm run build:*)",
-      "Bash(npm install:*)",
-      "mcp__puppeteer__puppeteer_navigate",
-      "Bash(lsof:*)",
-      "mcp__puppeteer__puppeteer_screenshot",
-      "mcp__puppeteer__puppeteer_fill",
-      "mcp__puppeteer__puppeteer_click",
-      "mcp__puppeteer__puppeteer_evaluate",
-      "Bash(open:*)",
-      "Bash(ls:*)",
-      "Bash(npm run:*)",
-      "Bash(grep:*)",
-      "Bash(git stash show:*)",
-      "Bash(git add:*)",
-      "Bash(npx tsc:*)",
-      "Bash(git checkout:*)",
-      "Bash(git commit:*)",
-      "Bash(git fetch:*)",
-      "Bash(git pull:*)",
-      "Bash(git merge:*)"
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+      "Bash(timeout 30 bash:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
+    "ask": [],
     "defaultMode": "acceptEdits"
   }
 }
