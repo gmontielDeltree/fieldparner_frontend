@@ -122,9 +122,9 @@ async function seedDatabases() {
 
 // Skip en CI, ejecutar solo si RUN_HEAVY_TESTS=1
 const runHeavy = process.env.RUN_HEAVY_TESTS === '1'
-const describeHeavy = runHeavy ? describe : describe.skip
+const itHeavy = runHeavy ? it : it.skip
 
-describeHeavy('PlanActivity - full sowing flow with stock checks', () => {
+describe('PlanActivity - full sowing flow with stock checks', () => {
     beforeAll(async () => {
         vi.clearAllMocks()
         initInMemoryDbs()
@@ -139,7 +139,7 @@ describeHeavy('PlanActivity - full sowing flow with stock checks', () => {
         }
     })
 
-    it('plans sowing, reserves supply, executes withdrawal, plans again referencing previous, and executes harvest updating crop stock', async () => {
+    itHeavy('plans sowing, reserves supply, executes withdrawal, plans again referencing previous, and executes harvest updating crop stock', async () => {
         const store = makeStore()
 
         // Activity DB for plan documents
