@@ -121,7 +121,10 @@ async function seedDatabases() {
 }
 
 // Skip en CI, ejecutar solo si RUN_HEAVY_TESTS=1
-describe.skipIf(process.env.RUN_HEAVY_TESTS !== '1')('PlanActivity - full sowing flow with stock checks', () => {
+const runHeavy = process.env.RUN_HEAVY_TESTS === '1'
+const describeHeavy = runHeavy ? describe : describe.skip
+
+describeHeavy('PlanActivity - full sowing flow with stock checks', () => {
     beforeAll(async () => {
         vi.clearAllMocks()
         initInMemoryDbs()
