@@ -1,3 +1,15 @@
+export const calculateDoseStockAmount = (
+  dosis: any,
+  executionDetails: any,
+  formData?: any,
+  lot?: any
+) => {
+  const hectareas = Number(executionDetails?.detalles?.hectareas || formData?.detalles?.hectareas || lot?.hectareas || lot?.properties?.hectareas || 0)
+  const perHa = Number(dosis?.dosificacion ?? dosis?.dosis)
+  const hasTotal = dosis?.total !== undefined && dosis?.total !== null && dosis?.total !== ''
+  return hasTotal ? Number(dosis.total) : (isFinite(perHa) && isFinite(hectareas) ? perHa * hectareas : Number(perHa || 0))
+}
+
 import React, { useEffect, useState } from 'react'
 import {
   Box,
@@ -818,9 +830,14 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           console.log('  ❌ Error consultando stock:', error);
         }
 
-        // Usar cantidad total, priorizando 'total' que es el campo correcto
-        const stockAmount = Number(dosis.total || dosis.dosificacion || dosis.dosis)
-        console.log('  📊 Cantidad a descontar del stock:', stockAmount)
+        // Usar cantidad total; si falta, calcular como (dosificación x hectáreas)
+        const stockAmount = calculateDoseStockAmount(dosis, executionDetails, formData, lot)
+        console.log('  📊 Cantidad a descontar del stock:', stockAmount, {
+          hasTotal,
+          total: dosis.total,
+          perHa,
+          hectareas,
+        })
 
         const newMovement: StockMovement = {
           movement: t('executionExit'),
