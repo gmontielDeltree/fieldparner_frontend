@@ -6,6 +6,9 @@
  * Flag para controlar el comportamiento de los tests
  */
 
+import path from 'path'
+import { tmpdir } from 'os'
+
 export const TEST_CONFIG = {
   /**
    * 🎯 USE_REAL_DATABASE
@@ -32,9 +35,19 @@ export const TEST_CONFIG = {
   TEST_DB_PREFIX: 'test-',
 
   /**
+   * Directorio base para las bases de datos de testing
+   * Usa el directorio temporal del sistema para evitar ensuciar el root del proyecto
+   */
+  TEST_DB_BASE_PATH: path.join(tmpdir(), 'fieldpartner-test-dbs'),
+
+  /**
    * Adaptador de PouchDB para tests
-   * 'memory' = En RAM (muy rápido, se pierde al cerrar)
+   * 'memory' = En RAM (muy rápido, se pierde al cerrar, NO crea archivos)
    * 'idb'    = IndexedDB (más lento, persiste)
+   *
+   * IMPORTANTE: Usar 'memory' para evitar crear archivos LevelDB en el disco
+   * que ensucien el repositorio. El adaptador memory es suficiente para la
+   * mayoría de los tests y es mucho más rápido.
    */
   TEST_DB_ADAPTER: 'memory' as 'memory' | 'idb',
 }

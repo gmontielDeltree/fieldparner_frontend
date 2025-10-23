@@ -29,6 +29,8 @@ export function createTestDatabase<T>(name: string): PouchDB.Database<T> {
 
   const db = new PouchDB<T>(dbName, {
     adapter: TEST_CONFIG.TEST_DB_ADAPTER,
+    // Si no es memory adapter, especifica el directorio temporal
+    prefix: TEST_CONFIG.TEST_DB_ADAPTER === 'memory' ? undefined : TEST_CONFIG.TEST_DB_BASE_PATH,
   })
 
   createdDatabases.push(db as PouchDB.Database)
