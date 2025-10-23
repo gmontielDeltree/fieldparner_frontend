@@ -94,6 +94,7 @@ const makeStore = () =>
         reducer: {
             auth: () => ({ user: { id: 'u1', accountId: 'acc-1', licenceId: 'lic-1', currency: 'ARS' } }),
             campaign: () => ({ selectedCampaign: { _id: 'camp-1-doc', campaignId: 'camp-1', zafra: '2024/2025' } }),
+            order: () => ({ withdrawalOrderActive: null }),
         },
     })
 
