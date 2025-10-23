@@ -37,13 +37,12 @@ describe('Siembra sin orden de retiro - descuenta usando total exacto', () => {
     beforeEach(async () => {
         vi.clearAllMocks()
         initDbs()
-        await dbContext.stock.createIndex({ index: { fields: ['accountId'] } } as any)
+        await dbContext.stock.createIndex({ index: { fields: ['accountId', 'id', 'depositId', 'location', 'nroLot', 'campaignId', 'tipo'] } } as any)
         await dbContext.deposits.createIndex({ index: { fields: ['accountId'] } } as any)
         await dbContext.stockMovements.createIndex({ index: { fields: ['accountId'] } } as any)
 
         await dbContext.deposits.post({ _id: 'dep-1', accountId: 'acc-1', description: 'Dep 1' } as any)
         await dbContext.stock.post({ accountId: 'acc-1', id: 'sup-1', depositId: 'dep-1', location: '', nroLot: 'L1', currentStock: 100, reservedStock: 0, campaignId: 'camp-1', tipo: 'INSUMO' } as any)
-        await dbContext.stock.createIndex({ index: { fields: ['id', 'depositId', 'location', 'nroLot', 'campaignId'] } } as any)
     })
 
     it('consume 12 unidades (total) y no 6 (dosificación x ha)', async () => {
@@ -69,8 +68,9 @@ describe('Siembra sin orden de retiro - descuenta usando total exacto', () => {
             nroLot: 'L1',
         }
 
-        // addNewStockMovement debería restar exactamente 12
-        await result.current.addNewStockMovement(movement, { _id: 'sup-1' } as any)
+        // addNewStockMovement debería restar exactamente 12: crear stock inicial por getStock
+        // La API espera un Supply completo; pasamos uno mínimo con _id
+        await result.current.addNewStockMovement(movement, { _id: 'sup-1', name: 'Semilla', unitMeasurement: 'kg' } as any)
 
         const st = await dbContext.stock.find({ selector: { accountId: 'acc-1' } } as any)
         const s = st.docs.find((d: any) => d.id === 'sup-1')

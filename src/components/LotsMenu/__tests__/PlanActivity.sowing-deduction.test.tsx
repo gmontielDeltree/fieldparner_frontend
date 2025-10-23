@@ -39,6 +39,7 @@ function initDbs() {
         ; (dbContext as any).deposits = new PouchDB('mem2-deposits', { adapter: 'memory' })
         ; (dbContext as any).supplies = new PouchDB('mem2-supplies', { adapter: 'memory' })
         ; (dbContext as any).campaigns = new PouchDB('mem2-campaigns', { adapter: 'memory' })
+        ; (dbContext as any).socialEntities = new PouchDB('mem2-socialEntities', { adapter: 'memory' })
 }
 
 describe('Siembra - descuento usa cantidad total (no por ha)', () => {
@@ -50,11 +51,14 @@ describe('Siembra - descuento usa cantidad total (no por ha)', () => {
         await dbContext.supplies.createIndex({ index: { fields: ['accountId'] } } as any)
         await dbContext.withdrawalOrders.createIndex({ index: { fields: ['accountId'] } } as any)
         await dbContext.depositSupplyOrder.createIndex({ index: { fields: ['accountId'] } } as any)
+        await dbContext.socialEntities.createIndex({ index: { fields: ['accountId'] } } as any)
+        await dbContext.campaigns.createIndex({ index: { fields: ['accountId'] } } as any)
 
         await dbContext.deposits.post({ _id: 'dep-1', accountId: 'acc-1', description: 'Dep 1' } as any)
         await dbContext.supplies.post({ _id: 'sup-1', accountId: 'acc-1', name: 'Semilla Soja', unitMeasurement: 'kg', currentStock: 0, reservedStock: 0, stockByLot: false, type: 'Semillas' } as any)
         await dbContext.stock.post({ accountId: 'acc-1', id: 'sup-1', depositId: 'dep-1', location: '', nroLot: 'L1', currentStock: 100, reservedStock: 0, campaignId: 'camp-1' } as any)
         await dbContext.campaigns.post({ _id: 'camp-1-doc', accountId: 'acc-1', campaignId: 'camp-1', name: 'Campaña 1', zafra: '2024/2025' } as any)
+        await dbContext.socialEntities.post({ _id: 'W1', accountId: 'acc-1', name: 'Cliente 1' } as any)
     })
 
     it('reserva y descuenta usando total exacto (no dosificación x ha)', async () => {
@@ -76,7 +80,8 @@ describe('Siembra - descuento usa cantidad total (no por ha)', () => {
 
         // 2) confirmar retiro por 12 unidades (no 6)
         const detail = await orderHook.current.getOrderDetailByNumber(created!.order)
-        await orderHook.current.confirmAutomaticWithdrawalOrder(detail!.withdrawalOrder!, detail!.suppliesOfTheOrder!, new Date().toISOString())
+        expect(detail?.withdrawalOrder).toBeTruthy()
+        await orderHook.current.confirmAutomaticWithdrawalOrder(detail!.withdrawalOrder as any, detail!.suppliesOfTheOrder!, new Date().toISOString())
 
         const st2 = await dbContext.stock.find({ selector: { accountId: 'acc-1' } } as any)
         const stock2 = st2.docs.find((d: any) => d.id === 'sup-1')
