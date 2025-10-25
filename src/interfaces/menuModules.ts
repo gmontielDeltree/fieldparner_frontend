@@ -34,6 +34,7 @@ export interface ModulesUsers extends Document {
   accountId: string;
   licenceId: string;
   userId: string;
-  menuId: number;
+  moduleId: number;
   creationDate: string;
+  updateDate: string;
 }

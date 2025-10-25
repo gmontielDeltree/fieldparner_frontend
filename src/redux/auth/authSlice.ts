@@ -1,10 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AuthState, User } from '@types';
+import { ModulesUsers } from '../../interfaces/menuModules';
 
+interface LoadUser {
+    user: User;
+    modules: ModulesUsers[];
+}
 
 const initialState: AuthState = {
     status: 'not-authenticated', // 'authenticated','not-authenticated',
     user: null,
+    modules: [],
     errorMessage: '',
     isLoading: false,
 }
@@ -18,14 +24,16 @@ export const authSlice = createSlice({
             state.user = null;
             state.errorMessage = '';
         },
-        onLogin: (state, action: PayloadAction<User>) => {
+        onLogin: (state, action: PayloadAction<LoadUser>) => {
             state.status = 'authenticated';
-            state.user = action.payload;
+            state.user = action.payload.user;
+            state.modules = action.payload.modules;
             state.errorMessage = '';
         },
         onLogout: (state, action: PayloadAction<string>) => {
             state.status = 'not-authenticated';
             state.user = null;
+            state.modules = [];
             state.errorMessage = action.payload;
         },
         setAuthUser: (state, action: PayloadAction<User>) => {

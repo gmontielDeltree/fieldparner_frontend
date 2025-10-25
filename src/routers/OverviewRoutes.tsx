@@ -61,6 +61,8 @@ import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
 import { NewUserPage } from "../pages/Users/NewUserPage";
+import { ViewUserDetailsPage } from "../pages/Users/ViewUserDetailsPage";
+import { EditUserPermissionsPage } from "../pages/Users/EditUserPermissionsPage";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
 import { useAppSelector } from "../hooks";
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
@@ -70,6 +72,7 @@ import { LotPage } from "../pages/LotPage";
 import { NewLotPage } from "../pages/NewLotPage";
 import EditFieldPage from "../pages/EditFieldPage";
 import EditLotePage from "../pages/EditLotePage";
+import { UserRole } from "../types";
 
 
 export const OverviewRoutes: React.FC = () => {
@@ -78,7 +81,7 @@ export const OverviewRoutes: React.FC = () => {
   const { pathname, search } = useLocation();
 
   const lastPath = useMemo(() => pathname + search, [pathname, search]);
-  
+
   useEffect(() => {
     localStorage.setItem("lastPath", lastPath);
   }, [lastPath]);
@@ -169,11 +172,12 @@ export const OverviewRoutes: React.FC = () => {
         />
         <Route path="/overview/prices" element={<PricesPage />} />
         {
-          (user && user.isAdmin) && (
+          (user?.rol === UserRole.ADMIN) && (
             <>
               <Route path="/overview/users" element={<ListUsersPage />} />
               <Route path="/overview/users/new" element={<NewUserPage />} />
-              <Route path="/overview/users/:id" element={<NewUserPage />} />
+              <Route path="/overview/users/view/:id" element={<ViewUserDetailsPage />} />
+              <Route path="/overview/users/edit-permissions/:id" element={<EditUserPermissionsPage />} />
             </>
           )
         }

@@ -41,7 +41,7 @@ import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-
 import { CostsExpenses } from '../interfaces/costsExpenses';
 import { CropStockControl, Stock } from '../interfaces/stock';
 import { CropMovement } from '../interfaces/crop-movement';
-import { CropDeposit } from '../interfaces/crop-deposit';
+// import { CropDeposit } from '../interfaces/crop-deposit';
 import { CampaingExpenses } from '../interfaces/campaignExpenses';
 import { CompanyByContract, CorporateContract } from '../interfaces/corporateContract';
 
@@ -168,7 +168,7 @@ export const dbContext = Object.freeze({
   fieldsByProductUnit: new PouchDB<FieldsByProductUnit>(dbNames.fieldsByProductUnit),
   system: new PouchDB<System>(dbNames.system),
   cropMovements: new PouchDB<CropMovement>(dbNames.cropMovements),
-  cropDeposits: new PouchDB<CropDeposit>(dbNames.cropDeposits),
+  // cropDeposits: new PouchDB<CropDeposit>(dbNames.cropDeposits),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -224,7 +224,7 @@ dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts
 dbContext.campaingExpenses.sync(`${remoteCouchDBUrl}${dbNames.campaingExpenses}`, opts);
 dbContext.cropStockControl.sync(`${remoteCouchDBUrl}${dbNames.cropStockControl}`, opts);
 dbContext.cropMovements.sync(`${remoteCouchDBUrl}${dbNames.cropMovements}`, opts);
-dbContext.cropDeposits.sync(`${remoteCouchDBUrl}${dbNames.cropDeposits}`, opts);
+// dbContext.cropDeposits.sync(`${remoteCouchDBUrl}${dbNames.cropDeposits}`, opts);
 dbContext.companiesByContract.sync(`${remoteCouchDBUrl}${dbNames.companiesByContract}`, opts);
 dbContext.fieldsByProductUnit.sync(`${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`, opts);
 dbContext.system.sync(`${remoteCouchDBUrl}${dbNames.system}`, opts);

@@ -106,10 +106,11 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
   };
 
   // Manejar cambio de checkbox individual
-  const handleMenuOptionToggle = (menuId: number) => {
-    const newPermissions = selectedPermissions.includes(menuId)
-      ? selectedPermissions.filter(id => id !== menuId)
-      : [...selectedPermissions, menuId];
+  const handleMenuOptionToggle = (menuId: number | string) => {
+    const menuIdNumber = Number(menuId);
+    const newPermissions = selectedPermissions.includes(menuIdNumber)
+      ? selectedPermissions.filter(id => id !== menuIdNumber)
+      : [...selectedPermissions, menuIdNumber];
 
     onPermissionsChange(newPermissions);
     setHasUserCustomized(true);
@@ -117,7 +118,7 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
 
   // Manejar selección de todo un módulo
   const handleModuleToggle = (moduleGroup: ModuleGroup) => {
-    const moduleOptionIds = moduleGroup.menuOptions.map(opt => opt.id);
+    const moduleOptionIds = moduleGroup.menuOptions.map(opt => Number(opt.id));
     const allSelected = moduleOptionIds.every(id => selectedPermissions.includes(id));
 
     let newPermissions: number[];
@@ -135,25 +136,27 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
 
   // Verificar si un módulo está completamente seleccionado
   const isModuleFullySelected = (moduleGroup: ModuleGroup): boolean => {
-    return moduleGroup.menuOptions.every(opt => selectedPermissions.includes(opt.id));
+    return moduleGroup.menuOptions.every(opt => selectedPermissions.includes(Number(opt.id)));
   };
 
   // Verificar si un módulo está parcialmente seleccionado
   const isModulePartiallySelected = (moduleGroup: ModuleGroup): boolean => {
     const selectedCount = moduleGroup.menuOptions.filter(opt =>
-      selectedPermissions.includes(opt.id)
+      selectedPermissions.includes(Number(opt.id))
     ).length;
     return selectedCount > 0 && selectedCount < moduleGroup.menuOptions.length;
   };
 
   return (
     <Box>
-      {/* Alerta informativa */}
-      <Alert severity="info" sx={{ mb: 3 }} icon={<InfoIcon />}>
-        <AlertTitle>Asignación de permisos</AlertTitle>
-        Puedes seleccionar un <strong>rol predefinido</strong> para asignar permisos automáticamente,
-        o personalizar manualmente los módulos a los que tendrá acceso el usuario.
-      </Alert>
+      {/* Alerta informativa - Solo mostrar en modo edición */}
+      {!disabled && (
+        <Alert severity="info" sx={{ mb: 3 }} icon={<InfoIcon />}>
+          <AlertTitle>Asignación de permisos</AlertTitle>
+          Puedes seleccionar un <strong>rol predefinido</strong> para asignar permisos automáticamente,
+          o personalizar manualmente los módulos a los que tendrá acceso el usuario.
+        </Alert>
+      )}
 
       {/* Advertencia al cambiar template con permisos personalizados */}
       {showTemplateWarning && (
@@ -162,30 +165,32 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
         </Alert>
       )}
 
-      {/* Select de roles predefinidos */}
-      <FormControl fullWidth sx={{ mb: 3 }}>
-        <InputLabel>Roles Predefinidos</InputLabel>
-        <Select
-          value={selectedTemplate}
-          label="Roles Predefinidos"
-          onChange={handleTemplateChange}
-          disabled={disabled || isLoading}
-        >
-          <MenuItem value="">
-            <em>Personalizado</em>
-          </MenuItem>
-          {Object.entries(ROLE_TEMPLATE_INFO).map(([key, info]) => (
-            <MenuItem key={key} value={key}>
-              {info.label}
+      {/* Select de roles predefinidos - Solo mostrar en modo edición */}
+      {!disabled && (
+        <FormControl fullWidth sx={{ mb: 3 }}>
+          <InputLabel>Roles Predefinidos</InputLabel>
+          <Select
+            value={selectedTemplate}
+            label="Roles Predefinidos"
+            onChange={handleTemplateChange}
+            disabled={disabled || isLoading}
+          >
+            <MenuItem value="">
+              <em>Personalizado</em>
             </MenuItem>
-          ))}
-        </Select>
-        {selectedTemplate && ROLE_TEMPLATE_INFO[selectedTemplate as RoleTemplate] && (
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, ml: 1 }}>
-            {ROLE_TEMPLATE_INFO[selectedTemplate as RoleTemplate].description}
-          </Typography>
-        )}
-      </FormControl>
+            {Object.entries(ROLE_TEMPLATE_INFO).map(([key, info]) => (
+              <MenuItem key={key} value={key}>
+                {info.label}
+              </MenuItem>
+            ))}
+          </Select>
+          {selectedTemplate && ROLE_TEMPLATE_INFO[selectedTemplate as RoleTemplate] && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, ml: 1 }}>
+              {ROLE_TEMPLATE_INFO[selectedTemplate as RoleTemplate].description}
+            </Typography>
+          )}
+        </FormControl>
+      )}
 
       <Divider sx={{ mb: 2 }}>
         <Chip
@@ -196,13 +201,37 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
       </Divider>
 
       {/* Árbol de módulos */}
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{
+        mt: 2,
+        maxHeight: '500px',
+        overflowY: 'auto',
+        pr: 1,
+        '&::-webkit-scrollbar': {
+          width: '8px',
+        },
+        '&::-webkit-scrollbar-track': {
+          backgroundColor: '#f1f1f1',
+          borderRadius: '4px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          backgroundColor: '#888',
+          borderRadius: '4px',
+          '&:hover': {
+            backgroundColor: '#555',
+          },
+        },
+      }}>
         {groupedModules.map((moduleGroup) => {
           const isFullySelected = isModuleFullySelected(moduleGroup);
           const isPartiallySelected = isModulePartiallySelected(moduleGroup);
+          const hasAnyPermission = isFullySelected || isPartiallySelected;
 
           return (
-            <Accordion key={moduleGroup.module._id} defaultExpanded={false} disabled={disabled || isLoading}>
+            <Accordion
+              key={moduleGroup.module._id}
+              defaultExpanded={disabled && hasAnyPermission}
+              disabled={disabled || isLoading}
+            >
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
                 sx={{
@@ -229,7 +258,7 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
                       </Typography>
                       <Chip
                         label={moduleGroup.menuOptions.filter(opt =>
-                          selectedPermissions.includes(opt.id)
+                          selectedPermissions.includes(Number(opt.id))
                         ).length + '/' + moduleGroup.menuOptions.length}
                         size="small"
                         color={isFullySelected ? 'success' : isPartiallySelected ? 'warning' : 'default'}
@@ -248,7 +277,7 @@ export const ModulePermissionsSelector: React.FC<ModulePermissionsSelectorProps>
                         key={menuOption.id}
                         control={
                           <Checkbox
-                            checked={selectedPermissions.includes(menuOption.id)}
+                            checked={selectedPermissions.includes(Number(menuOption.id))}
                             onChange={() => handleMenuOptionToggle(menuOption.id)}
                             disabled={disabled || isLoading}
                           />

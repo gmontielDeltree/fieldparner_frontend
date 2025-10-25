@@ -34,10 +34,11 @@ export const useMenuModules = () => {
     }
   };
 
+
   return {
     error,
     isLoading,
     menuModules,
-    getMenuModules,
+    getMenuModules
   };
 };

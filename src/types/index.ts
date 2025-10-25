@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Business } from '../interfaces/socialEntity';
 import { TipoStock } from '../interfaces/stock';
 import { Company } from '../interfaces/company';
+import { ModulesUsers } from '../interfaces/menuModules';
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -166,6 +167,7 @@ export interface User {
 export interface ResponseAuthLogin {
   user: User;
   auth: Authenticate;
+  modules: ModulesUsers[];
 }
 export interface ResponseAuthRenew {
   accessToken: string;
@@ -187,6 +189,7 @@ export interface ErrorResponseAuth {
 export interface AuthState {
   status: 'checking' | 'authenticated' | 'not-authenticated';
   user: User | null;
+  modules: ModulesUsers[];
   errorMessage: string;
   isLoading: boolean;
 }
@@ -264,6 +267,7 @@ export interface CompaniesState {
 export interface UserByAccount extends Document {
   accountId?: string;
   username?: string;
+  userId: string;
   email: string;
   isAdmin: boolean;
   language: string;

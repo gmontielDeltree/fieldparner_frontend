@@ -1,11 +1,13 @@
-import { Alert, Box, Button, ButtonGroup, Container, Paper, TextField, Typography } from '@mui/material'
-import React from 'react';
+import { Alert, Box, Button, ButtonGroup, Container, Link, Paper, TextField, Typography } from '@mui/material'
+import React, { useState } from 'react';
 import { useAuthStore, useForm } from '../hooks'
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Loading } from '../components';
+// import { Refresh as RefreshIcon } from '@mui/icons-material';
 
 export const ConfirmAuthPage: React.FC = () => {
     const navigate = useNavigate();
+    const [resendMessage, setResendMessage] = useState<string>('');
     const {
         cod1, cod2, cod3, cod4, cod5, cod6, handleInputChange
     } = useForm({
@@ -16,13 +18,25 @@ export const ConfirmAuthPage: React.FC = () => {
         cod5: '',
         cod6: '',
     });
-    const { isLoading, errorMessage, startConfirm } = useAuthStore();
+    const { isLoading, errorMessage, startConfirm, resendVerificationCode } = useAuthStore();
     const email = localStorage.getItem("username_temp");
 
     const handleOnClickConfirm = () => {
         let confirmationCode = '' + cod1 + cod2 + cod3 + cod4 + cod5 + cod6;
         if (confirmationCode !== '')
             startConfirm(confirmationCode);
+    }
+
+    const handleResendCode = () => {
+        if (email) {
+            setResendMessage('');
+            resendVerificationCode(email, () => {
+                setResendMessage('Código reenviado exitosamente a tu correo electrónico.');
+                setTimeout(() => {
+                    setResendMessage('');
+                }, 5000);
+            });
+        }
     }
 
     const onCLickCancel = () => {
@@ -149,13 +163,41 @@ export const ConfirmAuthPage: React.FC = () => {
                         <Alert severity="error" sx={{ my: 2 }} >{errorMessage}</Alert>
                     )
                 }
+                {
+                    resendMessage && (
+                        <Alert severity="success" sx={{ my: 2 }} >{resendMessage}</Alert>
+                    )
+                }
+
+                {/* Mensaje de reenvío de código */}
+                <Box sx={{ mt: 3, mb: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                        ¿No recibiste el código?{' '}
+                        <Link
+                            component="button"
+                            variant="body2"
+                            onClick={handleResendCode}
+                            sx={{
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                                '&:hover': {
+                                    textDecoration: 'underline',
+                                },
+                            }}
+                        >
+                            Reenviar código
+                        </Link>
+                    </Typography>
+                </Box>
+
                 <Button
                     type="button"
                     color='primary'
                     fullWidth
                     variant="contained"
                     onClick={() => handleOnClickConfirm()}
-                    sx={{ mt: 5, mb: 2 }}
+                    sx={{ mt: 2, mb: 2 }}
                 >
                     CONFIRMAR
                 </Button>

@@ -53,13 +53,13 @@ export const getRoleTemplatePermissions = (
 
     case RoleTemplate.ADMIN:
       // Admin tiene acceso a TODOS los módulos
-      return menuModules.map(m => m.id);
+      return menuModules.map(m => Number(m.id));
 
     case RoleTemplate.USER_FULL:
       // User Full: Todos los módulos EXCEPTO "Seguridad"
       return menuModules
         .filter(m => m.module.moduleNameEs !== 'Seguridad')
-        .map(m => m.id);
+        .map(m => Number(m.id));
 
     case RoleTemplate.USER_AGRICOLA:
       // User Agrícola: Solo módulos Inicial, Agricultura, Stock
@@ -69,7 +69,7 @@ export const getRoleTemplatePermissions = (
           m.module.moduleNameEs === 'Agricultura' ||
           m.module.moduleNameEs === 'Stock'
         )
-        .map(m => m.id);
+        .map(m => Number(m.id));
 
     case RoleTemplate.USER_GESTION:
       // User Gestión: Solo módulos Inicial y Gestión
@@ -78,7 +78,7 @@ export const getRoleTemplatePermissions = (
           m.module.moduleNameEs === 'Inicial' ||
           m.module.moduleNameEs === 'Gestión'
         )
-        .map(m => m.id);
+        .map(m => Number(m.id));
 
     default:
       return [];

@@ -10,6 +10,7 @@ import { loadUsers, setUserActive } from '../redux/users';
 import { NotificationService } from "../services/notificationService";
 import { onLogout } from '../redux/auth';
 import { NewUserDto } from '../interfaces/user-accounts';
+import { ModulesUsers } from '../interfaces/menuModules';
 
 const controller = "/user-licence";
 
@@ -30,16 +31,15 @@ export const useUser = () => {
     try {
 
       if (!user) throw new Error(t("user_not_found"));
-
-      // const newUser: UserByAccount = { ...userDto, accountId: user.accountId };
-      const response = await fieldpartnerAPI.post(`${controller}`, userDto);
+      const dataUser = { ...userDto, modulePermissions: userDto.modulePermissions.map(Number) };
+      console.log('dataUser', dataUser);
+      debugger;
+      const response = await fieldpartnerAPI.post(`${controller}`, dataUser);
 
       if (response)
         NotificationService.showSuccess(t("user_registered_pending_email"), {}, t("user_label"));
       else
         NotificationService.showError(t("unexpected_error"), {}, t("error_label"));
-
-      navigate('/init/overview/users');
 
     } catch (error: any) {
       console.log(t("registration_error"), error);
@@ -60,8 +60,10 @@ export const useUser = () => {
         console.log(t("unknown_registration_error"));
         NotificationService.showError(t("registration_error_occurred"), {}, t("error_label"));
       }
-      setIsLoading(false);
       if (error) setError(error);
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,50 +140,6 @@ export const useUser = () => {
       setIsLoading(false);
     }
   };
-
-
-  // const updatePasswordUsers = async (updateUsers: UserByAccount, oldPassword: string) => {
-  //   setIsLoading(true);
-
-  //   console.log(t("update_password_executing"));
-
-  //   if (!updateUsers.password?.trim()) {
-  //     setConceptoError(true);
-  //     setIsLoading(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     // Obtener el usuario actual de la base de datos
-  //     const currentUser = await dbContext.users.get(updateUsers.password);
-  //     if (!currentUser) {
-  //       setIsLoading(false);
-  //       NotificationService.showError(t("user_not_found"), {}, t("error_label"));
-  //       return;
-  //     }
-
-  //     // Comprobar si la contraseña anterior coincide
-  //     if (currentUser.password !== oldPassword) {
-  //       setIsLoading(false);
-  //       NotificationService.showError(t("previous_password_mismatch"), {}, t("error_label"));
-  //       return;
-  //     }
-
-  //     // Actualizar la contraseña
-  //     const response = await dbContext.users.put(updateUsers);
-  //     setIsLoading(false);
-
-  //     if (response.ok)
-  //       NotificationService.showSuccess(t("password_updated"), {}, t("success_label"));
-
-  //     navigate('/init/overview/users/');
-  //   } catch (error) {
-  //     console.log(error);
-  //     NotificationService.showError(t("password_update_error"), {}, t("error_label"));
-  //     setIsLoading(false);
-  //     if (error) setError(error);
-  //   }
-  // };
 
   const removeUsers = async (UsersId: string, removeUsers: string) => {
 
@@ -262,6 +220,91 @@ export const useUser = () => {
     }
   };
 
+  /**
+ * Obtiene los permisos (IDs de MenuModules) asignados a un usuario específico
+ * @param userId - ID del usuario
+ * @returns Array de MenuModules donde el usuario tiene permiso
+ */
+  const getModulesByUserId = async (userId: string): Promise<ModulesUsers[]> => {
+    try {
+      // Consultar la base de datos local PouchDB para ModulesUsers
+      const response = await dbContext.modulesUsers.find({
+        selector: { userId: userId }
+      });
+      
+      if (response.docs.length) {
+        // Filtrar los registros que pertenecen al usuario y tienen permiso activo
+
+        console.log('userModules', response.docs);
+
+        return response.docs;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error al obtener permisos del usuario:', error);
+      NotificationService.showError(t("error_loading_permissions"), {}, t("error_label"));
+      return [];
+    }
+  };
+
+  /**
+   * Actualiza la información básica del usuario (username, rol, language, photoName)
+   * @param userId - ID del usuario
+   * @param updateData - Datos a actualizar
+   */
+  const updateUserInfo = async (userId: string, updateData: { username?: string; rol?: string; language?: string; photoName?: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, updateData);
+
+      if (response) {
+        NotificationService.showSuccess(t("user_updated_successfully", { user: updateData.username }), {}, t("user_label"));
+        await getUsers(); // Recargar lista de usuarios
+      }
+    } catch (error) {
+      console.log(error);
+      NotificationService.showError(t("user_update_error"), {}, t("error_label"));
+      if (error) setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Actualiza los permisos de módulos del usuario
+   * Esta función "pisa" todos los permisos anteriores y asigna los nuevos
+   * @param userId - ID del usuario
+   * @param modulePermissions - Array de IDs de módulos a asignar
+   */
+  const updateUserPermissions = async (userId: string, modulePermissions: number[]) => {
+    setIsLoading(true);
+    try {
+      if (!user) {
+        console.log("user not found");
+        dispatch(onLogout(t("sessionExpired")));
+        return;
+      }
+
+      // Endpoint específico para actualizar permisos
+      // Este endpoint debe implementar la lógica de "pisar" permisos anteriores
+      const response = await fieldpartnerAPI.put(`${controller}/${userId}/permissions`, {
+        modulePermissions
+      });
+
+      if (response) {
+        NotificationService.showSuccess(t("permissions_updated_successfully"), {}, t("user_label"));
+      }
+    } catch (error) {
+      console.log(error);
+      NotificationService.showError(t("permissions_update_error"), {}, t("error_label"));
+      if (error) setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
 
   return {
     //* Propiedades
@@ -280,6 +323,9 @@ export const useUser = () => {
     searchUsers,
     getUserById,
     changePassword,
-    disableUser
+    disableUser,
+    getModulesByUserId,
+    updateUserInfo,
+    updateUserPermissions
   }
 }

@@ -59,7 +59,7 @@ export const useSidebar = (): UseSidebarReturn => {
   const [openCollapse, setOpenCollapse] = useState<string>('');
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation();
-  const { user } = useAppSelector((s: any) => s.auth || {});
+  const { user, modules: userModules } = useAppSelector((s: any) => s.auth || {});
   const { getSystem, system } = useSystem();
   const version = system.length ? system[0].version : '';
 
@@ -330,21 +330,40 @@ export const useSidebar = (): UseSidebarReturn => {
     });
   }, [groupKeysSorted, grouped, sortedModules]);
 
-  // permission check: first menu.permission, then try app slice, then admin fallback
+  // permission check: usar módulos del usuario desde auth.modules
   const hasPermission = (m: MenuModules) => {
+    // Si es admin, tiene acceso a todo
+    if (user && user.isAdmin) return true;
+
+    // Si hay propiedad permission explícita en el menu, respetarla
     if (typeof (m as any).permission === 'boolean') return !!(m as any).permission;
+
+    // Verificar si el usuario tiene permiso para este módulo
     try {
-      const mid = String((m as any).id ?? (m as any)._id ?? '');
+      const menuId = Number((m as any).id ?? (m as any)._id);
+
+      // Si hay módulos cargados desde el login
+      if (userModules && Array.isArray(userModules) && userModules.length > 0) {
+        // Verificar si el ID del menú está en los permisos del usuario
+        const hasModulePermission = userModules.some(
+          (um: any) => Number(um.moduleId) === menuId
+        );
+        return hasModulePermission;
+      }
+
+      // Fallback al slice anterior si existe
+      const mid = String(menuId);
       if (modulesPermissionsSlice && typeof modulesPermissionsSlice === 'object') {
         if (mid && modulesPermissionsSlice[mid] != null) return !!modulesPermissionsSlice[mid];
         if (Array.isArray(modulesPermissionsSlice))
           return modulesPermissionsSlice.includes ? modulesPermissionsSlice.includes(mid) : true;
       }
     } catch (e) {
-      // ignore
+      console.error('[useSidebar] Error checking permission:', e);
     }
-    if (user && user.isAdmin) return true;
-    return true; // permissive fallback
+
+    // Si no hay módulos del usuario cargados, denegar acceso por defecto (más seguro)
+    return false;
   };
 
   const lang = i18n.language || 'es';

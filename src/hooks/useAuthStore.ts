@@ -21,14 +21,16 @@ import { AxiosError, HttpStatusCode } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { convertTimestampToDate } from '../helpers/dates';
 import { useTranslation } from 'react-i18next';
+import { useUser } from './useUsers';
 
 const controller = '/auth';
 
 export const useAuthStore = () => {
   const { t } = useTranslation();
-  const { status, user, errorMessage, isLoading } = useAppSelector(state => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { status, user, errorMessage, isLoading } = useAppSelector(state => state.auth);
+  const { getModulesByUserId } = useUser();
 
   const startLogin = async ({ email, password }: UserLogin) => {
     dispatch(startLoading());
@@ -41,7 +43,7 @@ export const useAuthStore = () => {
         password,
       });
       if (response.data) {
-        const { auth, user } = response.data;
+        const { auth, user, modules } = response.data;
         const { accessToken, refreshToken, expiration } = auth;
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
@@ -50,7 +52,7 @@ export const useAuthStore = () => {
           convertTimestampToDate(expiration).getTime().toString(),
         );
         localStorage.setItem('user_session', JSON.stringify(user));
-        dispatch(onLogin(user));
+        dispatch(onLogin({ user, modules }));
       }
       dispatch(finishLoading());
       dispatch(clearErrorMessage());
@@ -142,15 +144,16 @@ export const useAuthStore = () => {
       const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, {
         refreshToken,
       });
-      
+
       if (response.status === HttpStatusCode.Created) {
         const expiresIn = new Date().getTime() + response.data.expiration * 1000;
         //Si no devuelve AccessToken, se utiliza el token actual
         localStorage.setItem('accessToken', response.data.accessToken || token);
         localStorage.setItem('token_expiration', expiresIn.toString());
         const userLogin = JSON.parse(userSession || '') as User;
-        console.log('userLogin', userLogin)
-        dispatch(onLogin(userLogin));
+        const modules = await getModulesByUserId(userLogin.id);
+        console.log('modules checkAuth', modules)
+        dispatch(onLogin({ user: userLogin, modules }));
         const lastPath = localStorage.getItem('lastPath') || '/';
         navigate(lastPath, { replace: true });
       }
@@ -263,6 +266,31 @@ export const useAuthStore = () => {
     }
   };
 
+  const resendVerificationCode = async (email: string, onSuccess?: () => void) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/resend-verification-code`, {
+        email,
+      });
+
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(clearErrorMessage());
+        if (onSuccess) onSuccess();
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+    }
+    finally {
+      dispatch(finishLoading());
+    }
+  };
+
   return {
     errorMessage,
     status,
@@ -275,5 +303,6 @@ export const useAuthStore = () => {
     startLogout,
     startForgotPassword,
     startConfirmForgotPassword,
+    resendVerificationCode
   };
 };

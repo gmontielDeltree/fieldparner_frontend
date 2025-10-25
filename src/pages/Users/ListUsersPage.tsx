@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, DisplayModals, UserByAccount } from "../../types";
+import { ColumnProps, UserByAccount } from "../../types";
 import React, { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useForm, useUser } from "../../hooks";
 import {
@@ -9,7 +9,6 @@ import {
   TableCellStyled,
   TemplateLayout,
   CloseButtonPage,
-  UserPermissionsModal,
   ConfirmDisableUserDialog,
 } from "../../components";
 import {
@@ -39,8 +38,6 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { setUserActive } from "../../redux/users";
-import { uiOpenModal } from "../../redux/ui";
 
 
 
@@ -67,17 +64,15 @@ export const ListUsersPage: React.FC = () => {
     { text: "Rol", align: "center" },
     { text: "Idioma", align: "center" },
     { text: "Estado", align: "center" },
-    { text: "Admin", align: "center" },
     { text: "Acciones", align: "center" },
   ];
 
   const onClickViewDetails = (item: UserByAccount): void => {
-    navigate(`/init/overview/users/${item._id}`);
+    navigate(`/init/overview/users/view/${item.userId}`);
   };
 
-  const onClickUserPermissions = (row: UserByAccount) => {
-    dispatch(setUserActive(row));
-    dispatch(uiOpenModal(DisplayModals.UserPermissions));
+  const onClickEditPermissions = (row: UserByAccount) => {
+    navigate(`/init/overview/users/edit-permissions/${row.userId}`);
   };
 
   const onClickDisableUser = (row: UserByAccount) => {
@@ -227,8 +222,6 @@ export const ListUsersPage: React.FC = () => {
           </Box>
         </Box>
 
-        <UserPermissionsModal />
-
         {/* Filters Section */}
         <Box sx={{ mb: 3 }}>
           <Grid container spacing={2}>
@@ -344,7 +337,7 @@ export const ListUsersPage: React.FC = () => {
                     sx={{ fontWeight: 500 }}
                   />
                 </TableCellStyled>
-                <TableCellStyled align="center">
+                {/* <TableCellStyled align="center">
                   {row.isAdmin && (
                     <Chip
                       label="Admin"
@@ -358,7 +351,7 @@ export const ListUsersPage: React.FC = () => {
                       }}
                     />
                   )}
-                </TableCellStyled>
+                </TableCellStyled> */}
                 <TableCellStyled align="center">
                   <Box display="flex" gap={0.5} justifyContent="center">
                     <Tooltip title={t("view_details", "Ver")}>
@@ -374,7 +367,7 @@ export const ListUsersPage: React.FC = () => {
                     {userActive?.isAdmin && !row.isAdmin && (
                       <Tooltip title={t("edit_permissions", "Editar Permisos")}>
                         <IconButton
-                          onClick={() => onClickUserPermissions(row)}
+                          onClick={() => onClickEditPermissions(row)}
                           size="small"
                           sx={{ color: '#3B82F6' }}
                         >

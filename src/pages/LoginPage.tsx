@@ -39,8 +39,6 @@ function Copyright(props: any) {
   );
 }
 
-// TODO remove, this demo shouldn't need to reset the theme.
-// TODO refactor Copyright.
 
 export const LoginPage = () => {
   const dispatch = useAppDispatch();

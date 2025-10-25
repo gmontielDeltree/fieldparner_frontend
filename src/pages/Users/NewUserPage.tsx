@@ -1,4 +1,4 @@
-import React, { SyntheticEvent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AppBar,
   Autocomplete,
@@ -27,11 +27,12 @@ import {
   AlertTitle,
   Divider,
   Chip,
+  Avatar,
 } from '@mui/material';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector, useForm, useFormError, useMenuModules, useUser } from '../../hooks';
 import { Loading, ModulePermissionsSelector } from '../../components';
-import { EnumStatusUser, UserByAccount, UserRole } from '../../types';
+import { UserRole } from '../../types';
 // import { v4 as uuidv4 } from 'uuid';
 import { removeUsersActive } from '../../redux/users';
 import {
@@ -40,8 +41,6 @@ import {
   Cancel as CancelIcon,
   PhotoCamera as PhotoCameraIcon,
   // Schedule as ScheduleIcon,
-  VpnKey as VpnKeyIcon,
-  People as PeopleIcon,
   Edit as EditIcon,
   Info as InfoIcon,
   ArrowBack as ArrowBackIcon,
@@ -50,10 +49,10 @@ import {
   Lock as LockIcon,
   Email as EmailIcon,
 } from '@mui/icons-material';
-import uuid4 from 'uuid4';
 import { uploadFile } from '../../helpers/fileUpload';
 import { urlImg } from '../../config';
 import { NewUserDto } from '../../interfaces/user-accounts';
+import { useTranslation } from 'react-i18next';
 
 
 const initialForm: NewUserDto = {
@@ -68,17 +67,19 @@ const initialForm: NewUserDto = {
 
 
 const policyPassword = "La contraseña debe contener al menos una letra en mayúscula, un dígito, un carácter especial y tener una longitud mínima de 8 caracteres.";
-const statusOptions = Object.values(EnumStatusUser).map(x => x as string);
+// const statusOptions = Object.values(EnumStatusUser).map(x => x as string);
 
 const steps = ['Información del Usuario', 'Permisos y Módulos', 'Revisión y Confirmación'];
 
 export const NewUserPage = () => {
-  // const { id: userId } = useParams();
   const navigate = useNavigate();
   const { isLoading, createUser } = useUser();
   const dispatch = useAppDispatch();
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  
+  const [filePhoto, setFilePhoto] = useState<{ url: string; file: File | null }>({
+    url: "",
+    file: null
+  });
   const [activeStep, setActiveStep] = useState(0);
   const { formControlError, handleFormValueChange } = useFormError({
     password: "",
@@ -86,7 +87,7 @@ export const NewUserPage = () => {
     newPassword: "",
   });
   const { userActive } = useAppSelector((state) => state.users);
-  const { user: authUser } = useAppSelector((state) => state.auth);
+  // const { user: authUser } = useAppSelector((state) => state.auth);
   const {
     photoName,
     formulario,
@@ -95,8 +96,10 @@ export const NewUserPage = () => {
     handleSelectChange,
     reset,
   } = useForm(initialForm);
+  const { t } = useTranslation();
+
   const { menuModules, getMenuModules } = useMenuModules();
-  
+
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -118,49 +121,43 @@ export const NewUserPage = () => {
     }
   }
 
-  // const handleUpdatePassword = async () => {
-  //   if (formulario._id) {
-  //     // updateUser(formulario);
-  //     dispatch(removeUsersActive());
-  //     navigate("/init/overview/users");
-  //   }
-  // };
-
-  const uploadImgUser = async (fileInput: Blob) => {
+  const UploadFilePhoto = async () => {
     try {
-      const newFileName = `${uuid4()}.jpeg`; // Nuevo nombre del archivo
-      const renamedFile = new File([fileInput], newFileName, { type: fileInput.type });
-      const response = await uploadFile(renamedFile);
-
-      if (response)
-        setFormulario(({ ...formulario, photoName: newFileName }));
-      else
-        setFormulario(({ ...formulario, photoName: "" }));
+      if (!filePhoto.file) return;
+      await uploadFile(filePhoto.file);
 
     } catch (error) {
       console.log('error', error)
     }
   }
 
+  const getInitials = (name: string): string => {
+    if (!name || name.length === 0) return "U";
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
-    if (file) uploadImgUser(file);
+    if (file) {
+      setFilePhoto({ url: URL.createObjectURL(file), file });
+      setFormulario({ ...formulario, photoName: file.name });
+    }
   };
 
   const handleCancel = () => {
     setFormulario(({ ...formulario, photoName: "" }));
   };
 
-  // const handleUpdateUsers = () => {
-  //   if (formulario._id) {
-  //     // updateUser(formulario);
-  //     dispatch(removeUsersActive());
-  //     navigate("/init/overview/users");
-  //   }
-  // };
-
   const handleAddUser = async () => {
+    console.log('formulario', formulario);
     await createUser(formulario);
+    await UploadFilePhoto();
     navigate("/init/overview/users");
     reset();
   };
@@ -171,14 +168,6 @@ export const NewUserPage = () => {
     // setIsLoading(true);
     reset();
   };
-
-  // const onChangeConfirmNewPassword = ({ target }: React.ChangeEvent<HTMLInputElement>) => {
-  //   setConfirmPassword(target.value);
-  //   if (formulario.newPassword !== target.value)
-  //     handleFormValueChange(target.name, "Las contraseñas no coinciden.");
-  //   else
-  //     handleFormValueChange(target.name, "");
-  // }
 
   const validateSave = () => {
     let errors = Object.values(formControlError);
@@ -234,14 +223,6 @@ export const NewUserPage = () => {
       await handleAddUser();
     }
   };
-
-  const onChangeStatus = (_event: SyntheticEvent, value: string | null) => {
-    if (value)
-      setFormulario(prevState => ({ ...prevState, state: value }));
-  }
-  console.log('authuser', authUser?.email.toLowerCase())
-  console.log('userActive', userActive?.email);
-
 
   useEffect(() => {
     getMenuModules();
@@ -362,63 +343,34 @@ export const NewUserPage = () => {
                 </Grid>
               </Grid>
 
-              <Grid item xs={12} md={5}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                    Foto de perfil (opcional)
-                  </Typography>
-                  <Card sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    width: 200,
-                    height: 240,
-                    maxWidth: 200,
-                    maxHeight: 240,
-                    mt: 1
-                  }}>
-                    {photoName ? (
-                      <CardMedia
-                        key="preview-img"
-                        component="img"
-                        alt="Vista previa de la imagen"
-                        image={`${urlImg}/${photoName}`}
-                        sx={{
-                          maxHeight: 150,
-                          maxWidth: 150,
-                          objectFit: "cover",
-                          borderRadius: "50%"
-                        }}
-                      />
-                    ) : (
-                      <Box sx={{ width: 140, height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <BrokenImageIcon fontSize="large" color="disabled" />
-                      </Box>
-                    )}
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around' }}>
-                        <label htmlFor="file-upload" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                          <PhotoCameraIcon sx={{ mr: 1 }} />
-                          <Typography variant="body2" sx={{ p: 0 }}>Subir foto</Typography>
-                          <input
-                            id="file-upload"
-                            key="file-user"
-                            accept="image/*"
-                            name="file"
-                            type="file"
-                            style={{ display: 'none' }}
-                            onChange={handleFileUpload}
-                          />
-                        </label>
-                        {photoName && (
-                          <IconButton onClick={handleCancel} color="error" sx={{ p: 0, pl: 1 }}>
-                            <CancelIcon fontSize="medium" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    </CardContent>
-                  </Card>
+              <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+                  <Avatar
+                    src={filePhoto.url || (formulario.photoName ? `${urlImg}${formulario.photoName}` : "")}
+                    sx={{
+                      width: 100,
+                      height: 100,
+                      bgcolor: 'secondary.main',
+                      fontSize: '2rem',
+                      mb: 2
+                    }}
+                  >
+                    {!filePhoto.url && getInitials(formulario?.username || "")}
+                  </Avatar>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<PhotoCameraIcon />}
+                    size="small"
+                  >
+                    {t("change_photo")}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                    />
+                  </Button>
                 </Box>
               </Grid>
             </Grid>
@@ -523,9 +475,9 @@ export const NewUserPage = () => {
         <Paper elevation={3} sx={{ my: { xs: 3, md: 4 }, p: { xs: 2, md: 4 } }}>
           <AppBar position="static" sx={{ borderRadius: 1 }}>
             <Toolbar>
-              {userActive ? <EditIcon fontSize='medium' /> : <AddCircleIcon fontSize='medium' />}
+              <AddCircleIcon fontSize='medium' />
               <Typography variant="h6" component="div" sx={{ flexGrow: 1, ml: 2 }}>
-                {userActive ? "Editar" : "Crear Nuevo"} Usuario
+                Crear Nuevo Usuario
               </Typography>
             </Toolbar>
           </AppBar>
