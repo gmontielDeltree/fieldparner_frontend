@@ -79,6 +79,7 @@ const makeStore = () => configureStore({
     reducer: {
         auth: () => ({ user: { id: 'u1', accountId: 'acc-1', licenceId: 'lic-1', currency: 'ARS' } }),
         campaign: () => ({ selectedCampaign: { _id: 'camp-1' } }),
+        ui: () => ({ showModal: '', isLoading: false, openSideBar: false }),
     },
 })
 
