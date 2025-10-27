@@ -302,11 +302,16 @@ export const useSupply = () => {
 
             if (response.ok) {
                 NotificationService.showAdded({ name: newSupply.name }, t("supply_label"));
+                
+                // Retornar el objeto creado para el modal (si se necesita)
+                const createdSupply = { ...newSupply, accountId: user.accountId, countryId: user.countryId };
+                return createdSupply;
             }
         } catch (error) {
             console.log(t("error_creating_document"), error);
             NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
+            throw error; // Re-lanzar el error para que el modal pueda manejarlo
         }
     };
 

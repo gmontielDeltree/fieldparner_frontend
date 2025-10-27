@@ -60,7 +60,7 @@ export const useBusiness = () => {
         }
     };
 
-    const createBusiness = async (newBusiness: Business) => {
+    const createBusiness = async (newBusiness: Business, isFromQuickAddModal: boolean = false) => {
         setIsLoading(true);
         if (!user) throw new Error("Business error: User not found");
 
@@ -72,15 +72,23 @@ export const useBusiness = () => {
 
             if (response.ok) {
                 NotificationService.showAdded({}, t("business_added_successfully"));
+                
+                // Solo navegar si NO es desde el modal de adición rápida
+                if (!isFromQuickAddModal) {
+                    navigate("/init/overview/business");
+                }
+                
+                // Retornar el objeto creado para el modal
+                return createBusinessObj;
             } else {
                 NotificationService.showError(t("failed_to_add_business"), {}, t("business_label"));
             }
-            navigate("/init/overview/business");
         } catch (error) {
             console.log(error);
             NotificationService.showError(t("unexpected_error"), {}, t("business_label"));
             setIsLoading(false);
             if (error) setError(error);
+            throw error; // Re-lanzar el error para que el modal pueda manejarlo
         }
     };
 

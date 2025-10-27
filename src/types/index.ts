@@ -752,6 +752,12 @@ export enum DisplayModals {
   LaborOrder = 'LaborOrder',
   UserPermissions = 'UserPermissions',
   HistoryWithdrawOrder = 'HistoryWithdrawOrder',
+  ViewComponent = 'ViewComponent',
+  BusinessForm = 'BusinessForm',
+  IngenieroAgronomoForm = 'IngenieroAgronomoForm',
+  ContratistaForm = 'ContratistaForm',
+  LaborsServicesForm = 'LaborsServicesForm',
+  SupplyForm = 'SupplyForm',
 }
 
 export enum VehicleType {

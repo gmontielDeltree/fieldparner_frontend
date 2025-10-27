@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react'
 import {
   FormControl,
   Grid,
-  Select,
-  InputLabel,
-  MenuItem,
   TextField,
   IconButton,
   Paper,
@@ -16,6 +13,7 @@ import uuid4 from 'uuid4'
 import { useAppSelector } from '../../../../hooks/useRedux'
 import { useDeposit, useLaborsServices, useBusiness, useSupply } from '../../../../hooks'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
+import { AutocompleteLaborsServices } from '../../components/AutocompleteLaborsServices'
 import { NumberFieldWithUnits } from '../../components/NumberField'
 import ServicesList from './ServicesList'
 import { useTranslation } from 'react-i18next'
@@ -42,9 +40,9 @@ interface ServicesFormProps {
 
 function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormProps) {
   const { t } = useTranslation()
-  const { laborsServices, getLaborsServices } = useLaborsServices()
-  const { businesses, getBusinesses } = useBusiness()
-  const { isLoading, supplies, getSupplies } = useSupply()
+  const { getLaborsServices } = useLaborsServices()
+  const { getBusinesses } = useBusiness()
+  const { isLoading, getSupplies } = useSupply()
   const { getDeposits } = useDeposit()
   const { user } = useAppSelector((state) => state.auth)
 
@@ -52,7 +50,7 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
   const isFitosanitaria = formData.detalles.fitosanitaria
 
   // Campos para agregar un nuevo servicio
-  const [selectedServiceId, setSelectedServiceId] = useState('')   // ID del servicio seleccionado
+  const [selectedService, setSelectedService] = useState<any>(null)   // Servicio seleccionado (objeto completo)
   const [contractor, setContractor] = useState('')
   const [comment, setComment] = useState('')
   const [units, setUnits] = useState(0)
@@ -78,14 +76,10 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
 
   // Agregar una fila de servicio al arreglo
   const handleAddRow = () => {
-    if (!selectedServiceId) {
+    if (!selectedService) {
       alert(t('selectServiceBeforeAdding'))
       return
     }
-
-    // Buscar el objeto servicio completo por ID
-    const selectedService = laborsServices.find(service => service._id === selectedServiceId)
-    if (!selectedService) return
 
     // Construye el objeto "servicio"
     const newService = {
@@ -112,7 +106,7 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
     })
 
     // Limpia inputs
-    setSelectedServiceId('')
+    setSelectedService(null)
     setContractor('')
     setComment('')
     setUnits(0)
@@ -157,28 +151,13 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
           {/* Fila para "Servicio", "Contratista" y "Unidades" */}
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={mode === 'plan' ? 3 : 4}>
-              <FormControl fullWidth>
-                <InputLabel id="service-dropdown-label">{t('service')}</InputLabel>
-                <Select
-                  labelId="service-dropdown-label"
-                  id="service-dropdown"
-                  value={selectedServiceId || ''} // si es null => ''
-                  label={t('service')}
-                  onChange={(e) => {
-                    // e.target.value es el ID del servicio seleccionado
-                    setSelectedServiceId(e.target.value as string)
-                  }}
-                >
-                  {laborsServices.map((serviceObj) => (
-                    <MenuItem
-                      key={serviceObj._id}
-                      value={serviceObj._id} // Guardamos solo el ID
-                    >
-                      {serviceObj.service}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <AutocompleteLaborsServices
+                key={`labor-service-${selectedService?._id || 'empty'}`}
+                value={selectedService}
+                onChange={setSelectedService}
+                label={t('service')}
+                width={mode === 'plan' ? 250 : 300}
+              />
             </Grid>
 
             <Grid item xs={mode === 'plan' ? 4 : 4}>

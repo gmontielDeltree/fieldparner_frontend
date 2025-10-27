@@ -1,8 +1,4 @@
-import { uuidv7 } from "uuidv7";
 import { only_docs } from "../../owncomponents/helpers";
-import { FPDocument } from "../interfaces/planification";
-import { dbContext } from "../services";
-import { useAppSelector } from "../hooks";
 
 
 
@@ -15,11 +11,9 @@ export class BaseDocRepository<T> {
   observers: ((crops: T[]) => void)[] = [];
 
 
-  constructor(dataBase: PouchDB.Database) {
-    const { user } = useAppSelector(state => state.auth);
-
-    this._userId = user?.accountId || "testid"
-
+  constructor(dataBase: PouchDB.Database, userId?: string) {
+    // No usar hooks en el constructor - eso viola las reglas de React
+    this._userId = userId || "default_user_id"
     this._db = dataBase
   }
 
