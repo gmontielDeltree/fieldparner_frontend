@@ -13,7 +13,7 @@ import { Business } from "../../../interfaces/socialEntity";
 import { CuitTextInput } from "../../Basic/CuitTextInput";
 
 import { useAppDispatch, useAppSelector } from '../../../hooks';
-import { uiOpenModal, uiCloseModal } from '../../../redux/ui';
+import { uiOpenModal } from '../../../redux/ui';
 import { DisplayModals } from '../../../types';
 import { useAutocompleteAddOption } from '../../AutocompleteAddOption';
 import { ViewComponentModal } from '../../';
@@ -96,7 +96,6 @@ export const AutocompleteIngenieroAgronomo: React.FC<AutocompleteIngenieroAgrono
       cuit: ""
     });
     toggleOpen(false);
-    dispatch(uiCloseModal());
   };
 
   const [dialogValue, setDialogValue] = useState({
