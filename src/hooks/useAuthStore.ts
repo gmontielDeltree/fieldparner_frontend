@@ -139,11 +139,6 @@ export const useAuthStore = () => {
         return;
       }
 
-      const lastPath = localStorage.getItem('lastPath') || '/';
-      navigate(lastPath, { replace: true });
-      const userLogin = JSON.parse(userSession || '') as User;
-      dispatch(onLogin(userLogin));
-
       const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, {
         refreshToken,
       });
@@ -153,6 +148,10 @@ export const useAuthStore = () => {
         //Si no devuelve AccessToken, se utiliza el token actual
         localStorage.setItem('accessToken', response.data.AccessToken || token);
         localStorage.setItem('token_expiration', expiresIn.toString());
+        const lastPath = localStorage.getItem('lastPath') || '/';
+        navigate(lastPath, { replace: true });
+        const userLogin = JSON.parse(userSession || '') as User;
+        dispatch(onLogin(userLogin));
       }
     } catch (error) {
       localStorage.clear();
@@ -160,34 +159,32 @@ export const useAuthStore = () => {
     }
   };
 
-
-
-//  const checkAuthToken = async () => {
+  //  const checkAuthToken = async () => {
   //  dispatch(onChecking());
-   // try {
-   //   localStorage.setItem('accessToken', '');
-    //  localStorage.setItem('token_expiration', '');
+  // try {
+  //   localStorage.setItem('accessToken', '');
+  //  localStorage.setItem('token_expiration', '');
 
   //    const lastPath = localStorage.getItem('lastPath') || '/';
 
-//      dispatch(
-    //    onLogin({
-     //     isAdmin: true,
-         // accountId: 'test',
-          //username: 'Rodrigo',
-         // countryId: 'AR',
-         // id: '12354',
-         // licenceId: '1234',
-        //  currency: '',
-       //   email: 'rgarro@deltree.com.ar',
-      //  }),
-     // );
-    //  navigate(lastPath, { replace: true });
-   // } catch (error) {
-      //localStorage.clear();
-     // dispatch(onLogout(''));
-   // }
- // };
+  //      dispatch(
+  //    onLogin({
+  //     isAdmin: true,
+  // accountId: 'test',
+  //username: 'Rodrigo',
+  // countryId: 'AR',
+  // id: '12354',
+  // licenceId: '1234',
+  //  currency: '',
+  //   email: 'rgarro@deltree.com.ar',
+  //  }),
+  // );
+  //  navigate(lastPath, { replace: true });
+  // } catch (error) {
+  //localStorage.clear();
+  // dispatch(onLogout(''));
+  // }
+  // };
 
   const startLogout = () => {
     dispatch(startLoading());
@@ -208,6 +205,63 @@ export const useAuthStore = () => {
     }
   };
 
+  const startForgotPassword = async (email: string, onSuccess?: () => void) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/forgot-password`, {
+        email,
+      });
+
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(finishLoading());
+        dispatch(clearErrorMessage());
+        if (onSuccess) onSuccess();
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+      dispatch(finishLoading());
+    }
+  };
+
+  const startConfirmForgotPassword = async (
+    email: string,
+    confirmationCode: string,
+    newPassword: string,
+    onResult?: (success: boolean) => void,
+  ) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/confirm-forgot-password`, {
+        email,
+        confirmationCode,
+        newPassword,
+      });
+
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(clearErrorMessage());
+        dispatch(finishLoading());
+        if (onResult) onResult(true);
+        return;
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+      dispatch(finishLoading());
+      if (onResult) onResult(false);
+    }
+  };
+
   return {
     errorMessage,
     status,
@@ -218,5 +272,7 @@ export const useAuthStore = () => {
     startRegister,
     startConfirm,
     startLogout,
+    startForgotPassword,
+    startConfirmForgotPassword,
   };
 };

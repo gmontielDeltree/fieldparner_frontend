@@ -60,7 +60,7 @@ import {
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
-import { NewUserPage } from "../pages/NewUserPage";
+import { NewUserPage } from "../pages/Users/NewUserPage";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
 import { useAppSelector } from "../hooks";
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";

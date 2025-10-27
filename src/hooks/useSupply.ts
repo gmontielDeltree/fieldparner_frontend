@@ -141,14 +141,22 @@ export const useSupply = () => {
                         ]
                     }
                 }),
-                dbContext.crops.allDocs({ include_docs: true })
+                dbContext.crops.allDocs({ include_docs: true }),
+                // ✅ AGREGADO: Leer cropDeposits para incluir cosechas
+                dbContext.cropDeposits.find({
+                    selector: {
+                        "accountId": user?.accountId
+                    }
+                })
             ]);
 
-            const [resultStock, supplies, crops] = promisesResult;
-            const stockIds = resultStock.docs.map(s => s.id);//Obtenemos los id de insumos y cultivos
-            const groupStockIds = Array.from(new Set(stockIds));//Agrupamos por id
+            const [resultStock, supplies, crops, cropDepositsResult] = promisesResult;
+
+            // Procesar stock legacy (insumos y crops antiguos)
+            const stockIds = resultStock.docs.map(s => s.id);
+            const groupStockIds = Array.from(new Set(stockIds));
             groupStockIds.forEach(id => {
-                const foundStock = resultStock.docs.filter(m => (m.id === id)); //Obtenemos todo el stock de ese id
+                const foundStock = resultStock.docs.filter(m => (m.id === id));
 
                 // Buscar primero en supplies
                 const foundSupply = supplies.docs.find(m => (m._id === id));
@@ -177,6 +185,51 @@ export const useSupply = () => {
                     });
                 }
             });
+
+            // ✅ AGREGADO: Procesar cropDeposits (cosechas)
+            const cropIds = cropDepositsResult.docs.map((cd: any) => cd.cropId);
+            const groupCropIds = Array.from(new Set(cropIds));
+
+            groupCropIds.forEach(cropId => {
+                const foundCropDeposits = cropDepositsResult.docs.filter((cd: any) => cd.cropId === cropId);
+                const foundCrop = crops.rows.map(row => row.doc as Crop).find(c => c._id === cropId);
+
+                if (foundCrop) {
+                    // Sumar stock de todos los depósitos para este cultivo
+                    const totalCurrentStock = foundCropDeposits.reduce((acc: number, cd: any) =>
+                        acc + (cd.currentStockKg || 0), 0);
+                    const totalReservedStock = foundCropDeposits.reduce((acc: number, cd: any) =>
+                        acc + (cd.reservedStockKg || 0), 0);
+
+                    // Verificar si ya existe en dataStock (del stock legacy)
+                    const existingIndex = dataStock.findIndex(ds => ds.id === cropId);
+                    if (existingIndex >= 0) {
+                        // Sumar al stock existente
+                        dataStock[existingIndex].currentStock += totalCurrentStock;
+                        dataStock[existingIndex].reservedStock += totalReservedStock;
+                    } else {
+                        // Crear nuevo registro
+                        dataStock.push({
+                            _id: foundCropDeposits[0]._id,
+                            _rev: foundCropDeposits[0]._rev,
+                            id: cropId,
+                            tipo: TipoStock.CULTIVO,
+                            accountId: user.accountId,
+                            depositId: foundCropDeposits[0].depositId || '',
+                            location: '',
+                            nroLot: '',
+                            campaignId: foundCropDeposits[0].campaignId || '',
+                            fieldId: foundCropDeposits[0].fieldId || '',
+                            fieldLot: foundCropDeposits[0].lotId || '',
+                            currentStock: totalCurrentStock,
+                            reservedStock: totalReservedStock,
+                            lastUpdate: foundCropDeposits[0].lastUpdate,
+                            dataCrop: foundCrop,
+                        });
+                    }
+                }
+            });
+
             setStockBySupplies(dataStock);
         } catch (error) {
             console.error(t("error_loading_documents"), error);
@@ -199,36 +252,35 @@ export const useSupply = () => {
                         ]
                     }
                 }),
-                // Agregar consulta de crops
-                dbContext.crops.allDocs({ include_docs: true })
+                dbContext.crops.allDocs({ include_docs: true }),
+                // ✅ AGREGADO: Leer cropDeposits para incluir cosechas
+                dbContext.cropDeposits.find({ selector: { "accountId": user?.accountId } })
             ]);
-            const [stockBySupplies, responseDeposits, responseSupplies, cropsResult] = responseAll;
+            const [stockBySupplies, responseDeposits, responseSupplies, cropsResult, cropDepositsResult] = responseAll;
 
             // Preparar crops como array para facilitar búsqueda
             const crops = cropsResult.rows.map(row => row.doc as Crop);
 
-            //Obtenemos los idDepositos y agrupamos
+            // Procesar stock legacy (insumos y crops antiguos)
             const depositsId = stockBySupplies.docs.map(s => s.depositId);
             const groupDepositsId = Array.from(new Set(depositsId));
 
             groupDepositsId.forEach(depositId => {
-                const foundDepositStock = stockBySupplies.docs.filter(m => (m.depositId === depositId)); //Obtenemos todos los stock de ese deposito
-                const idInsumosDelDepositoConStock = foundDepositStock.map(s => s.id); //Insumo/cultivo que tienen stock en ese deposito
-                const groupInsumosId = Array.from(new Set(idInsumosDelDepositoConStock)); //Agrupamos por id de insumo/cultivo
+                const foundDepositStock = stockBySupplies.docs.filter(m => (m.depositId === depositId));
+                const idInsumosDelDepositoConStock = foundDepositStock.map(s => s.id);
+                const groupInsumosId = Array.from(new Set(idInsumosDelDepositoConStock));
 
                 groupInsumosId.forEach(idInsumo => {
-                    const foundDeposit = responseDeposits.docs.find(m => (m._id === depositId)); // Obtenemos el deposito
+                    const foundDeposit = responseDeposits.docs.find(m => (m._id === depositId));
                     if (!foundDeposit) return;
 
-                    // Obtener el stock específico para determinar el tipo
                     const stockItem = foundDepositStock.find(s => s.id === idInsumo);
                     if (!stockItem) return;
 
                     const totalCurrentStock = foundDepositStock.filter(x => x.id === idInsumo).reduce((acc, stock) => acc + stock.currentStock, 0);
                     const totalReservedStock = foundDepositStock.filter(x => x.id === idInsumo).reduce((acc, stock) => acc + stock.reservedStock, 0);
 
-                    // Determinar si es insumo o cultivo basado en el campo tipo/TipoInsumo
-                    const isSupply = stockItem.tipo === TipoStock.INSUMO || !stockItem.tipo; // Por defecto asumir insumo si no hay tipo
+                    const isSupply = stockItem.tipo === TipoStock.INSUMO || !stockItem.tipo;
                     const isCrop = stockItem.tipo === TipoStock.CULTIVO;
 
                     let stockItemData: StockItem = {
@@ -239,7 +291,6 @@ export const useSupply = () => {
                     };
 
                     if (isSupply) {
-                        // Buscar en supplies
                         const foundSupply = responseSupplies.docs.find(m => (m._id === idInsumo));
                         if (foundSupply) {
                             stockItemData.dataSupply = foundSupply;
@@ -248,7 +299,6 @@ export const useSupply = () => {
                             console.log('⚠️ No se encontró supply para el stock con ID:', idInsumo);
                         }
                     } else if (isCrop) {
-                        // Buscar en crops
                         const foundCrop = crops.find(m => (m._id === idInsumo));
                         if (foundCrop) {
                             stockItemData.dataCrop = foundCrop;
@@ -260,6 +310,49 @@ export const useSupply = () => {
                         console.log('⚠️ Tipo de stock no reconocido para ID:', idInsumo, 'Tipo:', stockItem.tipo);
                     }
                 });
+            });
+
+            // ✅ AGREGADO: Procesar cropDeposits (cosechas)
+            cropDepositsResult.docs.forEach((cropDeposit: any) => {
+                const foundDeposit = responseDeposits.docs.find(d => d._id === cropDeposit.depositId);
+                if (!foundDeposit) return;
+
+                const foundCrop = crops.find(c => c._id === cropDeposit.cropId);
+                if (!foundCrop) {
+                    console.log('⚠️ No se encontró crop para cropDeposit con cropId:', cropDeposit.cropId);
+                    return;
+                }
+
+                // Verificar si ya existe este crop+deposit en la lista (del stock legacy)
+                const existingIndex = listStockFromDeposits.findIndex(
+                    item => item.id === cropDeposit.cropId && item.depositId === cropDeposit.depositId
+                );
+
+                if (existingIndex >= 0) {
+                    // Sumar al stock existente
+                    listStockFromDeposits[existingIndex].currentStock += (cropDeposit.currentStockKg || 0);
+                    listStockFromDeposits[existingIndex].reservedStock += (cropDeposit.reservedStockKg || 0);
+                } else {
+                    // Crear nuevo registro
+                    listStockFromDeposits.push({
+                        _id: cropDeposit._id,
+                        _rev: cropDeposit._rev,
+                        id: cropDeposit.cropId,
+                        tipo: TipoStock.CULTIVO,
+                        accountId: cropDeposit.accountId,
+                        depositId: cropDeposit.depositId,
+                        location: '',
+                        nroLot: '',
+                        campaignId: cropDeposit.campaignId || '',
+                        fieldId: cropDeposit.fieldId || '',
+                        fieldLot: cropDeposit.lotId || '',
+                        currentStock: cropDeposit.currentStockKg || 0,
+                        reservedStock: cropDeposit.reservedStockKg || 0,
+                        lastUpdate: cropDeposit.lastUpdate,
+                        dataDeposit: foundDeposit,
+                        dataCrop: foundCrop,
+                    });
+                }
             });
 
             setStockByDeposits(listStockFromDeposits);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import {
     ConfirmAuthPage,
+    ForgotPasswordPage,
     LoginPage,
     RegisterPage
 } from '../pages';
@@ -17,6 +18,7 @@ export const PublicRoutes: React.FC = () => {
                     <Route path='/auth/login' element={<LoginPage />} />
                     <Route path='/auth/register' element={<RegisterPage />} />
                     <Route path='/auth/confirm' element={<ConfirmAuthPage />} />
+                    <Route path='/auth/forgot-password' element={<ForgotPasswordPage />} />
 
                     <Route path="/*" element={<Navigate to="/init/auth/login" />} />
                 </Routes>

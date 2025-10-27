@@ -161,7 +161,7 @@ export const LoginPage = () => {
                     /> */}
           {errorMessage && (
             <Alert severity="error" sx={{ my: 1 }}>
-              {errorMessage}
+  
             </Alert>
           )}
           <Button
@@ -173,17 +173,17 @@ export const LoginPage = () => {
             INGRESAR
           </Button>
           <Grid container>
-                        <Grid item xs>
-                            <Link href="#" variant="body2">
-                                Forgot password?
-                            </Link>
-                        </Grid>
-                        <Grid item>
+            <Grid item xs>
+              <Link component={NavLink} to="/init/auth/forgot-password" variant="body2">
+                Olvidó su contraseña?
+              </Link>
+            </Grid>
+            {/* <Grid item>
                             <Link component={NavLink} to="/init/auth/register" variant="body2">
                                 {"Don't have an account? Sign Up"}
                             </Link>
-                        </Grid>
-                    </Grid>
+                        </Grid> */}
+          </Grid>
           <Copyright sx={{ mt: 5 }} />
         </Box>
       </Box>

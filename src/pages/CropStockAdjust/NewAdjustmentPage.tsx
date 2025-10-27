@@ -63,10 +63,9 @@ export const NewCropStockAdjustmentPage: React.FC = () => {
                     accountId: user.accountId,
                     licenceId: user.licenceId,
                     campaignId,
+                    zafra,
                     depositId,
                     cropId,
-                    location: '',
-                    nroLot: ''
                 }
             } as any);
             const now = new Date().toISOString();
@@ -81,8 +80,6 @@ export const NewCropStockAdjustmentPage: React.FC = () => {
                     zafra,
                     depositId,
                     cropId,
-                    location: '',
-                    nroLot: '',
                     currentStockKg: Number(amount),
                     reservedStockKg: 0,
                     lastUpdate: now,

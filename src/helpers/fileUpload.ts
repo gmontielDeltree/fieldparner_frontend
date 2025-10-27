@@ -4,10 +4,10 @@ export const uploadFile = async (fileInput: Blob) => {
     try {
         const form = new FormData();
         form.append('file', fileInput);
-        console.log('form', form)
+        
         return await imagesAPI.post('/general/upload', form);
     } catch (error) {
-        console.log('error', error)
+        console.log('error upload file: ', error)
     }
 }
 
