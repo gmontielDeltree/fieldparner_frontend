@@ -1,89 +1,80 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Box,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
-import {
-  Business as BusinessIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon
-} from "@mui/icons-material";
-import { useAppDispatch, useBusiness } from "../../hooks";
-import { setBusinessActive } from "../../redux/business";
-import { useTranslation } from "react-i18next";
-import { Business, BusinessItem } from "../../interfaces/socialEntity";
-import { GenericListPage } from "../GenericListPage";
-import { GridRenderCellParams } from "@mui/x-data-grid";
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, IconButton, Tooltip } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { useAppDispatch, useBusiness } from '../../hooks';
+import { setBusinessActive } from '../../redux/business';
+import { useTranslation } from 'react-i18next';
+import { Business, BusinessItem } from '../../interfaces/socialEntity';
+import { GenericListPage } from '../../components';
+import { GridRenderCellParams } from '@mui/x-data-grid';
 
 export const ListBusinessesPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses, replicate } = useBusiness();
+  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses, replicate } =
+    useBusiness();
   const { t } = useTranslation();
   useEffect(() => {
     getBusinesses();
   }, []);
 
   const columns = [
-    { field: "tipoEntidad", headerName: t("entity_type"), flex: 1 },
+    { field: 'tipoEntidad', headerName: t('entity_type'), flex: 1 },
     {
-      field: "nombreOrazon",
-      headerName: t("name_negal_name"),
+      field: 'nombreOrazon',
+      headerName: t('name_negal_name'),
       flex: 1,
       valueGetter: (params: GridRenderCellParams) => {
         const { tipoEntidad, nombreCompleto, razonSocial } = params.row;
-        if (tipoEntidad === "fisica") {
-          return `${nombreCompleto || ""}`;
+        if (tipoEntidad === 'fisica') {
+          return `${nombreCompleto || ''}`;
         }
-        return razonSocial || "-";
+        return razonSocial || '-';
       },
     },
     {
-      field: "cuit",
-      headerName: t("tax_id_identification_number"),
+      field: 'cuit',
+      headerName: t('tax_id_identification_number'),
       flex: 1,
       valueGetter: (params: GridRenderCellParams) => {
         const { tipoEntidad, documento, cuit } = params.row;
-        return tipoEntidad?.toLowerCase() === "fisica"
-          ? documento || "—"
-          : cuit || "—";
+        return tipoEntidad?.toLowerCase() === 'fisica' ? documento || '—' : cuit || '—';
       },
     },
-    { field: "email", headerName: t("Email"), flex: 1 },
+    { field: 'email', headerName: t('Email'), flex: 1 },
     {
-      field: "country",
-      headerName: t("id_country"),
+      field: 'country',
+      headerName: t('id_country'),
       flex: 1,
-      valueGetter: (params: GridRenderCellParams) => params.row.country?.descriptionES || '-'
+      valueGetter: (params: GridRenderCellParams) => params.row.country?.descriptionES || '-',
     },
     {
-      field: "actions",
-      headerName: "",
+      field: 'actions',
+      headerName: '',
       flex: 1,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box display="flex" justifyContent="center">
-          <Tooltip title={t("icon_edit")}>
+        <Box display='flex' justifyContent='center'>
+          <Tooltip title={t('icon_edit')}>
             <IconButton
-              aria-label={t("icon_edit")}
+              aria-label={t('icon_edit')}
               onClick={() => onClickUpdateBusiness(params.row)}
               sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
               }}
             >
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title={t("icon_delete")}>
+          <Tooltip title={t('icon_delete')}>
             <IconButton
-              aria-label={t("icon_delete")}
+              aria-label={t('icon_delete')}
               onClick={() => handleDeleteBusiness(params.row)}
               sx={{
-                transition: "transform 0.2s",
-                "&:hover": { transform: "scale(1.2)" },
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
               }}
             >
               <DeleteIcon />
@@ -93,7 +84,6 @@ export const ListBusinessesPage: React.FC = () => {
       ),
     },
   ];
-
 
   const onClickUpdateBusiness = (item: BusinessItem) => {
     const { country, ...rest } = item;
@@ -109,19 +99,16 @@ export const ListBusinessesPage: React.FC = () => {
   };
 
   return (
-    <>
-      {/* <button type="button" onClick={() => replicate()} >Replicate</button> */}
-      <GenericListPage
-        title={t("social_entities")}
-        icon={<BusinessIcon sx={{ fontSize: 40, color: "#424242" }} />}
-        data={businesses}
-        columns={columns}
-        getData={getBusinesses}
-        deleteData={deleteBusiness}
-        setActiveItem={setBusinessActive}
-        newItemPath="/init/overview/business/new"
-        editItemPath={(id) => `/init/overview/business/${id}`}
-        isLoading={isLoading} />
-    </>
+    <GenericListPage
+      moduleRoute='/init/overview/business'
+      data={businesses}
+      columns={columns}
+      getData={getBusinesses}
+      deleteData={deleteBusiness}
+      setActiveItem={setBusinessActive}
+      newItemPath='/init/overview/business/new'
+      editItemPath={id => `/init/overview/business/${id}`}
+      isLoading={isLoading}
+    />
   );
 };

@@ -38,7 +38,7 @@ export const useLaborsServices = () => {
     }
   };
 
-  const createLaborsServices = async (newLaborsServices: LaborsServices) => {
+  const createLaborsServices = async (newLaborsServices: LaborsServices, isFromQuickAddModal: boolean = false) => {
     setIsLoading(true);
     try {
       const response = await dbContext.laborsServices.post(newLaborsServices);
@@ -47,15 +47,23 @@ export const useLaborsServices = () => {
       if (response.ok) {
         // Usar el prefijo personalizado
         NotificationService.showAdded(newLaborsServices.service, serviceLabel);
+        
+        // Solo navegar si NO es desde el modal de adición rápida
+        if (!isFromQuickAddModal) {
+          navigate('/init/overview/Labors-services/');
+        }
+        
+        // Retornar el objeto creado para el modal
+        return newLaborsServices;
       } else {
         NotificationService.showError(t("verifyFields"));
       }
-      navigate('/init/overview/Labors-services/');
     } catch (error) {
       console.log(error);
       NotificationService.showError(t("unexpectedError"));
       setIsLoading(false);
       if (error) setError(error);
+      throw error; // Re-lanzar el error para que el modal pueda manejarlo
     }
   };
 

@@ -3,19 +3,19 @@ import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
+//import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { useTranslation } from "react-i18next";
-import { ContractorRepository } from "../../../classes/ContractorRepository";
+//import { ContractorRepository } from "../../../classes/ContractorRepository";
 import { Business, Supply, UnidadesDeMedida, TypeSupplies } from "../../../types";
 import { SuppliesRepository } from "../../../classes/SuppliesRepository";
-import { paramsToObject } from "lightgallery/plugins/video/lg-video-utils";
+//import { paramsToObject } from "lightgallery/plugins/video/lg-video-utils";
 import {
   Box,
-  Chip,
-  Divider,
+  // Chip,
+  // Divider,
   IconButton,
   InputAdornment,
   Menu,
@@ -25,12 +25,17 @@ import {
   Grid,
   FormControl,
   InputLabel,
-  Paper,
-  FormHelperText,
+  // Paper,
+  // FormHelperText,
 } from "@mui/material";
 import FilterAltTwoToneIcon from "@mui/icons-material/FilterAltTwoTone";
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { useAppDispatch } from '../../../hooks/useRedux';
+import { uiOpenModal } from '../../../redux/ui';
+import { DisplayModals } from '../../../types';
+import { ViewComponentModal, useAutocompleteAddOption } from '../../';
+import { SupplyFormModal } from './SupplyFormModal';
 
 const filter = createFilterOptions<FilmOptionType>({ limit: 50 });
 
@@ -42,6 +47,7 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
   const [_value, setValue] = React.useState<SupplyOptionType | null>(value);
   const [open, toggleOpen] = React.useState(false);
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
 
   // Get activity color based on type
   const getActivityColor = () => {
@@ -67,6 +73,43 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
 
   const [supplyRepo, _] = useState(new SuppliesRepository());
   const [supplies, setSupplies] = useState<Supply[]>([]);
+
+  // Hook reutilizable para la opción agregar (DEBE estar DESPUÉS de la declaración de supplies)
+  const { enhancedOptions, getOptionLabel, renderOption } = useAutocompleteAddOption(
+    supplies,
+    {
+      onClick: () => dispatch(uiOpenModal(DisplayModals.ViewComponent))
+    },
+    // Función personalizada para renderizar opciones normales
+    (props, option) => (
+      // Renderizado personalizado para opciones normales
+      <Box
+        {...props}
+        key={option?._id}
+        sx={{
+          transition: 'background-color 0.2s ease',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+          },
+        }}
+      >
+        <div style={{width:"100%"}}>
+          <Box>
+            <Typography variant="body2" style={{fontSize:"14px", fontWeight:"600"}}>
+              {option?.name}
+            </Typography>
+          </Box>
+          <Box>
+            <Typography variant="body2" style={{fontSize:"12px", color:"#444"}}>
+              Tipo: {option?.type}
+            </Typography>
+          </Box>
+        </div>
+      </Box>
+    )
+  );
+
+
 
   const [selectedTypesFilter, setSelectedTypesFilter] = useState<string[]>([]);
 
@@ -144,17 +187,28 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
             setDialogValue({
               name: newValue.inputValue,
             });
+          } else if (newValue && newValue.isAddOption) {
+            // El hook ya maneja el onClick, solo prevenir la selección
+            return;
           } else {
             setValue(newValue);
           }
         }}
         filterOptions={(options, params) => {
-          const filteredOptions1 = options.filter((o) =>
-            selectedTypesFilter.includes(o.type)
-          );
+          // Filtrar por tipos seleccionados
+          const filteredOptions1 = enhancedOptions.filter((o) => {
+            // Mantener la opción agregar siempre
+            if (o.isAddOption) return true;
+            // Filtrar opciones normales
+            return selectedTypesFilter.includes(o.type);
+          });
           console.log("FITRO", selectedTypesFilter, options, filteredOptions1);
 
-          const filtered = filter(filteredOptions1, params);
+          // Separar opción agregar de las normales
+          const addOption = filteredOptions1.find(o => o.isAddOption);
+          const normalOptions = filteredOptions1.filter(o => !o.isAddOption);
+
+          const filtered = filter(normalOptions, params);
 
           if (params.inputValue !== "") {
             filtered.push({
@@ -163,58 +217,45 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
             });
           }
 
+          // Agregar la opción fija al final
+          if (addOption) {
+            filtered.push(addOption);
+          }
+
           return filtered;
         }}
         id="free-solo-dialog-demo"
-        options={supplies}
-        getOptionLabel={(option) => {
-          // e.g. value selected with enter, right from the input
-
-          if (typeof option === "string") {
-            return option;
-          }
-          if (option.inputValue) {
-            return option.inputValue;
-          }
-
-          return option?.name;
+        options={enhancedOptions}
+        ListboxProps={{
+          sx: {
+            maxHeight: '320px',
+            overflowY: 'auto',
+            padding: 0,
+            '& .MuiAutocomplete-option[data-focus="true"]': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            },
+            // Estilos para scroll personalizado
+            '&::-webkit-scrollbar': {
+              width: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              backgroundColor: '#f1f1f1',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#c1c1c1',
+              borderRadius: '4px',
+              '&:hover': {
+                backgroundColor: '#a8a8a8',
+              },
+            },
+          },
         }}
+        getOptionLabel={getOptionLabel}
         selectOnFocus
         clearOnBlur
         handleHomeEndKeys
-        renderOption={(props, option) => (
-          <Box
-
-            {...props}
-            key={option?._id}
-          >
-            <div style={{width:"100%"}}>
-              <Box>
-                <Typography variant="subtitle1">{option?.name}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="subtitle2">{option?.brand}</Typography>
-              </Box>
-            </div>
-
-            {/* <Box>
-              <ul>
-                <li>
-                  {t("_active_ingredient")}: {option?.activePrincipal}
-                </li>
-              </ul>
-            </Box> */}
-
-            {/* <Typography variant="body2" component="div">
-              {option?.description}
-            </Typography> */}
-
-            { option?.type && <div>
-              <Chip label={option?.type} size="small" />
-            </div>}
-            <Divider/>
-          </Box>
-        )}
+        renderOption={renderOption}
         freeSolo
         renderInput={(
           params //<TextField {...params} label={t("_contractor")} />
@@ -253,7 +294,7 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
             padding: '1.5rem',
           }}>
             <AddCircleOutlineIcon sx={{ fontSize: 30 }} />
-            {t("_quick_add")} {t("_supply")}
+            {t("_quick_add")}
           </DialogTitle>
           <DialogContent sx={{ mt: 3, px: 3 }}>
             <Box sx={{ 
@@ -434,6 +475,25 @@ export const AutocompleteSupplies = ({ value, onChange, activityType }) => {
           </DialogActions>
         </form>
       </Dialog>
+
+      {/* ViewComponentModal para agregar nuevo insumo */}
+      <ViewComponentModal
+        title= {`${t("_quick_add")} `}
+        disableBackdropClick={false}
+        disableEscapeKeyDown={false}
+      >
+        <SupplyFormModal 
+          onSupplyCreated={(newSupply) => {
+            // Cuando se crea un nuevo insumo, actualizamos la lista y lo seleccionamos
+            console.log('Nuevo insumo creado:', newSupply);
+            setValue(newSupply);
+            // Recargar la lista de suministros
+            supplyRepo.getAll().then((updatedSupplies) => {
+              setSupplies(updatedSupplies);
+            });
+          }}
+        />
+      </ViewComponentModal>
     </React.Fragment>
   );
 };

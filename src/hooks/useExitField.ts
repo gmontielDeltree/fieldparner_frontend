@@ -9,7 +9,7 @@ export const useExitField = () => {
     // const navigate = useNavigate();
     const { t } = useTranslation();
     const { user } = useAppSelector(state => state.auth);
-    const { getControlStockCrop } = useStockMovement();
+    const { getControlStockCrop, updateCropStockTables } = useStockMovement();
     const [exitFields, setExitFields] = useState<ExitFieldItem[]>([]);
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +69,7 @@ export const useExitField = () => {
             // Actualizar el valor en el objeto para asegurar consistencia
             newExitField.netWeight = safeNetWeight;
 
-            //Buscamos el stock del cultivo y solo sumamos al stock comprometido, no mueve nada del stock actual
+            // Buscar control de stock del cultivo por campaña
             let stockOfCrop = await getControlStockCrop({
                 accountId,
                 campaignId: newExitField.campaignId,
@@ -80,8 +80,9 @@ export const useExitField = () => {
                 throw new Error(t("insufficientOrNotFoundStock"));
             }
 
-            // Asegurar que committedStock sea un número antes de sumarle
-            stockOfCrop.committedStock = Number(stockOfCrop.committedStock || 0) + safeNetWeight;
+            // Restar del stock disponible
+            stockOfCrop.currentStock = Number(stockOfCrop.currentStock || 0) - safeNetWeight;
+            stockOfCrop.lastUpdate = new Date().toISOString();
 
             //Modificar movimiento de stock para q tenga cropId , y un booleano para saber si es insumo o cultivo
             let newStockMovement: StockMovement = {
@@ -136,6 +137,7 @@ export const useExitField = () => {
                 dbContext.exitFields.post(cleanExitField),
                 dbContext.stockMovements.post(newStockMovement),
                 dbContext.cropStockControl.put(stockOfCrop),
+                updateCropStockTables(newStockMovement, newExitField.crop, newExitField.deposit, { zafra: newExitField.zafra })
             ]
 
             const responseAll = await Promise.all(promisesAll);

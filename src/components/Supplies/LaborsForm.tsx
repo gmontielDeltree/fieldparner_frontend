@@ -16,7 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Crop, Supply,  TypeSupplies } from "../../types";
+import { Crop, Supply, TypeSupplies } from "../../types";
 import React, { ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -259,19 +259,19 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-      <TextField
-  variant="outlined"
-  type="number"
-  label={t("_barcode")}
-  name="barCode"
-  value={barCode}
-  onChange={handleInputChange}
-  fullWidth
-  inputProps={{
-    inputMode: "numeric",
-    pattern: "[0-9]*"
-  }}
-/>
+        <TextField
+          variant="outlined"
+          type="number"
+          label={t("_barcode")}
+          name="barCode"
+          value={barCode}
+          onChange={handleInputChange}
+          fullWidth
+          inputProps={{
+            inputMode: "numeric",
+            pattern: "[0-9]*"
+          }}
+        />
 
       </Grid>
       <Grid item xs={12} sm={6}>

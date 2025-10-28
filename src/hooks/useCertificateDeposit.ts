@@ -4,6 +4,8 @@ import { useAppSelector } from "./useRedux";
 import { dbContext } from '../services';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { EnumTransportDocumentStatus, Supply } from '../types';
+import dayjs from 'dayjs';
+import { CropStockControl } from '../interfaces/stock';
 import { useTranslation } from 'react-i18next';
 import { NotificationService } from '../services/notificationService';
 
@@ -86,6 +88,27 @@ export const useCertificateDeposit = () => {
                 dbContext.transportDocument.bulkDocs(updateStatusTransport)
             ];
             const response = await Promise.all(promiseAll);
+
+            // Actualizar stock entregado en control de cultivos
+            try {
+                const selector: any = {
+                    selector: {
+                        accountId: user.accountId,
+                        licenceId: user.licenceId,
+                        campaignId: newDocument.campaniaId,
+                        cropId: newDocument.cultivoId,
+                    }
+                };
+                const found = await dbContext.cropStockControl.find(selector);
+                if (found.docs && found.docs.length > 0) {
+                    const doc = found.docs[0] as CropStockControl & PouchDB.Core.IdMeta & PouchDB.Core.RevisionIdMeta;
+                    const currentDelivered = Number(doc.deliveredStock || 0);
+                    const toAdd = Math.max(0, Number(newDocument.kgNeto) || 0);
+                    await dbContext.cropStockControl.put({ ...doc, deliveredStock: currentDelivered + toAdd, lastUpdate: dayjs().toISOString() });
+                }
+            } catch (e) {
+                console.warn('Crop stock control update skipped', e);
+            }
             setIsLoading(false);
             if (response.length)
                 NotificationService.showAdded(newDocument, t("certificateDeposit_label"));

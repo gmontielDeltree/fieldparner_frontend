@@ -6,11 +6,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DateRangePicker from "./DateRangePicker";
-import { Autocomplete, Box, Typography, Chip, Alert } from "@mui/material";
+import { Autocomplete, Box, Typography, Chip, Alert, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useCiclo } from "../../hooks/usePlanifications";
 import { CultivoContext } from "./contexts/CultivosContext";
-import { CultivoItem } from "../../hooks";
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import { CultivoItem, useCampaign } from "../../hooks";
+import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ICiclosPlanificacion } from "../../interfaces/planification";
 import { add, isWithinInterval } from "date-fns";
@@ -42,9 +42,12 @@ export default function CicloEditorDialog({
 
   const { t, i18n } = useTranslation();
   const { getCampanaDesc } = useContext(CampanasContext);
+  const { campaigns, getCampaigns } = useCampaign();
 
   const [open, setOpen] = React.useState(false);
   const [cultivo, setCultivo] = React.useState<CultivoItem>();
+  const [selectedZafra, setSelectedZafra] = useState<string>('');
+  const [campaignZafras, setCampaignZafras] = useState<string[]>([]);
   const [startDate, setStartDate] = React.useState(new Date());
   const [endDate, setEndDate] = React.useState(add(new Date(), { months: 5 }));
 
@@ -82,7 +85,32 @@ export default function CicloEditorDialog({
 
   useEffect(() => {
     getCrops();
+    getCampaigns();
   }, []);
+
+  // Cargar zafras cuando se abre el diálogo y se tienen las campañas
+  useEffect(() => {
+    if (open && campanaId && campaigns.length > 0) {
+      const campaign = campaigns.find(c => c._id === campanaId);
+      if (campaign && campaign.zafra) {
+        // Si zafra es un array, usarlo directamente, si es string, convertir a array
+        const zafrasFromCampaign = Array.isArray(campaign.zafra)
+          ? campaign.zafra
+          : (typeof campaign.zafra === 'string' ? [campaign.zafra] : []);
+
+        setCampaignZafras(zafrasFromCampaign);
+        console.log('🌾 Zafras disponibles de la campaña:', zafrasFromCampaign);
+
+        // Seleccionar la primera zafra por defecto si hay disponibles
+        if (zafrasFromCampaign.length > 0 && !selectedZafra) {
+          setSelectedZafra(zafrasFromCampaign[0]);
+        }
+      } else {
+        console.log('⚠️ La campaña no tiene zafras definidas');
+        setCampaignZafras([]);
+      }
+    }
+  }, [open, campanaId, campaigns]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -155,6 +183,33 @@ export default function CicloEditorDialog({
             {t('Configure el cultivo y las fechas para este ciclo productivo')}
           </DialogContentText>
 
+          {/* Selector de zafra de la campaña */}
+          {campaignZafras.length > 0 ? (
+            <Box sx={{ marginBottom: "1rem", marginTop: "1rem" }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>{t('Seleccione la zafra')}</InputLabel>
+                <Select
+                  value={selectedZafra}
+                  onChange={(e) => setSelectedZafra(e.target.value)}
+                  label={t('Seleccione la zafra')}
+                >
+                  {campaignZafras.map((zafra) => (
+                    <MenuItem key={zafra} value={zafra}>
+                      {zafra}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                {t('Zafras definidas en la campaña')} {getCampanaDesc(campanaId)}
+              </Typography>
+            </Box>
+          ) : (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              {t('Esta campaña no tiene zafras definidas. Por favor, defina las zafras en la configuración de la campaña.')}
+            </Alert>
+          )}
+
           <Box style={{ marginBottom: "1rem", marginTop: "1rem" }}>
             <AutocompleteCultivo
               onChange={(value) => setCultivo(value)}
@@ -199,14 +254,21 @@ export default function CicloEditorDialog({
           <Button
             type="submit"
             variant="contained"
-            disabled={!cultivo || !checkRangeIsValid(startDate, endDate)}
+            disabled={!cultivo || !checkRangeIsValid(startDate, endDate) || (campaignZafras.length > 0 && !selectedZafra)}
             onClick={() => {
-              console.log(cultivo);
+              console.log('Creando ciclo:', { cultivo, selectedZafra, startDate, endDate });
               if (cultivo) {
                 if (checkRangeIsValid(startDate, endDate)) {
-                  saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate);
+                  // Pasar la zafra seleccionada a saveCiclo
+                  saveCiclo(campanaId, loteId, cultivo._id, startDate, endDate, selectedZafra);
+
+                  console.log('✅ Ciclo guardado con zafra:', selectedZafra);
+
                   onSave();
                   handleClose();
+
+                  // Limpiar el estado al cerrar
+                  setSelectedZafra('');
                 }
               }
             }}

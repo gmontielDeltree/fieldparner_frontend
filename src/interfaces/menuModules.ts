@@ -1,23 +1,30 @@
 import { Document } from '../types';
 
 export interface MenuModules extends Document {
-    id: number;
-    module: string;
-    order: string;
-    menuOption: string;
-    systemType: string;
-    details: string;
+  id: number | string;
+  module: string;
+  order?: string; // puede venir o no
+  menuOption: string;
+  menuOptionEn?: string;
+  menuOptionPt?: string;
+  systemType?: string;
+  details?: string;
+  menuType: string;
+  full?: string;
+  light?: string;
+  icon?: string | null;
+  route?: string;
 }
 
 export interface MenuModulesPermission extends MenuModules {
-    permission: boolean;
+  permission: boolean;
 }
 
 export interface ModulesUsers extends Document {
-    accountId: string;
-    licenceId: string;
-    userId: string;
-    menuId: number;
-    permission: boolean;
-    creationDate: string;
+  accountId: string;
+  licenceId: string;
+  userId: string;
+  menuId: number;
+  permission: boolean;
+  creationDate: string;
 }

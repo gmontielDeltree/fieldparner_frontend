@@ -71,6 +71,72 @@ export const useStockMovement = () => {
         try {
             setIsLoading(true);
             if (!user) { dispatch(onLogout(t("session_expired"))); return; }
+
+            // Para cultivos, leer de cropDeposits
+            if (request.tipo === TipoStock.CULTIVO) {
+                const cropQuery: any = {
+                    selector: {
+                        accountId: user.accountId,
+                        ...(request.id && { cropId: request.id }),
+                        ...(request.campaignId && { campaignId: request.campaignId }),
+                        ...(request.depositId && { depositId: request.depositId }),
+                    }
+                };
+                const responseCropDeposits = await dbContext.cropDeposits.find(cropQuery);
+                let dataStock: StockItem[] = responseCropDeposits.docs.map((cd: any) => ({
+                    _id: cd._id,
+                    _rev: cd._rev,
+                    id: cd.cropId,
+                    tipo: TipoStock.CULTIVO,
+                    accountId: cd.accountId,
+                    depositId: cd.depositId,
+                    location: cd.location || '',
+                    nroLot: cd.nroLot || '',
+                    campaignId: cd.campaignId,
+                    fieldId: cd.fieldId || '',
+                    fieldLot: cd.lotId || '',
+                    currentStock: cd.currentStockKg || 0,
+                    reservedStock: cd.reservedStockKg || 0,
+                    lastUpdate: cd.lastUpdate,
+                }));
+
+                if (fullItem) {
+                    const responseAll = await Promise.all([
+                        dbContext.deposits.find({ selector: { "accountId": user?.accountId } }),
+                        dbContext.crops.allDocs({ include_docs: true }),
+                        dbContext.campaigns.find({ selector: { "accountId": user?.accountId } }),
+                        dbContext.fields.find({ selector: { "accountId": user?.accountId } })
+                    ]);
+                    const deposits = responseAll[0].docs;
+                    const crops = responseAll[1].rows.map(row => row.doc as Crop);
+                    const campaigns = responseAll[2].docs;
+                    const fields = responseAll[3].docs;
+
+                    dataStock.forEach((stock) => {
+                        if (stock.id) {
+                            const crop = crops.find(c => c._id === stock.id);
+                            stock.dataCrop = crop;
+                        }
+                        if (stock.depositId) {
+                            const deposit = deposits.find(d => d._id === stock.depositId);
+                            stock.dataDeposit = deposit;
+                        }
+                        if (stock.campaignId) {
+                            const campaign = campaigns.find(c => c._id === stock.campaignId);
+                            stock.dataCampaign = campaign;
+                        }
+                        if (stock.fieldId) {
+                            const field = fields.find(f => f._id === stock.fieldId);
+                            stock.dataField = field;
+                        }
+                    });
+                }
+                setStockData(dataStock);
+                setIsLoading(false);
+                return dataStock;
+            }
+
+            // Para insumos, mantener lectura de stock legacy
             const selectorRequest: GetStockRequest = {
                 accountId: user.accountId,
                 ...request
@@ -197,13 +263,13 @@ export const useStockMovement = () => {
                     if (!existingStock) {
                         console.log('🔍 DEBUG: No se encontró stock existente para insumo:', supplyData._id);
                         console.log('  Verificando si el depósito permite stock negativo...');
-                        
+
                         // Verificar si el depósito permite stock negativo
                         try {
                             const depositDoc = await dbContext.deposits.get(depositId);
                             console.log('  📦 Información del depósito:', depositDoc);
                             console.log('  ✅ Permite stock negativo:', depositDoc?.isNegative);
-                            
+
                             if (depositDoc && depositDoc.isNegative) {
                                 console.log('  ✅ Creando stock negativo para depósito que lo permite');
                                 // Crear un nuevo registro de stock si el depósito permite negativo
@@ -335,6 +401,77 @@ export const useStockMovement = () => {
             NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
             setIsLoading(false);
             if (error) setError(error);
+        }
+    }
+
+    // Actualizar tablas de stock de cultivos (cropMovements, cropDeposits, cropStockControl)
+    const updateCropStockTables = async (movement: StockMovement, crop: any, deposit: any, extras?: { fieldId?: string, lotId?: string, zafra?: string }) => {
+        try {
+            if (!user) { dispatch(onLogout(t("session_expired"))); return; }
+            const cropMovement = {
+                accountId: user.accountId,
+                licenceId: user.licenceId,
+                depositId: deposit?._id || movement.depositId,
+                cropId: crop?._id || movement.cropId || movement.supplyId,
+                campaignId: movement.campaignId,
+                zafra: extras?.zafra,
+                fieldId: extras?.fieldId,
+                lotId: extras?.lotId,
+                inOut: movement.isIncome ? 'E' : 'S',
+                date: movement.operationDate || movement.creationDate,
+                movement: movement.typeMovement,
+                detail: movement.detail,
+                amountKg: Number(movement.amount || 0)
+            } as any;
+
+            // upsert CropDeposit
+            const depositQuery = {
+                selector: {
+                    accountId: user.accountId,
+                    licenceId: user.licenceId,
+                    campaignId: movement.campaignId,
+                    zafra: extras?.zafra,
+                    depositId: deposit?._id || movement.depositId,
+                    cropId: crop?._id || movement.cropId || movement.supplyId,
+                }
+            } as any;
+            const found = await dbContext.cropDeposits.find(depositQuery);
+            const todayStr = new Date().toISOString();
+            if (found.docs && found.docs.length > 0) {
+                const doc = found.docs[0];
+                const delta = movement.isIncome ? +Number(movement.amount) : -Number(movement.amount);
+                await dbContext.cropDeposits.put({ ...doc, currentStockKg: Number(doc.currentStockKg || 0) + delta, lastUpdate: todayStr });
+            } else {
+                await dbContext.cropDeposits.post({
+                    accountId: user.accountId,
+                    licenceId: user.licenceId,
+                    campaignId: movement.campaignId,
+                    zafra: extras?.zafra,
+                    depositId: deposit?._id || movement.depositId,
+                    cropId: crop?._id || movement.cropId || movement.supplyId,
+                    fieldId: extras?.fieldId,
+                    lotId: extras?.lotId,
+                    currentStockKg: Number(movement.amount || 0) * (movement.isIncome ? 1 : -1),
+                    reservedStockKg: 0,
+                    lastUpdate: todayStr,
+                } as any);
+            }
+
+            // upsert CropStockControl
+            const ctrlQuery = { selector: { accountId: user.accountId, licenceId: user.licenceId, campaignId: movement.campaignId, zafra: extras?.zafra, cropId: crop?._id || movement.cropId || movement.supplyId } } as any;
+            const ctrlFound = await dbContext.cropStockControl.find(ctrlQuery);
+            if (ctrlFound.docs && ctrlFound.docs.length > 0) {
+                const doc = ctrlFound.docs[0];
+                const delta = movement.isIncome ? +Number(movement.amount) : -Number(movement.amount);
+                await dbContext.cropStockControl.put({ ...doc, currentStock: Number(doc.currentStock || 0) + delta, lastUpdate: todayStr });
+            } else {
+                await dbContext.cropStockControl.post({ accountId: user.accountId, licenceId: user.licenceId, campaignId: movement.campaignId, zafra: extras?.zafra, cropId: crop?._id || movement.cropId || movement.supplyId, currentStock: Number(movement.amount || 0) * (movement.isIncome ? 1 : -1), committedStock: 0, deliveredStock: 0, lastUpdate: todayStr } as any);
+            }
+
+            // write CropMovement
+            await dbContext.cropMovements.post(cropMovement);
+        } catch (error) {
+            console.log('Error updating crop stock tables:', error);
         }
     }
 
@@ -503,6 +640,7 @@ export const useStockMovement = () => {
         getNroLotsBySupplyAndDeposit,
         getStock,
         getMovementsType,
-        getControlStockCrop
+        getControlStockCrop,
+        updateCropStockTables
     }
 }

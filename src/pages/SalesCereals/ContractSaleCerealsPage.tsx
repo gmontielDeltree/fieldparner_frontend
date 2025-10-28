@@ -1,11 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
+import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper} from '@mui/material';
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
-import {
-  Handshake as HandshakeIcon,
-} from '@mui/icons-material';
 import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
@@ -262,10 +259,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
             alignItems="center"
             sx={{ ml: { sm: 2 }, pt: 2 }}
           >
-            <HandshakeIcon fontSize='large' />
-            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-              Contrato Venta Cereal
-            </Typography>
+
           </Box>
           <Stepper activeStep={activeStep} sx={{ pt: 5, pb: 5 }}>
             {steps.map((label) => (

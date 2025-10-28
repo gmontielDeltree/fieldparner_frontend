@@ -9,7 +9,6 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Map as MapIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Loading, TemplateLayout } from "../components";
 import { Zones } from "@types";
@@ -67,7 +66,7 @@ export const NewZonePage: React.FC = () => {
 
   return (
     <>
-      <TemplateLayout key="overview-zones" viewMap={true}>
+      <TemplateLayout key="overview-zones" viewMap={true} viewSelector={false}>
         <Loading key="loading-new-customer" loading={isLoading} />
         <Container maxWidth="md" sx={{ mb: 4 }}>
           <Box
@@ -76,11 +75,6 @@ export const NewZonePage: React.FC = () => {
             alignItems="center"
             sx={{ ml: { sm: 2 }, pt: 2 }}
           >
-
-            <MapIcon sx={{ marginRight: '8px' }} />
-            <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-              {t("_zones")}
-            </Typography>
           </Box>
 
           <Paper

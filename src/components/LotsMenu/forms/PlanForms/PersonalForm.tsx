@@ -24,6 +24,7 @@ import { format } from 'date-fns'
 import { NumberFieldWithUnits } from '../../components/NumberField'
 import { AutocompleteCultivo } from '../../components/AutocompleteCultivo'
 import { AutocompleteContratista } from '../../components/AutocompleteContratista'
+import { AutocompleteIngenieroAgronomo } from '../../components/AutocompleteIngenieroAgronomo'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
 import { useBusiness, useAppSelector } from '../../../../hooks'
 
@@ -226,22 +227,10 @@ function PersonalFormUnified({
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel id="business-label">{t('Agronomic Engineer')}</InputLabel>
-            <Select
-              labelId="business-label"
-              id="business"
-              value={formData.detalles?.business || ''}
-              label={t('Agronomic Engineer')}
-              onChange={(e) => onFieldChange('business', e.target.value)}
-            >
-              {businesses.map((business) => (
-                <MenuItem key={business._id} value={business._id}>
-                  {business.razonSocial || business.nombreCompleto || t('Entity {{id}}', { id: business._id.slice(0, 8) })}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <AutocompleteIngenieroAgronomo
+            value={formData.detalles?.business || null}
+            onChange={(value) => onFieldChange('business', value)}
+          />
         </Grid>
 
         {shouldShowPlantingSelection ? (
@@ -391,7 +380,7 @@ function PersonalFormUnified({
 
         <Grid item xs={12} sm={6}>
           <AutocompleteContratista
-            value={formData.detalles?.contratista || ''}
+            value={formData.detalles?.contratista || null}
             onChange={(value) => onFieldChange('contratista', value)}
           />
         </Grid>

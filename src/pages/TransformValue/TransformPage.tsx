@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import Swal from 'sweetalert2';
 import {
-    Transform as TransformIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
@@ -386,10 +385,9 @@ export const TransformPage: React.FC = () => {
 
     const createTransform = async () => {
         await transformStock(
-            originTransformValues, //Movimientos de salida
-            destinationTransformValue, //Movimientos de entrada
-            stockBySupplies, //Tabla auxiliar de stock de insumos
-            stockByCrops, //Tabla auxiliar de stock de cultivos
+            originTransformValues,
+            destinationTransformValue,
+            stockBySupplies,
             detail,
             operationDate
         );
@@ -414,10 +412,6 @@ export const TransformPage: React.FC = () => {
                 alignItems="center"
                 sx={{ ml: { sm: 2 }, pt: 3 }}
             >
-                <TransformIcon />
-                <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-                    {t("transformation_added_value")}
-                </Typography>
             </Box>
             <Paper variant="outlined"
                 sx={{
@@ -460,6 +454,18 @@ export const TransformPage: React.FC = () => {
                                 startAdornment: <InputAdornment position="start" />,
                             }}
                             fullWidth
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={3}>
+                        <TextField
+                            variant="outlined"
+                            type="text"
+                            label="Zafra"
+                            name="zafra"
+                            onChange={() => { }}
+                            placeholder={t('select_campaign_first')}
+                            fullWidth
+                            disabled
                         />
                     </Grid>
                 </Grid>

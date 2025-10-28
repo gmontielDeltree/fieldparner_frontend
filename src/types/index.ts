@@ -1,8 +1,7 @@
-import { useTranslation } from "react-i18next";
-import { Business } from "../interfaces/socialEntity";
-import { ContractSaleCereal } from '../interfaces/contract-sale-cereals';
-import { TipoStock } from "../interfaces/stock";
-import { Company } from "../interfaces/company";
+import { useTranslation } from 'react-i18next';
+import { Business } from '../interfaces/socialEntity';
+import { TipoStock } from '../interfaces/stock';
+import { Company } from '../interfaces/company';
 
 export interface NavBarProps {
   drawerWidth: number;
@@ -47,7 +46,7 @@ export interface EspecificacionTecnica {
 export type DataFileName = {
   originalName: string;
   uniqueName: string;
-}
+};
 
 export interface Vehicle extends Document {
   accountId: string;
@@ -100,11 +99,10 @@ export interface LaborsServicesState {
 }
 
 export interface ListCorporateContract {
-  id: string,
+  id: string;
   companie: string;
   percentageOfParticipation: string;
   activity: string;
-
 }
 export interface CorporateContract extends Document {
   idContract: string;
@@ -123,11 +121,9 @@ export interface ListCorporateContractState {
   ListCorporateContract: ListCorporateContract[];
 }
 
-
-
 export interface ColumnProps {
   text: string;
-  align: "inherit" | "left" | "center" | "right" | "justify";
+  align: 'inherit' | 'left' | 'center' | 'right' | 'justify';
   colSpan?: number;
   rowSpan?: number;
 }
@@ -160,6 +156,8 @@ export interface User {
   licenceId: string;
   isAdmin: boolean;
   countryId: string;
+  photoName: string;
+  language: string;
   currency: string;
   email: string;
 }
@@ -180,15 +178,12 @@ export interface UserRegister {
 }
 
 export interface ErrorResponseAuth {
-  code:
-  | "UserNotConfirmedException"
-  | "NotAuthorizedException"
-  | "UsernameExistsException";
+  code: 'UserNotConfirmedException' | 'NotAuthorizedException' | 'UsernameExistsException';
   message: string;
 }
 
 export interface AuthState {
-  status: "checking" | "authenticated" | "not-authenticated";
+  status: 'checking' | 'authenticated' | 'not-authenticated';
   user: User | null;
   errorMessage: string;
   isLoading: boolean;
@@ -230,7 +225,7 @@ export interface Supply extends Document {
   applyToCropsIds?: string[];
   chemicalComposition?: string;
   toxicityClass?: string;
-  formulationDenomination?: string
+  formulationDenomination?: string;
   productUrl?: string;
   eiqValue?: string;
   senasaId?: string;
@@ -297,43 +292,43 @@ export interface OriginDestinations extends Document {
   destino: boolean;
 }
 
-export const SowingType = "siembra";
-export const HarvestType = "cosecha";
-export const ApplicationType = "aplicacion";
-export const PreparedType = "preparado";
+export const SowingType = 'siembra';
+export const HarvestType = 'cosecha';
+export const ApplicationType = 'aplicacion';
+export const PreparedType = 'preparado';
 
 export const UnidadesDeMedida = () => {
   const { t } = useTranslation();
 
   return [
-    t("_kilogram"),
-    t("_meters"),
-    t("square_meter"),
-    t("cubic_meter"),
-    t("_liters"),
-    t("_unit"),
-    t("_pair"),
-    t("_dozen"),
-    t("_gram"),
-    t("_millimeter"),
-    t("cubic_millimeter"),
-    t("_kilometer"),
-    t("_hectoliter"),
-    t("_centimeter"),
-    t("set_pack_deck_of_cards"),
-    t("cubic_centimeter"),
-    t("_ton"),
-    t("hectocubic_meter"),
-    t("kilocubic_meter"),
-    t("_microgram"),
-    t("_nanogram"),
-    t("_milligram"),
-    t("_milliliter"),
-    t("_gross"),
-    t("gross_kilogram"),
-    t("_seeds"),
-    t("_bags"),
-    t("_quintal"),
+    t('_kilogram'),
+    t('_meters'),
+    t('square_meter'),
+    t('cubic_meter'),
+    t('_liters'),
+    t('_unit'),
+    t('_pair'),
+    t('_dozen'),
+    t('_gram'),
+    t('_millimeter'),
+    t('cubic_millimeter'),
+    t('_kilometer'),
+    t('_hectoliter'),
+    t('_centimeter'),
+    t('set_pack_deck_of_cards'),
+    t('cubic_centimeter'),
+    t('_ton'),
+    t('hectocubic_meter'),
+    t('kilocubic_meter'),
+    t('_microgram'),
+    t('_nanogram'),
+    t('_milligram'),
+    t('_milliliter'),
+    t('_gross'),
+    t('gross_kilogram'),
+    t('_seeds'),
+    t('_bags'),
+    t('_quintal'),
   ];
 };
 
@@ -343,25 +338,25 @@ export const TypeSupplies = () => {
   const { t } = useTranslation();
 
   return [
-    t("_various"),
-    t("seeds_min"),
+    t('_various'),
+    t('seeds_min'),
     // t("_cultivation"),
-    t("_fertilizers"),
-    t("_phytosanitary"),
-    t("spare_parts"),
-    t("_materials"),
-    t("_fuel"),
+    t('_fertilizers'),
+    t('_phytosanitary'),
+    t('spare_parts'),
+    t('_materials'),
+    t('_fuel'),
   ];
 };
 
 export const TypeMovements = () => {
   const { t } = useTranslation();
   return [
-    t("_adjustments"),
-    t("_purchase"),
-    t("various_sales"),
-    t("transfer_between_warehouses"),
-    t("_loans"),
+    t('_adjustments'),
+    t('_purchase'),
+    t('various_sales'),
+    t('transfer_between_warehouses'),
+    t('_loans'),
   ];
 };
 
@@ -481,12 +476,14 @@ export interface TransformSupply {
   currentStock: number;
   hours?: string;
   employee?: string;
+  zafra?: string;
 }
 
 export interface ExitField extends Document {
   accountId: string;
   creationDate: string;
   campaignId: string;
+  zafra?: string;
   fieldId: string;
   lotId: string;
   cropId: string;
@@ -535,6 +532,7 @@ export interface Campaign extends Document {
   startDate: string;
   endDate: string;
   state: Estado;
+  zafra?: string | string[];
 }
 
 //TODO: cambiar interfaz field
@@ -620,7 +618,7 @@ export interface Numerator extends Document {
 
 export interface MovementType extends Document {
   manual: boolean;
-  sumaStock: "Ambas" | "Suma" | "Descuenta";
+  sumaStock: 'Ambas' | 'Suma' | 'Descuenta';
   name: string;
   description: string;
   typeMovement: string;
@@ -628,12 +626,12 @@ export interface MovementType extends Document {
 }
 
 export interface Crop extends Document {
-  crop: string
+  crop: string;
   descriptionES: string;
   descriptionPT: string;
   descriptionEN: string;
-  cropType: string
-  cropVariety: string
+  cropType: string;
+  cropVariety: string;
   prepared: boolean;
   sowing: boolean;
   application: boolean;
@@ -642,7 +640,7 @@ export interface Crop extends Document {
 }
 
 export interface Country extends Document {
-  code: string
+  code: string;
   descriptionES: string;
   descriptionPT: string;
   descriptionEN: string;
@@ -688,7 +686,7 @@ export interface DetailPurchaseOrderItem extends DetailPurchaseOrder {
 }
 
 export interface Country extends Document {
-  code: string
+  code: string;
   descriptionES: string;
   descriptionPT: string;
   descriptionEN: string;
@@ -701,144 +699,149 @@ export interface Country extends Document {
 //#region Enums
 
 export enum TipoCombustible {
-  Diesel = "Diesel",
-  Nafta = "Nafta",
-  Alcohol = "Alcohol",
-  Electrico = "Electrico"
+  Diesel = 'Diesel',
+  Nafta = 'Nafta',
+  Alcohol = 'Alcohol',
+  Electrico = 'Electrico',
 }
 
 export enum Estado {
-  Todos = "Todos",
-  Activo = "Activo",
-  Inactivo = "Inactivo"
+  Todos = 'Todos',
+  Activo = 'Activo',
+  Inactivo = 'Inactivo',
 }
 
 export enum TipoEntidad {
-  FISICA = "fisica",
-  JURIDICA = "juridica"
+  FISICA = 'fisica',
+  JURIDICA = 'juridica',
 }
 
 export enum CountryCode {
   ARGENTINA = 'AR',
-  BRASIL = "BR",
-  CHILE = "CH",
-  PARAGUAY = "PY",
+  BRASIL = 'BR',
+  CHILE = 'CH',
+  PARAGUAY = 'PY',
 }
 
 export enum CurrencyCode {
-  ARG = "ARS",
-  BRA = "BRL",
-  CHL = "CLP",
-  USA = "USD",
-  EURO = "EUR"
+  ARG = 'ARS',
+  BRA = 'BRL',
+  CHL = 'CLP',
+  USA = 'USD',
+  EURO = 'EUR',
 }
 
 export enum TypeMovement {
-  Ajustes = "Ajustes",
-  Compra = "Compra",
-  VentasVarias = "Ventas Varias",
-  TransferenciaDeposito = "Transferencia entre depositos",
-  Prestamos = "Prestamos",
-  Transformacion = "Transformacion",
-  SalidaDeCampo = "Salida de Campo",
-  OrdenRetiro = "Orden de Retiro",
-  Labores = "Labores",
-
+  Ajustes = 'Ajustes',
+  Compra = 'Compra',
+  VentasVarias = 'Ventas Varias',
+  TransferenciaDeposito = 'Transferencia entre depositos',
+  Prestamos = 'Prestamos',
+  Transformacion = 'Transformacion',
+  SalidaDeCampo = 'Salida de Campo',
+  OrdenRetiro = 'Orden de Retiro',
+  Labores = 'Labores',
 }
 
 export enum Movement {
-  Manual = "Manual",
-  Automatico = "Automatico"
+  Manual = 'Manual',
+  Automatico = 'Automatico',
 }
 
 export enum DisplayModals {
-  SupplyByDeposits = "SupplyByDeposits",
-  SupplyByLots = "SupplyByLots",
-  LaborOrder = "LaborOrder",
-  UserPermissions = "UserPermissions",
-  HistoryWithdrawOrder = "HistoryWithdrawOrder",
+  SupplyByDeposits = 'SupplyByDeposits',
+  SupplyByLots = 'SupplyByLots',
+  LaborOrder = 'LaborOrder',
+  UserPermissions = 'UserPermissions',
+  HistoryWithdrawOrder = 'HistoryWithdrawOrder',
+  ViewComponent = 'ViewComponent',
+  BusinessForm = 'BusinessForm',
+  IngenieroAgronomoForm = 'IngenieroAgronomoForm',
+  ContratistaForm = 'ContratistaForm',
+  LaborsServicesForm = 'LaborsServicesForm',
+  SupplyForm = 'SupplyForm',
 }
 
 export enum VehicleType {
-  Cosechadora = "Cosechadora",
-  Pulverizadora = "Pulverizadora",
-  Tractor = "Tractor",
-  Camioneta = "Camioneta",
-  Acoplado = "Acoplado",
-  Camion = "Camion",
-  Tolva = "Tolva",
-  Otros = "Otros"
+  Cosechadora = 'Cosechadora',
+  Pulverizadora = 'Pulverizadora',
+  Tractor = 'Tractor',
+  Camioneta = 'Camioneta',
+  Acoplado = 'Acoplado',
+  Camion = 'Camion',
+  Tolva = 'Tolva',
+  Otros = 'Otros',
 }
 
 export enum SupplyType {
-  Varios = "Varios",
-  Semillas = "Semillas",
-  Cultivo = "Cultivo",
-  Fertilizantes = "Fertilizantes",
-  Fitosanitarios = "Fitosanitarios",
-  Repuestos = "Repuestos",
-  Materiales = "Materiales",
-  Combustible = "Combustible"
+  Varios = 'Varios',
+  Semillas = 'Semillas',
+  Cultivo = 'Cultivo',
+  Fertilizantes = 'Fertilizantes',
+  Fitosanitarios = 'Fitosanitarios',
+  Repuestos = 'Repuestos',
+  Materiales = 'Materiales',
+  Combustible = 'Combustible',
 }
 
 export enum TipoInsumo {
-  CULTIVO = "CuLtivo"
+  CULTIVO = 'CuLtivo',
 }
 
 export enum OrderStatus {
-  Parcial = "Parcial",
-  Pending = "Pendiente",
-  Completed = "Completada"
+  Parcial = 'Parcial',
+  Pending = 'Pendiente',
+  Completed = 'Completada',
 }
 
 export enum WithdrawalOrderType {
-  Manual = "Manual",
-  Automatica = "Automatica"
+  Manual = 'Manual',
+  Automatica = 'Automatica',
 }
 
 export enum NumeratorType {
-  Client = "Cliente",
-  LaborOrder = "Orden de Trabajo",
-  PurchaseOrder = "Orden de Compra",
-  ContractSaleCereal = "Contrato de Venta de Cereal",
+  Client = 'Cliente',
+  LaborOrder = 'Orden de Trabajo',
+  PurchaseOrder = 'Orden de Compra',
+  ContractSaleCereal = 'Contrato de Venta de Cereal',
 }
 
 export enum UserRols {
   Administrator = 'ADM',
-  User = "USER"
+  User = 'USER',
 }
 
 export enum EnumStatusUser {
-  Activa = "Activa",
-  Inactiva = "Inactiva",
-  Suspendida = "Suspendida",
-  Cancelada = "Cancelada",
+  Activa = 'Activa',
+  Inactiva = 'Inactiva',
+  Suspendida = 'Suspendida',
+  Cancelada = 'Cancelada',
 }
 
 export enum EnumTipoFlete {
-  PAGO = "Flete Pago",
-  APAGAR = "Flete a Pagar",
+  PAGO = 'Flete Pago',
+  APAGAR = 'Flete a Pagar',
 }
 
 export enum EnumEnvoltura {
-  EMBOLSADO = "Embolsado",
-  GRANEL = "Granel",
+  EMBOLSADO = 'Embolsado',
+  GRANEL = 'Granel',
 }
 
 export enum EnumCalidad {
-  CONFORME = "Conforme",
-  CONDICIONAL = "Condicional",
+  CONFORME = 'Conforme',
+  CONDICIONAL = 'Condicional',
 }
 
 export enum EnumTransportDocumentStatus {
-  GENERADA = "Generada",
-  ENTREGADA = "Entregada",
-  EMITIDA = "Emitida"
+  GENERADA = 'Generada',
+  ENTREGADA = 'Entregada',
+  EMITIDA = 'Emitida',
 }
 
 export enum EnumStatusContract {
-  Activo = "Activo",
-  Inactivo = "Inactivo",
+  Activo = 'Activo',
+  Inactivo = 'Inactivo',
 }
 //#endregion
 
@@ -852,10 +855,39 @@ export type GetStockRequest = {
   nroLot?: string;
   fieldId?: string;
   fieldLot?: string;
-}
+};
 
 export type GetControlStockCropRequest = {
   accountId: string;
   campaignId?: string;
   cropId?: string;
+};
+
+export interface PasswordValidation {
+  hasUppercase: boolean;
+  hasDigit: boolean;
+  hasSpecialChar: boolean;
+  hasMinLength: boolean;
+  passwordsMatch: boolean;
+}
+
+export type PasswordStrengthColor = 'error' | 'warning' | 'success';
+
+export interface ProfileFormData {
+  userName: string;
+  language: 'es' | 'en' | 'pt';
+  avatar?: File | null;
+  photoName: string;
+}
+
+export interface PasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface UpdateUserDTO {
+  username: string;
+  language: string;
+  photoName?: string;
 }

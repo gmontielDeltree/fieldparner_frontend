@@ -1,34 +1,32 @@
-import { useDispatch } from "react-redux";
-import { fieldpartnerAPI } from "../config";
+import { useDispatch } from 'react-redux';
+import { fieldpartnerAPI } from '../config';
 import {
   clearErrorMessage,
   finishLoading,
   onChecking,
   onLogin,
   onLogout,
-  startLoading
-} from "../redux/auth";
-import { useAppSelector } from "./useRedux";
+  startLoading,
+} from '../redux/auth';
+import { useAppSelector } from './useRedux';
 import {
   ErrorResponseAuth,
   ResponseAuthLogin,
   ResponseAuthRenew,
   User,
   UserLogin,
-  UserRegister
-} from "../types";
-import { AxiosError, HttpStatusCode } from "axios";
-import { useNavigate } from "react-router-dom";
-import { convertTimestampToDate } from "../helpers/dates";
-import { useTranslation } from "react-i18next";
+  UserRegister,
+} from '../types';
+import { AxiosError, HttpStatusCode } from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { convertTimestampToDate } from '../helpers/dates';
+import { useTranslation } from 'react-i18next';
 
-const controller = "/auth";
+const controller = '/auth';
 
 export const useAuthStore = () => {
   const { t } = useTranslation();
-  const { status, user, errorMessage, isLoading } = useAppSelector(
-    (state) => state.auth
-  );
+  const { status, user, errorMessage, isLoading } = useAppSelector(state => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -38,23 +36,20 @@ export const useAuthStore = () => {
       // Código de testing comentado...
 
       // Código original
-      const response = await fieldpartnerAPI.post<ResponseAuthLogin>(
-        `${controller}/login`,
-        {
-          email,
-          password
-        }
-      );
+      const response = await fieldpartnerAPI.post<ResponseAuthLogin>(`${controller}/login`, {
+        email,
+        password,
+      });
       if (response.data) {
         const { auth, user } = response.data;
         const { accessToken, refreshToken, expiration } = auth;
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem(
-          "token_expiration",
-          convertTimestampToDate(expiration).getTime().toString()
+          'token_expiration',
+          convertTimestampToDate(expiration).getTime().toString(),
         );
-        localStorage.setItem("user_session", JSON.stringify(user));
+        localStorage.setItem('user_session', JSON.stringify(user));
         dispatch(onLogin(user));
       }
       dispatch(finishLoading());
@@ -66,9 +61,9 @@ export const useAuthStore = () => {
         const message = responseError.message;
 
         dispatch(onLogout(message));
-        if (code === "UserNotConfirmedException") {
-          localStorage.setItem("username_temp", email);
-          navigate("/init/auth/confirm");
+        if (code === 'UserNotConfirmedException') {
+          localStorage.setItem('username_temp', email);
+          navigate('/init/auth/confirm');
         }
       }
       dispatch(finishLoading());
@@ -81,12 +76,12 @@ export const useAuthStore = () => {
       const response = await fieldpartnerAPI.post(`${controller}/register`, {
         email,
         password,
-        name
+        name,
       });
       if (response.status === HttpStatusCode.Created) {
-        localStorage.setItem("username_temp", email);
-        dispatch(onLogout(t("confirm_account")));
-        navigate("/init/auth/confirm");
+        localStorage.setItem('username_temp', email);
+        dispatch(onLogout(t('confirm_account')));
+        navigate('/init/auth/confirm');
         return dispatch(finishLoading());
       }
     } catch (error: AxiosError<ErrorResponseAuth> | any) {
@@ -95,7 +90,7 @@ export const useAuthStore = () => {
         const code = responseError.code;
         const message = responseError.message;
 
-        if (code === "UsernameExistsException") dispatch(onLogout(message));
+        if (code === 'UsernameExistsException') dispatch(onLogout(message));
         else dispatch(onLogout(error.response.data.message[1]));
       }
       dispatch(finishLoading());
@@ -105,83 +100,165 @@ export const useAuthStore = () => {
   const startConfirm = async (confirmationCode: string) => {
     dispatch(startLoading());
     try {
-      const email = localStorage.getItem("username_temp");
-      if (!email) return dispatch(onLogout(""));
+      const email = localStorage.getItem('username_temp');
+      if (!email) return dispatch(onLogout(''));
 
       const response = await fieldpartnerAPI.post(`${controller}/confirm`, {
         email,
-        confirmationCode
+        confirmationCode,
       });
 
       if (response.status === HttpStatusCode.Created) {
-        localStorage.removeItem("username_temp");
-        dispatch(onLogout(""));
-        navigate("/init/auth/login");
+        localStorage.removeItem('username_temp');
+        dispatch(onLogout(''));
+        navigate('/init/auth/login');
         dispatch(finishLoading());
         return;
       }
     } catch (error) {
-      dispatch(onLogout(t("try_again_later")));
+      dispatch(onLogout(t('try_again_later')));
       dispatch(clearErrorMessage());
-      localStorage.removeItem("username_temp");
+      localStorage.removeItem('username_temp');
       dispatch(finishLoading());
     }
   };
 
   const checkAuthToken = async () => {
-    const token = localStorage.getItem("accessToken");
-    const refreshToken = localStorage.getItem("refreshToken");
-    const userSession = localStorage.getItem("user_session");
-    
-    if (!token || !refreshToken || !userSession) return dispatch(onLogout(""));
+    const token = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    const userSession = localStorage.getItem('user_session');
+
+    if (!token || !refreshToken || !userSession) return dispatch(onLogout(''));
 
     dispatch(onChecking());
     try {
-      const expiration = localStorage.getItem("token_expiration");
+      const expiration = localStorage.getItem('token_expiration');
 
       if (new Date().getTime() > Number(expiration)) {
-        dispatch(onLogout(""));
+        dispatch(onLogout(''));
         return;
       }
 
-      const lastPath = localStorage.getItem("lastPath") || "/";
-      navigate(lastPath, { replace: true });
-      const userLogin = JSON.parse(userSession || "") as User;
-      dispatch(onLogin(userLogin));
-
-      const response = await fieldpartnerAPI.post<ResponseAuthRenew>(
-        `${controller}/renew`,
-        { refreshToken }
-      );
+      const response = await fieldpartnerAPI.post<ResponseAuthRenew>(`${controller}/renew`, {
+        refreshToken,
+      });
 
       if (response.status === HttpStatusCode.Created) {
         const expiresIn = new Date().getTime() + response.data.ExpiresIn * 1000;
         //Si no devuelve AccessToken, se utiliza el token actual
-        localStorage.setItem("accessToken", response.data.AccessToken || token);
-        localStorage.setItem("token_expiration", expiresIn.toString());
+        localStorage.setItem('accessToken', response.data.AccessToken || token);
+        localStorage.setItem('token_expiration', expiresIn.toString());
+        const lastPath = localStorage.getItem('lastPath') || '/';
+        navigate(lastPath, { replace: true });
+        const userLogin = JSON.parse(userSession || '') as User;
+        dispatch(onLogin(userLogin));
       }
     } catch (error) {
       localStorage.clear();
-      dispatch(onLogout(""));
+      dispatch(onLogout(''));
     }
   };
+
+  //  const checkAuthToken = async () => {
+  //  dispatch(onChecking());
+  // try {
+  //   localStorage.setItem('accessToken', '');
+  //  localStorage.setItem('token_expiration', '');
+
+  //    const lastPath = localStorage.getItem('lastPath') || '/';
+
+  //      dispatch(
+  //    onLogin({
+  //     isAdmin: true,
+  // accountId: 'test',
+  //username: 'Rodrigo',
+  // countryId: 'AR',
+  // id: '12354',
+  // licenceId: '1234',
+  //  currency: '',
+  //   email: 'rgarro@deltree.com.ar',
+  //  }),
+  // );
+  //  navigate(lastPath, { replace: true });
+  // } catch (error) {
+  //localStorage.clear();
+  // dispatch(onLogout(''));
+  // }
+  // };
 
   const startLogout = () => {
     dispatch(startLoading());
     try {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("token_expiration");
-      localStorage.removeItem("user_session");
-      localStorage.removeItem("lastPath");
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('token_expiration');
+      localStorage.removeItem('user_session');
+      localStorage.removeItem('lastPath');
 
-      dispatch(onLogout(t("user_logout_success")));
-      navigate("/init/auth/login");
+      dispatch(onLogout(t('user_logout_success')));
+      navigate('/init/auth/login');
     } catch (error) {
-      console.error("Error during logout: ", error);
-      dispatch(onLogout(t("user_logout_error")));
+      console.error('Error during logout: ', error);
+      dispatch(onLogout(t('user_logout_error')));
     } finally {
       dispatch(finishLoading());
+    }
+  };
+
+  const startForgotPassword = async (email: string, onSuccess?: () => void) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/forgot-password`, {
+        email,
+      });
+
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(finishLoading());
+        dispatch(clearErrorMessage());
+        if (onSuccess) onSuccess();
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+      dispatch(finishLoading());
+    }
+  };
+
+  const startConfirmForgotPassword = async (
+    email: string,
+    confirmationCode: string,
+    newPassword: string,
+    onResult?: (success: boolean) => void,
+  ) => {
+    dispatch(startLoading());
+    try {
+      const response = await fieldpartnerAPI.post(`${controller}/confirm-forgot-password`, {
+        email,
+        confirmationCode,
+        newPassword,
+      });
+
+      if (response.status === HttpStatusCode.Created || response.status === HttpStatusCode.Ok) {
+        dispatch(clearErrorMessage());
+        dispatch(finishLoading());
+        if (onResult) onResult(true);
+        return;
+      }
+    } catch (error: AxiosError<ErrorResponseAuth> | any) {
+      if (error.response && error.response.data) {
+        const responseError: ErrorResponseAuth = error.response.data;
+        const message = responseError.message;
+        dispatch(onLogout(message));
+      } else {
+        dispatch(onLogout(t('try_again_later')));
+      }
+      dispatch(finishLoading());
+      if (onResult) onResult(false);
     }
   };
 
@@ -194,6 +271,8 @@ export const useAuthStore = () => {
     startLogin,
     startRegister,
     startConfirm,
-    startLogout
+    startLogout,
+    startForgotPassword,
+    startConfirmForgotPassword,
   };
 };

@@ -53,12 +53,14 @@ import {
   ListAnnualPlanValorization,
   AnnualPlanValorizationPage,
   ValorizationAnalysisPage,
+  CropStockAdjustmentsListPage,
+  NewCropStockAdjustmentPage,
 } from "../pages";
 
 import { AppLayout } from "../components";
 import { JohnDeereIntegration } from "../components/Integrations/JohnDeereIntegration";
 import { MagrisIntegration, MagrisReportIntegration } from "../components/Integrations/MagrisIntegration";
-import { NewUserPage } from "../pages/NewUserPage";
+import { NewUserPage } from "../pages/Users/NewUserPage";
 import { ComponentTestBed } from '../pages/ComponentTestBed';
 import { useAppSelector } from "../hooks";
 import { PlanificationByLotPage } from "../pages/PlanificationByLotPage";
@@ -214,6 +216,10 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/certificate-deposits" element={<ListCertificateDepositPage />} />
         <Route path="/overview/certificate-deposits/new" element={<CertificateDepositPage />} />
         <Route path="/overview/certificate-deposits/edit/:id" element={<PlanificationPage />} />
+
+        {/* Crop stock adjustments */}
+        <Route path="/overview/crop-stock-adjustments" element={<CropStockAdjustmentsListPage />} />
+        <Route path="/overview/crop-stock-adjustments/new" element={<NewCropStockAdjustmentPage />} />
 
         <Route path="/overview/productive-units" element={<ListProductiveUnits />} />
         <Route path="/overview/productive-units/new" element={<NewProductiveUnits />} />

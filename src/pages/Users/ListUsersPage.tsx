@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, DisplayModals, UserByAccount } from "../types";
+import { ColumnProps, DisplayModals, UserByAccount } from "../../types";
 import React, { useEffect } from "react";
-import { useAppDispatch, useAppSelector, useForm, useUser } from "../hooks";
+import { useAppDispatch, useAppSelector, useForm, useUser } from "../../hooks";
 import {
   DataTable,
   ItemRow,
@@ -12,7 +12,7 @@ import {
   TemplateLayout,
   CloseButtonPage,
   UserPermissionsModal,
-} from "../components";
+} from "../../components";
 import {
   Box,
   Button,
@@ -33,8 +33,8 @@ import {
   ListAlt as ListAltIcon,
 } from "@mui/icons-material";
 import { useTranslation } from "react-i18next";
-import { setUserActive } from "../redux/users";
-import { uiOpenModal } from "../redux/ui";
+import { setUserActive } from "../../redux/users";
+import { uiOpenModal } from "../../redux/ui";
 // import { User } from "@auth0/auth0-spa-js";
 // import { User } from "@auth0/auth0-spa-js";
 // import Swal from 'sweetalert2';
@@ -95,10 +95,7 @@ export const ListUsersPage: React.FC = () => {
           sx={{ ml: { sm: 2 }, pt: 2, pr: 2 }}
         >
           <Box display="flex" alignItems="center">
-            < PersonAddAltIcon sx={{ marginRight: '8px' }} />
-            <Typography component="h2" variant="h4" sx={{ ml: { sm: 2 } }}>
-              Usuarios
-            </Typography>
+
           </Box>
           <CloseButtonPage />
         </Box>

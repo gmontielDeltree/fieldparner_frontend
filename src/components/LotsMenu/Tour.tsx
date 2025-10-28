@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useTheme } from '@mui/material/styles'
 import uuid4 from 'uuid4'
-import EditIcon from '@mui/icons-material/Edit'
 import PlaceMarker from '../NewGeometry/PlaceMarker'
 import { useAppSelector } from '../../hooks'
 import { getEmptyNote } from '../../interfaces/activity'
@@ -15,17 +13,9 @@ import {
   CardFooter,
   Button,
   Container,
-  Row,
-  Col,
   Progress,
 } from 'reactstrap'
-import {
-  MapIcon,
-  MapPin,
-  Clipboard,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
+import { Clipboard, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import AgricultureIcon from '@mui/icons-material/Assignment'
 
 interface TourProps {
@@ -46,13 +36,19 @@ const Tour: React.FC<TourProps> = ({
   if (!lot) return null
 
   const { t } = useTranslation()
-  const theme = useTheme()
   const [formData, setFormData] = useState(existingNote || getEmptyNote())
   const isEditing = existingNote && Object.keys(existingNote).length > 0
   const { selectedCampaign } = useAppSelector((state) => state.campaign)
   const removeMarkerFunctionsRef = useRef<(() => void)[]>([])
   const [activeStep, setActiveStep] = useState(0)
   const [maxStepReached, setMaxStepReached] = useState(0)
+
+  // Define the steps for Tour
+  const steps = [
+    t('generalInfo'),
+    t('inspectionPoints'),
+    t('summary'),
+  ]
 
   useEffect(() => {
     if (existingNote) {
@@ -141,86 +137,61 @@ const Tour: React.FC<TourProps> = ({
     return '#22c55e' // verde para recorrido
   }
 
-  // Define steps for the tour
-  const steps = [
-    { label: t('generalInformation'), key: 'general' },
-    { label: t('pointsAndObservations'), key: 'points' },
-    { label: t('reviewAndSave'), key: 'review' },
-  ]
-
+  // Step navigation functions
   const handleNext = () => {
-    const nextStep = activeStep + 1
-    setActiveStep(nextStep)
-    if (nextStep > maxStepReached) {
-      setMaxStepReached(nextStep)
+    if (activeStep < steps.length - 1) {
+      const nextStep = activeStep + 1
+      setActiveStep(nextStep)
+      setMaxStepReached(Math.max(maxStepReached, nextStep))
     }
   }
 
   const handleBack = () => {
-    setActiveStep(activeStep - 1)
-  }
-
-  const handleStepClick = (step: number) => {
-    if (step <= maxStepReached) {
-      setActiveStep(step)
+    if (activeStep > 0) {
+      setActiveStep(activeStep - 1)
     }
   }
 
-  const getStepContent = () => {
-    switch (activeStep) {
-      case 0:
-        // General information step
-        return (
-          <div>
-            <h5 className="mb-3">{t('generalInformation')}</h5>
-            <TourForm
-              lot={lot}
-              formData={formData}
-              setFormData={setFormData}
-              tourSave={handleRemoveMarkers}
-            />
-          </div>
-        )
-      case 1:
-        // Points and observations step
-        return (
-          <div>
-            <h5 className="mb-3">{t('pointsAndObservations')}</h5>
-            {existingNote &&
-              formData.features.map((feature, index) => (
-                <PlaceMarker
-                  key={index}
-                  selectedLot={{
-                    geometry: {
-                      type: 'Point',
-                      coordinates: feature.properties.posicion,
-                    },
-                  }}
-                  setCoordinates={(newPosition) =>
-                    handleSetCoordinates(index, newPosition)
-                  }
-                  isDraggable={true}
-                  onRemoveMarkers={(removeFunc) => {
-                    removeMarkerFunctionsRef.current.push(removeFunc)
-                  }}
-                />
-              ))}
-          </div>
-        )
-      case 2:
-        // Review and save step
-        return (
-          <div>
-            <h5 className="mb-3">{t('reviewAndSave')}</h5>
-            <div className="p-3 bg-light rounded">
-              <p><strong>{t('nameLabel')}:</strong> {formData.nombre || '-'}</p>
-              <p><strong>{t('dateLabel')}:</strong> {formData.fecha ? new Date(formData.fecha).toLocaleDateString() : '-'}</p>
-              <p><strong>{t('pointsCount')}:</strong> {formData.features?.length || 0}</p>
-            </div>
-          </div>
-        )
+  const handleStepClick = (index: number) => {
+    if (index <= maxStepReached) {
+      setActiveStep(index)
+    }
+  }
+
+  const getStepStatus = (stepIndex: number) => {
+    if (stepIndex === activeStep) return 'current'
+    if (stepIndex < activeStep) return 'complete'
+    if (stepIndex <= maxStepReached) return 'available'
+    return 'upcoming'
+  }
+
+  const getStepStyle = (status: string) => {
+    const tourColor = getTourColor()
+    switch (status) {
+      case 'complete':
+        return {
+          background: tourColor,
+          color: 'white',
+          border: 'none',
+        }
+      case 'current':
+        return {
+          background: 'white',
+          color: tourColor,
+          border: `2px solid ${tourColor}`,
+        }
+      case 'upcoming':
+        return {
+          background: '#f3f4f6',
+          color: '#6b7280',
+          border: 'none',
+        }
       default:
-        return null
+        return {
+          background: '#e5e7eb',
+          color: '#6b7280',
+          border: 'none',
+        }
     }
   }
 
@@ -255,67 +226,134 @@ const Tour: React.FC<TourProps> = ({
             getActivityColor={getActivityColor}
           />
         </CardHeader>
+        
+        {/* Stepper */}
+        {/* Stepper */}
+        <div className="px-4 py-4">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            {steps.map((step, index) => {
+              const status = getStepStatus(index)
 
-        {/* Progress Bar */}
-        <div className="px-4 pt-3">
-          <Progress 
-            value={(activeStep / (steps.length - 1)) * 100} 
-            className="mb-3"
-            style={{ height: '8px' }}
-          />
-          <div className="d-flex justify-content-between mb-3">
-            {steps.map((step, index) => (
-              <div 
-                key={index}
-                className="text-center"
-                style={{ cursor: index <= maxStepReached ? 'pointer' : 'not-allowed' }}
-                onClick={() => handleStepClick(index)}
-              >
-                <div 
-                  className={`rounded-circle d-inline-flex align-items-center justify-content-center ${
-                    index === activeStep ? 'bg-primary text-white' : 
-                    index < activeStep ? 'bg-success text-white' : 
-                    index <= maxStepReached ? 'bg-secondary text-white' : 'bg-light text-muted'
-                  }`}
-                  style={{ width: '30px', height: '30px', fontSize: '14px' }}
+              return (
+                <div
+                  key={step}
+                  className="text-center position-relative"
+                  style={{ flex: 1 }}
                 >
-                  {index + 1}
+                  <div
+                    onClick={() => handleStepClick(index)}
+                    className="rounded-circle mx-auto d-flex align-items-center justify-content-center"
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      cursor: index <= maxStepReached ? 'pointer' : 'default',
+                      transition: 'all 0.2s',
+                      ...getStepStyle(status),
+                    }}
+                  >
+                    {status === 'complete' ? (
+                      <Check size={20} />
+                    ) : (
+                      <span style={{ fontWeight: '600' }}>{index + 1}</span>
+                    )}
+                  </div>
+
+                  <div className="mt-2">
+                    <small
+                      className="text-muted"
+                      style={{
+                        fontWeight: status === 'current' ? '600' : '400',
+                      }}
+                    >
+                      {step}
+                    </small>
+                  </div>
+
+                  {index < steps.length - 1 && (
+                    <Progress
+                      value={index < activeStep ? 100 : 0}
+                      color="success"
+                      style={{
+                        position: 'absolute',
+                        top: '20px',
+                        left: '50%',
+                        width: '100%',
+                        height: '2px',
+                        zIndex: -1,
+                      }}
+                    />
+                  )}
                 </div>
-                <div className="small mt-1">{step.label}</div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
 
         {/* Content */}
         <CardBody className="p-4">
-          {getStepContent()}
+          <TourForm
+            lot={lot}
+            formData={formData}
+            setFormData={setFormData}
+            tourSave={handleRemoveMarkers}
+            activeStep={activeStep}
+          />
+
+          {existingNote &&
+            formData.features.map((feature, index) => (
+              <PlaceMarker
+                key={index}
+                selectedLot={{
+                  geometry: {
+                    type: 'Point',
+                    coordinates: feature.properties.posicion,
+                  },
+                }}
+                setCoordinates={(newPosition) =>
+                  handleSetCoordinates(index, newPosition)
+                }
+                isDraggable={true}
+                onRemoveMarkers={(removeFunc) => {
+                  removeMarkerFunctionsRef.current.push(removeFunc)
+                }}
+              />
+            ))}
         </CardBody>
 
         {/* Actions */}
         <CardFooter className="bg-light d-flex justify-content-between align-items-center p-4">
-          <Button
-            color="light"
-            onClick={activeStep === 0 ? backToActivites : handleBack}
-            className="d-flex align-items-center gap-2"
-          >
-            <ChevronLeft size={16} />
-            {activeStep === 0 ? t('backButton') : t('previousStep')}
-          </Button>
+          <div className="d-flex gap-2">
+            <Button
+              color="light"
+              onClick={backToActivites}
+              className="d-flex align-items-center gap-2"
+            >
+              <ChevronLeft size={16} />
+              {t('cancel')}
+            </Button>
+            {activeStep > 0 && (
+              <Button
+                color="light"
+                onClick={handleBack}
+                className="d-flex align-items-center gap-2"
+              >
+                <ChevronLeft size={16} />
+                {t('previous')}
+              </Button>
+            )}
+          </div>
 
           <div className="d-flex gap-2">
-            {activeStep < steps.length - 1 && (
+            {activeStep < steps.length - 1 ? (
               <Button
                 color="primary"
                 onClick={handleNext}
                 className="d-flex align-items-center gap-2"
               >
-                {t('nextStep')}
+                {t('next')}
                 <ChevronRight size={16} />
               </Button>
-            )}
-            
-            {activeStep === steps.length - 1 && (
+            ) : (
               <Button
                 color="success"
                 onClick={handleSave}
