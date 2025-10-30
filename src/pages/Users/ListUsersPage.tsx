@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ColumnProps, UserByAccount } from "../../types";
+import { ColumnProps, UserByAccount, UserRole } from "../../types";
 import React, { useEffect, useState, useMemo } from "react";
 import { useAppDispatch, useAppSelector, useForm, useUser } from "../../hooks";
 import {
@@ -364,7 +364,7 @@ export const ListUsersPage: React.FC = () => {
                       </IconButton>
                     </Tooltip>
 
-                    {userActive?.isAdmin && !row.isAdmin && (
+                    {userActive?.rol === UserRole.ADMIN && (
                       <Tooltip title={t("edit_permissions", "Editar Permisos")}>
                         <IconButton
                           onClick={() => onClickEditPermissions(row)}
@@ -376,7 +376,7 @@ export const ListUsersPage: React.FC = () => {
                       </Tooltip>
                     )}
 
-                    {userActive?.isAdmin && (
+                    {userActive?.rol === UserRole.ADMIN && (
                       <>
                         <Tooltip title={t("toggle_state", "Activar/Desactivar")}>
                           <IconButton
@@ -388,7 +388,7 @@ export const ListUsersPage: React.FC = () => {
                           </IconButton>
                         </Tooltip>
 
-                        <Tooltip title={t("delete_user", "Eliminar")}>
+                        {/* <Tooltip title={t("delete_user", "Eliminar")}>
                           <IconButton
                             onClick={() => onClickDisableUser(row)}
                             size="small"
@@ -396,7 +396,7 @@ export const ListUsersPage: React.FC = () => {
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>
-                        </Tooltip>
+                        </Tooltip> */}
                       </>
                     )}
                   </Box>

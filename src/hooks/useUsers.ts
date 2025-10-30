@@ -205,7 +205,7 @@ export const useUser = () => {
   const disableUser = async (userId: string, username: string) => {
     setIsLoading(true);
     try {
-      const response = await fieldpartnerAPI.patch(`${controller}/${userId}`, { state: 'Inactiva' });
+      const response = await fieldpartnerAPI.delete(`${controller}/${userId}`);
 
       if (response) {
         NotificationService.showSuccess(t("user_disabled_successfully", { user: username }), {}, t("user_label"));
@@ -233,10 +233,6 @@ export const useUser = () => {
       });
       
       if (response.docs.length) {
-        // Filtrar los registros que pertenecen al usuario y tienen permiso activo
-
-        console.log('userModules', response.docs);
-
         return response.docs;
       }
 
@@ -285,11 +281,11 @@ export const useUser = () => {
         dispatch(onLogout(t("sessionExpired")));
         return;
       }
-
       // Endpoint específico para actualizar permisos
       // Este endpoint debe implementar la lógica de "pisar" permisos anteriores
-      const response = await fieldpartnerAPI.put(`${controller}/${userId}/permissions`, {
-        modulePermissions
+      const response = await fieldpartnerAPI.post(`${controller}/permissions`, {
+        modulePermissions,
+        userId
       });
 
       if (response) {

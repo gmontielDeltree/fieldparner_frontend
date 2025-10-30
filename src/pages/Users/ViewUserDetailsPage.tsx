@@ -16,7 +16,6 @@ import {
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
-  Edit as EditIcon,
   Email as EmailIcon,
   Language as LanguageIcon,
   AccountCircle as AccountCircleIcon,
@@ -24,7 +23,7 @@ import {
   PhotoCamera as PhotoCameraIcon,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector, useMenuModules, useUser } from '../../hooks';
+import { useAppSelector, useMenuModules, useUser } from '../../hooks';
 import { Loading, ModulePermissionsSelector } from '../../components';
 import { urlImg } from '../../config';
 import { UserRole } from '../../types';
@@ -52,7 +51,6 @@ const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => {
 export const ViewUserDetailsPage: React.FC = () => {
   const { id: userId } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const { isLoading, getUserById, getModulesByUserId } = useUser();
   const { menuModules, getMenuModules } = useMenuModules();
   const { userActive } = useAppSelector((state) => state.users);
@@ -62,10 +60,6 @@ export const ViewUserDetailsPage: React.FC = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
-  };
-
-  const handleEdit = () => {
-    navigate(`/init/overview/users/edit/${userId}`);
   };
 
   const handleBack = () => {
@@ -218,14 +212,6 @@ export const ViewUserDetailsPage: React.FC = () => {
               onClick={handleBack}
             >
               Volver
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-              color="primary"
-            >
-              Editar
             </Button>
           </Box>
         </Box>

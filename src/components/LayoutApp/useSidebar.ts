@@ -332,8 +332,9 @@ export const useSidebar = (): UseSidebarReturn => {
 
   // permission check: usar módulos del usuario desde auth.modules
   const hasPermission = (m: MenuModules) => {
-    // Si es admin, tiene acceso a todo
-    if (user && user.isAdmin) return true;
+    // CAMBIO: Se eliminó la verificación de isAdmin para que SIEMPRE se respeten los módulos asignados
+    // Ahora un usuario admin solo verá los módulos que tiene explícitamente asignados
+    // if (user && user.isAdmin) return true;
 
     // Si hay propiedad permission explícita en el menu, respetarla
     if (typeof (m as any).permission === 'boolean') return !!(m as any).permission;

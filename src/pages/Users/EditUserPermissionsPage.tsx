@@ -31,14 +31,14 @@ export const EditUserPermissionsPage: React.FC = () => {
   const [userData, setUserData] = useState<{ username?: string; email?: string }>({});
 
   const handleBack = () => {
-    navigate(`/init/overview/users/view/${userId}`);
+    navigate('/init/overview/users');
   };
 
   const handleSave = async () => {
     if (!userId) return;
 
     await updateUserPermissions(userId, selectedPermissions);
-    navigate(`/init/overview/users/view/${userId}`);
+    navigate('/init/overview/users');
   };
 
   const handlePermissionsChange = (permissions: number[]) => {
