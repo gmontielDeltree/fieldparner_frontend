@@ -384,6 +384,11 @@ export const useStockMovement = () => {
             };
             newMovement.currency = user.currency;
             newMovement.accountId = user.accountId;
+            // Si el movimiento proviene de Labores y no se especificó la leyenda,
+            // marcarlo como Automatica para reflejar origen automático
+            if (newMovement.typeMovement === TypeMovement.Labores && !newMovement.movement) {
+                (newMovement as any).movement = 'Automatica';
+            }
             let responseAll = await addStockMovementSupply(newMovement, supplyData, depositDestination);
 
             setIsLoading(false);

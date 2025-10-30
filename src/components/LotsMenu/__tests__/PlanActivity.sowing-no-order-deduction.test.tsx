@@ -76,6 +76,10 @@ describe('Siembra sin orden de retiro - descuenta usando total exacto', () => {
         const st = await dbContext.stock.find({ selector: { accountId: 'acc-1' } } as any)
         const s = st.docs.find((d: any) => d.id === 'sup-1')
         expect(s?.currentStock).toBe(88)
+
+        // Verificar que el movimiento se haya guardado como Automatica al provenir de Labores
+        const sm = await dbContext.stockMovements.find({ selector: { accountId: 'acc-1' } } as any)
+        expect(sm.docs[0]?.movement).toBe('Automatica')
     })
 })
 

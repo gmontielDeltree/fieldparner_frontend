@@ -4,7 +4,7 @@ import { Visibility as VisibilityIcon } from '@mui/icons-material';
 import { useStockMovement } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from '@mui/material';
-import { StockMovementItem } from '../../types';
+import { StockMovementItem, TypeMovement } from '../../types';
 import { DetailStockMovementModal, GenericListPage } from '../../components';
 
 export const StockMovementPage: React.FC = () => {
@@ -99,7 +99,7 @@ export const StockMovementPage: React.FC = () => {
       return {
         ...sm,
         date: sm.creationDate,
-        movement: sm.movement,
+        movement: sm.typeMovement === TypeMovement.Labores ? 'Automatica' : sm.movement,
         supplyOrCrop,
         deposit: sm.deposit?.description,
         movementType: sm.typeMovement,
