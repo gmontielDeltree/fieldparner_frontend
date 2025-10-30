@@ -99,6 +99,7 @@
   "operation_date": "Operation Date",
   "_crop": "Crop",
   "_crop_of": "Crop of",
+  "_item": "Item",
   "_waybill": "Waybill",
   "ticket_receipt": "Ticket/ Receipt",
   "_hectare": "Hectare",
@@ -1273,5 +1274,7 @@
   "templateDownloaded": "Template downloaded successfully",
   "noFieldSpecified": "No field specified",
   "save_changes": "Save changes",
-  "change_photo": "Change photo"
+  "change_photo": "Change photo",
+  "filterByType": "Filter by type",
+  "filterBySupply": "Filter by supply"
 }

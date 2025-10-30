@@ -99,6 +99,7 @@
   "operation_date": "Data de Operação",
   "_crop": "Colheita",
   "_crop_of": "Crop de",
+  "_item": "Item",
   "_waybill": "Conhecimento de Transporte",
   "ticket_receipt": "Bilhete/Recibo",
   "_hectare": "Hectare",
@@ -1280,6 +1281,8 @@
   "templateDownloaded": "Modelo baixado com sucesso",
   "noFieldSpecified": "Nenhum campo especificado",
   "save_changes": "Guardar alterações",
-  "change_photo": "Alterar foto"
+  "change_photo": "Alterar foto",
+  "filterByType": "Filtrar por tipo",
+  "filterBySupply": "Filtrar por insumo"
 }
 

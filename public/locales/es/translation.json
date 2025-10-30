@@ -97,6 +97,7 @@
   "operation_date": "Fecha de Operación",
   "_crop": "Cultivo",
   "_crop_of": "Cultivo de",
+  "_item": "Artículo",
   "_waybill": "Guía de Remisión",
   "ticket_receipt": "Ticket/Recibo",
   "title_sale_cereal": "Contrato Venta Cereal",
@@ -1277,5 +1278,7 @@
   "templateDownloaded": "Plantilla descargada exitosamente",
   "noFieldSpecified": "Sin campo especificado",
   "save_changes": "Guardar cambios",
-  "change_photo": "Cambiar foto"
+  "change_photo": "Cambiar foto",
+  "filterByType": "Filtrar por tipo",
+  "filterBySupply": "Filtrar por insumo"
 }
