@@ -73,9 +73,10 @@ export const SupplyPage: React.FC = () => {
   const { id } = useParams();
   const onClickCancel = () => navigate("/init/overview/supply");
 
-  const handleUpdateSupply = () => {
+  const handleUpdateSupply = async () => {
     if (formulario._id) {
-      updateSupply(formulario);
+      await updateSupply(formulario);
+      await uploadDocumentFile();
       dispatch(removeSupplyActive());
       navigate("/init/overview/supply");
     }

@@ -21,11 +21,13 @@ import {
 } from "@mui/material";
 import { BusinessForm } from "../../components";
 import { removeBusinessActive } from "../../redux/business";
+import { uiCloseModal } from "../../redux/ui";
 import { getLocalityAndStateByZipCode } from "../../utils/getDataZipCode";
 import { useTranslation } from "react-i18next";
 import { uploadFile } from "../../helpers/fileUpload";
 // import Swal from "sweetalert2";
 import { Business } from "../../interfaces/socialEntity";
+import { ContractorRepository } from "../../classes/ContractorRepository";
 
 
 const initialForm: Business = {
@@ -54,7 +56,11 @@ const initialForm: Business = {
   taxSituation: ""
 };
 
-export const BusinessPage: React.FC = () => {
+interface BusinessPageProps {
+  isQuickAdd?: boolean;
+}
+
+export const BusinessPage: React.FC<BusinessPageProps> = ({ isQuickAdd = false }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
@@ -89,6 +95,8 @@ export const BusinessPage: React.FC = () => {
     getBusinesses,
   } = useBusiness();
   const { dataCountry, getCountries } = useCountry();
+  const { user } = useAppSelector(state => state.auth);
+  const [contractorRepo] = useState(() => ContractorRepository.getInstance(user?.accountId));
 
   const { zipCode } = formulario;
 
@@ -267,7 +275,13 @@ export const BusinessPage: React.FC = () => {
 
   const onClickCancel = () => {
     // dispatch(removeCustomerActive());
-    navigate("/init/overview/business");
+    if (isQuickAdd) {
+      // Si es un quick add desde modal, cerrar modal en lugar de navegar
+      dispatch(uiCloseModal());
+    } else {
+      // Si es la página normal, navegar como antes
+      navigate("/init/overview/business");
+    }
   };
 
   const addNewBusiness = async () => {
@@ -279,7 +293,21 @@ export const BusinessPage: React.FC = () => {
     if (logoFile) {
       await uploadFile(logoFile);
     }
-    await createBusiness(formulario);
+    
+    // El usuario debe elegir manualmente las categorías, no se asignan automáticamente
+    const createdBusiness = await createBusiness(formulario, isQuickAdd);
+    
+    // Si es adición rápida desde modal, actualizar el ContractorRepository y cerrar modal
+    if (isQuickAdd && createdBusiness) {
+      console.log("🚀 BusinessPage - Quick add successful, refreshing ContractorRepository...");
+      console.log("📝 BusinessPage - Created business with categories:", createdBusiness.categorias);
+      // Forzar actualización del ContractorRepository para que los autocompletes se actualicen
+      await contractorRepo.refreshAndNotify();
+      console.log("✅ BusinessPage - ContractorRepository refreshed, closing modal...");
+      // Cerrar el modal
+      dispatch(uiCloseModal());
+    }
+    
     reset();
   };
 
@@ -312,6 +340,8 @@ export const BusinessPage: React.FC = () => {
     if (businessActive) setFormulario(businessActive);
     else setFormulario(initialForm);
   }, [businessActive]);
+
+  // La categoría por defecto se asignará solo al momento de guardar, no en el UI
 
   useEffect(() => {
     return () => {

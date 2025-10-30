@@ -53,8 +53,29 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language;
+  const [originalFileName, setOriginalFileName] = React.useState<string>("");
+  const [initialDocumentFile, setInitialDocumentFile] = React.useState<string>("");
+  const [initialDocumentFileName, setInitialDocumentFileName] = React.useState<string>("");
 
-  const { type, name, description, barCode, stockByLot, brand, senasaId, documentFile } = formValues;
+  const { type, name, description, barCode, stockByLot, brand, senasaId, documentFile, documentFileName } = formValues;
+  
+  React.useEffect(() => {
+    // Si existe documentFileName, usarlo (nuevo formato)
+    if (documentFileName) {
+      setOriginalFileName(documentFileName);
+      if (!initialDocumentFileName) {
+        setInitialDocumentFileName(documentFileName);
+      }
+    } 
+    // Si no existe documentFileName pero sí documentFile, mostrar el documentFile
+    // (para compatibilidad con supplies existentes)
+    else if (documentFile) {
+      setOriginalFileName(documentFile);
+      if (!initialDocumentFile) {
+        setInitialDocumentFile(documentFile);
+      }
+    }
+  }, [documentFileName, documentFile]);
 
 
   // const handleChangeLabors = (
@@ -82,16 +103,37 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
       let extensionPos = fileNameOriginal.lastIndexOf(".");
       let fileType = fileNameOriginal.substring(extensionPos, fileNameOriginal.length);
 
+      setOriginalFileName(fileNameOriginal);
       const newFileName = `supply_${uuid4()}${fileType}`;
       const renamedFile = new File([file], newFileName, { type: file.type });
       setFileUpload(renamedFile);
-      setFormValues(prevState => ({ ...prevState, documentFile: newFileName }));
+      setFormValues(prevState => ({ 
+        ...prevState, 
+        documentFile: newFileName,
+        documentFileName: fileNameOriginal 
+      }));
     }
   };
 
   const cancelFile = () => {
     setFileUpload(null);
-    setFormValues(prevState => ({ ...prevState, documentFile: "" }));
+    // Si había un archivo inicial, restaurarlo
+    if (initialDocumentFileName || initialDocumentFile) {
+      setOriginalFileName(initialDocumentFileName || initialDocumentFile);
+      setFormValues(prevState => ({ 
+        ...prevState, 
+        documentFile: initialDocumentFile,
+        documentFileName: initialDocumentFileName 
+      }));
+    } else {
+      // Si no había archivo inicial, limpiar todo
+      setOriginalFileName("");
+      setFormValues(prevState => ({ 
+        ...prevState, 
+        documentFile: "",
+        documentFileName: "" 
+      }));
+    }
   }
 
   const isSeedType = React.useMemo(() => IsSeed(type), [type]);
@@ -262,9 +304,9 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
         </FormGroup>
       </Grid>
       <Grid item xs={12} >
-        {documentFile ? (
+        {originalFileName ? (
           <Typography variant="body1" style={{ margin: 10 }}>
-            {documentFile}
+            {originalFileName}
             <IconButton onClick={() => cancelFile()} color="error" sx={{ p: 0, pl: 1 }}>
               <CancelIcon fontSize="medium" />
             </IconButton>

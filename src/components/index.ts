@@ -21,6 +21,7 @@ export * from './Modals/SupplyByLots';
 export * from './Modals/LaborOrder';
 export * from './Modals/HistoryWithdrawOrder';
 export * from './Modals/DetailStockMovement';
+export * from './Modals/ViewComponentModal/ViewComponentModal';
 export * from './CloseButton';
 export * from './NewSupplyRow';
 export * from './BorderContainer';
@@ -46,3 +47,7 @@ export * from './IconsViewer/IconsViewer';
 export * from './GenericListPage/GenericListPage';
 
 export * from './ModulePermissionsSelector';
+export * from './AutocompleteAddOption';
+//export * from './LotsMenu/components/AutocompleteBusiness';
+//export * from './LotsMenu/components/AutocompleteIngenieroAgronomo';
+export * from './LotsMenu/components/AutocompleteLaborsServices';

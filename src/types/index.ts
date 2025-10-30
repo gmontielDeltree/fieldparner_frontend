@@ -235,6 +235,7 @@ export interface Supply extends Document {
   eiqValue?: string;
   senasaId?: string;
   documentFile?: string;
+  documentFileName?: string;
   isDefault?: boolean;
 }
 
@@ -755,6 +756,12 @@ export enum DisplayModals {
   LaborOrder = 'LaborOrder',
   UserPermissions = 'UserPermissions',
   HistoryWithdrawOrder = 'HistoryWithdrawOrder',
+  ViewComponent = 'ViewComponent',
+  BusinessForm = 'BusinessForm',
+  IngenieroAgronomoForm = 'IngenieroAgronomoForm',
+  ContratistaForm = 'ContratistaForm',
+  LaborsServicesForm = 'LaborsServicesForm',
+  SupplyForm = 'SupplyForm',
 }
 
 export enum VehicleType {

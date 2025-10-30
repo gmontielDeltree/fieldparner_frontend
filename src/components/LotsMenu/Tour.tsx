@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useTheme } from '@mui/material/styles'
 import uuid4 from 'uuid4'
-import EditIcon from '@mui/icons-material/Edit'
 import PlaceMarker from '../NewGeometry/PlaceMarker'
 import { useAppSelector } from '../../hooks'
 import { getEmptyNote } from '../../interfaces/activity'
@@ -15,19 +13,9 @@ import {
   CardFooter,
   Button,
   Container,
-  Row,
-  Col,
   Progress,
 } from 'reactstrap'
-import {
-  MapIcon,
-  MapPin,
-  Clipboard,
-  ChevronLeft,
-  ChevronRight,
-  Check,
-  AlertCircle,
-} from 'lucide-react'
+import { Clipboard, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 import AgricultureIcon from '@mui/icons-material/Assignment'
 
 interface TourProps {
@@ -48,13 +36,10 @@ const Tour: React.FC<TourProps> = ({
   if (!lot) return null
 
   const { t } = useTranslation()
-  const theme = useTheme()
   const [formData, setFormData] = useState(existingNote || getEmptyNote())
   const isEditing = existingNote && Object.keys(existingNote).length > 0
   const { selectedCampaign } = useAppSelector((state) => state.campaign)
   const removeMarkerFunctionsRef = useRef<(() => void)[]>([])
-
-  // Stepper state
   const [activeStep, setActiveStep] = useState(0)
   const [maxStepReached, setMaxStepReached] = useState(0)
 
@@ -241,7 +226,8 @@ const Tour: React.FC<TourProps> = ({
             getActivityColor={getActivityColor}
           />
         </CardHeader>
-
+        
+        {/* Stepper */}
         {/* Stepper */}
         <div className="px-4 py-4">
           <div className="d-flex justify-content-between align-items-center mb-3">
