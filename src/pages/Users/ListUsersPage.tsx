@@ -368,6 +368,7 @@ export const ListUsersPage: React.FC = () => {
                       <Tooltip title={t("edit_permissions", "Editar Permisos")}>
                         <IconButton
                           onClick={() => onClickEditPermissions(row)}
+                          disabled={userActive?.id === row.userId}
                           size="small"
                           sx={{ color: '#3B82F6' }}
                         >
@@ -381,6 +382,7 @@ export const ListUsersPage: React.FC = () => {
                         <Tooltip title={t("toggle_state", "Activar/Desactivar")}>
                           <IconButton
                             onClick={() => onClickDisableUser(row)}
+                            disabled={userActive?.id === row.userId}
                             size="small"
                             sx={{ color: '#F59E0B' }}
                           >
