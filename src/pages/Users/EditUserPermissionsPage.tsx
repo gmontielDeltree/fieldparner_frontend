@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  Divider,
   Card,
   CardContent,
   Alert,
@@ -19,16 +18,13 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMenuModules, useUser } from '../../hooks';
 import { Loading, ModulePermissionsSelector } from '../../components';
-import { ModulesUsers } from '../../interfaces/menuModules';
 
 export const EditUserPermissionsPage: React.FC = () => {
   const { id: userId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isLoading, getUserById, getModulesByUserId, updateUserPermissions } = useUser();
   const { menuModules, getMenuModules } = useMenuModules();
-  const [userPermissions, setUserPermissions] = useState<ModulesUsers[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<number[]>([]);
-  const [userData, setUserData] = useState<{ username?: string; email?: string }>({});
 
   const handleBack = () => {
     navigate('/init/overview/users');
@@ -56,7 +52,6 @@ export const EditUserPermissionsPage: React.FC = () => {
 
       // Cargar permisos actuales del usuario
       getModulesByUserId(userId).then(permissions => {
-        setUserPermissions(permissions);
         const moduleIds = permissions.map(p => Number(p.moduleId));
         setSelectedPermissions(moduleIds);
       });

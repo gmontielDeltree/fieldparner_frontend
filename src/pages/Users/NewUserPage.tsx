@@ -86,8 +86,6 @@ export const NewUserPage = () => {
     confirmPassword: "",
     newPassword: "",
   });
-  const { userActive } = useAppSelector((state) => state.users);
-  // const { user: authUser } = useAppSelector((state) => state.auth);
   const {
     photoName,
     formulario,

@@ -289,7 +289,7 @@ export const useUser = () => {
       });
 
       if (response) {
-        NotificationService.showSuccess(t("permissions_updated_successfully"), {}, t("user_label"));
+        NotificationService.showSuccess("Usuario actualizado correctamente", {}, t("user_label"));
       }
     } catch (error) {
       console.log(error);
