@@ -44,7 +44,7 @@ export const StockMovementPage: React.FC = () => {
     _id: sm._id,
     _rev: sm._rev,
     date: sm.creationDate,
-    movement: sm.movement,
+    movement: sm.typeMovement === TypeMovement.Labores ? 'Automatica' : sm.movement,
     supply: `${sm.supply?.type}/${sm.supply?.name}`,
     deposit: sm.deposit?.description,
     movementType: sm.typeMovement,
