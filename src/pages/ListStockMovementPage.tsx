@@ -10,7 +10,7 @@ interface RowStockMovementItem {
   _rev: string;
   date: string;
   movement: string;
-  supply: string;
+  item: string;
   deposit: string;
   movementType: string;
   isIncome: string;
@@ -32,7 +32,7 @@ export const StockMovementPage: React.FC = () => {
   const columns = [
     { field: 'date', headerName: t('_date'), width: 150 },
     { field: 'movement', headerName: t('_movement'), width: 120 },
-    { field: 'supply', headerName: t('type_supply'), width: 200 },
+    { field: 'item', headerName: t('_item'), width: 200 },
     { field: 'deposit', headerName: t('_warehouse'), width: 200 },
     { field: 'movementType', headerName: t('movement_type'), width: 150 },
     { field: 'isIncome', headerName: t('income_outcome'), width: 120 },
@@ -44,12 +44,14 @@ export const StockMovementPage: React.FC = () => {
     _id: sm._id,
     _rev: sm._rev,
     date: sm.creationDate,
-    movement: sm.typeMovement === TypeMovement.Labores ? 'Automatica' : sm.movement,
-    supply: `${sm.supply?.type}/${sm.supply?.name}`,
+    movement: sm.movement,
+    item: sm.crop
+      ? `${t('_crop')}: ${sm.crop.crop}${sm.crop.cropVariety ? ` - ${sm.crop.cropVariety}` : ''}`
+      : `${sm.supply?.type}/${sm.supply?.name}`,
     deposit: sm.deposit?.description,
     movementType: sm.typeMovement,
     isIncome: sm.isIncome ? t('_income') : t('_outcome'),
-    um: sm.supply?.unitMeasurement,
+    um: sm.crop ? 'kg' : sm.supply?.unitMeasurement,
     amount: sm.amount,
   }));
 
