@@ -21,6 +21,7 @@ import { dbContext } from '../../../services'
 import uuid4 from 'uuid4'
 import { format } from 'date-fns'
 import { useTranslation } from 'react-i18next'
+import { adjustActivityForHectares } from './replicate-utils'
 
 const fadeInAnimation = keyframes`
   from {
@@ -153,26 +154,13 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
           return
         }
 
-        let newActivity = { ...originalActivity }
-        console.log(
-          'trying to replicate activity...',
-          JSON.stringify(newActivity),
+        // Build adjusted activity for the target lot area
+        let newActivity = adjustActivityForHectares(
+          { ...originalActivity },
+          lotWithFieldName.lot.properties.hectareas,
         )
-        newActivity.estado = 'pendiente'
-        newActivity.detalles.hectareas =
-          lotWithFieldName.lot.properties.hectareas
         newActivity.lote_uuid = lotWithFieldName.lot.properties.uuid
         newActivity.uuid = uuid4()
-
-        newActivity.detalles.dosis.forEach((dosis) => {
-          const hectareas = newActivity.detalles.hectareas
-          const dosisValue = parseFloat(dosis.dosis.replace(',', '.'))
-          const total = hectareas * dosisValue
-          dosis.total = total.toLocaleString('de-DE', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })
-        })
 
         const fechaEjecucion = newActivity.detalles.fecha_ejecucion_tentativa
         const parsedDate = new Date(fechaEjecucion)
@@ -219,10 +207,16 @@ function ReplicateActivityMenu({ originalActivity, handleReplicateActivity }) {
   }
 
   const extractLots = (fields: Field[]) => {
-    const allLotsWithNames = fields.flatMap((field) =>
-      (field.lotes || []).map((lot) => ({ lot, fieldName: field.nombre })),
+    // A073: restrict to lots in the same field as the original activity
+    const originField = fields.find(f => (f.lotes || []).some(l => l.properties.uuid === originalActivity?.lote_uuid))
+    const allowedFields = originField ? [originField] : fields
+    const lots = allowedFields.flatMap((field) =>
+      (field.lotes || [])
+        // exclude the source lot itself
+        .filter(l => l.properties.uuid !== originalActivity?.lote_uuid)
+        .map((lot) => ({ lot, fieldName: field.nombre }))
     )
-    setLotsWithFieldNames(allLotsWithNames)
+    setLotsWithFieldNames(lots)
   }
 
   function isField(doc: any): doc is Field {

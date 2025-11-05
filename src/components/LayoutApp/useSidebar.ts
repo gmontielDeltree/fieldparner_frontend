@@ -59,13 +59,13 @@ export const useSidebar = (): UseSidebarReturn => {
   const [openCollapse, setOpenCollapse] = useState<string>('');
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation();
-  const { user, modules: userModules } = useAppSelector((s: any) => s.auth || {});
+  const { user, modules: userModules, status: authStatus } = useAppSelector((s: any) => s.auth || {});
   const { getSystem, system } = useSystem();
   const version = system.length ? system[0].version : '';
 
   // backend hooks
-  const { modules, getModules } = useModules();
-  const { menuModules, getMenuModules, isLoading } = useMenuModules();
+  const { modules, getModules, isLoading: isLoadingModules } = useModules();
+  const { menuModules, getMenuModules, isLoading: isLoadingMenu } = useMenuModules();
 
   // permissions slice (app-specific)
   const modulesPermissionsSlice = useAppSelector(
@@ -329,6 +329,10 @@ export const useSidebar = (): UseSidebarReturn => {
       return false;
     });
   }, [groupKeysSorted, grouped, sortedModules]);
+
+  // Composite loading: keep sidebar in loading state until menu, modules, and auth permissions are ready
+  const isAuthLoading = authStatus === 'checking' || (authStatus === 'authenticated' && (!userModules || userModules.length === 0));
+  const isLoading = isLoadingMenu || isLoadingModules || isAuthLoading;
 
   // permission check: usar módulos del usuario desde auth.modules
   const hasPermission = (m: MenuModules) => {

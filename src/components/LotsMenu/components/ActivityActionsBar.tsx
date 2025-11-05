@@ -145,7 +145,8 @@ const ActivityActionsBar = ({
     },
     {
       icon: <Repeat size={18} strokeWidth={2} />,
-      text: t('repeatActivity'),
+      // Spec A073: clearer tooltip for replicating planning to other lots
+      text: t('Replicar Planificación a Lotes'),
       action: onRepeatOT,
       disabled: disabledActions.repeat || false
     },

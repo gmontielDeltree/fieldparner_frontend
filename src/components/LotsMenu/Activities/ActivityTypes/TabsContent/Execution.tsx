@@ -311,7 +311,13 @@ function ExecutionContent(props) {
                     {t('agronomicEngineer')}:
                   </Typography>
                   <Typography variant="body1" gutterBottom>
-                    {execution.detalles.business}
+                    {typeof execution.detalles.business === 'string'
+                      ? execution.detalles.business
+                      : (execution.detalles.business.nombreCompleto ||
+                         execution.detalles.business.razonSocial ||
+                         execution.detalles.business.name ||
+                         execution.detalles.business._id ||
+                         t('notAvailable'))}
                   </Typography>
                 </Box>
               )}

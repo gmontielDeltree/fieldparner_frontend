@@ -280,27 +280,41 @@ function PersonalFormUnified({
           </>
         ) : (
           <Grid item xs={12} sm={6}>
-            {mode === 'execute' && (
-              formData.tipo === 'aplicacion' || formData.tipo === 'application' ||
-              formData.tipo === 'cosecha' || formData.tipo === 'harvesting'
-            ) ? (
+            {/* A073: If a crop was selected previously, show it read-only in step 1 */}
+            {formData.detalles?.cultivo ? (
               <TextField
                 fullWidth
                 label={t('Crop')}
-                value={formData.detalles?.cultivo?.descriptionES || 
-                       formData.detalles?.cultivo?.descriptionEN || 
-                       formData.detalles?.cultivo?.name || 
-                       t('No crop selected')}
+                value={formData.detalles?.cultivo?.descriptionES ||
+                       formData.detalles?.cultivo?.descriptionEN ||
+                       formData.detalles?.cultivo?.name ||
+                       ''}
                 disabled
-                InputProps={{
-                  readOnly: true,
-                }}
+                InputProps={{ readOnly: true }}
               />
             ) : (
-              <AutocompleteCultivo
-                value={formData.detalles?.cultivo || ''}
-                onChange={(value) => onFieldChange('cultivo', value)}
-              />
+              (mode === 'execute' && (
+                formData.tipo === 'aplicacion' || formData.tipo === 'application' ||
+                formData.tipo === 'cosecha' || formData.tipo === 'harvesting'
+              )) ? (
+                <TextField
+                  fullWidth
+                  label={t('Crop')}
+                  value={formData.detalles?.cultivo?.descriptionES || 
+                         formData.detalles?.cultivo?.descriptionEN || 
+                         formData.detalles?.cultivo?.name || 
+                         t('No crop selected')}
+                  disabled
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                />
+              ) : (
+                <AutocompleteCultivo
+                  value={formData.detalles?.cultivo || ''}
+                  onChange={(value) => onFieldChange('cultivo', value)}
+                />
+              )
             )}
           </Grid>
         )}
@@ -346,35 +360,46 @@ function PersonalFormUnified({
         {(formData.tipo === 'siembra' || formData.tipo === 'sowing' ||
           formData.tipo === 'preparado' || formData.tipo === 'preparation') && (
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id="zafra-label">{t('Zafra')}</InputLabel>
-                <Select
-                  labelId="zafra-label"
-                  id="zafra"
-                  value={formData.detalles?.zafra || ''}
+              {formData.detalles?.zafra ? (
+                // A073: If zafra was already chosen earlier, show it read-only
+                <TextField
+                  fullWidth
                   label={t('Zafra')}
-                  onChange={(e) => onFieldChange('zafra', e.target.value)}
-                >
-                  {campaign?.zafra && Array.isArray(campaign.zafra) ? (
-                    campaign.zafra.map((zafra) => (
-                      <MenuItem key={zafra} value={zafra}>
-                        {zafra}
+                  value={formData.detalles?.zafra}
+                  disabled
+                  InputProps={{ readOnly: true }}
+                />
+              ) : (
+                <FormControl fullWidth>
+                  <InputLabel id="zafra-label">{t('Zafra')}</InputLabel>
+                  <Select
+                    labelId="zafra-label"
+                    id="zafra"
+                    value={formData.detalles?.zafra || ''}
+                    label={t('Zafra')}
+                    onChange={(e) => onFieldChange('zafra', e.target.value)}
+                  >
+                    {campaign?.zafra && Array.isArray(campaign.zafra) ? (
+                      campaign.zafra.map((zafra) => (
+                        <MenuItem key={zafra} value={zafra}>
+                          {zafra}
+                        </MenuItem>
+                      ))
+                    ) : campaign?.zafra && typeof campaign.zafra === 'string' ? (
+                      <MenuItem value={campaign.zafra}>
+                        {campaign.zafra}
                       </MenuItem>
-                    ))
-                  ) : campaign?.zafra && typeof campaign.zafra === 'string' ? (
-                    <MenuItem value={campaign.zafra}>
-                      {campaign.zafra}
-                    </MenuItem>
-                  ) : (
-                    <MenuItem disabled value="">
-                      <em>{t('No hay zafras disponibles en la campaña')}</em>
-                    </MenuItem>
-                  )}
-                </Select>
-                <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
-                  {t('Seleccione la zafra de la campaña actual')}
-                </Typography>
-              </FormControl>
+                    ) : (
+                      <MenuItem disabled value="">
+                        <em>{t('No hay zafras disponibles en la campaña')}</em>
+                      </MenuItem>
+                    )}
+                  </Select>
+                  <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
+                    {t('Seleccione la zafra de la campaña actual')}
+                  </Typography>
+                </FormControl>
+              )}
             </Grid>
           )}
 

@@ -226,7 +226,10 @@ function Activity({
           zIndex: 1,
         }}
       ></div>
-      <Card sx={cardStyle}>
+      <Card sx={{
+        ...cardStyle,
+        ...(isPlanificada ? { filter: 'grayscale(0.7)', opacity: 0.9 } : {}),
+      }}>
         <CardContent>
           {isPlanificada && (
             <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -237,7 +240,7 @@ function Activity({
                 variant="outlined"
                 size="small"
               />
-              <Tooltip title={t('Complete missing fields to unlock the planned activity')}>
+              <Tooltip title={t('Confirmá para reservar stock y dejarla lista para ejecutar')}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -251,7 +254,7 @@ function Activity({
                     }
                   }}
                 >
-                  {t('Unlock Activity')}
+                  {t('Confirmar planificación')}
                 </Button>
               </Tooltip>
             </Box>

@@ -311,6 +311,15 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         if (!formData.detalles || !formData.detalles.hectareas) {
           missingFields++
         }
+        // Harvest-specific required fields in step 1
+        if (formData.tipo === 'cosecha' || spanishActivityType === 'cosecha') {
+          if (!formData.detalles?.deposito) {
+            missingFields++
+          }
+          if (!formData.detalles?.rinde_obtenido) {
+            missingFields++
+          }
+        }
         break
       case 1: // SuppliesForm (Insumos)
         // En cosecha, no es obligatorio agregar insumos
@@ -832,11 +841,15 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
         // Usar cantidad total; si falta, calcular como (dosificación x hectáreas)
         const stockAmount = calculateDoseStockAmount(dosis, executionDetails, formData, lot)
+        // Evitar ReferenceError: definir métricas locales solo para debug
+        const _perHa = Number(dosis?.dosificacion ?? dosis?.dosis)
+        const _hectareas = Number(executionDetails?.detalles?.hectareas || formData?.detalles?.hectareas || lot?.properties?.hectareas || lot?.hectareas || 0)
+        const _hasTotal = dosis?.total !== undefined && dosis?.total !== null && dosis?.total !== ''
         console.log('  📊 Cantidad a descontar del stock:', stockAmount, {
-          hasTotal,
+          hasTotal: _hasTotal,
           total: dosis.total,
-          perHa,
-          hectareas,
+          perHa: _perHa,
+          hectareas: _hectareas,
         })
 
         const newMovement: StockMovement = {
@@ -928,8 +941,8 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         new Date(executionDetails.detalles.fecha_ejecucion_tentativa),
         'yyyy-MM-dd',
       );
-      executionDetails._id =
-        'ejecucion:' + formattedDate + ':' + executionDetails.uuid;
+      const idUuid = executionDetails.actividad_uuid || executionDetails.uuid
+      executionDetails._id = 'ejecucion:' + formattedDate + ':' + idUuid;
     } catch (error) {
       console.error(t('idError'), error);
       setIsSaving(false);
@@ -937,12 +950,14 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     }
 
     db.get(executionDetails._id)
-      .then(() => {
-        return updateActivityStateToCompleted(executionDetails.uuid);
-      })
-      .then((doc: any) => {
-        executionDetails._rev = doc._rev;
-        return db.put(executionDetails);
+      .then(async () => {
+        // Marcar la actividad como completada usando el _id real del documento
+        try {
+          await updateActivityStateToCompleted(existingActivity._id as any)
+        } catch (e) {
+          console.warn('No se pudo actualizar estado de actividad a completada:', e)
+        }
+        return db.put(executionDetails)
       })
       .catch((error: any) => {
         if (error.name === 'conflict') {
@@ -957,7 +972,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           });
         } else if (error.name === 'not_found') {
           delete executionDetails._rev;
-          db.put(executionDetails)
+          // Actualizar estado de la actividad antes de crear la ejecución
+          updateActivityStateToCompleted(existingActivity._id as any)
+            .catch((e)=> console.warn('No se pudo actualizar estado de actividad (not_found path):', e))
+            .finally(() => db.put(executionDetails)
             .then(() => {
               console.log(t('documentCreated'), 'success');
 
@@ -970,7 +988,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
                 setIsSaving(false);
                 backToActivites();
               });
-            })
+            }))
             .catch((err: any) => {
               console.error(t('docCreateError'), err);
               setIsSaving(false);
@@ -1035,6 +1053,10 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         if (!formDetails.fecha_ejecucion_tentativa) fields.push(t('executionDate'))
         if (!formData.contratista) fields.push(t('contractor'))
         if (!formDetails.hectareas) fields.push(t('hectares'))
+        if (formData.tipo === 'cosecha' || spanishActivityType === 'cosecha') {
+          if (!formDetails.deposito) fields.push(t('deposit_label'))
+          if (!formDetails.rinde_obtenido) fields.push(t('yieldObtained'))
+        }
         break
 
       case t('supplies'):

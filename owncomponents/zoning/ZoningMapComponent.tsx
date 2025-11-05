@@ -269,7 +269,6 @@ export const ZoningMapComponent: React.FC = ({ baseImageNameParam }) => {
                   size="small"
                   value={state.context.dosis_en_edit.unidad}
                   label={t('unit')}
-                  value={"Kg/ha"}
                   labelId="demo-simple-select-label"
                   onChange={(e) => {
                     state.context.dosis_en_edit.unidad = e.target.value;
