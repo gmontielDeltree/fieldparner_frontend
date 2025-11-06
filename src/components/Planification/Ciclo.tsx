@@ -79,7 +79,19 @@ export const Ciclo = ({
               Zafra {getCropLabelFromId?.(ciclo.cultivoId)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {format(new Date(ciclo.fechaInicio), "dd/MM/yyyy")} - {format(new Date(ciclo.fechaFin), "dd/MM/yyyy")}
+              {(() => {
+                const safe = (d: any) => {
+                  try {
+                    if (!d) return 'N/A';
+                    const dt = new Date(d);
+                    if (isNaN(dt.getTime())) return 'N/A';
+                    return format(dt, 'dd/MM/yyyy');
+                  } catch {
+                    return 'N/A';
+                  }
+                };
+                return `${safe(ciclo.fechaInicio)} - ${safe(ciclo.fechaFin)}`;
+              })()}
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>

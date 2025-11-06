@@ -23,6 +23,7 @@ import { useAppSelector } from '../../../hooks'
 import { useCampaign } from '../../../hooks'
 import { uuidv7 } from 'uuidv7'
 import { useDispatch } from 'react-redux'
+import { dbContext } from '../../../services'
 import { campaignSlice, setSelectedCampaign } from '../../../redux/campaign'
 import CreateCampaignModal from '../../CreateCampaign'
 import { Campaign } from '../../../types'
@@ -229,11 +230,90 @@ const CampaignMenu: React.FC = () => {
     if (campaignToClose) {
       try {
         console.log('Confirming close of campaign:', campaignToClose._id)
-        
-        // TODO: Check for non-valorized planifications
-        // This will be implemented after the annual plan database is set up
-        // For now, we'll add a placeholder warning
-        
+        // A073: validate there are no pending planned or non-executed activities for this campaign
+        const fieldsDb = dbContext.fields
+        // 1) Planned activities for this campaign
+        const plannedResp = await fieldsDb.allDocs({
+          startkey: 'planactividad:',
+          endkey: 'planactividad:\ufff0',
+          include_docs: true,
+        })
+        const plannedPendientes = plannedResp.rows
+          .map(r => r.doc as any)
+          .filter(doc => doc && (doc.campanaId === campaignToClose._id || doc.campanaId === campaignToClose.campaignId))
+
+        // 2) Regular activities that are not executed for this campaign
+        const actsResp = await fieldsDb.allDocs({
+          startkey: 'actividad:',
+          endkey: 'actividad:\ufff0',
+          include_docs: true,
+        })
+        // 3) Confirm executions: check ejecucion:* docs and map executed uuids
+        const ejecResp = await fieldsDb.allDocs({
+          startkey: 'ejecucion:',
+          endkey: 'ejecucion:\ufff0',
+          include_docs: true,
+        })
+        const executedUuids = new Set<string>((ejecResp.rows || []).flatMap(r => {
+          const arr: string[] = []
+          if (r.id) {
+            const parts = String(r.id).split(':')
+            arr.push(parts[parts.length - 1])
+          }
+          const doc: any = r.doc
+          if (doc?.actividad_uuid) arr.push(doc.actividad_uuid)
+          return arr
+        }))
+
+        const validTipos = new Set(['siembra','aplicacion','cosecha','preparado'])
+        const actsInCampaign = actsResp.rows
+          .map(r => r.doc as any)
+          .filter(doc => {
+            const idCamp = doc?.campaña?.campaignId || doc?.campanaId
+            const pertenece = idCamp === campaignToClose._id || idCamp === campaignToClose.campaignId
+            return pertenece
+          })
+
+        const allActsDebug = actsInCampaign.map(doc => {
+          const estado = (doc?.estado || '').toLowerCase()
+          const tipo = (doc?.tipo || '').toLowerCase()
+          const uuid = doc?.uuid || (doc?._id ? String(doc._id).split(':').pop() : undefined)
+          const hasExecution = uuid ? executedUuids.has(uuid) : false
+          const isRealLabor = validTipos.has(tipo)
+          const shouldBlock = isRealLabor && !hasExecution && !(estado === 'completada' || estado === 'ejecutada')
+          return {
+            _id: doc?._id,
+            uuid,
+            tipo,
+            estado,
+            isRealLabor,
+            hasExecution,
+            shouldBlock,
+          }
+        })
+
+        const actividadesNoEjecutadas = allActsDebug.filter(a => a.shouldBlock)
+
+        console.log('[CloseCampaign] Audit check:', {
+          campaign: campaignToClose._id,
+          plannedPendientes: plannedPendientes?.length || 0,
+          actividadesNoEjecutadas: actividadesNoEjecutadas?.length || 0,
+          samplePlanned: plannedPendientes?.slice(0, 3)?.map((d:any)=>d._id),
+          sampleActivities: actividadesNoEjecutadas?.slice(0, 5)
+        })
+        console.table(allActsDebug.slice(0, 20))
+
+        if ((plannedPendientes?.length || 0) > 0 || (actividadesNoEjecutadas?.length || 0) > 0) {
+          toast.error(t('No se puede cerrar la campaña: existen labores planificadas o pendientes de ejecución.') + ` (${(plannedPendientes?.length||0)} planificadas, ${(actividadesNoEjecutadas?.length||0)} pendientes)`, {
+            position: 'top-center',
+            autoClose: 4000,
+            hideProgressBar: true,
+            theme: 'colored',
+          })
+          setCampaignToClose(null)
+          return
+        }
+
         const updatedCampaign = { ...campaignToClose, state: 'closed' }
         await updateCampaign(updatedCampaign)
         toast.success(

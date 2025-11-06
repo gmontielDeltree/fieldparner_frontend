@@ -115,9 +115,6 @@ export const usePlanActivity = (
             
             // Any other existing details
             ...(existingActivity.detalles || {}),
-            
-            // Force business field to have value for engineer dropdown
-            business: sourceData.ingeniero || sourceData.accountId || existingActivity.detalles?.business || existingActivity.detalles?.ingeniero || 'ffdfs',
           },
           
           // Conditions mapping

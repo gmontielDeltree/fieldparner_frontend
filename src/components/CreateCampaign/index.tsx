@@ -41,6 +41,9 @@ const CreateCampaignModal = ({
   editMode,
   onDelete,
 }: {
+  open: boolean;
+  onClose: () => void;
+  onCreate: (campaign: any) => void;
   onDelete?: (e: any) => any;
   initialData?: Campaign;
   editMode?: boolean;
