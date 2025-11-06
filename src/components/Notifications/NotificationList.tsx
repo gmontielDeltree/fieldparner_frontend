@@ -20,6 +20,9 @@ import {
   Build,
   Notifications,
   CheckCircle,
+  Agriculture,
+  Event,
+  ErrorOutline,
 } from '@mui/icons-material';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -32,7 +35,7 @@ import { useTranslation } from 'react-i18next';
 const NotificationList: React.FC = () => {
   const { notifications, markAsRead, clearNotification, markAllAsRead } = useNotifications();
   const { t, i18n } = useTranslation();
-  console.log('notifications', notifications);
+  
   const getLocale = () => {
     switch (i18n.language) {
       case 'es': return es;
@@ -67,8 +70,14 @@ const NotificationList: React.FC = () => {
         return <Build color="warning" />;
       case 'vehicle_alert':
         return <Warning color="error" />;
-      default:
+      case 'activity_field_overdue':
+        return <ErrorOutline color="error" />;
+      case 'activity_field_due_soon':
+        return <Event color="warning" />;
+      case 'vehicle_update':
         return <DirectionsCar color="primary" />;
+      default:
+        return <Agriculture color="primary" />;
     }
   };
 
@@ -78,6 +87,10 @@ const NotificationList: React.FC = () => {
         return 'warning';
       case 'vehicle_alert':
         return 'error';
+      case 'activity_field_overdue':
+        return 'error';
+      case 'activity_field_due_soon':
+        return 'warning';
       default:
         return 'primary';
     }
@@ -147,7 +160,11 @@ const NotificationList: React.FC = () => {
                 secondary={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
                     <Typography variant="caption" color="text.secondary">
-                      {notification?.vehicle?.patent || "-"}
+                      {'vehicle' in notification && notification.vehicle
+                        ? notification.vehicle.patent
+                        : 'activity' in notification && notification.activity
+                        ? `${notification.activity.tipo} - ${notification.activity.campaña?.name || 'Sin campaña'}`
+                        : "-"}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       •

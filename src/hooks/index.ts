@@ -10,6 +10,7 @@ export * from './useStockMovement';
 export * from './useExitField';
 export * from './useVehicle';
 export * from './useVehicleNotifications';
+export * from './useActivityFieldNotifications';
 export * from './useCampaign';
 export * from './useOriginDestinations';
 export * from './useUsers';

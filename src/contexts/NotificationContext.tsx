@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAppSelector } from '../hooks';
 import { Vehicle } from '../types';
+import { Actividad } from '../interfaces/activity';
 import { getEnvVariables } from '../helpers/getEnvVariables';
 
 interface VehicleNotification {
@@ -13,8 +14,21 @@ interface VehicleNotification {
   read: boolean;
 }
 
+interface ActivityFieldNotification {
+  id: string;
+  type: 'activity_field_due_soon' | 'activity_field_overdue';
+  activity: Actividad;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+}
+
+type Notification = VehicleNotification | ActivityFieldNotification;
+
 interface NotificationContextType {
-  notifications: VehicleNotification[];
+  notifications: Notification[];
+  vehicleNotifications: VehicleNotification[];
+  activityFieldNotifications: ActivityFieldNotification[];
   unreadCount: number;
   markAsRead: (notificationId: string) => void;
   markAllAsRead: () => void;
@@ -38,7 +52,7 @@ interface NotificationProviderProps {
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const [_socket, setSocket] = useState<Socket | null>(null);
-  const [notifications, setNotifications] = useState<VehicleNotification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const { user } = useAppSelector((state) => state.auth);
 
@@ -126,7 +140,69 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           console.log('Notificación de cambio duplicada, omitiendo:', notification.id);
           return prev;
         }
-        
+
+        return [notification, ...prev];
+      });
+    });
+
+    // ========== LISTENERS PARA ACTIVITY FIELD ==========
+
+    // Escuchar notificaciones de actividades de campo
+    newSocket.on('activity_field_notification', (newNotification: ActivityFieldNotification) => {
+      // console.log('evento de notificación de actividad de campo', newNotification);
+
+      setNotifications(prev => {
+        // Verificar duplicados
+        if (prev.some(n => n.id === newNotification.id)) {
+          // console.log('Notificación de actividad duplicada, omitiendo:', newNotification.id);
+          return prev;
+        }
+
+        return [
+          {
+            ...newNotification,
+            timestamp: new Date(newNotification.timestamp),
+            read: false
+          },
+          ...prev
+        ];
+      });
+    });
+
+    // Escuchar cambios en actividades de campo
+    newSocket.on('activity_field_changed', (data: { activity: Actividad, changeType: 'created' | 'updated' | 'deleted' }) => {
+      const { activity, changeType } = data;
+
+      let message = '';
+      let type: ActivityFieldNotification['type'] = 'activity_field_due_soon';
+
+      switch (changeType) {
+        case 'created':
+          message = `Nueva actividad de campo creada: ${activity.tipo}`;
+          break;
+        case 'updated':
+          message = `Actividad de campo actualizada: ${activity.tipo}`;
+          break;
+        case 'deleted':
+          message = `Actividad de campo eliminada: ${activity.tipo}`;
+          break;
+      }
+
+      const notification: ActivityFieldNotification = {
+        id: `${Date.now()}-${activity._id}`,
+        type,
+        activity,
+        message,
+        timestamp: new Date(),
+        read: false
+      };
+
+      setNotifications(prev => {
+        if (prev.some(n => n.id === notification.id)) {
+          console.log('Notificación de cambio de actividad duplicada, omitiendo:', notification.id);
+          return prev;
+        }
+
         return [notification, ...prev];
       });
     });
@@ -162,9 +238,20 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  // Filtrar notificaciones por tipo
+  const vehicleNotifications = notifications.filter(
+    (n): n is VehicleNotification => 'vehicle' in n && n.vehicle !== undefined
+  );
+
+  const activityFieldNotifications = notifications.filter(
+    (n): n is ActivityFieldNotification => 'activity' in n && n.activity !== undefined
+  );
+
   return (
     <NotificationContext.Provider value={{
       notifications,
+      vehicleNotifications,
+      activityFieldNotifications,
       unreadCount,
       markAsRead,
       markAllAsRead,
@@ -175,3 +262,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     </NotificationContext.Provider>
   );
 };
+
+// Exportar tipos para uso externo
+export type { VehicleNotification, ActivityFieldNotification, Notification };
