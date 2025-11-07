@@ -34,7 +34,8 @@ const UserMenu: React.FC<UserMenuProps> = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  const urlPhotoName = `${urlImg}${user?.photoName}`;
+  const urlPhotoName = `${urlImg}${user?.photoName?.toString()}`;
+  
   const {t} = useTranslation();
 
   const getInitials = (name: string): string => {

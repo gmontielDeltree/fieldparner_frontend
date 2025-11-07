@@ -152,7 +152,7 @@ export const useAuthStore = () => {
         localStorage.setItem('token_expiration', expiresIn.toString());
         const userLogin = JSON.parse(userSession || '') as User;
         const modules = await getModulesByUserId(userLogin.id);
-        console.log('modules checkAuth', modules)
+        
         dispatch(onLogin({ user: userLogin, modules }));
         const lastPath = localStorage.getItem('lastPath') || '/';
         navigate(lastPath, { replace: true });

@@ -24,6 +24,7 @@ import brazilFlagIcon from '../../images/icons/brazil_flag.png'
 import { urlImg } from '../../config';
 import { useTranslation } from 'react-i18next';
 import { Loading } from '../Loading';
+import { sanitizeFilename } from '../../helpers/fileUpload';
 
 
 
@@ -49,7 +50,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   });
   const [urlFile, setUrlFile] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
-  const urlPhotoName = `${urlImg}${user.photoName}`;
+  const urlPhotoName = `${urlImg}${user?.photoName?.toString()}`;
 
   const getInitials = (name: string): string => {
     if (!name || name.length === 0) return "U";
@@ -75,8 +76,17 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const file = event.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, avatar: file, photoName: file.name }));
-      setUrlFile(URL.createObjectURL(file));
+      // Sanitizar el nombre del archivo
+      const sanitizedName = sanitizeFilename(file.name);
+      
+      // Crear un nuevo archivo con el nombre sanitizado
+      const sanitizedFile = new File([file], sanitizedName, {
+        type: file.type,
+        lastModified: file.lastModified,
+      });
+      
+      setFormData(prev => ({ ...prev, avatar: sanitizedFile, photoName: sanitizedName }));
+      setUrlFile(URL.createObjectURL(sanitizedFile));
     }
   };
 
@@ -89,7 +99,7 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
   const handleSave = async (): Promise<void> => {
     setLoading(true);
     try {
-
+      console.log('formData', formData);
       await onSave(formData);
       handleClose();
     } catch (error) {

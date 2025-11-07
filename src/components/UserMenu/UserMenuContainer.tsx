@@ -20,7 +20,7 @@ const UserMenuContainer: React.FC<UserMenuContainerProps> = ({
   user,
   onLogout
 }) => {
-
+  
   const { i18n, t } = useTranslation()
   const {
     profileDrawerOpen,
