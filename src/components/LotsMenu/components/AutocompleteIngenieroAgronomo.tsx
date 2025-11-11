@@ -51,16 +51,17 @@ export const AutocompleteIngenieroAgronomo: React.FC<AutocompleteIngenieroAgrono
   const previousLengthRef = useRef(0);
 
   useEffect(() => {
-    console.log("🚀 AutocompleteIngenieroAgronomo - Ejecutando getByCategory('INGA')");
-    businessRepo.getByCategory("55ff1ae2-d441-4067-9e59-b4cf63d54bfd").then((cropsFromDB) => {
-      console.log("✅ AutocompleteIngenieroAgronomo - Ingenieros recibidos:", cropsFromDB);
-      console.log("✅ AutocompleteIngenieroAgronomo - Cantidad de ingenieros:", cropsFromDB.length);
-      setBusinesses(cropsFromDB);
-      previousLengthRef.current = cropsFromDB.length;
-      
-      // Si hay un value (ID) del padre, buscar el ingeniero correspondiente
+    // Mostrar todos los business (sin filtrar por categoría)
+    console.log("🚀 AutocompleteIngenieroAgronomo - Ejecutando getAll() para cargar todos los businesses");
+    businessRepo.getAll().then((allBusinesses) => {
+      console.log("✅ AutocompleteIngenieroAgronomo - Businesses recibidos:", allBusinesses);
+      console.log("✅ AutocompleteIngenieroAgronomo - Cantidad de businesses:", allBusinesses.length);
+      setBusinesses(allBusinesses);
+      previousLengthRef.current = allBusinesses.length;
+
+      // Si hay un value (ID) del padre, buscar el business correspondiente
       if (value && typeof value === 'string') {
-        const business = cropsFromDB.find(b => b._id === value);
+        const business = allBusinesses.find(b => b._id === value);
         if (business) {
           setValue(business);
         }
@@ -68,22 +69,24 @@ export const AutocompleteIngenieroAgronomo: React.FC<AutocompleteIngenieroAgrono
         setValue(value);
       }
     }).catch((error) => {
-      console.error("❌ AutocompleteIngenieroAgronomo - Error al obtener ingenieros:", error);
+      console.error("❌ AutocompleteIngenieroAgronomo - Error al obtener businesses:", error);
     });
 
     // 🔥 PATRÓN OBSERVER: Escuchar cambios automáticos del repository
-    const observerCallback = (updatedBusinesses: Business[]) => {
-      console.log("📢 AutocompleteIngenieroAgronomo - Observer triggered with:", updatedBusinesses.length, "businesses");
-      // Filtrar solo ingenieros agrónomos
-      businessRepo.getByCategory("55ff1ae2-d441-4067-9e59-b4cf63d54bfd").then((filteredBusinesses) => {
-        console.log("🔄 AutocompleteIngenieroAgronomo - Updating from observer:", filteredBusinesses);
-        setBusinesses(filteredBusinesses);
-        previousLengthRef.current = filteredBusinesses.length;
+    const observerCallback = (/* updatedBusinesses: Business[] */) => {
+      console.log("📢 AutocompleteIngenieroAgronomo - Observer triggered, recargando todos los businesses...");
+      // Actualizar con todos los documentos (sin filtrar)
+      businessRepo.getAll().then((allBusinesses) => {
+        console.log("🔄 AutocompleteIngenieroAgronomo - Updating from observer:", allBusinesses);
+        setBusinesses(allBusinesses);
+        previousLengthRef.current = allBusinesses.length;
+      }).catch((error) => {
+        console.error("❌ AutocompleteIngenieroAgronomo - Error en observer al obtener businesses:", error);
       });
     };
-    
+
     businessRepo.attachObserver(observerCallback);
-    
+
     // Cleanup: desconectar observer cuando el componente se desmonte
     return () => {
       businessRepo.detachObserver(observerCallback);
