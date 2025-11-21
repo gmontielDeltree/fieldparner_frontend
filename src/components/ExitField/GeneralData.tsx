@@ -2,11 +2,13 @@ import { FormControl, Grid, InputAdornment, InputLabel, ListItemText, MenuItem, 
 import {
     FolderOpen as FolderOpenIcon,
 } from '@mui/icons-material';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Campaign, Crop, Deposit, ExitField, ExitFieldItem, Field, Lot } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 
 import { useTranslation } from 'react-i18next';
+import { useMapContext } from '../TemplateLayout';
+import { addLotesToMap } from '../../helpers/mapHelpers';
 import { AutocompleteCampaign, AutocompleteCrop, AutocompleteDeposit } from '../Autocomplete';
 
 interface GeneralDataProps {
@@ -35,6 +37,9 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
     const [availableZafras, setAvailableZafras] = useState<string[]>([]);
     const [lotSelected, setLotSelected] = useState<Lot | null>(null);
 
+    // Background map integration
+    const { map, fields: allFields } = useMapContext() as any;
+
     const onChangeField = ({ target }: SelectChangeEvent) => {
         const fieldId = target.value;
         const fieldSelected = listFields.find(f => f._id === fieldId);
@@ -58,10 +63,48 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
 
     const { t } = useTranslation();
 
+    // Attach background map click handlers to pick field/lot
+    useEffect(() => {
+        if (!map) return;
+
+        const onClickField = (e: any) => {
+            const f = e?.features?.[0];
+            const fid = f?.properties?.id;
+            if (!fid) return;
+            const foundField = (allFields || listFields || []).find((ff: any) => ff._id === fid);
+            if (!foundField) return;
+            setFieldSelected(foundField);
+            setFormValues(prev => ({ ...prev, fieldId: foundField._id, lotId: '' }));
+            try { addLotesToMap(map, foundField as any); } catch { }
+        };
+
+        const onClickLot = (e: any) => {
+            const f = e?.features?.[0];
+            const lotName = f?.properties?.nombre;
+            const campoId = f?.properties?.campo_parent_id;
+            if (!lotName) return;
+            const foundField = fieldSelected || (allFields || listFields || []).find((ff: any) => ff._id === campoId);
+            const foundLot = foundField?.lotes.find((l: any) => l.properties?.nombre === lotName) || null;
+            if (!foundField || !foundLot) return;
+            setFieldSelected(foundField);
+            setLotSelected(foundLot);
+            setFormValues(prev => ({ ...prev, fieldId: foundField._id, lotId: lotName }));
+        };
+
+        try { map.on('click', 'campos-fill', onClickField); } catch { }
+        try { map.on('click', 'lotes-fill', onClickLot); } catch { }
+
+        return () => {
+            try { map.off('click', 'campos-fill', onClickField); } catch { }
+            try { map.off('click', 'lotes-fill', onClickLot); } catch { }
+        };
+    }, [map, allFields, listFields, fieldSelected, setFormValues]);
+
     // Helper function to determine if a field has an error
     const hasError = (field: string) => showErrors && errors[field];
 
     return (
+        <>
         <Grid
             container
             spacing={2}
@@ -179,6 +222,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                     {hasError('lotId') && <FormHelperText>{errors['lotId']}</FormHelperText>}
                 </FormControl>
             </Grid>
+            {/* Map de fondo soporta clic; no es necesario botón extra */}
             <Grid item xs={6} sm={4}>
                 <FormControl fullWidth>
                     <ListItemText
@@ -253,5 +297,7 @@ export const GeneralData: React.FC<GeneralDataProps> = ({
                 />
             </Grid>
         </Grid>
-    )
+        {/* No modal map picker: se usa el mapa de fondo para seleccionar */}
+    </>
+  )
 }

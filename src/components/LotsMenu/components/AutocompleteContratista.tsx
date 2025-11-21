@@ -13,7 +13,7 @@ import { Business } from "../../../interfaces/socialEntity";
 import { CuitTextInput } from "../../Basic/CuitTextInput";
 
 import { useAppDispatch, useAppSelector } from '../../../hooks';
-import { uiOpenModal, uiCloseModal } from '../../../redux/ui';
+import { uiOpenModal } from '../../../redux/ui';
 import { DisplayModals } from '../../../types';
 import { useAutocompleteAddOption } from '../../AutocompleteAddOption';
 import { ViewComponentModal } from '../../';
@@ -52,29 +52,30 @@ export const AutocompleteContratista: React.FC<AutocompleteContratistaProps> = (
   const previousIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    console.log("🚀 AutocompleteContratista - Ejecutando getByCategory");
-    contractorRepo.getByCategory("8456b733-d530-4c7d-8907-66f117938769").then((contractorsFromDB) => {
-      console.log("✅ AutocompleteContratista - Contractors recibidos:", contractorsFromDB);
-      console.log("✅ AutocompleteContratista - Cantidad de contractors:", contractorsFromDB.length);
-      setContractors(contractorsFromDB);
-      previousIdsRef.current = new Set(contractorsFromDB.map(c => c._id).filter(Boolean));
+    console.log("🚀 AutocompleteContratista - Ejecutando getAll() para cargar todas las entidades");
+    contractorRepo.getAll().then((allContractors) => {
+      console.log("✅ AutocompleteContratista - Contractors recibidos:", allContractors);
+      console.log("✅ AutocompleteContratista - Cantidad de contractors:", allContractors.length);
+      setContractors(allContractors);
+      previousIdsRef.current = new Set(allContractors.map(c => c._id).filter(Boolean));
     }).catch((error) => {
       console.error("❌ AutocompleteContratista - Error al obtener contractors:", error);
     });
 
     // 🔥 PATRÓN OBSERVER: Escuchar cambios automáticos del repository
-    const observerCallback = (updatedBusinesses: Business[]) => {
-      console.log("📢 AutocompleteContratista - Observer triggered with:", updatedBusinesses.length, "businesses");
-      // Filtrar solo contratistas
-      contractorRepo.getByCategory("8456b733-d530-4c7d-8907-66f117938769").then((filteredBusinesses) => {
-        console.log("🔄 AutocompleteContratista - Updating from observer:", filteredBusinesses);
-        setContractors(filteredBusinesses);
-        previousIdsRef.current = new Set(filteredBusinesses.map(c => c._id).filter(Boolean));
+    const observerCallback = (/* updatedBusinesses: Business[] */) => {
+      console.log("📢 AutocompleteContratista - Observer triggered, recargando todas las entidades...");
+      contractorRepo.getAll().then((allContractors) => {
+        console.log("🔄 AutocompleteContratista - Updating from observer:", allContractors);
+        setContractors(allContractors);
+        previousIdsRef.current = new Set(allContractors.map(c => c._id).filter(Boolean));
+      }).catch((error) => {
+        console.error("❌ AutocompleteContratista - Error en observer al obtener contractors:", error);
       });
     };
-    
+
     contractorRepo.attachObserver(observerCallback);
-    
+
     // Cleanup: desconectar observer cuando el componente se desmonte
     return () => {
       contractorRepo.detachObserver(observerCallback);
@@ -87,7 +88,6 @@ export const AutocompleteContratista: React.FC<AutocompleteContratistaProps> = (
       cuit: ""
     });
     toggleOpen(false);
-    dispatch(uiCloseModal());
   };
 
   const [dialogValue, setDialogValue] = useState({
