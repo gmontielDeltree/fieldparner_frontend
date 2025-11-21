@@ -1,5 +1,5 @@
 // import { useNavigate } from "react-router-dom";
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useCertificateDeposit } from '../../hooks';
 
 import { GenericListPage } from '../../components';
@@ -9,10 +9,8 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   PictureAsPdf as PictureAsPdfIcon,
-  ForwardToInbox as ForwardToInboxIcon,
 } from '@mui/icons-material';
 import { urlImg } from '../../config';
-import { useTranslation } from 'react-i18next';
 
 const renderPdfIcon = (params: GridRenderCellParams) => {
   return (

@@ -1276,5 +1276,10 @@
   "save_changes": "Save changes",
   "change_photo": "Change photo",
   "filterByType": "Filter by type",
-  "filterBySupply": "Filter by supply"
+  "filterBySupply": "Filter by supply",
+  "no_notifications": "No notifications",
+  "mark_all_read": "Mark all as read",
+  "notifications": "Notifications",
+  "new": "New",
+  "dismiss": "Dismiss"
 }

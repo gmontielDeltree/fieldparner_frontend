@@ -1283,6 +1283,11 @@
   "save_changes": "Guardar alterações",
   "change_photo": "Alterar foto",
   "filterByType": "Filtrar por tipo",
-  "filterBySupply": "Filtrar por insumo"
+  "filterBySupply": "Filtrar por insumo",
+  "no_notifications": "Sem notificações",
+  "mark_all_read": "Marcar todas como lidas",
+  "notifications": "Notificações",
+  "new": "Novo",
+  "dismiss": "Descartar"
 }
 

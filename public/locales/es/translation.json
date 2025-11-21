@@ -1280,5 +1280,10 @@
   "save_changes": "Guardar cambios",
   "change_photo": "Cambiar foto",
   "filterByType": "Filtrar por tipo",
-  "filterBySupply": "Filtrar por insumo"
+  "filterBySupply": "Filtrar por insumo",
+  "no_notifications": "No hay notificaciones",
+  "mark_all_read": "Marcar todas como leídas",
+  "notifications": "Notificaciones",
+  "new": "Nuevo",
+  "dismiss": "Descartar"
 }
