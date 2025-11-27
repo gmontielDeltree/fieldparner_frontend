@@ -131,7 +131,8 @@ export const AutocompleteContratista: React.FC<AutocompleteContratistaProps> = (
       nombreCompleto: dialogValue.razonSocial,
       razonSocial: dialogValue.razonSocial,
       cuit: dialogValue.cuit,
-      accountId: "",
+      // Asociar siempre el nuevo contratista a la cuenta actual
+      accountId: user?.accountId || "",
       telefono: "",
       email: "",
       tipoEntidad: "fisica",

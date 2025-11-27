@@ -4,8 +4,10 @@ import { only_docs } from "../../owncomponents/helpers";
 
 export class BaseDocRepository<T> {
 
-  private _userId: string
-  private _db: PouchDB.Database
+  // Hacer _userId protegido para que los repositorios hijos
+  // puedan aplicar filtros por cuenta (multi-tenant)
+  protected _userId: string
+  protected _db: PouchDB.Database
 
 
   observers: ((crops: T[]) => void)[] = [];

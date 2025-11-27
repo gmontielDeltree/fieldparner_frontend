@@ -591,6 +591,7 @@ export const FieldsPage: React.FC = () => {
       tooltip.style.display = 'none'
     })
 
+    console.log("FieldsPage - Adding weather station markers to map");
     let devices = new Devices()
     devices.add_markers_to_map_react(map, (deviceId: string, date: string) =>
       navigate(`device/${deviceId}/${date}`),
