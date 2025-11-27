@@ -19,6 +19,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
+import { CultivoContext } from "./contexts/CultivosContext";
 import { Box, IconButton, Card, CardContent, Typography, Avatar, ButtonBase, Tooltip } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Close";
 import { useTranslation } from "react-i18next";
@@ -45,12 +46,14 @@ export const ActividadEditorDialogNoButton = ({
   actividad,
   refreshCiclos,
   editing,
+  ciclo,
 }: {
   editing: boolean;
   open: boolean;
   handleClose: () => any;
   actividad: IActividadPlanificacion;
   refreshCiclos: () => any;
+  ciclo?: any;
 }) => {
   return (
     <Dialog
@@ -93,6 +96,7 @@ export const ActividadEditorDialogNoButton = ({
             handleClose();
           }}
           editing={editing}
+          ciclo={ciclo}
         />
       </DialogContent>
       {/* <DialogActions>
@@ -108,10 +112,13 @@ export default function ActividadEditorDialog({
   loteId,
   cicloId,
   campoId,
+  ciclo,
 }) {
   const [open, setOpen] = React.useState(false);
 
   const { refreshCiclos } = useContext(CiclosContext); // useCiclos(ciclo.campanaId,loteId)
+  const cultivoCtx: any = useContext(CultivoContext);
+  const crops = cultivoCtx?.crops || [];
 
   let cleanAct = {
     accountId: "ffdfs",
@@ -182,9 +189,20 @@ export default function ActividadEditorDialog({
   const [showActivitySelection, setShowActivitySelection] = useState(false);
 
   const handleActivitySelect = (activityType: TTipoActividadPlanificada) => {
+    // Try to pre-fill cultivo and zafra from the ciclo if available
+    let cultivoFromCiclo: any = null;
+    if (ciclo && ciclo.cultivoId && Array.isArray(crops)) {
+      cultivoFromCiclo = crops.find(
+        (c: any) => c?._id === ciclo.cultivoId || c?.id === ciclo.cultivoId,
+      );
+    }
+
     setActividad({
       ...cleanAct,
       tipo: activityType,
+      // Extra fields so the planning form can auto-fill Crop and Zafra
+      ...(cultivoFromCiclo && ({ cultivo: cultivoFromCiclo } as any)),
+      ...(ciclo?.zafra && ({ zafra: ciclo.zafra } as any)),
     });
     setShowActivitySelection(false);
     handleClickOpen();
@@ -300,7 +318,7 @@ export default function ActividadEditorDialog({
       </Dialog>
 
       <ActividadEditorDialogNoButton
-        {...{ open, handleClose, actividad, refreshCiclos, editing: false }}
+        {...{ open, handleClose, actividad, refreshCiclos, editing: false, ciclo }}
       />
     </React.Fragment>
   );

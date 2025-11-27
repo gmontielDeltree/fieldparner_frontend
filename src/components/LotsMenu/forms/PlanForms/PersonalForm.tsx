@@ -359,49 +359,24 @@ function PersonalFormUnified({
         {/* Campo Zafra para labores de preparación y siembra */}
         {(formData.tipo === 'siembra' || formData.tipo === 'sowing' ||
           formData.tipo === 'preparado' || formData.tipo === 'preparation') && (
-            <Grid item xs={12} sm={6}>
-              {formData.detalles?.zafra ? (
-                // A073: If zafra was already chosen earlier, show it read-only
-                <TextField
-                  fullWidth
-                  label={t('Zafra')}
-                  value={formData.detalles?.zafra}
-                  disabled
-                  InputProps={{ readOnly: true }}
-                />
-              ) : (
-                <FormControl fullWidth>
-                  <InputLabel id="zafra-label">{t('Zafra')}</InputLabel>
-                  <Select
-                    labelId="zafra-label"
-                    id="zafra"
-                    value={formData.detalles?.zafra || ''}
-                    label={t('Zafra')}
-                    onChange={(e) => onFieldChange('zafra', e.target.value)}
-                  >
-                    {campaign?.zafra && Array.isArray(campaign.zafra) ? (
-                      campaign.zafra.map((zafra) => (
-                        <MenuItem key={zafra} value={zafra}>
-                          {zafra}
-                        </MenuItem>
-                      ))
-                    ) : campaign?.zafra && typeof campaign.zafra === 'string' ? (
-                      <MenuItem value={campaign.zafra}>
-                        {campaign.zafra}
-                      </MenuItem>
-                    ) : (
-                      <MenuItem disabled value="">
-                        <em>{t('No hay zafras disponibles en la campaña')}</em>
-                      </MenuItem>
-                    )}
-                  </Select>
-                  <Typography variant="caption" sx={{ mt: 1, color: 'text.secondary' }}>
-                    {t('Seleccione la zafra de la campaña actual')}
-                  </Typography>
-                </FormControl>
-              )}
-            </Grid>
-          )}
+          <Grid item xs={12} sm={6}>
+            {/* Siempre mostramos Zafra como solo lectura en planificación:
+                - Primero usamos la zafra que venga en formData.detalles.zafra (por ciclo)
+                - Si no hay, usamos la(s) zafra(s) de la campaña como texto */}
+            <TextField
+              fullWidth
+              label={t('Zafra')}
+              value={
+                formData.detalles?.zafra ||
+                (Array.isArray(campaign?.zafra)
+                  ? campaign.zafra.join(' / ')
+                  : (campaign?.zafra || ''))
+              }
+              disabled
+              InputProps={{ readOnly: true }}
+            />
+          </Grid>
+        )}
 
         <Grid item xs={12} sm={6}>
           <AutocompleteContratista

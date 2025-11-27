@@ -137,6 +137,7 @@ export const Ciclo = ({
               campanaId={ciclo.campanaId}
               loteId={loteId}
               campoId={lote.properties.campo_parent_id}
+              ciclo={ciclo}
             />
             <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
               {ciclo.actividadesIds?.length || 0} actividad{(ciclo.actividadesIds?.length || 0) !== 1 ? 'es' : ''} planificada{(ciclo.actividadesIds?.length || 0) !== 1 ? 's' : ''}

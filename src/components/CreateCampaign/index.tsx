@@ -278,7 +278,7 @@ const CreateCampaignModal = ({
         <Box sx={{ mt: 2, mb: 1 }}>
           <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500, color: 'text.secondary' }}>
             <Grain sx={{ fontSize: 20, verticalAlign: 'middle', mr: 0.5 }} />
-            Zafras / Ciclos Productivos
+            {t('zafrasProductiveCyclesTitle')}
           </Typography>
           
           {/* Chips de zafras agregadas */}
@@ -337,10 +337,10 @@ const CreateCampaignModal = ({
                     <TextField
                       {...params}
                       variant="outlined"
-                      label="Seleccionar zafra predefinida"
+                      label={t('selectPredefinedZafra')}
                       size="small"
                       onKeyPress={handleKeyPress}
-                      helperText={startDate && endDate ? "⭐ Recomendadas según el período de tu campaña" : "💡 Selecciona las fechas de campaña para ver sugerencias"}
+                      helperText={startDate && endDate ? t('zafrasHelperWithDates') : t('zafrasHelperWithoutDates')}
                     />
                   )}
                   renderOption={(props, option) => (
@@ -389,7 +389,7 @@ const CreateCampaignModal = ({
                     </li>
                   )}
                 />
-                <Tooltip title={currentZafra ? "Clic para agregar esta zafra" : "Primero seleccione una zafra"}>
+                <Tooltip title={currentZafra ? t('clickToAddThisZafra') : t('firstSelectAZafra')}>
                   <span>
                     <Button 
                       variant="contained"
@@ -416,12 +416,12 @@ const CreateCampaignModal = ({
                         }
                       }}
                     >
-                      Agregar
+                      {t('add')}
                     </Button>
                   </span>
                 </Tooltip>
                 <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-                <Tooltip title="Agregar zafra personalizada">
+                <Tooltip title={t('addCustomZafra')}>
                   <Button
                     variant="outlined"
                     size="small"
@@ -434,7 +434,7 @@ const CreateCampaignModal = ({
                     }}
                   >
                     <CalendarToday sx={{ mr: 1, fontSize: 18 }} />
-                    Personalizada
+                    {t('customZafra')}
                   </Button>
                 </Tooltip>
               </>
@@ -443,15 +443,15 @@ const CreateCampaignModal = ({
                 <TextField
                   fullWidth
                   variant="outlined"
-                  label="Nombre de zafra personalizada"
+                  label={t('customZafraNameLabel')}
                   size="small"
                   value={customZafra}
                   onChange={(e) => setCustomZafra(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ej: 2026/2027, Otoño, Tardía..."
+                  placeholder={t('customZafraPlaceholder')}
                   autoFocus
                 />
-                <Tooltip title={customZafra.trim() ? "Clic para agregar esta zafra" : "Escriba el nombre de la zafra"}>
+                <Tooltip title={customZafra.trim() ? t('clickToAddThisZafra') : t('typeZafraName')}>
                   <span>
                     <Button 
                       variant="contained"
@@ -478,7 +478,7 @@ const CreateCampaignModal = ({
                         }
                       }}
                     >
-                      Agregar
+                      {t('add')}
                     </Button>
                   </span>
                 </Tooltip>
@@ -508,22 +508,22 @@ const CreateCampaignModal = ({
             >
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-                  Puedes agregar múltiples zafras o ciclos productivos
+                  {t('zafrasAlertIntro')}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                  • <strong>Fina Invierno:</strong> Cultivos de invierno de ciclo corto
+                  • <strong>{t('zafraFinaInviernoLabel')}:</strong> {t('zafraFinaInviernoDesc')}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Fina Verano:</strong> Cultivos de verano de ciclo corto
+                  • <strong>{t('zafraFinaVeranoLabel')}:</strong> {t('zafraFinaVeranoDesc')}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Gruesa Verano:</strong> Cultivos de verano de ciclo largo
+                  • <strong>{t('zafraGruesaVeranoLabel')}:</strong> {t('zafraGruesaVeranoDesc')}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-                  • <strong>Gruesa Invierno:</strong> Cultivos de invierno de ciclo largo
+                  • <strong>{t('zafraGruesaInviernoLabel')}:</strong> {t('zafraGruesaInviernoDesc')}
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'text.secondary' }}>
-                  • <strong>Personalizada:</strong> Define tu propia zafra o período
+                  • <strong>{t('zafraPersonalizadaLabel')}:</strong> {t('zafraPersonalizadaDesc')}
                 </Typography>
               </Box>
             </Alert>
@@ -533,7 +533,7 @@ const CreateCampaignModal = ({
           {zafras.length > 0 && startDate && endDate && (
             <Box sx={{ mt: 1 }}>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
-                💡 Una campaña puede contener múltiples zafras según los cultivos y rotaciones planificadas
+                💡 {t('zafrasMultiCampaignHint')}
               </Typography>
             </Box>
           )}

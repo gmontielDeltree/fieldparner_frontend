@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -10,6 +10,8 @@ import { IActividadPlanificacion } from "../../interfaces/planification";
 import { usePlanActividad } from "../../hooks/usePlanifications";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "../../hooks/useRedux";
+import { CiclosContext } from "./contexts/CiclosContext";
+import { CultivoContext } from "./contexts/CultivosContext";
 
 // Import the labor forms
 import PersonalForm from '../LotsMenu/forms/PlanForms/PersonalForm';
@@ -24,6 +26,7 @@ interface ActividadEditorBaseProps {
   onSave: () => void;
   onClose: () => void;
   editing?: boolean;
+  ciclo?: any;
 }
 
 export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
@@ -32,10 +35,17 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   onSave,
   onClose,
   editing = false,
+  ciclo: cicloProp,
 }) => {
   const { t } = useTranslation();
   const { saveActividad } = usePlanActividad();
   const { user } = useAppSelector((state) => state.auth);
+
+  const ciclosContext: any = useContext(CiclosContext);
+  const ciclos = ciclosContext?.ciclos;
+
+  const cultivosContext: any = useContext(CultivoContext);
+  const crops = cultivosContext?.crops;
 
   // Unit conversion functions
   const convertTonsToQuintals = (tons: number) => tons * 10;
@@ -49,14 +59,16 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
       uuid: actividad._id,
       tipo: actividad.tipo,
       detalles: {
-        business: actividad.accountId,
-        cultivo: null,
+        // Ingeniero agrónomo asociado a la labor (si existe).
+        // No usamos más el accountId como valor por defecto para evitar preseleccionar un ingeniero.
+        business: (actividad as any).ingeniero || (actividad as any).business || null,
+        cultivo: (actividad as any).cultivo || null,
         contratista: null,
         fecha_ejecucion_tentativa: actividad.fecha,
         hectareas: actividad.area || 0,
         dosis: [],
         servicios: [],
-        zafra: '',
+        zafra: (actividad as any).zafra || '',
         rinde_estimado: (actividad as any).rendimientoEstimado || 0,
         rinde_estimado_total: (actividad as any).rendimientoEstimadoTotal || 0,
         fertilizacion: false,
@@ -180,6 +192,38 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     const converted = convertToLaborFormat(actividadDoc);
     setFormData(converted);
   }, [actividadDoc]);
+
+  // Populate crop and zafra from cycle if available
+  useEffect(() => {
+    // Priority: Prop > Context lookup > Nothing
+    let targetCiclo = cicloProp;
+
+    if (!targetCiclo && ciclos && actividadDoc.cicloId) {
+      targetCiclo = ciclos.find((c: any) => c._id === actividadDoc.cicloId);
+    }
+
+    if (targetCiclo && crops) {
+      const zafra = targetCiclo.zafra || '';
+      let cultivo = null;
+      if (targetCiclo.cultivoId) {
+        cultivo = crops.find((c: any) => c._id === targetCiclo.cultivoId || c.id === targetCiclo.cultivoId);
+      }
+
+      setFormData(prev => {
+        // Prevent unnecessary updates
+        if ((!cultivo && !zafra) || (prev.detalles.cultivo && prev.detalles.zafra)) return prev;
+
+        return {
+          ...prev,
+          detalles: {
+            ...prev.detalles,
+            cultivo: cultivo || prev.detalles?.cultivo,
+            zafra: zafra || prev.detalles?.zafra
+          }
+        };
+      });
+    }
+  }, [actividadDoc.cicloId, ciclos, crops, cicloProp]);
 
   const totalSteps = () => steps.length;
   const completedSteps = () => Object.keys(completed).length;
@@ -403,7 +447,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         // Save additional fields
         ...(formData.detalles?.cultivo && { cultivo: formData.detalles.cultivo }),
         ...(formData.detalles?.contratista && { contratista: formData.detalles.contratista }),
-        ...(formData.detalles?.ingeniero && { ingeniero: formData.detalles.ingeniero }),
+        // Guardar el ingeniero agrónomo seleccionado (se edita en detalles.business)
+        ...(formData.detalles?.business && { ingeniero: formData.detalles.business }),
         ...(formData.observaciones && { comentarios: formData.observaciones }),
         ...(formData.estado && { estado: formData.estado }),
         ...(formData.detalles.rinde_estimado && { rendimientoEstimado: formData.detalles.rinde_estimado }),

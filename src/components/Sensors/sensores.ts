@@ -61,7 +61,21 @@ class Devices {
 
     let r = await this.db.allDocs({ keys: keys, include_docs: true });
 
-    this._devices_last_telemetry = r?.rows.map((r) => r.doc) || [];
+    this._devices_last_telemetry = r?.rows
+      .map((r) => r.doc)
+      .filter((doc) => doc != null) || [];
+
+    // Si no hay datos del día actual, intentar con la última fecha conocida
+    if (this._devices_last_telemetry.length === 0) {
+      console.warn("WEATHER STATIONS - No data for today, trying last known date (20230310)");
+      keys = this._devices_names.map((device_name) => {
+        return device_name + ":daily:20230310";
+      });
+      r = await this.db.allDocs({ keys: keys, include_docs: true });
+      this._devices_last_telemetry = r?.rows
+        .map((r) => r.doc)
+        .filter((doc) => doc != null) || [];
+    }
 
     console.log("PUBLIC DEVICES", this._devices_last_telemetry);
     console.log("RESULT", public_devices);
@@ -234,12 +248,15 @@ class Devices {
     let devices_last_telemetry = await this.devices_publicos_get();
     let detalles = await this.get_all_details();
 
-    //console.log("LAST TELEMETRY", devices_last_telemetry);
+    console.log("WEATHER STATIONS - LAST TELEMETRY", devices_last_telemetry);
+    console.log("WEATHER STATIONS - DETAILS", detalles);
 
     devices_last_telemetry.map((telemetria: DailyTelemetryCard) => {
       try {
+        console.log("WEATHER STATIONS - Processing telemetria:", telemetria);
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
+        console.log("WEATHER STATIONS - Coords:", latitud, longitud);
 
         // if (telemetria.device_id === "f008d1ffffd30a6c") {
         //   latitud = -35.1579821;
@@ -307,9 +324,11 @@ class Devices {
           });
         }
       } catch (e) {
-        console.info("Error Al hacer el marcador de dispositivo");
+        console.error("WEATHER STATIONS - Error creating marker:", e, telemetria);
       }
     });
+
+    console.log("WEATHER STATIONS - Finished adding markers");
   }
 
   async get_raw_data_for_charts_generic(uuid) {

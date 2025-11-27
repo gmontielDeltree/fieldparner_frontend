@@ -75,11 +75,13 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
       return
     }
 
-    // Validación de compatibilidad de semillas
+    // Validación de compatibilidad de semillas ANTES de agregar la fila
     if (supply && supply.type === 'Semillas') {
-      const { _id } = formData.detalles.cultivo
+      const cultivo = formData?.detalles?.cultivo
+      const cultivoId = cultivo?._id || cultivo?.id
       const cropId = supply?.cropId
-      if (cropId && cropId !== _id) {
+
+      if (cultivoId && cropId && cropId !== cultivoId) {
         Swal.fire({
           icon: 'error',
           title: t('incompatibleSupply'),
@@ -130,7 +132,27 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
   }
 
   const handleSelectChange = (event: any) => {
-    setSelectedSupply(event)
+    const supply = event
+
+    // Validación temprana de compatibilidad apenas se selecciona el insumo (especialmente Semillas)
+    if (supply && supply.type === 'Semillas') {
+      const cultivo = formData?.detalles?.cultivo
+      const cultivoId = cultivo?._id || cultivo?.id
+
+      // Si tenemos cultivo seleccionado y el insumo está asociado a otro cultivo, mostrar el mensaje de incompatibilidad
+      if (cultivoId && supply.cropId && supply.cropId !== cultivoId) {
+        Swal.fire({
+          icon: 'error',
+          title: t('incompatibleSupply'),
+          text: t('supplyNotCompatibleWithCrop'),
+        })
+        // No dejamos el insumo seleccionado
+        setSelectedSupply(undefined)
+        return
+      }
+    }
+
+    setSelectedSupply(supply)
   }
 
   const handleDosificacionChange = (event: React.ChangeEvent<HTMLInputElement>) => {

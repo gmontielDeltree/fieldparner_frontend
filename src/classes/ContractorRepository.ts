@@ -31,7 +31,19 @@ export class ContractorRepository
 
   async getAll() {
     console.log("🔍 ContractorRepository - getAll - Obteniendo todos los documentos...");
-    this._businnes = (await this.getAllDocs("")) as unknown as Business[];
+    const all = (await this.getAllDocs("")) as unknown as Business[];
+
+    // Filtrar por accountId para evitar mostrar datos de otras cuentas
+    this._businnes = all.filter((business: Business) => {
+      if (!business) return false;
+
+      // Si el documento tiene accountId, debe coincidir con el usuario actual
+      if (business.accountId && this._userId && business.accountId !== this._userId) {
+        return false;
+      }
+      return true;
+    });
+
     console.log("🔍 ContractorRepository - getAll - Documentos obtenidos:", this._businnes);
     console.log("🔍 ContractorRepository - getAll - Cantidad:", this._businnes.length);
     console.log("🔍 ContractorRepository - getAll - Primer documento (ejemplo):", this._businnes[0]);
@@ -39,7 +51,8 @@ export class ContractorRepository
   }
 
   async getByCategory(category: string): Promise<Business[]> {
-    this._businnes = (await this.getAllDocs("")) as unknown as Business[];
+    // Reutilizar getAll para aplicar filtro por accountId
+    await this.getAll();
     console.log("🔍 ContractorRepository - getByCategory - All businesses:", this._businnes);
     console.log("🔍 ContractorRepository - getByCategory - Filtering by category:", category);
     

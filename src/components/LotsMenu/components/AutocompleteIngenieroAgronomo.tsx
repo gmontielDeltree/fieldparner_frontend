@@ -143,7 +143,8 @@ export const AutocompleteIngenieroAgronomo: React.FC<AutocompleteIngenieroAgrono
       nombreCompleto: dialogValue.razonSocial,
       razonSocial: dialogValue.razonSocial,
       cuit: dialogValue.cuit,
-      accountId: "",
+      // Asociar siempre el nuevo ingeniero a la cuenta actual
+      accountId: user?.accountId || "",
       telefono: "",
       email: "",
       tipoEntidad: "fisica",
