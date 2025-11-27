@@ -1334,6 +1334,11 @@
   "zafraGruesaInviernoDesc": "Culturas de inverno de ciclo longo",
   "zafraPersonalizadaLabel": "Personalizada",
   "zafraPersonalizadaDesc": "Defina sua própria safra ou período",
-  "zafrasMultiCampaignHint": "Uma campanha pode conter várias safras conforme as culturas e rotações planejadas"
+  "zafrasMultiCampaignHint": "Uma campanha pode conter várias safras conforme as culturas e rotações planejadas",
+  "no_notifications": "Sem notificações",
+  "mark_all_read": "Marcar todas como lidas",
+  "notifications": "Notificações",
+  "new": "Novo",
+  "dismiss": "Descartar"
 }
 

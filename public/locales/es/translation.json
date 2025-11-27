@@ -1331,5 +1331,10 @@
   "zafraGruesaInviernoDesc": "Cultivos de invierno de ciclo largo",
   "zafraPersonalizadaLabel": "Personalizada",
   "zafraPersonalizadaDesc": "Define tu propia zafra o período",
-  "zafrasMultiCampaignHint": "Una campaña puede contener múltiples zafras según los cultivos y rotaciones planificadas"
+  "zafrasMultiCampaignHint": "Una campaña puede contener múltiples zafras según los cultivos y rotaciones planificadas",
+  "no_notifications": "No hay notificaciones",
+  "mark_all_read": "Marcar todas como leídas",
+  "notifications": "Notificaciones",
+  "new": "Nuevo",
+  "dismiss": "Descartar"
 }

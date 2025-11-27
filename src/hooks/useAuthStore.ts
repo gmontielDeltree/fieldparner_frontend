@@ -152,7 +152,7 @@ export const useAuthStore = () => {
         localStorage.setItem('token_expiration', expiresIn.toString());
         const userLogin = JSON.parse(userSession || '') as User;
         const modules = await getModulesByUserId(userLogin.id);
-        console.log('modules checkAuth', modules)
+        
         dispatch(onLogin({ user: userLogin, modules }));
         const lastPath = localStorage.getItem('lastPath') || '/';
         navigate(lastPath, { replace: true });
@@ -171,21 +171,27 @@ export const useAuthStore = () => {
 
   //    const lastPath = localStorage.getItem('lastPath') || '/';
 
-  //      dispatch(
-  //    onLogin({
-  //     isAdmin: true,
-  // accountId: 'test',
-  //username: 'Rodrigo',
-  // countryId: 'AR',
-  // id: '12354',
-  // licenceId: '1234',
-  //  currency: '',
-  //   email: 'rgarro@deltree.com.ar',
-  //  }),
-  // );
+  //   dispatch(
+  //     onLogin({
+  //       user: {
+  //         id: '12354',
+  //         username: 'Rodrigo',
+  //         accountId: 'test',
+  //         licenceId: '1234',
+  //         isAdmin: true, // o false según corresponda
+  //         rol: "ADM",
+  //         countryId: 'AR',
+  //         photoName: '', // agregar si es necesario
+  //         language: '', // agregar si es necesario
+  //         currency: '',
+  //         email: 'rgarro@deltree.com.ar',
+  //       },
+  //       modules: [], // agregar los módulos correspondientes o un array vacío
+  //     }),
+  //   );
   //  navigate(lastPath, { replace: true });
   // } catch (error) {
-  //localStorage.clear();
+  // localStorage.clear();
   // dispatch(onLogout(''));
   // }
   // };

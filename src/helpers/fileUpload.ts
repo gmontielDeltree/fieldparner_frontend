@@ -18,3 +18,10 @@ export const getFileByName = async (fileName: string) => {
         console.log('error', error)
     }
 }
+
+export const sanitizeFilename = (filename: string): string => {
+  return filename
+    .replace(/\s+/g, '-')           // Reemplazar espacios con guiones
+    // .replace(/[^\w\-_.]/g, '')      // Remover caracteres especiales (opcional)
+    .toLowerCase();                 // Convertir a minúsculas (opcional)
+};

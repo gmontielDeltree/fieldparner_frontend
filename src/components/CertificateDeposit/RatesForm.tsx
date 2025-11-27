@@ -1,234 +1,181 @@
 import React, { useEffect, useMemo } from 'react';
-import { CertificateDepositFormProps } from './type'
-import { FormControl, Grid, InputAdornment, ListItemText, Paper, TextField, Typography } from '@mui/material'
+import { Grid, InputAdornment, ListItemText, TextField, Typography, Card, CardContent } from '@mui/material';
 import { Business } from '../../interfaces/socialEntity';
 import { Company } from '../../interfaces/company';
-import { TransportDocumentByCertificateDeposit } from '../../interfaces/certificate-deposit';
+import { CertificateDeposit, TransportDocumentByCertificateDeposit } from '../../interfaces/certificate-deposit';
+import { Scale as ScaleIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
 
 interface RatesFormProps {
+    formData: CertificateDeposit;
     depositary: Business | null;
     depositors: Company | null;
     listTransportDocument: TransportDocumentByCertificateDeposit[];
+    updateFormData: (path: string, value: any) => void;
 }
 
-export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> = ({
-    formValues,
+export const RatesForm: React.FC<RatesFormProps> = ({
+    formData,
     depositary,
     depositors,
     listTransportDocument,
-    handleInputChange,
-    handleFormValueChange
+    updateFormData
 }) => {
-
-    const {
-        totalGastosGenerales,
-        importeIVA,
-        totalZarandeo,
-        totalConceptoNoGravado,
-        totalSecado,
-        percepcionIVA,
-        otrasPercepciones,
-        totalOtros,
-        kgVolatil,
-        kgBruto,
-        kgZarandeo,
-        kgSecado
-    } = formValues;
-
-
     const totalServicios = useMemo(() => {
         return (
-            Number(totalGastosGenerales.value) + Number(importeIVA.value) + Number(totalZarandeo.value) +
-            Number(totalConceptoNoGravado.value) + Number(totalSecado.value) + Number(percepcionIVA.value) +
-            Number(otrasPercepciones.value) + Number(totalOtros.value));
-    }, [
-        totalGastosGenerales,
-        importeIVA,
-        totalZarandeo,
-        totalConceptoNoGravado,
-        totalSecado,
-        percepcionIVA,
-        otrasPercepciones,
-        totalOtros
-    ]);
+            Number(formData.servicios.gastosGenerales) +
+            Number(formData.servicios.importeIva) +
+            Number(formData.servicios.zarandeo) +
+            Number(formData.servicios.cptosNoGravados) +
+            Number(formData.servicios.secado) +
+            Number(formData.servicios.percepcionesIva) +
+            Number(formData.servicios.otrasPercepciones) +
+            Number(formData.servicios.otros)
+        );
+    }, [formData.servicios]);
 
     const totalPesoNeto = useMemo(() => {
-        const pesoBruto = Number(kgBruto.value);
-        const pesoVolatil = Number(kgVolatil.value);
-        const pesoZarandeo = Number(kgZarandeo.value);
-        const pesoSecado = Number(kgSecado.value);
-
-        const pesoNeto = (pesoBruto - pesoVolatil - pesoZarandeo - pesoSecado);
-        if (handleFormValueChange)
-            handleFormValueChange("kgNeto", pesoNeto.toString());
-
-        return pesoNeto;
-    }, [kgBruto, kgVolatil, kgZarandeo, kgSecado]);
-
+        const pesoBruto = Number(formData.peso.pesoBruto);
+        const pesoVolatil = Number(formData.peso.mermas.volatil);
+        const pesoZarandeo = Number(formData.peso.mermas.zarandeo);
+        const pesoSecado = Number(formData.peso.mermas.secado);
+        return pesoBruto - pesoVolatil - pesoZarandeo - pesoSecado;
+    }, [formData.peso]);
 
     useEffect(() => {
-        const initWeight = () => {
-            const pesoBruto = listTransportDocument.reduce((prev, current) => {
-                return Number(prev) + Number(current.kgNeto);
-            }, 0);
-            const pesoZarandeo = listTransportDocument.reduce((prev, current) => {
-                return Number(prev) + Number(current.kgMermaZarandeo);
-            }, 0);
-            const pesoSecado = listTransportDocument.reduce((prev, current) => {
-                return Number(prev) + Number(current.kgMermaSecado);
-            }, 0);
-            const totalZarandeo = listTransportDocument.reduce((prev, current) => {
-                return Number(prev) + Number(current.importeZarandeo);
-            }, 0);
-            const totalSecado = listTransportDocument.reduce((prev, current) => {
-                return Number(prev) + Number(current.importeSecado);
-            }, 0);
+        if (listTransportDocument.length > 0) {
+            const pesoBruto = listTransportDocument.reduce((prev, current) => Number(prev) + Number(current.kgNeto), 0);
+            const pesoZarandeo = listTransportDocument.reduce((prev, current) => Number(prev) + Number(current.kgMermaZarandeo), 0);
+            const pesoSecado = listTransportDocument.reduce((prev, current) => Number(prev) + Number(current.kgMermaSecado), 0);
+            const totalZarandeo = listTransportDocument.reduce((prev, current) => Number(prev) + Number(current.importeZarandeo), 0);
+            const totalSecado = listTransportDocument.reduce((prev, current) => Number(prev) + Number(current.importeSecado), 0);
 
-            if (handleFormValueChange) {
-                handleFormValueChange("kgBruto", pesoBruto.toString());
-                handleFormValueChange("kgZarandeo", pesoZarandeo.toString());
-                handleFormValueChange("kgSecado", pesoSecado.toString());
-                handleFormValueChange("totalZarandeo", totalZarandeo.toString());
-                handleFormValueChange("totalSecado", totalSecado.toString());
-            }
+            updateFormData('peso.pesoBruto', pesoBruto);
+            updateFormData('peso.mermas.zarandeo', pesoZarandeo);
+            updateFormData('peso.mermas.secado', pesoSecado);
+            updateFormData('servicios.zarandeo', totalZarandeo);
+            updateFormData('servicios.secado', totalSecado);
         }
-        initWeight();
-    }, [listTransportDocument])
+    }, [listTransportDocument]);
 
+    useEffect(() => {
+        updateFormData('peso.pesoNeto', totalPesoNeto);
+    }, [totalPesoNeto]);
+
+    useEffect(() => {
+        updateFormData('servicios.total', totalServicios);
+    }, [totalServicios]);
 
     return (
-        <Grid key="grains-form" container spacing={1} sx={{ px: 1 }}>
-            <Grid item xs={12} sm={4}>
-                <FormControl fullWidth>
-                    <ListItemText
-                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                        primary={<Typography variant='subtitle2'>Certificado Deposito N°</Typography>}
-                        secondary={
-                            <Typography letterSpacing={1} variant='subtitle1'>
-                                {formValues.numeroCertificado.value ? formValues.numeroCertificado.value : "-"}
-                            </Typography>}
-                    />
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-                <FormControl fullWidth>
-                    <ListItemText
-                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                        primary={<Typography variant='subtitle2'>Depositario</Typography>}
-                        secondary={
-                            <Typography letterSpacing={1} variant='subtitle1'>
-                                {depositary ? depositary.razonSocial : "-"}
-                            </Typography>}
-                    />
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-                <FormControl fullWidth>
-                    <ListItemText
-                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                        primary={<Typography variant='subtitle2'>Depositante</Typography>}
-                        secondary={
-                            <Typography letterSpacing={1} variant='subtitle1'>
-                                {depositors ? depositors.socialReason : "-"}
-                            </Typography>}
-                    />
-                </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={12}>
-                <Grid container spacing={1}>
-                    <Grid item xs={12} sm={6} component={Paper} sx={{ p: 1 }}>
-                        <Grid item xs={12} sm={12}>
-                            <Typography align='center' letterSpacing={1} variant='h6'>
-                                Peso
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={12} sm={12} mb={1}>
-                            <FormControl fullWidth>
+        <Grid container spacing={2} sx={{ px: 1 }}>
+            {/* Resumen */}
+            <Grid item xs={12}>
+                <Card variant="outlined" sx={{ backgroundColor: '#f8f9fa' }}>
+                    <CardContent sx={{ py: 2 }}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={4}>
                                 <ListItemText
-                                    sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                                    primary={<Typography variant='subtitle2'>Peso Bruto Kg</Typography>}
-                                    secondary={
-                                        <Typography align='right' letterSpacing={1} variant='subtitle1'>
-                                            {formValues.kgBruto.value}
-                                        </Typography>}
+                                    primary={<Typography variant="caption" color="text.secondary">COE</Typography>}
+                                    secondary={<Typography variant="body1" fontWeight="bold">{formData.certificacionElectronicaGranos.coe || '-'}</Typography>}
                                 />
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} sm={12} mb={2}>
-                            <TextField
-                                variant="outlined"
-                                type="number"
-                                label="Volatil Kg"
-                                name="kgVolatil"
-                                value={formValues.kgVolatil.value}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={12} mb={2}>
-                            <TextField
-                                variant="outlined"
-                                type="number"
-                                label="Zarandeo Kg"
-                                name="kgZarandeo"
-                                value={formValues.kgZarandeo.value}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={12} mb={1}>
-                            <TextField
-                                variant="outlined"
-                                type="number"
-                                label="Secado Kg"
-                                name="kgSecado"
-                                value={formValues.kgSecado.value}
-                                onChange={handleInputChange}
-                                InputProps={{
-                                    startAdornment: <InputAdornment position="start" />,
-                                }}
-                                fullWidth
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={12}>
-                            <FormControl fullWidth>
-                                <ListItemText
-                                    sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                                    primary={<Typography variant='subtitle2'>Peso Neto Kg</Typography>}
-                                    secondary={
-                                        <Typography align='right' letterSpacing={1} variant='subtitle1'>
-                                            {totalPesoNeto}
-                                        </Typography>}
-                                />
-                            </FormControl>
-                        </Grid>
-
-                    </Grid>
-                    <Grid item xs={12} sm={6} component={Paper}>
-                        <Grid container spacing={1}>
-                            <Grid item xs={12} sm={12}>
-                                <Typography align='center' letterSpacing={1} variant='h6'>
-                                    Servicio
-                                </Typography>
                             </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <ListItemText
+                                    primary={<Typography variant="caption" color="text.secondary">Depositario</Typography>}
+                                    secondary={<Typography variant="body2">{depositary?.razonSocial || formData.depositante?.razonSocial || '-'}</Typography>}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                                <ListItemText
+                                    primary={<Typography variant="caption" color="text.secondary">Depositante</Typography>}
+                                    secondary={<Typography variant="body2">{depositors?.socialReason || formData.depositante?.razonSocial || '-'}</Typography>}
+                                />
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>
+
+            {/* Peso */}
+            <Grid item xs={12} sm={6}>
+                <Card variant="outlined" sx={{ height: '100%' }}>
+                    <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <ScaleIcon color="primary" />
+                            Peso
+                        </Typography>
+
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                <ListItemText
+                                    sx={{ backgroundColor: "#f5f5f5", p: 1, borderRadius: 1 }}
+                                    primary={<Typography variant="caption" color="text.secondary">Peso Bruto Kg</Typography>}
+                                    secondary={<Typography variant="body1" align="right" fontWeight="bold">{formData.peso.pesoBruto.toLocaleString()}</Typography>}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    variant="outlined"
+                                    type="number"
+                                    label="Volátil Kg"
+                                    value={formData.peso.mermas.volatil}
+                                    onChange={(e) => updateFormData('peso.mermas.volatil', Number(e.target.value))}
+                                    fullWidth
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    variant="outlined"
+                                    type="number"
+                                    label="Zarandeo Kg"
+                                    value={formData.peso.mermas.zarandeo}
+                                    onChange={(e) => updateFormData('peso.mermas.zarandeo', Number(e.target.value))}
+                                    fullWidth
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    variant="outlined"
+                                    type="number"
+                                    label="Secado Kg"
+                                    value={formData.peso.mermas.secado}
+                                    onChange={(e) => updateFormData('peso.mermas.secado', Number(e.target.value))}
+                                    fullWidth
+                                    size="small"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <ListItemText
+                                    sx={{ backgroundColor: "#e3f2fd", p: 1, borderRadius: 1 }}
+                                    primary={<Typography variant="caption" color="text.secondary">Peso Neto Kg</Typography>}
+                                    secondary={<Typography variant="h6" align="right" color="primary">{totalPesoNeto.toLocaleString()}</Typography>}
+                                />
+                            </Grid>
+                        </Grid>
+                    </CardContent>
+                </Card>
+            </Grid>
+
+            {/* Servicios */}
+            <Grid item xs={12} sm={6}>
+                <Card variant="outlined" sx={{ height: '100%' }}>
+                    <CardContent>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <ReceiptIcon color="secondary" />
+                            Servicios
+                        </Typography>
+
+                        <Grid container spacing={1}>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     variant="outlined"
                                     type="text"
                                     label="Forma de Pago"
-                                    name="formaPago"
-                                    value={formValues.formaPago.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" />,
-                                    }}
+                                    value={formData.servicios.formaDePago}
+                                    onChange={(e) => updateFormData('servicios.formaDePago', e.target.value)}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -236,27 +183,22 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Gastos Generales"
-                                    name="totalGastosGenerales"
-                                    value={formValues.totalGastosGenerales.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.gastosGenerales}
+                                    onChange={(e) => updateFormData('servicios.gastosGenerales', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     variant="outlined"
-                                    type="number"
-                                    label="IVA"
-                                    name="iva"
-                                    value={formValues.iva.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >%</InputAdornment>,
-                                    }}
+                                    type="text"
+                                    label="Alícuota IVA"
+                                    value={formData.servicios.alicuotaIva}
+                                    onChange={(e) => updateFormData('servicios.alicuotaIva', e.target.value)}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -264,13 +206,11 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Importe IVA"
-                                    name="importeIVA"
-                                    value={formValues.importeIVA.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.importeIva}
+                                    onChange={(e) => updateFormData('servicios.importeIva', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -278,13 +218,11 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Zarandeo"
-                                    name="totalZarandeo"
-                                    value={formValues.totalZarandeo.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.zarandeo}
+                                    onChange={(e) => updateFormData('servicios.zarandeo', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -292,13 +230,11 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Cptos. no Gravados"
-                                    name="totalConceptoNoGravado"
-                                    value={formValues.totalConceptoNoGravado.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.cptosNoGravados}
+                                    onChange={(e) => updateFormData('servicios.cptosNoGravados', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -306,13 +242,11 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Secado"
-                                    name="totalSecado"
-                                    value={formValues.totalSecado.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.secado}
+                                    onChange={(e) => updateFormData('servicios.secado', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -320,13 +254,11 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Percepciones IVA"
-                                    name="percepcionIVA"
-                                    value={formValues.percepcionIVA.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.percepcionesIva}
+                                    onChange={(e) => updateFormData('servicios.percepcionesIva', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -334,13 +266,11 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Otros"
-                                    name="totalOtros"
-                                    value={formValues.totalOtros.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.otros}
+                                    onChange={(e) => updateFormData('servicios.otros', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
@@ -348,44 +278,38 @@ export const RatesForm: React.FC<CertificateDepositFormProps & RatesFormProps> =
                                     variant="outlined"
                                     type="number"
                                     label="Otras Percepciones"
-                                    name="otrasPercepciones"
-                                    value={formValues.otrasPercepciones.value}
-                                    onChange={handleInputChange}
-                                    InputProps={{
-                                        startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                                    }}
+                                    value={formData.servicios.otrasPercepciones}
+                                    onChange={(e) => updateFormData('servicios.otrasPercepciones', Number(e.target.value))}
+                                    InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
                                     fullWidth
+                                    size="small"
                                 />
                             </Grid>
-                            <Grid item xs={12} sm={12} mb={1}>
-                                <FormControl fullWidth>
-                                    <ListItemText
-                                        sx={{ backgroundColor: "#f4f4f4", px: 1 }}
-                                        primary={<Typography align='right' variant='subtitle2'>Total</Typography>}
-                                        secondary={
-                                            <Typography align='right' letterSpacing={1} variant='subtitle1'>
-                                                $ {totalServicios}
-                                            </Typography>}
-                                    />
-                                </FormControl>
+                            <Grid item xs={12}>
+                                <ListItemText
+                                    sx={{ backgroundColor: "#e8f5e9", p: 1, borderRadius: 1 }}
+                                    primary={<Typography variant="caption" align="right" display="block">Total</Typography>}
+                                    secondary={<Typography variant="h6" align="right" color="success.main">$ {totalServicios.toLocaleString()}</Typography>}
+                                />
                             </Grid>
                         </Grid>
-                    </Grid>
-
-                </Grid>
+                    </CardContent>
+                </Card>
             </Grid>
-            <Grid item xs={12} sm={12}>
+
+            {/* Datos adicionales */}
+            <Grid item xs={12}>
                 <TextField
                     variant="outlined"
                     type="text"
-                    label="Descripcion Adicional"
-                    name="descripcionAdicional"
+                    label="Descripción Adicional"
                     multiline
-                    value={formValues.descripcionAdicional.value}
-                    onChange={handleInputChange}
-                    fullWidth />
+                    rows={2}
+                    value={formData.datosAdicionales}
+                    onChange={(e) => updateFormData('datosAdicionales', e.target.value)}
+                    fullWidth
+                />
             </Grid>
         </Grid>
-
-    )
-}
+    );
+};

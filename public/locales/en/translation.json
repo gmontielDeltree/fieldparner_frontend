@@ -1327,5 +1327,10 @@
   "zafraGruesaInviernoDesc": "Winter crops with long cycle",
   "zafraPersonalizadaLabel": "Custom",
   "zafraPersonalizadaDesc": "Define your own season or period",
-  "zafrasMultiCampaignHint": "A campaign can contain multiple seasons depending on planned crops and rotations"
+  "zafrasMultiCampaignHint": "A campaign can contain multiple seasons depending on planned crops and rotations",
+  "no_notifications": "No notifications",
+  "mark_all_read": "Mark all as read",
+  "notifications": "Notifications",
+  "new": "New",
+  "dismiss": "Dismiss"
 }

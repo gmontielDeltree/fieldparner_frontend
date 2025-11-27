@@ -36,13 +36,13 @@ export const useCertificateDeposit = () => {
                     return {
                         _id: doc._id,
                         _rev: doc._rev,
-                        numeroCertificado: doc.numeroCertificado,
+                        numeroCertificado: doc.certificacionElectronicaGranos?.coe || '',
                         archivoCertificado: doc.archivoCertificado,
                         campania: doc.campaniaId,
-                        cultivo: supply?.name || "",
-                        fechaEmision: doc.fechaEmision,
-                        planta: doc.planta,
-                        kgConfirmados: doc.kgNeto.toString(),
+                        cultivo: supply?.name || doc.certificacionElectronicaGranos?.granoYTipo || "",
+                        fechaEmision: doc.certificacionElectronicaGranos?.fechaEmision || '',
+                        planta: doc.plantaNro || '',
+                        kgConfirmados: (doc.peso?.pesoNeto || 0).toString(),
                     } as CertificateDepositItemRow
                 })
             );
@@ -103,7 +103,7 @@ export const useCertificateDeposit = () => {
                 if (found.docs && found.docs.length > 0) {
                     const doc = found.docs[0] as CropStockControl & PouchDB.Core.IdMeta & PouchDB.Core.RevisionIdMeta;
                     const currentDelivered = Number(doc.deliveredStock || 0);
-                    const toAdd = Math.max(0, Number(newDocument.kgNeto) || 0);
+                    const toAdd = Math.max(0, Number(newDocument.peso?.pesoNeto) || 0);
                     await dbContext.cropStockControl.put({ ...doc, deliveredStock: currentDelivered + toAdd, lastUpdate: dayjs().toISOString() });
                 }
             } catch (e) {
