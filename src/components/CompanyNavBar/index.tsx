@@ -1,175 +1,181 @@
-import {
-  Avatar,
-  Box,
-  CircularProgress,
-  FormControl,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Typography,
-  styled,
-  keyframes,
-  alpha,
-} from '@mui/material'
-import React, { useState, useEffect } from 'react'
-import { useAppDispatch, useAppSelector, useCompany } from '../../hooks'
-import { urlImg } from '../../config'
-import { setAuthUser } from '../../redux/auth'
+import { Avatar, Box, CircularProgress, FormControl, MenuItem, Select, SelectChangeEvent, Typography, ListItemIcon } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { useAppDispatch, useAppSelector, useCompany } from '../../hooks';
+import { urlImg } from '../../config';
+import { setAuthUser } from '../../redux/auth';
+import { Check, ExpandMore } from '@mui/icons-material';
 
-// === Animaciones === //
-const glow = keyframes`
-  0% { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(0, 123, 255, 0.8); }
-  100% { box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); }
-`
 
-// Simplificado el styled Select para reducir posibles conflictos
-const FancySelect = styled(Select)(({ theme }) => ({
-  borderRadius: '8px',
-  backgroundColor: alpha(theme.palette.primary.light, 0.05),
-  boxShadow: `0 4px 12px ${alpha('#000', 0.1)}`,
-  transition: 'all 0.3s ease',
-  cursor: 'pointer', // Asegurar que el cursor sea pointer
-  '& .MuiSelect-select': {
-    display: 'flex',
-    alignItems: 'center',
-    padding: '8px 16px',
-  },
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.light, 0.15),
-  },
-}))
-
-const FancyMenuItem = styled(MenuItem)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  cursor: 'pointer', // Asegurar que el cursor sea pointer
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  },
-}))
 
 const CompanyNavBar: React.FC = () => {
-  const { user } = useAppSelector((state) => state.auth)
-  const dispatch = useAppDispatch()
-  const { companies, getCompaniesByEmail } = useCompany()
-  const [companySelected, setCompanySelected] = useState(
-    localStorage.getItem('last_company') || ''
-  )
-  const [loading, setLoading] = useState(true)
-  const [localCompanies, setLocalCompanies] = useState([])
 
-  // Actualizar estado local cuando companies cambia
-  useEffect(() => {
-    if (companies && Array.isArray(companies) && companies.length > 0) {
-      setLocalCompanies(companies)
+    const { user } = useAppSelector(state => state.auth);
+    const dispatch = useAppDispatch();
+    const { companies, getCompaniesByEmail } = useCompany();
+    const [companySelected, setCompanySelected] = useState(localStorage.getItem('last_company') || "");
+    const lincenIdSelected = companies?.find(company => company.companyId === companySelected)?.licenceId;
 
-      // Si no hay compañía seleccionada, seleccionar la primera
-      if (!companySelected && companies.length > 0) {
-        setCompanySelected(companies[0].companyId)
-        localStorage.setItem('last_company', companies[0].companyId)
-      }
-    }
-  }, [companies, companySelected])
-
-  const licenceIdSelected = localCompanies.find(
-    (company) => company.companyId === companySelected
-  )?.licenceId
-
-  const onChangeCompany = (event) => {
-    const value = event.target.value
-    console.log('Company changed to:', value)
-    setCompanySelected(value)
-    localStorage.setItem('last_company', value)
-  }
-
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      try {
-        await getCompaniesByEmail()
-      } catch (error) {
-        console.error('Error fetching companies:', error)
-      } finally {
-        setLoading(false)
-      }
+    const onChangeCompany = ({ target }: SelectChangeEvent) => {
+        setCompanySelected(target.value as string);
+        localStorage.setItem('last_company', target.value as string);
     }
 
-    fetchCompanies()
+    useEffect(() => {
+        getCompaniesByEmail();
+    }, []);
 
-    // Establecer un timeout de seguridad
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 3000)
+    useEffect(() => {
+        if (companySelected == "" && companies.length > 0) {
+            setCompanySelected(companies[0].companyId);
+        }
+    }, [companySelected, companies]);
 
-    return () => clearTimeout(timer)
-  }, [])
+    useEffect(() => {
+        if (user && lincenIdSelected && user.licenceId !== lincenIdSelected) {
+            dispatch(setAuthUser({ ...user, licenceId: lincenIdSelected }));
+        }
+    }, [dispatch, user, lincenIdSelected])
 
-  // Actualizar licenceId del usuario cuando cambia la compañía seleccionada
-  useEffect(() => {
-    if (user && licenceIdSelected && user.licenceId !== licenceIdSelected) {
-      dispatch(setAuthUser({ ...user, licenceId: licenceIdSelected }))
-    }
-  }, [dispatch, user, licenceIdSelected])
 
-  // Simplificar la lógica de renderizado
-  if (loading) {
-    return <CircularProgress size={24} />
-  }
+    const selectedCompany = companies?.find(company => company.companyId === companySelected);
 
-  // No renderizar nada si no hay compañías
-  if (!localCompanies || localCompanies.length === 0) {
-    return null
-  }
-
-  return (
-    <FormControl key="select-company">
-      <FancySelect
-        value={companySelected}
-        variant="outlined"
-        disabled={localCompanies.length === 1}
-        onChange={onChangeCompany}
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              borderRadius: 2,
-              mt: 1,
-              py: 0,
-              backgroundColor: 'white', // Simplificar para evitar problemas
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-            },
-          },
-        }}
-      >
-        {localCompanies.map((company) => (
-          <FancyMenuItem key={company._id} value={company.companyId}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography
-                variant="body1"
-                fontWeight="bold"
-                sx={{ px: 1, letterSpacing: '0.8px' }}
-              >
-                {company.fantasyName?.toUpperCase()}
-              </Typography>
-              <Avatar
-                alt={company.fantasyName}
-                src={`${urlImg}/${company.companyLogo}`}
-                sx={{
-                  borderRadius: '50%',
-                  width: 30,
-                  height: 30,
-                  animation:
-                    company.companyId === companySelected
-                      ? `${glow} 2s infinite`
-                      : 'none',
-                  ml: 1,
-                }}
-              />
-            </Box>
-          </FancyMenuItem>
-        ))}
-      </FancySelect>
-    </FormControl>
-  )
+    return (
+        <>
+            {
+                companies.length === 0 ? <CircularProgress size={30} />
+                    :
+                    <FormControl
+                        key="select-company">
+                        <Select
+                            value={companySelected}
+                            variant="outlined"
+                            disabled={companies.length === 1}
+                            IconComponent={ExpandMore}
+                            sx={{
+                                border: 'none',
+                                borderRadius: '12px',
+                                transition: 'all 0.3s ease',
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                },
+                                '& fieldset': {
+                                    border: 'none',
+                                },
+                                '& .MuiSelect-select': {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 1.5,
+                                    py: 1,
+                                    px: 2,
+                                },
+                                '& .MuiSelect-icon': {
+                                    transition: 'transform 0.3s ease',
+                                },
+                                '&.Mui-focused .MuiSelect-icon': {
+                                    transform: 'rotate(180deg)',
+                                },
+                            }}
+                            onChange={onChangeCompany}
+                            renderValue={() => (
+                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                                    <Avatar
+                                        alt={selectedCompany?.fantasyName}
+                                        src={`${urlImg}/${selectedCompany?.companyLogo}`}
+                                        sx={{
+                                            borderRadius: "50%",
+                                            width: 32,
+                                            height: 32,
+                                            border: '2px solid rgba(255, 255, 255, 0.2)',
+                                        }}
+                                    />
+                                    <Typography
+                                        variant="subtitle1"
+                                        fontWeight={600}
+                                        sx={{
+                                            letterSpacing: "0.5px",
+                                            fontSize: '0.95rem',
+                                        }}
+                                    >
+                                        {selectedCompany?.fantasyName?.toUpperCase()}
+                                    </Typography>
+                                </Box>
+                            )}
+                            MenuProps={{
+                                PaperProps: {
+                                    sx: {
+                                        borderRadius: '12px',
+                                        mt: 1,
+                                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                                        maxHeight: '400px',
+                                        '& .MuiList-root': {
+                                            py: 1,
+                                        },
+                                    }
+                                }
+                            }}
+                        >
+                            {
+                                companies?.map((company) => (
+                                    <MenuItem
+                                        key={company._id}
+                                        value={company.companyId}
+                                        selected={company.companyId === companySelected}
+                                        sx={{
+                                            py: 1.5,
+                                            px: 2,
+                                            mx: 1,
+                                            borderRadius: '8px',
+                                            transition: 'all 0.2s ease',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                                            },
+                                            '&.Mui-selected': {
+                                                backgroundColor: 'rgba(25, 118, 210, 0.12)',
+                                                '&:hover': {
+                                                    backgroundColor: 'rgba(25, 118, 210, 0.16)',
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1 }}>
+                                            <Avatar
+                                                alt={company.fantasyName}
+                                                src={`${urlImg}/${company.companyLogo}`}
+                                                sx={{
+                                                    borderRadius: "50%",
+                                                    width: 36,
+                                                    height: 36,
+                                                    border: company.companyId === companySelected
+                                                        ? '2px solid #1976d2'
+                                                        : '2px solid transparent',
+                                                    transition: 'border 0.2s ease',
+                                                }}
+                                            />
+                                            <Typography
+                                                variant="body1"
+                                                fontWeight={company.companyId === companySelected ? 600 : 500}
+                                                sx={{
+                                                    letterSpacing: "0.5px",
+                                                    flex: 1,
+                                                }}
+                                            >
+                                                {company.fantasyName?.toUpperCase()}
+                                            </Typography>
+                                            {company.companyId === companySelected && (
+                                                <ListItemIcon sx={{ minWidth: 'auto', color: '#1976d2' }}>
+                                                    <Check />
+                                                </ListItemIcon>
+                                            )}
+                                        </Box>
+                                    </MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+            }
+        </>
+    )
 }
 
-export default CompanyNavBar
+export default CompanyNavBar;
