@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { convertTimestampToDate } from '../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { useUser } from './useUsers';
+import { NotificationService } from '../services/notificationService';
 
 const controller = '/auth';
 
@@ -112,6 +113,7 @@ export const useAuthStore = () => {
 
       if (response.status === HttpStatusCode.Created) {
         localStorage.removeItem('username_temp');
+        NotificationService.showSuccess("User confirmed successfully", {}, t("user_label"));
         dispatch(onLogout(''));
         navigate('/init/auth/login');
         dispatch(finishLoading());
@@ -120,6 +122,7 @@ export const useAuthStore = () => {
     } catch (error) {
       dispatch(onLogout(t('try_again_later')));
       dispatch(clearErrorMessage());
+      NotificationService.showError(t("try_again_later"), {}, t("error_label"));
       localStorage.removeItem('username_temp');
       dispatch(finishLoading());
     }
