@@ -157,9 +157,9 @@ export const LoginPage = () => {
                         control={<Checkbox value="remember" color="primary" />}
                         label="Remember me"
                     /> */}
-          {errorMessage && (
+          {errorMessage && errorMessage !== "" && (
             <Alert severity="error" sx={{ my: 1 }}>
-  
+              {errorMessage}
             </Alert>
           )}
           <Button
