@@ -56,12 +56,12 @@ export default function CicloEditorDialog({
   const [maxDate, invalidRanges] = useMemo(() => {
     if (otrosCiclos?.length) {
       console.log("OTROS CICLOS", otrosCiclos);
-      let dates = otrosCiclos.map((c) => new Date(c.fechaFin));
-      let maxDate = new Date(Math.max(...dates));
-      let invalidRanges = otrosCiclos.map((c) => [
-        new Date(c.fechaInicio),
-        new Date(c.fechaFin),
-      ]);
+      let dates = otrosCiclos.map((c) => new Date(c.fechaFin)).filter(d => !isNaN(d.getTime()));
+      let maxDate = dates.length ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date();
+
+      let invalidRanges = otrosCiclos
+        .map((c) => [new Date(c.fechaInicio), new Date(c.fechaFin)])
+        .filter((range) => !isNaN(range[0].getTime()) && !isNaN(range[1].getTime()));
 
       console.log("MAX DATE", maxDate, "invalidRanges", invalidRanges);
       setStartDate(add(maxDate, { days: 1 }));
@@ -134,7 +134,7 @@ export default function CicloEditorDialog({
           }
         }}
       >
-        {t('Nueva Zafra')}
+        {t('newHarvest')}
       </Button>
       <Dialog
         open={open}

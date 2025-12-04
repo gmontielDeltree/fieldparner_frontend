@@ -127,7 +127,7 @@ export const ActividadCardBase: React.FC = ({
             }}
           >
             {fechaString(fecha)} {ejecutada && "EJECUTADA"}
-            <Button onClick={programarClickHandler}>{t("Programar")}</Button>
+            <Button onClick={programarClickHandler}>{t("Program")}</Button>
           </Box>
           <Box
             sx={{
@@ -173,16 +173,16 @@ export const ActividadCardBase: React.FC = ({
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpandIcon={<ChevronRightIcon />}
           >
-            <TreeItem nodeId="10" label="Contratistasssssssssssss">
-              {!contratista && <p>No contractor</p>}
+            <TreeItem nodeId="10" label={t("contractor")}>
+              {!contratista && <p>{t("noContractorAssigned")}</p>}
               {contratista?.razonSocial?.length
                 ? contratista?.razonSocial
                 : contratista?.nombreCompleto}
             </TreeItem>
 
-            <TreeItem nodeId="1" label="Insumos">
+            <TreeItem nodeId="1" label={t("supplies")}>
               {lineasInsumos?.length === 0 && (
-                <p>La actividad no tiene insumos</p>
+                <p>{t("noSuppliesForActivity")}</p>
               )}
               {lineasInsumos?.map((i, indec) => {
                 // console.log(i,lineasInsumos)
@@ -209,9 +209,9 @@ export const ActividadCardBase: React.FC = ({
                 );
               })}
             </TreeItem>
-            <TreeItem nodeId="5" label={t("Servicios")}>
+            <TreeItem nodeId="5" label={t("services")}>
               {lineasLabores?.length === 0 && (
-                <p>{t("La actividad no tiene servicios")}</p>
+                <p>{t("noServicesForActivity")}</p>
               )}
               {lineasLabores?.map((i, indec) => {
                 return (

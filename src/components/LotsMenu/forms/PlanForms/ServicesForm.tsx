@@ -149,26 +149,26 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
           )}
 
           {/* Fila para "Servicio", "Contratista" y "Unidades" */}
-          <Grid container item xs={12} spacing={1}>
-            <Grid item xs={mode === 'plan' ? 3 : 4}>
+          <Grid container item xs={12} spacing={2} alignItems="center">
+            <Grid item xs={12} sm={4}>
               <AutocompleteLaborsServices
                 key={`labor-service-${selectedService?._id || 'empty'}`}
                 value={selectedService}
                 onChange={setSelectedService}
                 label={t('service')}
-                width={mode === 'plan' ? 250 : 300}
+                width={"100%" as any}
               />
             </Grid>
 
-            <Grid item xs={mode === 'plan' ? 4 : 4}>
+            <Grid item xs={12} sm={4}>
               <AutocompleteContratista
                 value={contractor}
                 onChange={setContractor}
-                width={190}
+                width={"100%" as any}
               />
             </Grid>
 
-            <Grid item xs={mode === 'plan' ? 4 : 3}>
+            <Grid item xs={10} sm={3}>
               <NumberFieldWithUnits
                 fullWidth
                 label={t('units')}
@@ -178,7 +178,7 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
               />
             </Grid>
 
-            <Grid item xs={1}>
+            <Grid item xs={2} sm={1}>
               <IconButton
                 onClick={handleAddRow}
                 color="primary"

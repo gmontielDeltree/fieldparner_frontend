@@ -271,52 +271,50 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
             </Grid>
           </Grid>
 
-          {/* Línea 2: Deposito (always), Ubicacion, Nro de Lote (only in execute) */}
-          <Grid container item xs={12} spacing={1}>
-            <Grid item xs={mode === 'plan' ? 12 : 4}>
-              <AutocompleteDeposito
-                key={`deposit-${formKey}-${deposito?._id || 'empty'}`}
-                value={deposito}
-                onChange={handleDepositoChange}
-              />
+          {/* Línea 2: Deposito, Ubicacion, Nro de Lote (Solo en ejecución) */}
+          {mode !== 'plan' && (
+            <Grid container item xs={12} spacing={1}>
+              <Grid item xs={4}>
+                <AutocompleteDeposito
+                  key={`deposit-${formKey}-${deposito?._id || 'empty'}`}
+                  value={deposito}
+                  onChange={handleDepositoChange}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
+                  <Select
+                    key={`location-${formKey}-${deposito?._id || 'empty'}`}
+                    labelId="ubicacion-label"
+                    label={t('location')}
+                    value={ubicacion}
+                    onChange={handleUbicacionChange}
+                    disabled={!deposito}
+                  >
+                    {deposito?.locations?.map((loc: string) => (
+                      <MenuItem key={loc} value={loc}>
+                        {loc}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  fullWidth
+                  label={t('batchNumber')}
+                  value={nroLote}
+                  onChange={handleLotNumberChange}
+                  onKeyPress={handleLotNumberKeyPress}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+              </Grid>
             </Grid>
-            {mode !== 'plan' && (
-              <>
-                <Grid item xs={4}>
-                  <FormControl fullWidth>
-                    <InputLabel id="ubicacion-label">{t('location')}</InputLabel>
-                    <Select
-                      key={`location-${formKey}-${deposito?._id || 'empty'}`}
-                      labelId="ubicacion-label"
-                      label={t('location')}
-                      value={ubicacion}
-                      onChange={handleUbicacionChange}
-                      disabled={!deposito}
-                    >
-                      {deposito?.locations?.map((loc: string) => (
-                        <MenuItem key={loc} value={loc}>
-                          {loc}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={4}>
-                  <TextField
-                    fullWidth
-                    label={t('batchNumber')}
-                    value={nroLote}
-                    onChange={handleLotNumberChange}
-                    onKeyPress={handleLotNumberKeyPress}
-                    inputProps={{
-                      inputMode: 'numeric',
-                      pattern: '[0-9]*'
-                    }}
-                  />
-                </Grid>
-              </>
-            )}
-          </Grid>
+          )}
 
           {/* Línea 3: Cantidad, Cant Total */}
           <Grid container item xs={12} spacing={1}>

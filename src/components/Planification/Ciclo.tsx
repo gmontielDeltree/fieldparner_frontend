@@ -22,6 +22,7 @@ import { useCiclos, usePlanActividad } from "../../hooks/usePlanifications";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { format } from "date-fns";
 import { Lot } from "@types";
+import { useTranslation } from "react-i18next";
 
 const ActividadContext = createContext();
 
@@ -37,6 +38,7 @@ export const Ciclo = ({
   lote: Lot;
 }) => {
   const [expan, setExpan] = useState(expanded);
+  const { t } = useTranslation();
 
   console.log(ciclo);
 
@@ -76,7 +78,7 @@ export const Ciclo = ({
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Zafra {getCropLabelFromId?.(ciclo.cultivoId)}
+              {t('harvest')} {getCropLabelFromId?.(ciclo.cultivoId)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {(() => {
@@ -95,7 +97,7 @@ export const Ciclo = ({
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
-            {ciclo.actividadesIds?.length || 0} actividades
+            {t('activitiesCount', { count: ciclo.actividadesIds?.length || 0 })}
           </Typography>
         </Box>
       </AccordionSummary>
@@ -113,10 +115,10 @@ export const Ciclo = ({
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
             <Box>
               <Typography variant="h6" sx={{ fontWeight: 600, color: "#1e293b", mb: 0.5 }}>
-                🌾 Gestión de Actividades
+                🌾 {t('activitiesManagement')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Planifica y administra las actividades de esta zafra
+                {t('planAndManageActivities')}
               </Typography>
             </Box>
             <Button
@@ -127,7 +129,7 @@ export const Ciclo = ({
               size="small"
               sx={{ borderRadius: "8px" }}
             >
-              Eliminar Zafra
+              {t('deleteCycle')}
             </Button>
           </Box>
 
@@ -140,7 +142,7 @@ export const Ciclo = ({
               ciclo={ciclo}
             />
             <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
-              {ciclo.actividadesIds?.length || 0} actividad{(ciclo.actividadesIds?.length || 0) !== 1 ? 'es' : ''} planificada{(ciclo.actividadesIds?.length || 0) !== 1 ? 's' : ''}
+              {t('plannedActivity', { count: ciclo.actividadesIds?.length || 0 })}
             </Typography>
           </Box>
         </Box>
@@ -179,10 +181,10 @@ export const Ciclo = ({
               color: "text.secondary"
             }}>
               <Typography variant="h6" sx={{ mb: 1, opacity: 0.7 }}>
-                📝 Sin Actividades Planificadas
+                📝 {t('noPlannedActivities')}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.6 }}>
-                Usa el botón "Nueva Actividad" para comenzar a planificar
+                {t('startPlanningPrompt')}
               </Typography>
             </Box>
           )}
