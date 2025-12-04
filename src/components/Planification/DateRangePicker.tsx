@@ -15,14 +15,15 @@ export default function DateRangePicker({
 }: {
   invalidRanges: Date[][];
 }) {
-  const {t} = useTranslation()
+  const { t } = useTranslation()
   // State variables for the start and end dates
   const [_startDate, setStartDate] = React.useState(startDate); //new Date());
   const [_endDate, setEndDate] = React.useState(endDate); //new Date());
 
   const isValidDate = React.useCallback(
     (date: Date) => {
-      
+      if (!date || isNaN(date.getTime())) return false;
+
       let isIncludedInARange = invalidRanges.some((r) =>
         isWithinInterval(date, {
           start: r[0],
@@ -31,7 +32,7 @@ export default function DateRangePicker({
       );
 
       return isIncludedInARange
-      
+
 
     },
     [invalidRanges]

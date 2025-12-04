@@ -331,7 +331,7 @@ export const useSidebar = (): UseSidebarReturn => {
   }, [groupKeysSorted, grouped, sortedModules]);
 
   // Composite loading: keep sidebar in loading state until menu, modules, and auth permissions are ready
-  const isAuthLoading = authStatus === 'checking' || (authStatus === 'authenticated' && (!userModules || userModules.length === 0));
+  const isAuthLoading = authStatus === 'checking';
   const isLoading = isLoadingMenu || isLoadingModules || isAuthLoading;
 
   // permission check: usar módulos del usuario desde auth.modules

@@ -90,6 +90,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
   campanaId,
   isCampaignClosed,
 }) => {
+  const { t } = useTranslation();
   const [exp, setExp] = useState(expanded);
 
   console.log("LOTEACORDION", lote, name);
@@ -288,8 +289,8 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
             })}
             <MuiTooltip title={
               isCampaignClosed
-                ? 'La campaña está cerrada'
-                : (availableLots.length === 0 ? 'No hay otros lotes en este campo' : 'Replicar Planificación a Lotes')
+                ? t('campaignIsClosed')
+                : (availableLots.length === 0 ? t('noOtherLotsInField') : t('replicatePlanningToLots'))
             }>
               <span>
                 <Button
@@ -306,7 +307,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
                     borderColor: 'rgba(0,0,0,0.2)'
                   }}
                 >
-                  Replicar
+                  {t('replicate')}
                 </Button>
               </span>
             </MuiTooltip>
@@ -324,7 +325,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
         </Box>
       </AccordionSummary>
       <AccordionDetails>
-        {ciclos.length === 0 && "No hay ciclos planificados para este lote"}
+        {ciclos.length === 0 && t('noCyclesPlannedForLot')}
         {/* por cada ciclo del lote */}
         {ciclos.map((c, i) => {
           return (
@@ -339,11 +340,11 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
         })}
       </AccordionDetails>
       <Dialog open={replicateOpen} onClose={() => setReplicateOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Replicar Planificación a Lotes</DialogTitle>
+        <DialogTitle>{t('replicatePlanningToLots')}</DialogTitle>
         <DialogContent>
           {availableLots.length === 0 ? (
             <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
-              No hay otros lotes disponibles en este campo para replicar.
+              {t('noOtherLotsAvailableToReplicate')}
             </Typography>
           ) : (
             <List>
@@ -357,8 +358,8 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setReplicateOpen(false)}>Cancelar</Button>
-          <Button onClick={replicatePlanningToLots} variant="contained" disabled={selectedLots.length === 0}>Replicar</Button>
+          <Button onClick={() => setReplicateOpen(false)}>{t('cancel')}</Button>
+          <Button onClick={replicatePlanningToLots} variant="contained" disabled={selectedLots.length === 0}>{t('replicate')}</Button>
         </DialogActions>
       </Dialog>
     </Accordion>
@@ -457,7 +458,7 @@ export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
               <Campaign fontSize="small" />
               <Typography variant="subtitle1">
-                Planificación de Campaña: <strong>{getCampanaDesc(campaignId)}</strong>
+                {t('campaignPlanning')}: <strong>{getCampanaDesc(campaignId)}</strong>
               </Typography>
             </Box>
           </Box>

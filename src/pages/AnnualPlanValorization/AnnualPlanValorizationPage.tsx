@@ -27,6 +27,7 @@ import {
   Radio,
   RadioGroup,
   Autocomplete,
+  InputAdornment,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -83,8 +84,8 @@ interface FormData {
   campoId: string;
   loteId: string;
   has: number;
-  rindeHistorico: number; // Quintales/Ha
-  cotizFutCer: number; // Moneda local por tonelada
+  rindeHistorico: number | string; // Quintales/Ha
+  cotizFutCer: number | string; // Moneda local por tonelada
   monedaAlterId: string;
   cotizMonAlt: number;
   operacMonAlt: 'multiplicar' | 'dividir';
@@ -136,8 +137,8 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     campoId: '',
     loteId: '',
     has: 0,
-    rindeHistorico: 0,
-    cotizFutCer: 0,
+    rindeHistorico: '',
+    cotizFutCer: '',
     monedaAlterId: '',
     cotizMonAlt: 0,
     operacMonAlt: 'multiplicar',
@@ -205,8 +206,8 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           campoId: fields[0]._id || '',
           loteId: fields[0].lotes?.[0]?.properties.nombre || '',
           has: fields[0].lotes?.[0]?.properties.hectareas || 0,
-          rindeHistorico: 0,
-          cotizFutCer: 0,
+          rindeHistorico: '',
+          cotizFutCer: '',
           monedaAlterId: '',
           cotizMonAlt: 0,
           operacMonAlt: 'dividir',
@@ -376,7 +377,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             campaignCycles.forEach(ciclo => {
               if (ciclo.cultivoId) {
                 const crop = crops.find(c => c._id === ciclo.cultivoId);
-                const zafraName = crop ? `Zafra ${crop.name}` : `Zafra ${ciclo.cultivoId}`;
+                const zafraName = crop ? `${t('harvest')} ${crop.name}` : `${t('harvest')} ${ciclo.cultivoId}`;
                 uniqueZafras.set(ciclo.cultivoId, { id: ciclo.cultivoId, name: zafraName });
               }
             });
@@ -509,8 +510,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       });
 
       // Calcular rendimiento (rinde histórico en kg/ha * hectáreas * cotización futura)
-      const rindeKgHa = currentFormData.rindeHistorico * 100; // Convertir quintales a kg
-      const rendimientoTotal = rindeKgHa * currentFormData.has * (currentFormData.cotizFutCer / 1000); // Cotización es por tonelada
+      const rindeHistoricoVal = typeof currentFormData.rindeHistorico === 'string' ? parseFloat(currentFormData.rindeHistorico) || 0 : currentFormData.rindeHistorico;
+      const cotizFutCerVal = typeof currentFormData.cotizFutCer === 'string' ? parseFloat(currentFormData.cotizFutCer) || 0 : currentFormData.cotizFutCer;
+
+      const rindeKgHa = rindeHistoricoVal * 100; // Convertir quintales a kg
+      const rendimientoTotal = rindeKgHa * currentFormData.has * (cotizFutCerVal / 1000); // Cotización es por tonelada
 
       // Calcular tendencia
       const tendencia = rendimientoTotal - gastosTotal;
@@ -575,7 +579,8 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const selectedCrop = crops.find(c => c._id === cultivoId);
 
       // Calcular cosecha estimada en toneladas
-      const rindeKgHa = formData.rindeHistorico * 100; // Convertir quintales a kg
+      const rindeHistoricoVal = typeof formData.rindeHistorico === 'string' ? parseFloat(formData.rindeHistorico) || 0 : formData.rindeHistorico;
+      const rindeKgHa = rindeHistoricoVal * 100; // Convertir quintales a kg
       const cosechaEstimadaTn = (rindeKgHa * formData.has) / 1000; // Convertir a toneladas
 
       // Crear objeto de valorización
@@ -677,7 +682,8 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       )?.cultivoId || '';
       const selectedCrop = crops.find(c => c._id === cultivoId);
 
-      // Crear objeto de valorización para exportar
+      {/* Crear objeto de valorización para exportar */ }
+      const rindeHistoricoVal = typeof formData.rindeHistorico === 'string' ? parseFloat(formData.rindeHistorico) || 0 : formData.rindeHistorico;
       const valorization: IAnnualPlanValorization = {
         _id: 'temp',
         annualPlanId: `plan_${formData.campanaId}_${formData.campoId}_${formData.loteId}`,
@@ -691,7 +697,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         has: formData.has,
         cultivoId: cultivoId,
         cultivoName: (selectedCrop as any)?.name || '',
-        cosechaEstimada: (formData.rindeHistorico * 100 * formData.has) / 1000,
+        cosechaEstimada: (rindeHistoricoVal * 100 * formData.has) / 1000,
         tendenciaMonLocal: formData.tendenciaMonLocal,
         status: 'abierto',
         accountId: user?.accountId || '',
@@ -742,8 +748,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     const gastosTotal = gastosInsumos + gastosServicios;
 
     // Calcular rendimiento
-    const rindeKgHa = formData.rindeHistorico * 100;
-    const rendimientoTotal = rindeKgHa * formData.has * (formData.cotizFutCer / 1000);
+    const rindeHistoricoVal = typeof formData.rindeHistorico === 'string' ? parseFloat(formData.rindeHistorico) || 0 : formData.rindeHistorico;
+    const cotizFutCerVal = typeof formData.cotizFutCer === 'string' ? parseFloat(formData.cotizFutCer) || 0 : formData.cotizFutCer;
+
+    const rindeKgHa = rindeHistoricoVal * 100;
+    const rendimientoTotal = rindeKgHa * formData.has * (cotizFutCerVal / 1000);
 
     // Calcular tendencia
     const tendencia = rendimientoTotal - gastosTotal;
@@ -1015,11 +1024,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
               return;
             }
 
-            let laborName = 'Servicio';
+            let laborName = t('service');
             try {
               // Usar la función getLaborFromId del hook
               const labor = getLaborFromId(linea.laborId);
-              laborName = labor?.name || `Servicio ${linea.laborId}`;
+              laborName = labor?.name || `${t('service')} ${linea.laborId}`;
               console.log('  - Labor name:', laborName);
             } catch (error) {
               console.warn('Could not load labor name for:', linea.laborId, error);
@@ -1040,7 +1049,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
               const newGroup = {
                 laborId: linea.laborId,
                 name: laborName,
-                descripcion: linea.comentario || 'Servicio',
+                descripcion: linea.comentario || t('service'),
                 totalHectareas: linea.hectareas || 1,
                 activityTypes: new Set([activityType])
               };
@@ -1161,10 +1170,10 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                   serviciosEjemplo.push({
                     _id: `example_servicio_${Date.now()}_${Math.random()}`,
                     annualPlanId: 'temp_plan_id',
-                    labor: lineaLabor.laborNombre || labor?.name || 'Servicio',
-                    item: lineaLabor.laborNombre || labor?.name || 'Servicio',
+                    labor: lineaLabor.laborNombre || labor?.name || t('service'),
+                    item: lineaLabor.laborNombre || labor?.name || t('service'),
                     servicioId: lineaLabor.laborId,
-                    descripcion: lineaLabor.comentario || 'Servicio de la actividad planificada',
+                    descripcion: lineaLabor.comentario || t('service'),
                     cantidad: 1,
                     cantidadHa: 1, // Por hectárea
                     valorUnidad: lineaLabor.costoPorHectarea || 0,
@@ -1216,18 +1225,18 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         }
       }
     }
-    return 'Actividad';
+    return t('activity');
   };
 
   const getActivityTypeName = (tipo: string): string => {
     const tipos: { [key: string]: string } = {
-      'siembra': 'Siembra',
-      'cosecha': 'Cosecha',
-      'aplicacion': 'Aplicac',
-      'preparado': 'Preparado',
-      'otro': 'Otro'
+      'siembra': t('activityType_siembra'),
+      'cosecha': t('activityType_cosecha'),
+      'aplicacion': t('activityType_aplicacion'),
+      'preparado': t('activityType_preparado'),
+      'otro': t('other')
     };
-    return tipos[tipo] || 'Actividad';
+    return tipos[tipo] || t('activity');
   };
 
   const getStepStyle = (status: string) => {
@@ -1390,6 +1399,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
               }
             }}
             onBlur={() => setTimeout(() => recalcularTotales(), 0)}
+            inputProps={{ style: { textAlign: 'right' } }}
           />
         </Grid>
         <Grid item xs={12} md={3}>
@@ -1407,6 +1417,14 @@ export const AnnualPlanValorizationPage: React.FC = () => {
               }
             }}
             onBlur={() => setTimeout(() => recalcularTotales(), 0)}
+            inputProps={{ style: { textAlign: 'right' } }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  $
+                </InputAdornment>
+              ),
+            }}
             helperText={t("local_currency_per_ton")}
           />
         </Grid>
@@ -1522,7 +1540,6 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                 <TableRow key={servicio._id}>
                   <TableCell>{servicio.labor}</TableCell>
                   <TableCell>{servicio.item}</TableCell>
-                  <TableCell align="right">$/Ha</TableCell>
                   <TableCell align="right">
                     <TextField
                       size="small"

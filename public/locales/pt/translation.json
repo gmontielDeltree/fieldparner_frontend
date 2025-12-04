@@ -1339,6 +1339,26 @@
   "mark_all_read": "Marcar todas como lidas",
   "notifications": "Notificações",
   "new": "Novo",
-  "dismiss": "Descartar"
+  "dismiss": "Descartar",
+  "activitiesManagement": "Gestão de Atividades",
+  "planAndManageActivities": "Planeje e gerencie as atividades desta safra",
+  "campaignPlanning": "Planejamento de Campanha",
+  "plannedActivity_one": "{{count}} atividade planejada",
+  "plannedActivity_other": "{{count}} atividades planejadas",
+  "deleteCycle": "Excluir Safra",
+  "noPlannedActivities": "Sem Atividades Planejadas",
+  "startPlanningPrompt": "Use o botão \"Nova Atividade\" para começar a planejar",
+  "replicatePlanningToLots": "Replicar Planejamento para Lotes",
+  "campaignIsClosed": "A campanha está fechada",
+  "noOtherLotsInField": "Não há outros lotes neste campo",
+  "noOtherLotsAvailableToReplicate": "Não há outros lotes disponíveis neste campo para replicar.",
+  "replicate": "Replicar",
+  "noCyclesPlannedForLot": "Não há ciclos planejados para este lote",
+  "noContractorAssigned": "Nenhum contratante designado",
+  "noSuppliesForActivity": "A atividade não tem insumos",
+  "noServicesForActivity": "A atividade não tem serviços",
+  "newHarvest": "Nova Safra",
+  "activitiesCount_one": "{{count}} atividade",
+  "activitiesCount_other": "{{count}} atividades"
 }
 

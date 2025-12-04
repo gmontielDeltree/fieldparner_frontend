@@ -12,13 +12,14 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
+  CircularProgress,
 } from '@mui/material';
 import {
   ChevronLeft as ChevronLeftIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
-import { IconsViewer, Loading } from '../../components';
+import { IconsViewer } from '../../components';
 import { SideBarProps } from '../../types';
 import { MenuModules } from '../../interfaces/menuModules';
 import { useSidebar } from './useSidebar';
@@ -71,7 +72,7 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           {isLoading && (
             <ListItem>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', p: 2 }}>
-                <Loading loading={true} />
+                <CircularProgress />
               </Box>
             </ListItem>
           )}

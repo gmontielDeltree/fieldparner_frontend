@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepButton from "@mui/material/StepButton";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { TextField, Grid, Alert, Card, CardContent, Switch, FormControlLabel } from '@mui/material';
 import { IActividadPlanificacion } from "../../interfaces/planification";
@@ -12,6 +11,8 @@ import { useTranslation } from "react-i18next";
 import { useAppSelector } from "../../hooks/useRedux";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { CultivoContext } from "./contexts/CultivosContext";
+import { Button as RsButton, Spinner } from 'reactstrap';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 
 // Import the labor forms
 import PersonalForm from '../LotsMenu/forms/PlanForms/PersonalForm';
@@ -28,6 +29,140 @@ interface ActividadEditorBaseProps {
   editing?: boolean;
   ciclo?: any;
 }
+
+interface HarvestYieldFormProps {
+  user: any;
+  formData: any;
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
+  t: (key: string) => string;
+  convertKgToTons: (kg: number) => number;
+  convertTonsToKg: (tons: number) => number;
+  convertTonsToQuintals: (tons: number) => number;
+  convertQuintalsToTons: (quintals: number) => number;
+}
+
+const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
+  user,
+  formData,
+  setFormData,
+  t,
+  convertKgToTons,
+  convertTonsToKg,
+  convertTonsToQuintals,
+  convertQuintalsToTons
+}) => {
+  const isArgentina = user?.countryId === 'AR';
+  const [yieldPerHa, setYieldPerHa] = useState<number | string>(
+    formData.detalles?.rinde_estimado ? convertKgToTons(formData.detalles.rinde_estimado) : ''
+  );
+  const [totalYield, setTotalYield] = useState<number | string>(
+    formData.detalles?.rinde_estimado_total ? convertKgToTons(formData.detalles.rinde_estimado_total) : ''
+  );
+
+  const onYieldPerHaChange = (value: number | string) => {
+    setYieldPerHa(value);
+    const numValue = value === '' ? 0 : Number(value);
+    const kgValue = convertTonsToKg(numValue);
+
+    setFormData((prevData: any) => ({
+      ...prevData,
+      detalles: {
+        ...prevData.detalles,
+        rinde_estimado: kgValue,
+      },
+    }));
+
+    // Update total yield based on hectares
+    const totalTons = numValue * (formData.detalles?.hectareas || 0);
+    setTotalYield(totalTons);
+    setFormData((prevData: any) => ({
+      ...prevData,
+      detalles: {
+        ...prevData.detalles,
+        rinde_estimado_total: convertTonsToKg(totalTons),
+      },
+    }));
+  };
+
+  const onTotalYieldChange = (value: number | string) => {
+    setTotalYield(value);
+    const numValue = value === '' ? 0 : Number(value);
+    const kgValue = convertTonsToKg(numValue);
+    setFormData((prevData: any) => ({
+      ...prevData,
+      detalles: {
+        ...prevData.detalles,
+        rinde_estimado_total: kgValue,
+      },
+    }));
+  };
+
+  return (
+    <Card sx={{ mb: 2 }}>
+      <CardContent>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          {t('Estimated Yield')}
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <NumberFieldWithUnits
+              fullWidth
+              label={isArgentina ? t('Yield per hectare (qq/ha)') : t('Yield per hectare (ton/ha)')}
+              value={
+                yieldPerHa === ''
+                  ? ''
+                  : (isArgentina ? convertTonsToQuintals(Number(yieldPerHa)) : yieldPerHa)
+              }
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue === '') {
+                  onYieldPerHaChange('');
+                } else {
+                  const numVal = Number(inputValue);
+                  const tonsValue = isArgentina ? convertQuintalsToTons(numVal) : numVal;
+                  onYieldPerHaChange(tonsValue);
+                }
+              }}
+              unit={isArgentina ? "qq/ha" : "ton/ha"}
+            />
+            {isArgentina && yieldPerHa !== '' && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                {t('Equivalent')}: {Number(yieldPerHa).toFixed(2)} ton/ha
+              </Typography>
+            )}
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <NumberFieldWithUnits
+              fullWidth
+              label={isArgentina ? t('Total estimated yield (qq)') : t('Total estimated yield (ton)')}
+              value={
+                totalYield === ''
+                  ? ''
+                  : (isArgentina ? convertTonsToQuintals(Number(totalYield)) : totalYield)
+              }
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue === '') {
+                  onTotalYieldChange('');
+                } else {
+                  const numVal = Number(inputValue);
+                  const tonsValue = isArgentina ? convertQuintalsToTons(numVal) : numVal;
+                  onTotalYieldChange(tonsValue);
+                }
+              }}
+              unit={isArgentina ? "qq" : "ton"}
+            />
+            {isArgentina && totalYield !== '' && (
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                {t('Equivalent')}: {Number(totalYield).toFixed(2)} ton
+              </Typography>
+            )}
+          </Grid>
+        </Grid>
+      </CardContent>
+    </Card>
+  );
+};
 
 export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   tipo,
@@ -92,95 +227,6 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
     };
   };
 
-  // Harvest Yield Form Component
-  const HarvestYieldForm = () => {
-    const isArgentina = user?.countryId === 'AR';
-    const [yieldPerHa, setYieldPerHa] = useState(convertKgToTons(formData.detalles?.rinde_estimado || 0));
-    const [totalYield, setTotalYield] = useState(convertKgToTons(formData.detalles?.rinde_estimado_total || 0));
-
-    const onYieldPerHaChange = (value: number) => {
-      setYieldPerHa(value);
-      const kgValue = convertTonsToKg(value);
-      setFormData((prevData: any) => ({
-        ...prevData,
-        detalles: {
-          ...prevData.detalles,
-          rinde_estimado: kgValue,
-        },
-      }));
-
-      // Update total yield based on hectares
-      const totalTons = value * (formData.detalles?.hectareas || 0);
-      setTotalYield(totalTons);
-      setFormData((prevData: any) => ({
-        ...prevData,
-        detalles: {
-          ...prevData.detalles,
-          rinde_estimado_total: convertTonsToKg(totalTons),
-        },
-      }));
-    };
-
-    const onTotalYieldChange = (value: number) => {
-      setTotalYield(value);
-      const kgValue = convertTonsToKg(value);
-      setFormData((prevData: any) => ({
-        ...prevData,
-        detalles: {
-          ...prevData.detalles,
-          rinde_estimado_total: kgValue,
-        },
-      }));
-    };
-
-    return (
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            {t('Estimated Yield')}
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <NumberFieldWithUnits
-                fullWidth
-                label={isArgentina ? t('Yield per hectare (qq/ha)') : t('Yield per hectare (ton/ha)')}
-                value={isArgentina ? convertTonsToQuintals(yieldPerHa) : yieldPerHa}
-                onChange={(e) => {
-                  const inputValue = Number(e.target.value);
-                  const tonsValue = isArgentina ? convertQuintalsToTons(inputValue) : inputValue;
-                  onYieldPerHaChange(tonsValue);
-                }}
-                unit={isArgentina ? "qq/ha" : "ton/ha"}
-              />
-              {isArgentina && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                  {t('Equivalent')}: {yieldPerHa.toFixed(2)} ton/ha
-                </Typography>
-              )}
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <NumberFieldWithUnits
-                fullWidth
-                label={isArgentina ? t('Total estimated yield (qq)') : t('Total estimated yield (ton)')}
-                value={isArgentina ? convertTonsToQuintals(totalYield) : totalYield}
-                onChange={(e) => {
-                  const inputValue = Number(e.target.value);
-                  const tonsValue = isArgentina ? convertQuintalsToTons(inputValue) : inputValue;
-                  onTotalYieldChange(tonsValue);
-                }}
-                unit={isArgentina ? "qq" : "ton"}
-              />
-              {isArgentina && (
-                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                  {t('Equivalent')}: {totalYield.toFixed(2)} ton
-                </Typography>
-              )}
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-    );
-  };
 
   const [formData, setFormData] = useState(convertToLaborFormat(actividadDoc));
   const [activeStep, setActiveStep] = useState(0);
@@ -354,7 +400,18 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         return (
           <>
             <PlanificationStatusForm />
-            {formData.tipo === 'cosecha' && <HarvestYieldForm />}
+            {formData.tipo === 'cosecha' && (
+              <HarvestYieldForm
+                user={user}
+                formData={formData}
+                setFormData={setFormData}
+                t={t}
+                convertKgToTons={convertKgToTons}
+                convertTonsToKg={convertTonsToKg}
+                convertTonsToQuintals={convertTonsToQuintals}
+                convertQuintalsToTons={convertQuintalsToTons}
+              />
+            )}
             {formData.tipo === 'aplicacion' && <ActivityDetailsForm />}
             <PersonalForm
               lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
@@ -494,33 +551,48 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         {getStepContent(activeStep)}
       </Box>
 
-      <Box sx={{ display: "flex", flexDirection: "row", pt: 2, px: 3, pb: 2 }}>
-        <Button color="error" onClick={onClose} sx={{ mr: 1 }}>
-          {t('cancel')}
-        </Button>
-        <Button
-          color="inherit"
-          disabled={activeStep === 0}
-          onClick={handleBack}
-          sx={{ mr: 1 }}
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pt: 2, px: 3, pb: 2, backgroundColor: "#f8f9fa" }}>
+        <RsButton
+          color="light"
+          onClick={onClose}
+          className="d-flex align-items-center gap-2"
         >
-          {t('previous')}
-        </Button>
-        <Box sx={{ flex: "1 1 auto" }} />
-        {activeStep !== steps.length - 1 && (
-          <Button onClick={handleNext} sx={{ mr: 1 }}>
-            {t('next')}
-          </Button>
-        )}
-        {activeStep === steps.length - 1 && (
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            disabled={formData.estado === 'cerrada'}
+          <ChevronLeft size={16} />
+          {t('cancel')}
+        </RsButton>
+
+        <div className="d-flex gap-2">
+          <RsButton
+            color="light"
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            className="d-flex align-items-center gap-2"
           >
-            {editing ? t('update') : t('save')} {t('planning')}
-          </Button>
-        )}
+            <ChevronLeft size={16} />
+            {t('previous')}
+          </RsButton>
+
+          {activeStep !== steps.length - 1 ? (
+            <RsButton
+              color="primary"
+              onClick={handleNext}
+              className="d-flex align-items-center gap-2"
+            >
+              {t('next')}
+              <ChevronRight size={16} />
+            </RsButton>
+          ) : (
+            <RsButton
+              color="success"
+              onClick={handleSave}
+              disabled={formData.estado === 'cerrada'}
+              className="d-flex align-items-center gap-2"
+            >
+              <Check size={16} />
+              {editing ? t('update') : t('save')} {t('planning')}
+            </RsButton>
+          )}
+        </div>
       </Box>
     </Box>
   );

@@ -1,8 +1,10 @@
 import React from "react";
 import { IconButton, Menu, MenuItem } from "@mui/material";
 import { MoreVert } from "@mui/icons-material";
+import { useTranslation } from "react-i18next";
 
 export const ActividadMoreButton = ({ onEdit, onDelete, onProgramar }) => {
+  const { t } = useTranslation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -39,7 +41,7 @@ export const ActividadMoreButton = ({ onEdit, onDelete, onProgramar }) => {
             onEdit();
           }}
         >
-          Editar
+          {t('edit')}
         </MenuItem>
 
         <MenuItem
@@ -48,7 +50,7 @@ export const ActividadMoreButton = ({ onEdit, onDelete, onProgramar }) => {
             onDelete();
           }}
         >
-          Eliminar
+          {t('delete')}
         </MenuItem>
       </Menu>
     </>
