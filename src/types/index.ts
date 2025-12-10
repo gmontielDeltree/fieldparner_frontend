@@ -287,9 +287,14 @@ export interface OriginDestinationsState {
   OriginsDestinations: OriginDestinations[];
 }
 
+export interface Geolocation {
+  lat: number;
+  lng: number;
+}
+
 export interface OriginDestinations extends Document {
   name: string;
-  geolocation: string;
+  geolocation: Geolocation | null;
   procedencia: boolean;
   destino: boolean;
 }

@@ -39,14 +39,6 @@ export const ListOriginsDestinationsPage: React.FC = () => {
   const { filterText, handleInputChange } = useForm({ filterText: '' });
   const { t } = useTranslation();
 
-  useEffect(() => {
-    getOriginDestinations();
-  }, []);
-
-  useEffect(() => {
-    console.log('originsDestinations', originsDestinations);
-  }, [originsDestinations]);
-
   // Función para formatear la geolocalización
   const formatGeolocation = (geolocation: any): string => {
     // Si es un string, devolverlo directamente (datos antiguos)

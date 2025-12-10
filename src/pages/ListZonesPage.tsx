@@ -24,9 +24,9 @@ export const ListZonesPage: React.FC = () => {
   const { isLoading } = useAppSelector(state => state.ui);
   const { zones, getZones, removeZone } = useZones();
 
-  useEffect(() => {
-    getZones();
-  }, []);
+  // useEffect(() => {
+  //   getZones();
+  // }, []);
 
   const columns = [
     { field: 'zone', headerName: t('_zone'), flex: 1 },
@@ -36,7 +36,7 @@ export const ListZonesPage: React.FC = () => {
       headerName: '',
       flex: 1,
       sortable: false,
-      renderCell: params => (
+      renderCell: (params: any) => (
         <Box display='flex' justifyContent='center'>
           <Tooltip title={t('icon_edit')}>
             <IconButton
@@ -67,7 +67,7 @@ export const ListZonesPage: React.FC = () => {
     },
   ];
 
- // const onClickAddZone = () => navigate('/init/overview/zones/new');
+  // const onClickAddZone = () => navigate('/init/overview/zones/new');
 
   const handleDeleteZone = (item: Zones) => {
     if (item._id && item._rev) {

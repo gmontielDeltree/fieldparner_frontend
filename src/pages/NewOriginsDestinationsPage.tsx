@@ -56,7 +56,6 @@ export const NewOriginsDestinationsPage: React.FC = () => {
   const { isLoading, createOriginDestinations, updateOriginDestinations, conceptoError } = useOriginDestinations();
 
   const handleAddOriginDestinations = async () => {
-    console.log("Valores del formulario:", formulario);
     await createOriginDestinations(formulario);
   };
 
