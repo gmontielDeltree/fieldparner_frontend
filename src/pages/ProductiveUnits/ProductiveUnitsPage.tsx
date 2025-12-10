@@ -108,11 +108,13 @@ export const NewProductiveUnits: React.FC = () => {
           ml: 5
         }}
       >
-
         <Paper
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
         >
+          <Typography component="h2" align="center" variant="h4" sx={{ mb: 3, }}>
+            {!productiveUnitsActive ? t("new_productive_unit") : t("update_productive_unit")}
+          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
               <TextField

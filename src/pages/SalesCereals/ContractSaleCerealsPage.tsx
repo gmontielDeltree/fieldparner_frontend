@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper} from '@mui/material';
+import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
 import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
@@ -18,7 +18,7 @@ const initialState: FormValueState<ContractSaleCereal> = {
   campaignId: { value: "", isError: false, message: "", required: true },
   companyId: { value: "", isError: false, message: "", required: true },
   cropId: { value: "", isError: false, message: "", required: true },
-  dateCreated: { value: getShortDate(false, "-"), isError: false, message: "", required: false },
+  dateCreated: { value: getShortDate(), isError: false, message: "", required: false },
   kg: { value: "", isError: false, message: "", required: true },
   currency: { value: "", isError: false, message: "", required: false },
   amountValue: { value: "", isError: false, message: "", required: true },
@@ -253,6 +253,10 @@ export const ContractSaleCerealsPage: React.FC = () => {
           variant="outlined"
           sx={{ p: { xs: 2, md: 1 } }}
         >
+          
+          <Typography component="h2" align="center" variant="h4" sx={{ mb: 3, }}>
+            {!formValues?.accountId?.value ? t("new_contract_sale_cereal") : t("update_contract_sale_cereal")}
+          </Typography>
           <Box
             component="div"
             display="flex"

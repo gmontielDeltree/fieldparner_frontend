@@ -170,12 +170,21 @@ export const CorporateContractPage: React.FC = () => {
     }
   };
 
+  /**
+   * <TemplateLayout key="new-cost-expenses" viewMap={false} viewSelector={false}>
+         <Container maxWidth="md" sx={{ margin: 0, mb: 1, mt: 3 }}>
+           <Paper variant="outlined" sx={{ p: 4 }}>
+             <Typography component="h2" align="center" variant="h4" sx={{ ml: { sm: 2 }, mb: 4 }}>
+               {!costsExpensesActive ? t("new_costs_expenses") : t("update_costs_expenses")}
+             </Typography>
+   * 
+   */
 
   return (
     <>
       <Loading key="loading-users" loading={isLoading} />
       <Container
-        // maxWidth="md"
+        // maxWidth="xl"
         sx={{
           mt: 4,
           p: { sm: 1, md: 1 },
@@ -187,6 +196,9 @@ export const CorporateContractPage: React.FC = () => {
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, borderRadius: 3 }}
         >
+          <Typography component="h2" align="center" variant="h4" sx={{ mb: 3, }}>
+            {!corporateContractActive ? t("new_corporate_contract") : t("update_corporate_contract")}
+          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={3}>
               <TextField
@@ -243,7 +255,7 @@ export const CorporateContractPage: React.FC = () => {
             </Grid>
           </Grid>
           <Typography variant="h4" sx={{ mt: 4, mb: 2, pl: 1 }}>
-            Compañias del contrato
+            {t("companies_from_contract")}
           </Typography>
 
           <TableCorporateContract
@@ -252,7 +264,7 @@ export const CorporateContractPage: React.FC = () => {
             onClickDelete={handleDeleteCompanyFromContract}
           />
           <Typography variant="h6" sx={{ mb: 2, pl: 1 }}>
-            Porcentaje total de compañias: {totalPercentageCompanies} %
+            {t("total_percentage_companies")}: {totalPercentageCompanies} %
           </Typography>
           <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', gap: 25 }}>

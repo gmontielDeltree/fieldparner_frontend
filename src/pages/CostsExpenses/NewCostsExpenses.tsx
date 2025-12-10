@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { TextField, Container, Typography, Paper, Grid, Button, Box } from '@mui/material';
-import { Loading } from '../../components';
+import { TemplateLayout } from '../../components';
 
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useForm, useCostsExpensess, useAppSelector, } from '../../hooks';
@@ -132,25 +132,14 @@ export const NewCostsExpenses: React.FC = () => {
 
 
   return (
-    <>
-      <Loading key="loading-costs-expenses" loading={isLoading} />
-      <Container
-        maxWidth="md"
-        sx={{
-          mt: 4,
-          p: { sm: 1, md: 1 },
-          mb: 1,
-          ml: 5
-        }}
-      >
-
-        <Paper
-          variant="outlined"
-          sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }}
-        >
+    <TemplateLayout key="new-cost-expenses" viewMap={false} viewSelector={false}>
+      <Container maxWidth="md" sx={{ margin: 0, mb: 1, mt: 3 }}>
+        <Paper variant="outlined" sx={{ p: 4 }}>
+          <Typography component="h2" align="center" variant="h4" sx={{ ml: { sm: 2 }, mb: 4 }}>
+            {!costsExpensesActive ? t("new_costs_expenses") : t("update_costs_expenses")}
+          </Typography>
           <Grid container spacing={2}>
-
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={6}>
               <TextField
                 label={t("cost_code")}
                 name="costCode"
@@ -169,7 +158,7 @@ export const NewCostsExpenses: React.FC = () => {
                 </Typography>
               )}
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={6}>
               <TextField
                 label={t("cost_center")}
                 name="costCenter"
@@ -178,20 +167,13 @@ export const NewCostsExpenses: React.FC = () => {
                 onChange={handleInputChange}
                 fullWidth />
             </Grid>
-            <Grid item xs={12} md={8}>
+            <Grid item xs={12} md={12}>
               <TextField
                 label={t("_description")}
                 name="description"
                 value={description}
                 onChange={handleInputChange}
                 fullWidth />
-            </Grid>
-          </Grid>
-          <Grid container spacing={2} sx={{ mt: 3 }}>
-            <Grid item xs={12} md={3}>
-            </Grid>
-            < Grid item xs={1} sx={{ textAlign: 'right' }}>
-
             </Grid>
           </Grid>
           <Grid container spacing={2} sx={{ mt: 4, justifyContent: 'center' }}>
@@ -215,7 +197,7 @@ export const NewCostsExpenses: React.FC = () => {
           </Grid>
         </Paper>
       </Container>
-    </>
+    </TemplateLayout>
   );
 };
 

@@ -1352,5 +1352,15 @@
   "noServicesForActivity": "The activity has no services",
   "newHarvest": "New Harvest",
   "activitiesCount_one": "{{count}} activity",
-  "activitiesCount_other": "{{count}} activities"
+  "activitiesCount_other": "{{count}} activities",
+  "new_costs_expenses": "New Costs and Expenses",
+  "update_costs_expenses": "Update Costs and Expenses",
+  "new_corporate_contract": "New Corporate Contract",
+  "update_corporate_contract": "Update Corporate Contract",
+  "companies_from_contract": "Companies from Contract",
+  "total_percentage_companies": "Total percentage of companies",
+  "new_productive_unit": "New Productive Unit",
+  "update_productive_unit": "Update Productive Unit",
+  "new_contract_sale_cereal": "New Contract Sale Cereal",
+  "update_contract_sale_cereal": "Update Contract Sale Cereal"
 }

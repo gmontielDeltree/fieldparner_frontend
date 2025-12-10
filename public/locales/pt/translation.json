@@ -1359,6 +1359,15 @@
   "noServicesForActivity": "A atividade não tem serviços",
   "newHarvest": "Nova Safra",
   "activitiesCount_one": "{{count}} atividade",
-  "activitiesCount_other": "{{count}} atividades"
+  "activitiesCount_other": "{{count}} atividades",
+  "new_costs_expenses": "Novos Custos e Despesas",
+  "update_costs_expenses": "Atualizar Custos e Despesas",
+  "new_corporate_contract": "Novo Contrato Societário",
+  "update_corporate_contract": "Atualizar Contrato Societário",
+  "companies_from_contract": "Empresas do Contrato",
+  "total_percentage_companies": "Porcentagem total de empresas",
+  "new_productive_unit": "Nova Unidade Produtiva",
+  "update_productive_unit": "Atualizar Unidade Produtiva",
+  "new_contract_sale_cereal": "Novo Contrato de Venda de Cereais",
+  "update_contract_sale_cereal": "Atualizar Contrato de Venda de Cereais"
 }
-

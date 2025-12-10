@@ -1140,7 +1140,7 @@
   "try_again_later": "Por favor, vuelve a intentarlo en unos minutos.",
   "info": "Información",
   "warning": "Advertencia",
-   "added": "Agregado",
+  "added": "Agregado",
   "notification": "Notificación",
   "servicePrefix": "Servicio:",
   "upload_file": "Subir archivo",
@@ -1356,5 +1356,15 @@
   "noServicesForActivity": "La actividad no tiene servicios",
   "newHarvest": "Nueva Zafra",
   "activitiesCount_one": "{{count}} actividad",
-  "activitiesCount_other": "{{count}} actividades"
+  "activitiesCount_other": "{{count}} actividades",
+  "new_costs_expenses": "Nuevos Costos y Gastos",
+  "update_costs_expenses": "Actualizar Costos y Gastos",
+  "new_corporate_contract": "Nuevo Contrato Societario",
+  "update_corporate_contract": "Actualizar Contrato Societario",
+  "companies_from_contract": "Compañías del Contrato",
+  "total_percentage_companies": "Porcentaje total de compañías",
+  "new_productive_unit": "Nueva Unidad Productiva",
+  "update_productive_unit": "Actualizar Unidad Productiva",
+  "new_contract_sale_cereal": "Nuevo Contrato de Venta de Cereales",
+  "update_contract_sale_cereal": "Actualizar Contrato de Venta de Cereales"
 }
