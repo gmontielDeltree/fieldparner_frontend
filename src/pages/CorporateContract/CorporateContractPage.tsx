@@ -196,7 +196,7 @@ export const CorporateContractPage: React.FC = () => {
           variant="outlined"
           sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 }, borderRadius: 3 }}
         >
-          <Typography component="h2" align="center" variant="h4" sx={{ mb: 3, }}>
+          <Typography className="mt-3" component="h2" align="center" variant="h4" sx={{ mb: 3, }}>
             {!corporateContractActive ? t("new_corporate_contract") : t("update_corporate_contract")}
           </Typography>
           <Grid container spacing={2}>
@@ -254,7 +254,7 @@ export const CorporateContractPage: React.FC = () => {
               />
             </Grid>
           </Grid>
-          <Typography variant="h4" sx={{ mt: 4, mb: 2, pl: 1 }}>
+          <Typography className="mt-5" variant="h5" sx={{  mb: 2, pl: 1 }}>
             {t("companies_from_contract")}
           </Typography>
 

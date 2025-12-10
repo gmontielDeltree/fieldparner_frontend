@@ -135,7 +135,7 @@ export const NewCostsExpenses: React.FC = () => {
     <TemplateLayout key="new-cost-expenses" viewMap={false} viewSelector={false}>
       <Container maxWidth="md" sx={{ margin: 0, mb: 1, mt: 3 }}>
         <Paper variant="outlined" sx={{ p: 4 }}>
-          <Typography component="h2" align="center" variant="h4" sx={{ ml: { sm: 2 }, mb: 4 }}>
+          <Typography component="h2" align="center" variant="h4" className='mt-3' sx={{ ml: { sm: 2 }, mb: 3 }}>
             {!costsExpensesActive ? t("new_costs_expenses") : t("update_costs_expenses")}
           </Typography>
           <Grid container spacing={2}>

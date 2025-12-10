@@ -253,8 +253,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
           variant="outlined"
           sx={{ p: { xs: 2, md: 1 } }}
         >
-          
-          <Typography component="h2" align="center" variant="h4" sx={{ mb: 3, }}>
+          <Typography className='mt-5' component="h2" align="center" variant="h4" sx={{ mb: 1,}}>
             {!formValues?.accountId?.value ? t("new_contract_sale_cereal") : t("update_contract_sale_cereal")}
           </Typography>
           <Box
