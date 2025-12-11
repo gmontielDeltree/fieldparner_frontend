@@ -288,6 +288,7 @@ interface Ejecucion {
   detalles: DetallesEjecucion;
   condiciones?: CondicionesEjecucion;
   deposito_origen?: Deposito;
+  campaña?: Campaign;
   attachments?: Attachment[];
 }
 
