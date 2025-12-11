@@ -4,9 +4,11 @@ import { dbContext } from "../services";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
+import { useAppSelector } from "./useRedux";
 
 export const useLaborsServices = () => {
   const navigate = useNavigate();
+  const { user } = useAppSelector(state => state.auth);
   const [laborsServices, setLaborsServices] = useState<LaborsServices[]>([]);
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -19,10 +21,12 @@ export const useLaborsServices = () => {
   const getLaborsServices = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.laborsServices.allDocs({ include_docs: true });
-      if (result.rows.length) {
-        const documents: LaborsServices[] = result.rows.map(
-          (row) => row.doc as unknown as LaborsServices
+      const result = await dbContext.laborsServices.find({
+        selector: { accountId: user?.accountId }
+      });
+      if (result.docs.length) {
+        const documents: LaborsServices[] = result.docs.map(
+          (doc) => doc as LaborsServices
         );
         setLaborsServices(documents);
       } else {
@@ -41,6 +45,9 @@ export const useLaborsServices = () => {
   const createLaborsServices = async (newLaborsServices: LaborsServices, isFromQuickAddModal: boolean = false) => {
     setIsLoading(true);
     try {
+      if (!user) throw new Error(t("user_not_logged"));
+      newLaborsServices.accountId = user.accountId;
+      newLaborsServices.licenceId = user.licenceId;
       const response = await dbContext.laborsServices.post(newLaborsServices);
       setIsLoading(false);
 

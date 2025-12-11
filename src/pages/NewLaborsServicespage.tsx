@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next";
 
 
 const initialState: LaborsServices = {
+  accountId: "",
+  licenceId: "",
   service: "",
   description: ""
 };
@@ -39,7 +41,6 @@ export const NewLaborsServicesPage: React.FC = () => {
   const { isLoading, createLaborsServices, updateLaborsServices, conceptoError } = useLaborsServices();
 
   const handleAddLaborsServices = async () => {
-    console.log("Valores del formulario:", formulario);
     await createLaborsServices(formulario);
   };
 

@@ -92,6 +92,8 @@ export interface ZoneState {
 }
 
 export interface LaborsServices extends Document {
+  accountId: string;
+  licenceId: string;
   service: string;
   description: string;
 }
