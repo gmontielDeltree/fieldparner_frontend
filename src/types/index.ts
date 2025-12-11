@@ -80,6 +80,8 @@ export interface Vehicle extends Document {
 }
 
 export interface Zones extends Document {
+  accountId: string;
+  licenceId: string;
   zone: string;
   description: string;
 }

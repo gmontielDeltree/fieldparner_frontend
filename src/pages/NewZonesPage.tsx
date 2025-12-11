@@ -17,6 +17,8 @@ import { removeZoneActive, removeZones, } from "../redux/zones";
 import { useTranslation } from "react-i18next";
 
 const initialState: Zones = {
+  accountId: "",
+  licenceId: "",
   zone: "",
   description: ""
 };
@@ -38,7 +40,6 @@ export const NewZonePage: React.FC = () => {
   const { isLoading, createZone, updateZone, conceptoError } = useZones();
 
   const handleAddZone = async () => {
-    console.log("Valores del formulario:", formulario);
     await createZone(formulario);
   };
 

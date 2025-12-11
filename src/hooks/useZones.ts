@@ -4,9 +4,11 @@ import { dbContext } from "../services";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
+import { useAppSelector } from "./useRedux";
 
 export const useZones = () => {
   const navigate = useNavigate();
+  const { user } = useAppSelector(state => state.auth);
   const [zones, setZones] = useState<Zones[]>([]);
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -19,10 +21,12 @@ export const useZones = () => {
   const getZones = async () => {
     setIsLoading(true);
     try {
-      const result = await dbContext.zones.allDocs({ include_docs: true });
-      if (result.rows.length) {
-        const documents: Zones[] = result.rows.map(
-          (row) => row.doc as unknown as Zones
+      const result = await dbContext.zones.find({
+        selector: { accountId: user?.accountId }
+      });
+      if (result.docs.length) {
+        const documents: Zones[] = result.docs.map(
+          (doc) => doc as Zones
         );
         setZones(documents);
       }
@@ -38,6 +42,9 @@ export const useZones = () => {
   const createZone = async (newZone: Zones) => {
     setIsLoading(true);
     try {
+      if (!user) throw new Error(t("user_not_logged"));
+      newZone.accountId = user.accountId;
+      newZone.licenceId = user.licenceId;
       const response = await dbContext.zones.post(newZone);
       setIsLoading(false);
 
