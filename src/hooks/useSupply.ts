@@ -38,7 +38,8 @@ export const useSupply = () => {
             setIsLoading(false);
             if (result.docs.length) {
                 let documents: Supply[] = result.docs.map(row => row as Supply);
-                setSupplies(documents);
+                let docsCountryFiltered = documents.filter(doc => doc.countryId === user?.countryId);
+                setSupplies(docsCountryFiltered);
             }
         } catch (error) {
             setIsLoading(false);
