@@ -293,6 +293,8 @@ export interface Geolocation {
 }
 
 export interface OriginDestinations extends Document {
+  accountId: string;
+  licenceId: string;
   name: string;
   geolocation: Geolocation | null;
   procedencia: boolean;

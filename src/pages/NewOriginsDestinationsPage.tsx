@@ -3,7 +3,6 @@ import { Loading } from "../components";
 import {
   Box,
   Button,
-  Container,
   Grid,
   InputAdornment,
   Paper,
@@ -13,17 +12,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {
-  ArrowRightAlt as ArrowRightAltIcon,
-  AddLocationAlt as AddLocationAltIcon,
-} from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   useAppDispatch,
   useAppSelector,
   useForm,
 } from "../hooks";
-import { OriginDestinations } from "../types";
+import { Geolocation, OriginDestinations } from "../types";
 import { removeOriginsDestinationsActive } from "../redux/originsdestinatons/originDestiantionsSlice";
 import { useOriginDestinations } from "../hooks/useOriginDestinations";
 import { useTranslation } from "react-i18next";
@@ -32,10 +27,13 @@ import { GeolocationSection } from "../pages/Deposits/componentes/GeolocationSec
 import { getBoundaries } from "../utils/geolocation";
 
 // Update the initialForm to include geolocation object similar to Deposit
+const geolocationDefault: Geolocation = { lng: -35, lat: -34 };
+
 const initialForm: OriginDestinations = {
+  accountId: "",
+  licenceId: "",
   name: "",
-  // Change geolocation from string to object with lat/lng properties
-  geolocation: { lng: -35, lat: -34 },
+  geolocation: geolocationDefault,
   destino: true,
   procedencia: false,
 };
@@ -70,7 +68,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
   };
 
   // Handle location changes from the map
-  const handleLocationChange = (newLocation) => {
+  const handleLocationChange = (newLocation: Geolocation) => {
     setFormulario(prev => ({
       ...prev,
       geolocation: newLocation
@@ -99,11 +97,11 @@ export const NewOriginsDestinationsPage: React.FC = () => {
           updatedActive.geolocation = geoObject;
         } catch (e) {
           // If it's not a valid JSON string, use default coordinates
-          updatedActive.geolocation = { lng: -35, lat: -34 };
+          updatedActive.geolocation = geolocationDefault;
         }
       } else if (!updatedActive.geolocation) {
         // If geolocation is undefined or null
-        updatedActive.geolocation = { lng: -35, lat: -34 };
+        updatedActive.geolocation = geolocationDefault;
       }
 
       setFormulario(updatedActive);
@@ -118,31 +116,31 @@ export const NewOriginsDestinationsPage: React.FC = () => {
   }, [dispatch]);
 
   // Validate form before submit
-  const validateForm = () => {
-    let isValid = true;
+  // const validateForm = () => {
+  //   let isValid = true;
 
-    if (formulario.name.trim() === "") {
-      // Show error for missing name
-      return false;
-    }
+  //   if (formulario.name.trim() === "") {
+  //     // Show error for missing name
+  //     return false;
+  //   }
 
-    // Validate geolocation
-    const boundaries = getBoundaries(formulario.country || "AR"); // Default to Argentina if no country specified
-    const geo = formulario.geolocation;
+  //   // Validate geolocation
+  //   const boundaries = getBoundaries(formulario.country || "AR"); // Default to Argentina if no country specified
+  //   const geo = formulario.geolocation;
 
-    if (
-      !geo ||
-      typeof geo.lat !== 'number' ||
-      typeof geo.lng !== 'number' ||
-      geo.lat === -34 ||
-      geo.lng === -35
-    ) {
-      // Show error for invalid geolocation
-      return false;
-    }
+  //   if (
+  //     !geo ||
+  //     typeof geo.lat !== 'number' ||
+  //     typeof geo.lng !== 'number' ||
+  //     geo.lat === -34 ||
+  //     geo.lng === -35
+  //   ) {
+  //     // Show error for invalid geolocation
+  //     return false;
+  //   }
 
-    return isValid;
-  };
+  //   return isValid;
+  // };
 
   return (
     <>
@@ -150,7 +148,7 @@ export const NewOriginsDestinationsPage: React.FC = () => {
       <TemplateLayout
         key="overview-origin-destination"
         viewMap={true}
-        initialLocation={formulario.geolocation}
+        initialLocation={formulario.geolocation ? formulario.geolocation : geolocationDefault}
         onLocationChange={handleLocationChange}
         formWidth={60} // Same width proportion as DepositPage
       >

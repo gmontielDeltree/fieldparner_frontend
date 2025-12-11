@@ -8,7 +8,7 @@ import { NotificationService } from "../services/notificationService";
 
 export const useOriginDestinations = () => {
   const navigate = useNavigate();
-  useAppSelector(state => state.auth);
+  const { user } = useAppSelector(state => state.auth);
   const [error, setError] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [originsDestinations, setOriginDestinations] = useState<OriginDestinations[]>([]);
@@ -28,6 +28,10 @@ export const useOriginDestinations = () => {
     }
 
     try {
+      if (!user) throw new Error(t("user_not_logged"));
+      newSOriginDestinations.accountId = user.accountId;
+      newSOriginDestinations.licenceId = user.licenceId;
+
       const response = await dbContext.originsDestinations.post(newSOriginDestinations);
 
       setIsLoading(false);
@@ -49,12 +53,14 @@ export const useOriginDestinations = () => {
   const getOriginDestinations = async () => {
     setIsLoading(true);
     try {
-      const response = await dbContext.originsDestinations.allDocs({ include_docs: true });
+      const response = await dbContext.originsDestinations.find({
+        selector: { accountId: user?.accountId }
+      });
 
       setIsLoading(false);
 
-      if (response.rows.length) {
-        const documents: OriginDestinations[] = response.rows.map(row => row.doc as OriginDestinations);
+      if (response.docs.length) {
+        const documents: OriginDestinations[] = response.docs.map(doc => doc as OriginDestinations);
         setOriginDestinations(documents);
       }
       else
