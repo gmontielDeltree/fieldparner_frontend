@@ -15,7 +15,8 @@ import {
 } from '@mui/material';
 import {
   Close as CloseIcon,
-  PhotoCamera as PhotoCameraIcon
+  PhotoCamera as PhotoCameraIcon,
+  Badge as BadgeIcon
 } from '@mui/icons-material';
 import { User, ProfileFormData } from '../../types';
 import spanishFlagIcon from '../../images/icons/spain_flag.png'
@@ -200,6 +201,30 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
               /></MenuItem>
           </Select>
         </FormControl>
+
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            p: 2,
+            mb: 3,
+            backgroundColor: 'action.hover',
+            borderRadius: 1,
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <BadgeIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+          <Box>
+            <Typography variant="caption" color="text.secondary" display="block">
+              {t("license") || "Licencia"}
+            </Typography>
+            <Typography variant="body1" fontWeight={500}>
+              {user.licenceId ? `Nro: ${user.licenceId}` : 'N/A'}
+            </Typography>
+          </Box>
+        </Box>
 
         <Button
           fullWidth

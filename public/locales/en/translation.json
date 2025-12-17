@@ -1362,5 +1362,6 @@
   "new_productive_unit": "New Productive Unit",
   "update_productive_unit": "Update Productive Unit",
   "new_contract_sale_cereal": "New Contract Sale Cereal",
-  "update_contract_sale_cereal": "Update Contract Sale Cereal"
+  "update_contract_sale_cereal": "Update Contract Sale Cereal",
+  "license": "License"
 }
