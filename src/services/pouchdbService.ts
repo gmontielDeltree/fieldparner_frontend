@@ -168,7 +168,7 @@ export const dbContext = Object.freeze({
   fieldsByProductUnit: new PouchDB<FieldsByProductUnit>(dbNames.fieldsByProductUnit),
   system: new PouchDB<System>(dbNames.system),
   cropMovements: new PouchDB<CropMovement>(dbNames.cropMovements),
-  // cropDeposits: new PouchDB<CropDeposit>(dbNames.cropDeposits),
+  cropDeposits: new PouchDB<any>(dbNames.cropDeposits),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html

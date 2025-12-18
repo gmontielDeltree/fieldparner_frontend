@@ -154,7 +154,7 @@ export const useSupply = () => {
             const [resultStock, supplies, crops, cropDepositsResult] = promisesResult;
 
             // Procesar stock legacy (insumos y crops antiguos)
-            const stockIds = resultStock.docs.map(s => s.id);
+            const stockIds = resultStock?.docs.map(s => s.id) || [];
             const groupStockIds = Array.from(new Set(stockIds));
             groupStockIds.forEach(id => {
                 const foundStock = resultStock.docs.filter(m => (m.id === id));
@@ -188,7 +188,7 @@ export const useSupply = () => {
             });
 
             // ✅ AGREGADO: Procesar cropDeposits (cosechas)
-            const cropIds = cropDepositsResult.docs.map((cd: any) => cd.cropId);
+            const cropIds = cropDepositsResult?.docs.map((cd: any) => cd.cropId) || [];
             const groupCropIds = Array.from(new Set(cropIds));
 
             groupCropIds.forEach(cropId => {
