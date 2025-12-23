@@ -23,8 +23,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { GenericListPage } from '../../components';
 import { useAnnualPlanValorization } from '../../hooks/useAnnualPlanValorization';
-import { IAnnualPlanValorization } from '../../interfaces/annualPlanValorization';
+import { IAnnualPlan } from '../../interfaces/annualPlanValorization';
 import { GridColDef } from '@mui/x-data-grid';
+import { useCampaign, useField, useCrops } from '../../hooks';
 
 export const ListAnnualPlanValorization: React.FC = () => {
   const navigate = useNavigate();
@@ -36,13 +37,31 @@ export const ListAnnualPlanValorization: React.FC = () => {
     deleteAnnualPlanValorization,
   } = useAnnualPlanValorization();
 
+  // Cargar datos dependientes para el hook
+  const { campaigns, getCampaigns } = useCampaign();
+  const { fields, getFields } = useField();
+  const { crops, getCrops } = useCrops();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [campaignFilter, setCampaignFilter] = useState('all');
+  const [dataLoaded, setDataLoaded] = useState(false);
 
+  // Cargar datos dependientes primero
   useEffect(() => {
-    getAnnualPlanValorizations();
+    const loadDependencies = async () => {
+      await Promise.all([getCampaigns(), getFields(), getCrops()]);
+      setDataLoaded(true);
+    };
+    loadDependencies();
   }, []);
+
+  // Cargar valorizaciones cuando los datos dependientes estén listos
+  useEffect(() => {
+    if (dataLoaded && campaigns.length > 0 && fields.length > 0) {
+      getAnnualPlanValorizations();
+    }
+  }, [dataLoaded, campaigns.length, fields.length, crops.length]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-AR', {
@@ -67,11 +86,22 @@ export const ListAnnualPlanValorization: React.FC = () => {
     );
   };
 
+  // Obtener nombre de campaña para mostrar en la tabla
+  const getCampaignName = (campanaId: string) => {
+    const campaign = campaigns.find(c => c._id === campanaId);
+    return campaign?.name || campanaId;
+  };
+
   const columns: GridColDef[] = [
-    { field: 'campanaName', headerName: t('campaign'), flex: 1 },
+    {
+      field: 'campanaId',
+      headerName: t('campaign'),
+      flex: 1,
+      valueGetter: (params) => getCampaignName(params.value),
+    },
     { field: 'zafra', headerName: t('harvest'), flex: 0.8 },
-    { field: 'campoName', headerName: t('field'), flex: 1 },
-    { field: 'loteName', headerName: t('lot'), flex: 1 },
+    { field: 'campoNombre', headerName: t('field'), flex: 1 },
+    { field: 'loteNombre', headerName: t('lot'), flex: 1 },
     {
       field: 'has',
       headerName: t('hectares'),
@@ -79,21 +109,18 @@ export const ListAnnualPlanValorization: React.FC = () => {
       type: 'number',
       valueFormatter: ({ value }) => value?.toFixed(1) || '0',
     },
-    { field: 'cultivoName', headerName: t('crop'), flex: 1 },
+    { field: 'cultivoNombre', headerName: t('crop'), flex: 1 },
     {
-      field: 'cosechaEstimada',
-      headerName: t('estimated_harvest_tn'),
-      flex: 1.2,
-      type: 'number',
-      valueFormatter: ({ value }) =>
-        value ? `${value.toLocaleString('es-AR')} ${t('tons')}` : '0',
-    },
-    {
-      field: 'tendenciaMonLocal',
-      headerName: t('trend_local_currency'),
-      flex: 1.2,
-      type: 'number',
-      valueFormatter: ({ value }) => (value ? formatCurrency(value) : formatCurrency(0)),
+      field: 'valorizada',
+      headerName: t('valorized') || 'Valorizada',
+      flex: 0.8,
+      renderCell: params => (
+        <Chip
+          label={params.value ? t('yes') || 'Sí' : t('no') || 'No'}
+          color={params.value ? 'success' : 'default'}
+          size='small'
+        />
+      ),
     },
     {
       field: 'status',
@@ -107,7 +134,7 @@ export const ListAnnualPlanValorization: React.FC = () => {
       width: 200,
       minWidth: 180,
       sortable: false,
-      renderCell: (params: { row: IAnnualPlanValorization }) => (
+      renderCell: (params: { row: IAnnualPlan }) => (
         <Box
           display='flex'
           justifyContent='center'
@@ -169,22 +196,21 @@ export const ListAnnualPlanValorization: React.FC = () => {
     },
   ];
 
-  const onClickStartValorization = (item: IAnnualPlanValorization): void => {
-    // TODO: Implementar navegación a pantalla de carga de valorización
+  const onClickStartValorization = (item: IAnnualPlan): void => {
     console.log('Starting valorization for:', item);
     navigate(`/init/overview/annual-plan-valorization/edit/${item._id}`);
   };
 
-  const onClickEditValorization = (item: IAnnualPlanValorization): void => {
+  const onClickEditValorization = (item: IAnnualPlan): void => {
     navigate(`/init/overview/annual-plan-valorization/edit/${item._id}`);
   };
 
-  const onClickExportValorization = (item: IAnnualPlanValorization): void => {
+  const onClickExportValorization = (item: IAnnualPlan): void => {
     // Por ahora solo mostramos un mensaje, la exportación completa se hace desde la página de edición
     alert(t('export_functionality_available_in_edit_page'));
   };
 
-  const handleDeleteValorization = (item: IAnnualPlanValorization) => {
+  const handleDeleteValorization = (item: IAnnualPlan) => {
     const doc = item as any;
     if (doc._id && doc._rev) {
       deleteAnnualPlanValorization(doc._id, doc._rev);
@@ -198,25 +224,26 @@ export const ListAnnualPlanValorization: React.FC = () => {
   // Filtrar datos
   const filteredData = annualPlanValorizations.filter(item => {
     // Filtro por término de búsqueda
+    const campaignName = getCampaignName(item.campanaId);
     const matchesSearch =
       searchTerm === '' ||
-      item.campanaName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.campoName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.loteName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.cultivoName?.toLowerCase().includes(searchTerm.toLowerCase());
+      campaignName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.campoNombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.loteNombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.cultivoNombre?.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Filtro por estado
     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
 
     // Filtro por campaña
-    const matchesCampaign = campaignFilter === 'all' || item.campanaName === campaignFilter;
+    const matchesCampaign = campaignFilter === 'all' || campaignName === campaignFilter;
 
     return matchesSearch && matchesStatus && matchesCampaign;
   });
 
   // Obtener lista única de campañas para el filtro
   const uniqueCampaigns = Array.from(
-    new Set(annualPlanValorizations.map(item => item.campanaName).filter(Boolean)),
+    new Set(annualPlanValorizations.map(item => getCampaignName(item.campanaId)).filter(Boolean)),
   );
 
   return (
