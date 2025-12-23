@@ -111,7 +111,9 @@ function PersonalFormUnified({
       .filter(activity => {
         if (!activity) return false;
         const type = activity.actividad?.tipo || activity.tipo;
-        return type && type.toLowerCase() === 'siembra';
+        const normalizedType = type?.toLowerCase();
+        // Buscar tanto en español como en inglés
+        return normalizedType === 'siembra' || normalizedType === 'sowing';
       })
       .map(activity => {
         const normalizedActivity = activity.actividad || activity;
@@ -195,7 +197,8 @@ function PersonalFormUnified({
 
   const shouldShowPlantingSelection =
     mode === 'plan' &&
-    (formData.tipo === 'aplicacion' || formData.tipo === 'cosecha')
+    (formData.tipo === 'aplicacion' || formData.tipo === 'application' ||
+     formData.tipo === 'cosecha' || formData.tipo === 'harvesting')
 
   const getPlantingLabel = (planting) => {
     if (!planting) return '';
