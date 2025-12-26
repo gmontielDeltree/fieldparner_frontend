@@ -11,6 +11,7 @@ import {
   InputLabel,
   Switch,
   FormControlLabel,
+  FormHelperText,
   Card,
   CardContent,
   ListItemText,
@@ -75,6 +76,17 @@ function PersonalFormUnified({
 
   const processedAtLeastOnce = useRef(false);
 
+  const logPlantingDebug = (plantingActivities) => {
+    const activityTypes = (activities || []).map((a) => (a?.actividad?.tipo || a?.tipo || a?.detalles?.tipo || a?.tipoActividad || 'desconocido')).map((t) => (t || '').toString().toLowerCase().trim());
+    console.log('🌱 [PlantingDebug] shouldShowPlantingSelection:', shouldShowPlantingSelection, 'formData.tipo:', formData.tipo);
+    console.log('🌱 [PlantingDebug] activities length:', (activities || []).length, 'types:', activityTypes);
+    console.log('🌱 [PlantingDebug] filtered plantings length:', plantingActivities.length);
+    console.log('🌱 [PlantingDebug] filtered plantings ids:', plantingActivities.map(p => p._id));
+    if (formData.detalles?.siembra_inicial) {
+      console.log('🌱 [PlantingDebug] current siembra_inicial:', formData.detalles.siembra_inicial);
+    }
+  }
+
   useEffect(() => {
     getBusinesses()
   }, [])
@@ -83,6 +95,8 @@ function PersonalFormUnified({
     if (activities && activities.length > 0) {
       processPlantingActivities();
       processedAtLeastOnce.current = true;
+    } else {
+      console.log('🌱 [PlantingDebug] No activities provided on mount');
     }
   }, []);
 
@@ -90,6 +104,8 @@ function PersonalFormUnified({
     if (activities && activities.length > 0) {
       processPlantingActivities();
       processedAtLeastOnce.current = true;
+    } else {
+      console.log('🌱 [PlantingDebug] No activities provided on change');
     }
   }, [activities]);
 
@@ -110,10 +126,14 @@ function PersonalFormUnified({
     const plantingActivities = activities
       .filter(activity => {
         if (!activity) return false;
-        const type = activity.actividad?.tipo || activity.tipo;
-        const normalizedType = type?.toLowerCase();
-        // Buscar tanto en español como en inglés
-        return normalizedType === 'siembra' || normalizedType === 'sowing';
+        const type =
+          activity.actividad?.tipo ||
+          activity.tipo ||
+          activity.detalles?.tipo ||
+          activity.tipoActividad;
+        const normalizedType = (type || '').toString().toLowerCase().trim();
+        // Buscar tanto en español como en inglés y permitir variaciones
+        return normalizedType.includes('siembra') || normalizedType.includes('sowing');
       })
       .map(activity => {
         const normalizedActivity = activity.actividad || activity;
@@ -143,6 +163,7 @@ function PersonalFormUnified({
       });
 
     setPlantings(plantingActivities);
+    logPlantingDebug(plantingActivities);
 
     if (formData.detalles?.siembra_inicial) {
       const initialPlanting = plantingActivities.find(s => {
@@ -200,6 +221,9 @@ function PersonalFormUnified({
     (formData.tipo === 'aplicacion' || formData.tipo === 'application' ||
      formData.tipo === 'cosecha' || formData.tipo === 'harvesting')
 
+  const isApplication =
+    formData.tipo === 'aplicacion' || formData.tipo === 'application'
+
   const getPlantingLabel = (planting) => {
     if (!planting) return '';
 
@@ -239,7 +263,11 @@ function PersonalFormUnified({
         {shouldShowPlantingSelection ? (
           <>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl
+                fullWidth
+                required={isApplication}
+                error={isApplication && !formData.detalles?.siembra_inicial}
+              >
                 <InputLabel id="siembra-inicial-label">
                   {t('Initial Planting')}
                 </InputLabel>
@@ -269,6 +297,9 @@ function PersonalFormUnified({
                     </MenuItem>
                   )}
                 </Select>
+                {plantings.length === 0 && (
+                  <FormHelperText>{t('No plantings available')}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
 

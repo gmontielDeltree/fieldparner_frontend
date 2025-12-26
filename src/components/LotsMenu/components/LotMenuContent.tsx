@@ -76,11 +76,9 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
     categoryMatches(key)
   )
 
-  // Filtra las actividades según la campaña seleccionada
-  const filteredActivities = activities ? activities.filter((activity: any) => {
-    const campaña = activity.actividad?.campaña
-    return !campaña || campaña.campaignId === selectedCampaign?.campaignId
-  }) : []
+  // Para el selector de siembras necesitamos todas las actividades del lote.
+  // Dejamos de filtrar por campaña para no perder siembras de campañas previas.
+  const filteredActivities = activities || []
 
   if (!selectedCampaign && !isAccessibleWithoutCampaign) {
     return (
