@@ -218,6 +218,13 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           fields.push(t('contractor'))
         }
         if (!formDetails.hectareas) fields.push(t('hectares'))
+        // Para aplicación, requerir selección de siembra inicial
+        if (
+          (activityType === 'application' || spanishActivityType === 'aplicacion') &&
+          !formDetails.siembra_inicial
+        ) {
+          fields.push(t('Initial Planting'))
+        }
         break
 
       case t('supplies'):
@@ -276,6 +283,13 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           missingFields++
         }
         if (!formData.detalles || !formData.detalles.hectareas) {
+          missingFields++
+        }
+        // Para aplicación, requerir selección de siembra inicial
+        if (
+          (activityType === 'application' || spanishActivityType === 'aplicacion') &&
+          (!formData.detalles || !formData.detalles.siembra_inicial)
+        ) {
           missingFields++
         }
         break
