@@ -48,7 +48,14 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
         sx={{
           width: drawerWidth,
           display: { xs: 'block' },
-          '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            background: '#ffffff',
+            color: '#0f172a',
+            borderRight: '1px solid rgba(15,23,42,0.08)',
+            boxShadow: '0 10px 30px rgba(15,23,42,0.08)',
+          },
         }}
         variant='persistent'
         anchor='left'
@@ -61,14 +68,20 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
           alignItems='center'
           sx={{ px: 0, py: 1.5 }}
         >
-          <IconButton onClick={handleSideBarClose}>
+          <IconButton
+            onClick={handleSideBarClose}
+            sx={{
+              color: '#0f172a',
+              '&:hover': { backgroundColor: 'rgba(15,23,42,0.06)' },
+            }}
+          >
             <ChevronLeftIcon />
           </IconButton>
         </Box>
 
-        <Divider />
+        <Divider sx={{ borderColor: 'rgba(15,23,42,0.06)' }} />
 
-        <List>
+        <List sx={{ px: 1.5, py: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           {isLoading && (
             <ListItem>
               <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', p: 2 }}>
@@ -98,17 +111,34 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
               return (
                 <Box key={groupKey}>
                   <ListItem disablePadding>
-                    <ListItemButton onClick={() => onClickMenu(groupKey)}>
-                      <ListItemIcon>
+                    <ListItemButton
+                      onClick={() => onClickMenu(groupKey)}
+                      sx={{
+                        borderRadius: 1.5,
+                        mx: 0.5,
+                        mb: 0.5,
+                        color: 'inherit',
+                        backgroundColor: isOpen ? 'rgba(59,130,246,0.08)' : 'transparent',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          backgroundColor: 'rgba(15,23,42,0.05)',
+                          transform: 'translateX(2px)',
+                        },
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: '#3b82f6', minWidth: 40 }}>
                         <IconsViewer iconName={parentIconName || undefined} size={22} />
                       </ListItemIcon>
-                      <ListItemText primary={displayLabel} />
+                      <ListItemText
+                        primaryTypographyProps={{ sx: { fontWeight: 600, letterSpacing: 0.2 } }}
+                        primary={displayLabel}
+                      />
                       {isOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                     </ListItemButton>
                   </ListItem>
 
                   <Collapse in={isOpen} timeout='auto' unmountOnExit>
-                    <List component='div' disablePadding>
+                    <List component='div' disablePadding sx={{ pb: 0.75 }}>
                       {children.map((m: MenuModules) => {
                         const to =
                           (m as any).route ||
@@ -121,15 +151,39 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
                         return (
                           <ListItemButton
                             key={`${groupKey}-${m.id ?? (m as any)._id ?? label}`}
-                            sx={{ pl: 4 }}
+                            sx={{
+                              pl: 4,
+                              pr: 2.5,
+                              mx: 1,
+                              mb: 0.4,
+                              borderRadius: 1.5,
+                              color: 'inherit',
+                              transition: 'all 0.18s ease',
+                              '&:hover': {
+                                backgroundColor: 'rgba(15,23,42,0.05)',
+                                transform: 'translateX(3px)',
+                              },
+                              '&.Mui-selected': {
+                                background:
+                                  'linear-gradient(90deg, rgba(59,130,246,0.14) 0%, rgba(16,185,129,0.14) 100%)',
+                                color: '#0f172a',
+                                boxShadow: '0 8px 20px rgba(15,23,42,0.12)',
+                                '& .MuiListItemIcon-root': { color: '#0ea5e9' },
+                              },
+                            }}
                             component={to !== '#' ? RouterLink : 'button'}
                             to={to !== '#' ? to : undefined}
                             selected={selected}
                           >
-                            <ListItemIcon>
+                            <ListItemIcon sx={{ color: selected ? '#0ea5e9' : '#94a3b8', minWidth: 36 }}>
                               <IconsViewer iconName={(m as any).icon || undefined} size={20} />
                             </ListItemIcon>
-                            <ListItemText primary={label} />
+                            <ListItemText
+                              primary={label}
+                              primaryTypographyProps={{
+                                sx: { fontWeight: selected ? 700 : 500, fontSize: 14, color: '#0f172a' },
+                              }}
+                            />
                           </ListItemButton>
                         );
                       })}
@@ -140,8 +194,19 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
             })}
         </List>
 
-        <Box sx={{ position: 'absolute', bottom: 0, right: 0, p: 2, textAlign: 'right' }}>
-          <Typography variant='body1' color='gray'>
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            right: 0,
+            p: 2,
+            textAlign: 'right',
+            color: '#6b7280',
+            letterSpacing: 0.4,
+            fontSize: 12,
+          }}
+        >
+          <Typography variant='body1' color='inherit'>
             v{version}
           </Typography>
         </Box>
