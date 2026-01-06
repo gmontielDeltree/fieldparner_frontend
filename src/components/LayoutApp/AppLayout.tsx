@@ -1,10 +1,15 @@
 import { Box } from "@mui/material";
 import { NavBar, SideBar } from "..";
-import { useCallback } from "react";
-import { useAppDispatch, useAppSelector } from "../../hooks";
+import { useCallback, useEffect } from "react";
+import { useAppDispatch, useAppSelector, useField } from "../../hooks";
 import { uiOpenSideBard } from "../../redux/ui";
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { useNavigate } from "react-router-dom";
+import FieldsSideMenu from "../FieldsSideMenu";
+import { Field } from "../../interfaces/field";
 
 const drawerWidth = 280; //Ancho del sidebar en px;
 
@@ -15,7 +20,15 @@ export interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // const [open, setOpen] = useState<boolean>(false);
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { openSideBar } = useAppSelector((state) => state.ui);
+  const { fields, getFields } = useField();
+  const isFieldsMenuVisible = useSelector((state: RootState) => state.fieldList.isVisible);
+
+  // Load fields on mount for the global FieldsSideMenu
+  useEffect(() => {
+    getFields();
+  }, [getFields]);
 
   const handleSideBarOpen = useCallback(() => {
     // setOpen(true);
@@ -26,6 +39,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     // setOpen(false);
     dispatch(uiOpenSideBard(false));
   }, []);
+
+  const handleSelectField = useCallback((field: Field) => {
+    navigate(`/init/overview/fields/${field._id}`);
+  }, [navigate]);
+
+  const handleDirectLotSelection = useCallback((lot: any, field: Field) => {
+    navigate(`/init/overview/fields/${field._id}/${lot.id}`);
+  }, [navigate]);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -40,6 +61,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         drawerWidth={drawerWidth}
         open={openSideBar}
         handleSideBarClose={handleSideBarClose}
+      />
+
+      {/* Global FieldsSideMenu - available on all routes */}
+      <FieldsSideMenu
+        open={isFieldsMenuVisible}
+        fields={fields as unknown as Field[]}
+        onSelectField={handleSelectField}
+        onSelectLot={handleDirectLotSelection}
       />
 
       <Box

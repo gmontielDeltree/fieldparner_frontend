@@ -184,7 +184,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
 
   // Get sowing activities from all cycles in the same lot for the initial planting dropdown
   const [sowingActivities, setSowingActivities] = useState<any[]>([]);
-  
+
   useEffect(() => {
     console.log('🌱 [ActividadEditorBase] useEffect triggered:', {
       cicloProp,
@@ -192,7 +192,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
       loteId: cicloProp?.loteId,
       actividadesIds: cicloProp?.actividadesIds,
     });
-    
+
     const loadSowingActivities = async () => {
       // We need the cycle's activity IDs directly from cicloProp
       if (!cicloProp?._id) {
@@ -203,36 +203,36 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
       // Get activity IDs directly from the current cycle
       const activityIds = cicloProp.actividadesIds || [];
       console.log('🌱 [ActividadEditorBase] Current cycle activity IDs:', activityIds);
-      
+
       if (activityIds.length === 0) {
         console.log('🌱 [ActividadEditorBase] No activity IDs in current cycle');
         setSowingActivities([]);
         return;
       }
-      
+
       try {
         // Load the activities from db
         const { dbContext } = await import('../../services');
         const db = dbContext.fields;
         const response = await db.allDocs({ include_docs: true, keys: activityIds });
-        
+
         console.log('🌱 [ActividadEditorBase] DB response:', {
           rowsCount: response.rows?.length,
-          rows: response.rows?.map((r: any) => ({ 
-            id: r.id, 
-            hasDoc: !!r.doc, 
+          rows: response.rows?.map((r: any) => ({
+            id: r.id,
+            hasDoc: !!r.doc,
             tipo: r.doc?.tipo,
-            error: r.error 
+            error: r.error
           })),
         });
-        
+
         // Filter for sowing activities
         const allDocs = response.rows
           .filter((row: any) => row.doc && !row.error)
           .map((row: any) => row.doc);
-        
+
         console.log('🌱 [ActividadEditorBase] All docs tipos:', allDocs.map((d: any) => ({ id: d._id, tipo: d.tipo })));
-        
+
         const sowings = allDocs
           .filter((doc: any) => {
             const tipo = (doc.tipo || '').toLowerCase();
@@ -252,7 +252,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
               }
             }
           }));
-        
+
         console.log('🌱 [ActividadEditorBase] Loaded sowing activities:', sowings.length, sowings);
         setSowingActivities(sowings);
       } catch (error) {
@@ -260,7 +260,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
         setSowingActivities([]);
       }
     };
-    
+
     loadSowingActivities();
   }, [cicloProp?._id, cicloProp?.actividadesIds]);
 

@@ -9,7 +9,6 @@ import { Field } from '../interfaces/field'
 import { useDispatch, useSelector } from 'react-redux'
 import { setMap, selectMap } from '../redux/map/mapSlice'
 import { selectDraw } from '../redux/draw/drawSlice'
-import { RootState } from '../redux/store'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Devices } from '../components/Sensors/sensores'
 import { addDepositosToMap } from '../../owncomponents/mapa-principal/depositos-layer'
@@ -17,7 +16,6 @@ import { useDeposit, useField } from '../hooks'
 import useResizeObserver from '@react-hook/resize-observer'
 import { dbContext } from '../services'
 import { touchEvent } from '../../owncomponents/helpers'
-import FieldsSideMenu from '../components/FieldsSideMenu'
 import { useTranslation } from 'react-i18next'
 import { Actividad } from '../interfaces/activity'
 import { format, isBefore, parseISO } from 'date-fns'
@@ -42,7 +40,6 @@ export const FieldsPage: React.FC = () => {
   const { t } = useTranslation()
   const location = useLocation()
   const syncStatus = useSelector(selectSyncStatus)
-  const isVisible = useSelector((state: RootState) => state.fieldList.isVisible)
   const navigate = useNavigate()
   const { deposits, getDeposits } = useDeposit()
 
@@ -659,15 +656,6 @@ export const FieldsPage: React.FC = () => {
     }
   }, [map, handleMapClick])
 
-  const handleDirectLotSelection = (lot: any, field: Field) => {
-    navigate(`${field._id}/${lot.id}`)
-  }
-
-  const handleSelectField = (field: Field) => {
-    console.log('Field selected from menu:', field)
-    navigate(field._id)
-  }
-
   const onMapLoad = useCallback(
     (event: any) => {
       const map = event.target
@@ -678,13 +666,6 @@ export const FieldsPage: React.FC = () => {
 
   return (
     <>
-      <FieldsSideMenu
-        open={isVisible}
-        fields={fields as unknown as Field[]}
-        onSelectField={handleSelectField}
-        onSelectLot={handleDirectLotSelection}
-      />
-
       <Grid container style={{ position: 'relative' }} ref={target}>
         <MapComponent onMapLoad={onMapLoad} />
       </Grid>
