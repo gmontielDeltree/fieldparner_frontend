@@ -86,7 +86,7 @@ export const DetailStockMovementModal: React.FC<Props> = ({ open, detail, onClos
                                     primary={t("_quantity")}
                                     secondary={
                                         <Typography gutterBottom variant="h6" fontWeight={700} >
-                                            {Helper.parseDecimalPointToComaWithCurrency(detail?.amount || 0, "$", 2)}
+                                            {`${detail?.supply?.unitMeasurement} ${Helper.parseDecimalPointToComaWithCurrency(detail?.amount || 0, "", 2) || "-"}`}
                                         </Typography>}
                                 />
                             </ListItem>

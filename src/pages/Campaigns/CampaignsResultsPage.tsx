@@ -463,15 +463,15 @@ export const CampaignsResultsPage: React.FC = () => {
         const allData = [...contractsData, ...expensesData, ...executionsData];
 
         // Si no hay datos reales, usar datos de ejemplo
-        const finalData = allData.length > 0 ? allData : sampleData;
+        // const finalData = allData.length > 0 ? allData : sampleData;
 
-        console.log('Final Report Data:', finalData);
+        // console.log('Final Report Data:', finalData);
         console.log('Contracts count:', contractsData.length);
         console.log('Expenses count:', expensesData.length);
         console.log('Executions count:', executionsData.length);
         console.log('Using sample data:', allData.length === 0);
 
-        setReportData(finalData);
+        setReportData(allData);
       } catch (error) {
         console.error('Error fetching report data:', error);
         setError(t('error_report_data'));
