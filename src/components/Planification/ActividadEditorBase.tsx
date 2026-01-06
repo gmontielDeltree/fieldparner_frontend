@@ -179,8 +179,9 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   const ciclosContext: any = useContext(CiclosContext);
   const ciclos = ciclosContext?.ciclos;
 
+  // CultivoContext.Provider pasa el resultado de useCrops() que es { crops, dataCrops, ... }
   const cultivosContext: any = useContext(CultivoContext);
-  const crops = cultivosContext?.crops;
+  const crops = cultivosContext?.crops || cultivosContext?.dataCrops;
 
   // Get sowing activities from all cycles in the same lot for the initial planting dropdown
   const [sowingActivities, setSowingActivities] = useState<any[]>([]);
@@ -330,18 +331,32 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
       targetCiclo = ciclos.find((c: any) => c._id === actividadDoc.cicloId);
     }
 
-    if (targetCiclo && crops) {
+    console.log('🌾 [ActividadEditorBase] Cargando cultivo:', {
+      targetCiclo,
+      cultivoId: targetCiclo?.cultivoId,
+      cropsAvailable: Array.isArray(crops) ? crops.length : 'not an array',
+      cropsType: typeof crops,
+      cultivosContext
+    });
+
+    if (targetCiclo && Array.isArray(crops) && crops.length > 0) {
       const zafra = targetCiclo.zafra || '';
       let cultivo = null;
       if (targetCiclo.cultivoId) {
         cultivo = crops.find((c: any) => c._id === targetCiclo.cultivoId || c.id === targetCiclo.cultivoId);
+        console.log('🌾 [ActividadEditorBase] Cultivo encontrado:', cultivo);
       }
 
       setFormData(prev => {
-        // Prevent unnecessary updates
-        if ((!cultivo && !zafra) || (prev.detalles.cultivo && prev.detalles.zafra)) return prev;
+        // Only skip update if both cultivo and zafra are already set
+        // Changed condition to allow updating if cultivo is missing
+        const shouldSkip = prev.detalles.cultivo && prev.detalles.zafra && !cultivo;
+        if (shouldSkip) {
+          console.log('🌾 [ActividadEditorBase] Skipping update - already has cultivo and zafra');
+          return prev;
+        }
 
-        return {
+        const newFormData = {
           ...prev,
           detalles: {
             ...prev.detalles,
@@ -349,6 +364,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
             zafra: zafra || prev.detalles?.zafra
           }
         };
+        console.log('🌾 [ActividadEditorBase] Actualizando formData con cultivo:', newFormData.detalles.cultivo);
+        return newFormData;
       });
     }
   }, [actividadDoc.cicloId, ciclos, crops, cicloProp]);

@@ -75,18 +75,42 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
       return
     }
 
-    // Validación de compatibilidad de semillas ANTES de agregar la fila
-    if (supply && supply.type === 'Semillas') {
+    // Validación de compatibilidad ANTES de agregar la fila
+    // Se valida cualquier insumo que tenga cropId asociado
+    if (supply && supply.cropId) {
       const cultivo = formData?.detalles?.cultivo
       const cultivoId = cultivo?._id || cultivo?.id
-      const cropId = supply?.cropId
 
-      if (cultivoId && cropId && cropId !== cultivoId) {
-        Swal.fire({
-          icon: 'error',
-          title: t('incompatibleSupply'),
-          text: t('supplyNotCompatibleWithCrop'),
-        })
+      console.log('🔍 handleAddRow - Validación:', { cultivoId, supplyCropId: supply.cropId })
+
+      if (cultivoId && supply.cropId !== cultivoId) {
+        console.log('❌ handleAddRow - INCOMPATIBLE')
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'error',
+            title: t('incompatibleSupply'),
+            text: t('supplyNotCompatibleWithCrop'),
+            customClass: {
+              container: 'swal-above-mui-dialog'
+            }
+          })
+        }, 100)
+        return
+      }
+
+      // Si el insumo tiene cropId pero NO hay cultivo definido en el ciclo
+      if (!cultivoId && supply.cropId) {
+        console.log('⚠️ handleAddRow - No hay cultivo en ciclo')
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'warning',
+            title: t('incompatibleSupply'),
+            text: t('supplyNotCompatibleWithCrop') + ' (No hay cultivo definido en el ciclo)',
+            customClass: {
+              container: 'swal-above-mui-dialog'
+            }
+          })
+        }, 100)
         return
       }
     }
@@ -134,20 +158,60 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
   const handleSelectChange = (event: any) => {
     const supply = event
 
-    // Validación temprana de compatibilidad apenas se selecciona el insumo (especialmente Semillas)
-    if (supply && supply.type === 'Semillas') {
+    console.log('🔍 handleSelectChange llamado con:', supply?.name)
+
+    // Validación temprana de compatibilidad apenas se selecciona el insumo
+    // Se valida cualquier insumo que tenga cropId asociado
+    if (supply && supply.cropId) {
       const cultivo = formData?.detalles?.cultivo
       const cultivoId = cultivo?._id || cultivo?.id
 
-      // Si tenemos cultivo seleccionado y el insumo está asociado a otro cultivo, mostrar el mensaje de incompatibilidad
-      if (cultivoId && supply.cropId && supply.cropId !== cultivoId) {
-        Swal.fire({
-          icon: 'error',
-          title: t('incompatibleSupply'),
-          text: t('supplyNotCompatibleWithCrop'),
-        })
-        // No dejamos el insumo seleccionado
+      console.log('🔍 Validación de compatibilidad de insumo:', {
+        supplyName: supply.name,
+        supplyType: supply.type,
+        supplyCropId: supply.cropId,
+        cultivo,
+        cultivoId,
+        esIncompatible: cultivoId && supply.cropId !== cultivoId
+      })
+
+      // Si el insumo tiene cropId y es diferente al cultivo del ciclo, mostrar error
+      if (cultivoId && supply.cropId !== cultivoId) {
+        console.log('❌ INSUMO INCOMPATIBLE - Mostrando Swal')
         setSelectedSupply(undefined)
+        // Usar setTimeout para que el Swal aparezca después del re-render
+        // Agregar customClass con z-index alto para que aparezca sobre el Dialog de MUI
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'error',
+            title: t('incompatibleSupply'),
+            text: t('supplyNotCompatibleWithCrop'),
+            backdrop: true,
+            allowOutsideClick: true,
+            customClass: {
+              container: 'swal-above-mui-dialog'
+            }
+          })
+        }, 100)
+        return
+      }
+
+      // Si el insumo tiene cropId pero NO hay cultivo definido en el ciclo, mostrar alerta igual
+      if (!cultivoId && supply.cropId) {
+        console.log('⚠️ Insumo tiene cropId pero el ciclo no tiene cultivo definido - Mostrando Swal')
+        setSelectedSupply(undefined)
+        setTimeout(() => {
+          Swal.fire({
+            icon: 'warning',
+            title: t('incompatibleSupply'),
+            text: t('supplyNotCompatibleWithCrop') + ' (No hay cultivo definido en el ciclo)',
+            backdrop: true,
+            allowOutsideClick: true,
+            customClass: {
+              container: 'swal-above-mui-dialog'
+            }
+          })
+        }, 100)
         return
       }
     }
