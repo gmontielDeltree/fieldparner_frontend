@@ -739,11 +739,14 @@ const FieldsSideMenu: React.FC<FieldsSideMenuProps> = ({
       open={open}
       onClose={handleClose}
       sx={{
+        // Force the drawer above any map/overlay layers across the app
+        zIndex: (theme) => Math.max(theme.zIndex.tooltip + 1, 13000),
         width: '40%',
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: '40%',
           boxSizing: 'border-box',
+          zIndex: 'inherit',
         },
       }}
     >
