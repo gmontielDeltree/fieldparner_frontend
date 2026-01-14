@@ -86,6 +86,10 @@ export const sensores_valores_promedios = async (
 };
 
 export const get_timeseries_by_name = async (uuid, tsname, start, end) => {
+  if (!gbl_state?.db_sensores_raw) {
+    console.warn("get_timeseries_by_name: db_sensores_raw no inicializada");
+    return [] as TimeSeriesPoint[];
+  }
   let key = [uuid, tsname, start];
   let endkey = [uuid, tsname, end];
   return gbl_state.db_sensores_raw
@@ -136,7 +140,7 @@ export const get_pluviometro_daily_value = async (
     ts_end,
     "dia"
   );
-  return data_de_hoy[0].data[0].y ?? 0;
+  return data_de_hoy?.[0]?.data?.[0]?.y ?? 0;
 };
 
 export const get_timeseries_by_name_agregated = async (

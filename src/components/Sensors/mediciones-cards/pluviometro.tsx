@@ -48,6 +48,9 @@ const PluviometroCard: React.FC<PluviometroCardProps> = ({ deveui }) => {
   };
 
   const renderCentralChart = async () => {
+    const chartElement = document.getElementById("chart");
+    if (!chartElement) return;
+
     const categorias = [
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
     ];
@@ -105,18 +108,19 @@ const PluviometroCard: React.FC<PluviometroCardProps> = ({ deveui }) => {
       },
     };
 
-    const chartElement = document.getElementById("chart");
-    if (chartElement) {
-      const newChart = new ApexCharts(chartElement, options);
-      newChart.render();
-      setChart(newChart);
+    const newChart = new ApexCharts(chartElement, options);
+    await newChart.render();
+    setChart(newChart);
+    
+    // Esperar un tick para que el menú de ApexCharts se renderice
+    setTimeout(() => {
       add_download_xls_button(
         chartElement,
         categorias,
         data,
         options.yaxis.title
       );
-    }
+    }, 100);
   };
 
   const toggleChartView = () => {

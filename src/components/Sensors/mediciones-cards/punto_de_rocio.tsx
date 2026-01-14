@@ -39,10 +39,15 @@ const PuntoDeRocioCard: React.FC<PuntoDeRocioCardProps> = ({ card, data }) => {
   }, [data]);
 
   const calculatePuntoDeRocio = () => {
-    const humedad = data.humedad;
-    const temperatura = data.temperatura;
+    const humedad = data?.humedad;
+    const temperatura = data?.temperatura;
 
-    const serie: number[] = temperatura.map((t: number, i: number) => {
+    if (!Array.isArray(humedad) || !Array.isArray(temperatura) || !humedad.length || !temperatura.length) {
+      return;
+    }
+
+    const length = Math.min(humedad.length, temperatura.length);
+    const serie: number[] = temperatura.slice(0, length).map((t: number, i: number) => {
       const h = humedad[i];
       const pc = ((h / 100) ** (1 / 8)) * (112 + 0.9 * t) + 0.1 * t - 112;
       return +pc.toFixed(1);

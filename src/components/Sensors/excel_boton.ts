@@ -8,7 +8,9 @@ import("xlsx").then((mod) => {
 });
 
 export const add_download_xls_button = (root, ts, data, title) => {
+  if (!root) return;
   let a = root.querySelector(".apexcharts-menu");
+  if (!a) return;
   let new_menu_item = document.createElement("div");
   new_menu_item.className = "apexcharts-menu-item";
   new_menu_item.title = "Download XLS";

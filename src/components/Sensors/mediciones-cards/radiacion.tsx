@@ -15,131 +15,91 @@ const RadiacionCard: React.FC<RadiacionCardProps> = ({ card, data }) => {
   const [showChartOnly, setShowChartOnly] = useState(false);
 
   useEffect(() => {
-    if (data) {
+    if (data?.radiacion_solar && data?.ts) {
       renderCentralChart();
     }
   }, [data]);
 
   const renderCentralChart = async () => {
     const chartElement = document.getElementById("chart");
-    if (chartElement) {
-      chartElement.innerHTML = "";
-      const baseOptions = {
-        colors: ["#F44336", "#E91E63", "#9C27B0"],
-        fill: {
-          type: "gradient",
-          gradient: {
-            shade: "dark",
-            gradientToColors: ["#FDD835"],
-            shadeIntensity: 1,
-            type: "vertical",
-            opacityFrom: 1,
-            opacityTo: 1,
-            stops: [0, 100, 100, 100],
-          },
+    if (!chartElement || !data?.radiacion_solar || !data?.ts) return;
+    
+    chartElement.innerHTML = "";
+    
+    const baseOptions = {
+      colors: ["#F44336", "#E91E63", "#9C27B0"],
+      fill: {
+        type: "gradient",
+        gradient: {
+          shade: "dark",
+          gradientToColors: ["#FDD835"],
+          shadeIntensity: 1,
+          type: "vertical",
+          opacityFrom: 1,
+          opacityTo: 1,
+          stops: [0, 100, 100, 100],
         },
-        series: [
-          {
-            name: "",
-            data: [],
-          },
-        ],
-        chart: {
-          height: 300,
-          type: "area",
-          animations: {
-            enabled: false,
-          },
+      },
+      series: [{ name: "", data: [] }],
+      chart: {
+        height: 300,
+        type: "area",
+        animations: { enabled: false },
+      },
+      dataLabels: { enabled: false },
+      stroke: { curve: "smooth" },
+      xaxis: {
+        type: "datetime",
+        categories: [],
+        labels: { style: { colors: "#000000" } },
+      },
+      yaxis: [
+        {
+          axisTicks: { show: true },
+          axisBorder: { show: true, color: "#008FFB" },
+          labels: { style: { colors: "#000000" } },
+          title: { text: "Radiación Solar", style: { color: "#eb2a1c" } },
+          tooltip: { enabled: true },
         },
-        dataLabels: {
-          enabled: false,
-        },
-        stroke: {
-          curve: "smooth",
-        },
-        xaxis: {
-          type: "datetime",
-          categories: [],
-          labels: {
-            style: {
-              colors: "#000000",
-            },
-          },
-        },
-        yaxis: [
-          {
-            axisTicks: {
-              show: true,
-            },
-            axisBorder: {
-              show: true,
-              color: "#008FFB",
-            },
-            labels: {
-              style: {
-                colors: "#000000",
-              },
-            },
-            title: {
-              text: "Radiación Solar",
-              style: {
-                color: "#eb2a1c",
-              },
-            },
-            tooltip: {
-              enabled: true,
-            },
-          },
-        ],
-        tooltip: {
-          x: {
-            format: "dd/MM/yy HH:mm",
-          },
-        },
-      };
+      ],
+      tooltip: { x: { format: "dd/MM/yy HH:mm" } },
+    };
 
-      const options = {
-        ...baseOptions,
-        chart: {
-          type: "area",
-          height: "180px",
-          foreColor: "#ffffff",
-          animations: {
-            enabled: false,
-          },
-        },
-        title: {
-          text: "Sensor 1",
-          align: "left",
-          margin: 10,
-          offsetX: 0,
-          offsetY: 0,
-          floating: false,
-          style: {
-            fontSize: "14px",
-            fontWeight: "bold",
-            color: "#ffffff",
-          },
-        },
-      };
+    const options = {
+      ...baseOptions,
+      chart: {
+        type: "area",
+        height: "180px",
+        foreColor: "#ffffff",
+        animations: { enabled: false },
+      },
+      title: {
+        text: "Sensor 1",
+        align: "left",
+        margin: 10,
+        offsetX: 0,
+        offsetY: 0,
+        floating: false,
+        style: { fontSize: "14px", fontWeight: "bold", color: "#ffffff" },
+      },
+    };
 
-      const updatedOptions = { ...options };
-      updatedOptions.xaxis.categories = data.ts;
-      updatedOptions.series[0].data = data.radiacion_solar;
-      updatedOptions.series[0].name = "Radiación Solar";
-      updatedOptions.title.text = "Radiación Solar (W/m²)";
-      updatedOptions.yaxis[0].title = "Radiación Solar";
+    const updatedOptions = { ...options };
+    updatedOptions.xaxis.categories = data.ts;
+    updatedOptions.series[0].data = data.radiacion_solar;
+    updatedOptions.series[0].name = "Radiación Solar";
+    updatedOptions.title.text = "Radiación Solar (W/m²)";
+    updatedOptions.yaxis[0].title = "Radiación Solar";
 
-      const chart = new ApexCharts(chartElement, updatedOptions);
-      chart.render();
+    const chart = new ApexCharts(chartElement, updatedOptions);
+    chart.render();
 
-      add_download_xls_button(
-        chartElement,
-        updatedOptions.xaxis.categories,
-        updatedOptions.series[0].data,
-        updatedOptions.yaxis[0].title
-      );
-    }
+    add_download_xls_button(
+      chartElement,
+      updatedOptions.xaxis.categories,
+      updatedOptions.series[0].data,
+      updatedOptions.yaxis[0].title
+    );
   };
 
   const toggleChartView = () => {

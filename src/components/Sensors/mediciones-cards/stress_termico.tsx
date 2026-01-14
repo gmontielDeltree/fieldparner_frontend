@@ -39,10 +39,15 @@ const StressTermicoCard: React.FC<StressTermicoCardProps> = ({ card, data }) => 
   }, [data]);
 
   const calculateStressTermico = () => {
-    const humedad = data.humedad;
-    const temperatura = data.temperatura;
+    const humedad = data?.humedad;
+    const temperatura = data?.temperatura;
 
-    const serie: number[] = temperatura.map((t: number, i: number) => {
+    if (!Array.isArray(humedad) || !Array.isArray(temperatura) || !humedad.length || !temperatura.length) {
+      return;
+    }
+
+    const length = Math.min(humedad.length, temperatura.length);
+    const serie: number[] = temperatura.slice(0, length).map((t: number, i: number) => {
       const h = humedad[i];
       const ith = (1.8 * t + 32) - (0.55 - 0.55 * h / 100) * (1.8 * t - 26);
       return +ith.toFixed(0);
