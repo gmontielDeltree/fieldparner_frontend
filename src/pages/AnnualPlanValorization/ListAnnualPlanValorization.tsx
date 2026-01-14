@@ -86,7 +86,7 @@ export const ListAnnualPlanValorization: React.FC = () => {
     );
   };
 
-  // Obtener nombre de campaña para mostrar en la tabla
+  // Obtener nombre de campaña para mostrar en la tabla (fallback)
   const getCampaignName = (campanaId: string) => {
     const campaign = campaigns.find(c => c._id === campanaId);
     return campaign?.name || campanaId;
@@ -94,10 +94,10 @@ export const ListAnnualPlanValorization: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
-      field: 'campanaId',
+      field: 'campanaName',
       headerName: t('campaign'),
       flex: 1,
-      valueGetter: (params) => getCampaignName(params.value),
+      valueGetter: (params) => params.value || getCampaignName(params.row?.campanaId),
     },
     { field: 'zafra', headerName: t('harvest'), flex: 0.8 },
     { field: 'campoNombre', headerName: t('field'), flex: 1 },
@@ -210,10 +210,19 @@ export const ListAnnualPlanValorization: React.FC = () => {
     alert(t('export_functionality_available_in_edit_page'));
   };
 
-  const handleDeleteValorization = (item: IAnnualPlan) => {
+  const handleDeleteValorization = async (item: IAnnualPlan) => {
     const doc = item as any;
-    if (doc._id && doc._rev) {
-      deleteAnnualPlanValorization(doc._id, doc._rev);
+    if (!doc?._id) {
+      console.warn('[AnnualPlanValorization][List] No _id para borrar', doc);
+      return;
+    }
+
+    try {
+      console.log('[AnnualPlanValorization][List] Borrar valorización', { id: doc._id, rev: doc._rev });
+      await deleteAnnualPlanValorization(doc._id, doc._rev);
+      await getAnnualPlanValorizations();
+    } catch (error) {
+      console.error('[AnnualPlanValorization][List] Error borrando valorización', error);
     }
   };
 
@@ -224,7 +233,7 @@ export const ListAnnualPlanValorization: React.FC = () => {
   // Filtrar datos
   const filteredData = annualPlanValorizations.filter(item => {
     // Filtro por término de búsqueda
-    const campaignName = getCampaignName(item.campanaId);
+    const campaignName = item.campanaName || getCampaignName(item.campanaId);
     const matchesSearch =
       searchTerm === '' ||
       campaignName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -241,9 +250,14 @@ export const ListAnnualPlanValorization: React.FC = () => {
     return matchesSearch && matchesStatus && matchesCampaign;
   });
 
+  useEffect(() => {
+    console.log('[AnnualPlanValorization][List] Datos raw tabla:', annualPlanValorizations);
+    console.log('[AnnualPlanValorization][List] Datos filtrados tabla:', filteredData);
+  }, [annualPlanValorizations, filteredData]);
+
   // Obtener lista única de campañas para el filtro
   const uniqueCampaigns = Array.from(
-    new Set(annualPlanValorizations.map(item => getCampaignName(item.campanaId)).filter(Boolean)),
+    new Set(annualPlanValorizations.map(item => item.campanaName || getCampaignName(item.campanaId)).filter(Boolean)),
   );
 
   return (
