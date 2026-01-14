@@ -2,6 +2,7 @@ import { FPDocument } from './planification';
 
 export interface IAnnualPlan extends FPDocument {
   campanaId: string;
+  campanaName?: string;
   zafra: string;
   campoId: string;
   campoNombre?: string;
