@@ -20,6 +20,52 @@ export const useMenuModules = () => {
       if (response.rows.length) {
         const documents: MenuModules[] = response.rows.map(row => row.doc as MenuModules);
 
+        // Inyectar menú de debug si no existe ya - TODO: remover cuando esté en la DB
+        const hasValorizacion = documents.some(m => 
+          m.route === '/overview/annual-plan-valorization' || 
+          m.route === '/init/overview/annual-plan-valorization'
+        );
+        if (!hasValorizacion) {
+          // Buscar el módulo de Planificación Anual existente para usar su estructura
+          const planificacionMenu = documents.find(m => 
+            (m.module as any)?.moduleNameEs?.toLowerCase().includes('planificacion') ||
+            (m.module as any)?.moduleNameEs?.toLowerCase().includes('planificación')
+          );
+          
+          const moduleToUse = planificacionMenu?.module || {
+            _id: 'module:planificacion',
+            moduleNameEs: 'Planificacion Anual',
+            moduleNameEn: 'Annual Planning',
+            moduleNamePt: 'Planejamento Anual',
+            icon: 'CalendarMonth',
+            orden: 2,
+          };
+
+          // Extraer el order base del módulo de planificación
+          const orderBase = planificacionMenu?.order?.split('.')[0] || '2';
+
+          const debugValorizacionMenu: MenuModules = {
+            _id: 'menu:annual-plan-valorization',
+            id: 9999,
+            module: moduleToUse as any,
+            order: `${orderBase}.99`,
+            menuOption: 'Valorización Plan Anual',
+            menuOptionEn: 'Annual Plan Valorization',
+            menuOptionPt: 'Valorização Plano Anual',
+            systemType: 'web',
+            menuType: 'sidebar',
+            details: '',
+            full: '/init/overview/annual-plan-valorization',
+            light: '',
+            icon: 'Calculate',
+            route: '/init/overview/annual-plan-valorization',
+            permission: true, // Forzar permiso para debug
+          } as MenuModules;
+
+          documents.push(debugValorizacionMenu);
+          console.debug('[useMenuModules] DEBUG: Inyectado menú Valorización Plan Anual con módulo:', moduleToUse);
+        }
+
         setMenuModules(documents);
       } else {
         setMenuModules([]);
@@ -103,6 +149,22 @@ export const useMenuModules = () => {
           light: '',
           icon: 'BarChart',
           route: '/overview/list-stock',
+        },
+        {
+          _id: 'menu:annual-plan-valorization',
+          id: 5,
+          module: fallbackModule as any,
+          order: '1.5',
+          menuOption: 'Valorización Plan Anual',
+          menuOptionEn: 'Annual Plan Valorization',
+          menuOptionPt: 'Valorização Plano Anual',
+          systemType: 'web',
+          menuType: 'sidebar',
+          details: '',
+          full: '/init/overview/annual-plan-valorization',
+          light: '',
+          icon: 'Calculate',
+          route: '/init/overview/annual-plan-valorization',
         },
       ];
 
