@@ -42,8 +42,15 @@ const SensacionTermicaCard: React.FC<SensacionTermicaCardProps> = ({
   }, [data]);
 
   const calculateSensacionTermica = () => {
-    const viento = data.velocidad || data.viento_velocidad;
-    const serie: number[] = data.temperatura.map((t: number, i: number) => {
+    const viento = data?.velocidad || data?.viento_velocidad;
+    const temperatura = data?.temperatura;
+
+    if (!Array.isArray(viento) || !Array.isArray(temperatura) || !viento.length || !temperatura.length) {
+      return;
+    }
+
+    const length = Math.min(viento.length, temperatura.length);
+    const serie: number[] = temperatura.slice(0, length).map((t: number, i: number) => {
       const v = viento[i];
       const st = 13.12 + 0.6215 * t - 11.37 * v ** 0.16 + 0.3965 * t * v ** 0.16;
       return +(st.toFixed(1));

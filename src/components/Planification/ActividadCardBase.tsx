@@ -34,9 +34,7 @@ import { LaboresContext } from "./contexts/LaboresContext";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { useTranslation } from "react-i18next";
 import { ActividadEditorDialogNoButton } from "./ActividadEditorDialog";
-import { Button } from "semantic-ui-react";
-import Swal from "sweetalert2";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 
 const calcTotal = (
   linInsumos: IInsumosPlanificacion[],
@@ -56,7 +54,7 @@ export const ActividadCardBase: React.FC = ({
 }) => {
   const { t } = useTranslation();
   // const actividad = usePlanificationActividad(actividadId)
-  const { removeActividad, programarActividadPlanificada } = usePlanActividad();
+  const { removeActividad } = usePlanActividad();
   const { getInsumoFromId } = useContext(InsumosContext);
   const { getLaborLabelFromId } = useContext(LaboresContext);
 
@@ -88,20 +86,9 @@ export const ActividadCardBase: React.FC = ({
 
   let cardColor = FieldPartnerColors[tipo as unknown as string];
 
-  const navigate = useNavigate();
   const fechaString = (fechaa) => format(parseISO(fechaa), "dd MMMM yyyy");
 
   let icon = siembraIcon;
-
-  const programarClickHandler = () => {
-    programarActividadPlanificada(actividad).then(() => {
-      Swal.fire({ title: "Programada" });
-      if (refreshCallback) {
-        refreshCallback();
-      }
-      navigate(`/init/overview/fields/${campoId}/${loteId}`);
-    });
-  };
 
   if (loading) return <div>Loading</div>;
   return (
@@ -127,7 +114,6 @@ export const ActividadCardBase: React.FC = ({
             }}
           >
             {fechaString(fecha)} {ejecutada && "EJECUTADA"}
-            <Button onClick={programarClickHandler}>{t("Program")}</Button>
           </Box>
           <Box
             sx={{

@@ -15,84 +15,79 @@ const ChartComponent: React.FC<ChartComponentProps> = ({ variable_name, data, sh
   const chartInstance = useRef<ApexCharts | null>(null);
 
   useEffect(() => {
-    if (data && chartRef.current) {
+    if (data && data[variable_name] && data.ts && chartRef.current) {
       renderCentralChart();
     }
-  }, [data]);
+  }, [data, variable_name]);
 
   const renderCentralChart = async () => {
-    if (chartRef.current) {
-      chartRef.current.innerHTML = ""; // Clear any previous chart
+    if (!chartRef.current || !data?.[variable_name] || !data?.ts) return;
+    
+    chartRef.current.innerHTML = ""; // Clear any previous chart
 
-      const baseOptions = {
-        colors: ["#F44336", "#E91E63", "#9C27B0"],
-        series: [
-          {
-            name: "",
-            data: [],
-          },
-        ],
-        chart: {
-          height: 300,
-          type: "area",
-          animations: { enabled: false },
-        },
-        dataLabels: { enabled: false },
-        stroke: { curve: "smooth" },
-        xaxis: {
-          type: "datetime",
-          categories: [],
+    const baseOptions = {
+      colors: ["#F44336", "#E91E63", "#9C27B0"],
+      series: [{ name: "", data: [] }],
+      chart: {
+        height: 300,
+        type: "area",
+        animations: { enabled: false },
+      },
+      dataLabels: { enabled: false },
+      stroke: { curve: "smooth" },
+      xaxis: {
+        type: "datetime",
+        categories: [],
+        labels: { style: { colors: "#000000" } },
+      },
+      yaxis: [
+        {
+          axisTicks: { show: true },
+          axisBorder: { show: true, color: "#008FFB" },
           labels: { style: { colors: "#000000" } },
+          title: { text: "Humedad", style: { color: "#eb2a1c" } },
+          tooltip: { enabled: true },
         },
-        yaxis: [
-          {
-            axisTicks: { show: true },
-            axisBorder: { show: true, color: "#008FFB" },
-            labels: { style: { colors: "#000000" } },
-            title: { text: "Humedad", style: { color: "#eb2a1c" } },
-            tooltip: { enabled: true },
-          },
-        ],
-        tooltip: { x: { format: "dd/MM/yy HH:mm" } },
-      };
+      ],
+      tooltip: { x: { format: "dd/MM/yy HH:mm" } },
+    };
 
-      const options = {
-        ...baseOptions,
-        chart: {
-          type: "area",
-          height: "180px",
-          foreColor: "#ffffff",
-          animations: { enabled: false },
-        },
-        title: {
-          text: variable_name.toUpperCase(),
-          align: "left",
-          margin: 10,
-          offsetX: 0,
-          offsetY: 0,
-          floating: false,
-          style: { fontSize: "14px", fontWeight: "bold", color: "#ffffff" },
-        },
-      };
+    const options = {
+      ...baseOptions,
+      chart: {
+        type: "area",
+        height: "180px",
+        foreColor: "#ffffff",
+        animations: { enabled: false },
+      },
+      title: {
+        text: variable_name.toUpperCase(),
+        align: "left",
+        margin: 10,
+        offsetX: 0,
+        offsetY: 0,
+        floating: false,
+        style: { fontSize: "14px", fontWeight: "bold", color: "#ffffff" },
+      },
+    };
 
-      const thisOpts = { ...options };
-      thisOpts.xaxis.categories = [...data.ts];
-      thisOpts.series[0].data = [...data[variable_name]];
-      thisOpts.series[0].name = variable_name.toUpperCase();
-      thisOpts.title.text = variable_name.toUpperCase();
-      thisOpts.yaxis[0].title = variable_name.toUpperCase();
+    const thisOpts = { ...options };
+    thisOpts.xaxis.categories = [...data.ts];
+    thisOpts.series[0].data = [...data[variable_name]];
+    thisOpts.series[0].name = variable_name.toUpperCase();
+    thisOpts.title.text = variable_name.toUpperCase();
+    thisOpts.yaxis[0].title = variable_name.toUpperCase();
 
-      chartInstance.current = new ApexCharts(chartRef.current, thisOpts);
-      chartInstance.current.render();
+    chartInstance.current = new ApexCharts(chartRef.current, thisOpts);
+    chartInstance.current.render();
 
-      // Add download button
-      add_download_xls_button(
-        chartRef.current,
-        thisOpts.xaxis.categories,
-        thisOpts.series[0].data,
-        thisOpts.yaxis[0].title
-      );
-    }
+    // Add download button
+    add_download_xls_button(
+      chartRef.current,
+      thisOpts.xaxis.categories,
+      thisOpts.series[0].data,
+      thisOpts.yaxis[0].title
+    );
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Snackbar } from '@mui/material'
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist'
 import GrassIcon from '@mui/icons-material/Grass'
@@ -15,6 +15,8 @@ import ActivityHeader from './components/ActivityHeader'
 import ValidationAlert from './ValidationAlert'
 import { saveActivity } from './components/activityService'
 import { usePlanActivity } from './components/usePlanActivity'
+import { dbContext } from '../../services'
+import { uuidv7 } from 'uuidv7'
 import {
   Card,
   CardHeader,
@@ -153,6 +155,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
   const [missingFieldsList, setMissingFieldsList] = useState([])
   const [isSaving, setIsSaving] = useState(false) // Track save operation state
   const [dbError, setDbError] = useState(null) // Track database errors
+  const [matchingPlan, setMatchingPlan] = useState<any>(null)
+  const [isCheckingPlan, setIsCheckingPlan] = useState(false)
+  const [isApplyingPlan, setIsApplyingPlan] = useState(false)
+  const [appliedPlan, setAppliedPlan] = useState<any>(null)
 
   const {
     formData,
@@ -202,6 +208,91 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         t('conditions'),
         t('observations'),
       ]
+
+  const servicesStepIndex = steps.findIndex((label) => label === t('services'))
+
+  const normalizeId = (value?: any) =>
+    value ? String(value).trim().toLowerCase() : ''
+
+  const getSelectedCampaignId = () =>
+    normalizeId(selectedCampaign?._id || selectedCampaign?.campaignId || selectedCampaign?.id)
+
+  const getCropIdFromForm = () => {
+    const cultivo = formData?.detalles?.cultivo || {}
+    return normalizeId(
+      cultivo.cultivoId ||
+      cultivo._id ||
+      cultivo.id ||
+      cultivo.uuid ||
+      cultivo.uuidCultivo,
+    )
+  }
+
+  const findMatchingPlanificacion = useCallback(async () => {
+    try {
+      setIsCheckingPlan(true)
+      setMatchingPlan(null)
+
+      const campaignId = getSelectedCampaignId()
+      const cropId = getCropIdFromForm()
+      const typeId = normalizeId(rawActivityType)
+
+      if (!campaignId || !cropId || !typeId) {
+        return
+      }
+
+      const resp = await db.allDocs({
+        startkey: 'planactividad:',
+        endkey: 'planactividad:\ufff0',
+        include_docs: true,
+      })
+
+      const planDocs = (resp.rows || [])
+        .map((r) => r.doc)
+        .filter(Boolean) as any[]
+
+      if (!planDocs.length) return
+
+      const candidates = planDocs.filter((plan) => {
+        const sameCampaign = normalizeId(plan.campanaId || plan.campaignId) === campaignId
+        const sameType = normalizeId(plan.tipo) === typeId
+        const notUsed = !plan.ejecucionId && plan.ejecutada !== true
+        return sameCampaign && sameType && notUsed
+      })
+
+      if (!candidates.length) return
+
+      const cicloIds = Array.from(
+        new Set(
+          candidates
+            .map((p) => p.cicloId)
+            .filter(Boolean),
+        ),
+      )
+
+      const cicloDocs: Record<string, any> = {}
+      if (cicloIds.length) {
+        const ciclosResp = await db.allDocs({ keys: cicloIds, include_docs: true })
+        ciclosResp.rows.forEach((row) => {
+          if (row.doc) cicloDocs[row.id] = row.doc
+        })
+      }
+
+      const firstMatch = candidates.find((plan) => {
+        const ciclo = cicloDocs[plan.cicloId]
+        const planCropId = normalizeId(plan.cultivoId || ciclo?.cultivoId)
+        return planCropId && planCropId === cropId
+      })
+
+      if (firstMatch) {
+        setMatchingPlan(firstMatch)
+      }
+    } catch (err) {
+      console.warn('No se pudo evaluar planificaciones disponibles', err)
+    } finally {
+      setIsCheckingPlan(false)
+    }
+  }, [db, rawActivityType, formData?.detalles?.cultivo, selectedCampaign])
 
   const getMissingFieldsMessages = (step) => {
     const fields = []
@@ -471,15 +562,15 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         try {
           if (existingActivity._id && existingActivity._id.startsWith('planactividad:')) {
             console.log("🗑️ ATTEMPTING TO DELETE PLANNED ACTIVITY:", existingActivity._id);
-            
+
             // Get the current document to ensure we have the latest _rev
             const currentDoc = await db.get(existingActivity._id);
             console.log("📄 GOT CURRENT DOC FOR DELETION:", currentDoc);
-            
+
             // Delete the document
             const deleteResult = await db.remove(currentDoc);
             console.log("✅ PLANNED ACTIVITY DELETED SUCCESSFULLY:", deleteResult);
-            
+
             // Also try to delete any associated supply and service lines
             if (currentDoc.insumosLineasIds && currentDoc.insumosLineasIds.length > 0) {
               try {
@@ -497,7 +588,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
                 console.warn("Could not delete some supply lines:", insumosError);
               }
             }
-            
+
             if (currentDoc.laboresLineasIds && currentDoc.laboresLineasIds.length > 0) {
               try {
                 const laboresResult = await db.allDocs({
@@ -547,6 +638,21 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         ),
         DB_OPERATION_TIMEOUT
       );
+
+      // Mark planificación as used if we applied one
+      if (appliedPlan?.planDoc?._id) {
+        try {
+          const latestPlan = await db.get(appliedPlan.planDoc._id)
+          await db.put({
+            ...latestPlan,
+            ejecucionId: actividad?._id || actividad?.uuid || latestPlan?.ejecucionId,
+            ejecutada: true,
+          })
+          console.log('✅ Planned activity marked as used:', appliedPlan.planDoc._id)
+        } catch (markError) {
+          console.warn('Could not mark planned activity as used', markError)
+        }
+      }
     } catch (error) {
       console.error("Error saving activity:", error);
 
@@ -566,6 +672,107 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       setIsSaving(false);
     }
   };
+
+  const handleApplyPlannedActivity = useCallback(async () => {
+    if (!matchingPlan) return
+    setIsApplyingPlan(true)
+    try {
+      const cicloDoc = matchingPlan.cicloId
+        ? await db.get(matchingPlan.cicloId).catch(() => null)
+        : null
+
+      let cropDoc = formData.detalles?.cultivo
+      if (cicloDoc?.cultivoId) {
+        try {
+          cropDoc = await dbContext.crops.get(cicloDoc.cultivoId)
+        } catch (cropErr) {
+          console.warn('Crop not found for plan cycle', cropErr)
+        }
+      }
+
+      const insumos: any[] = []
+      if (matchingPlan.insumosLineasIds?.length) {
+        const insResp = await db.allDocs({
+          keys: matchingPlan.insumosLineasIds,
+          include_docs: true,
+        })
+        for (const row of insResp.rows) {
+          const line: any = row.doc
+          if (!line) continue
+          let insumoDoc = null
+          if (line.insumoId) {
+            try {
+              insumoDoc = await dbContext.supplies.get(line.insumoId)
+            } catch (insErr) {
+              console.warn('Supply not found for plan line', line.insumoId, insErr)
+            }
+          }
+          insumos.push({
+            insumo: insumoDoc || { _id: line.insumoId, name: line.insumoId },
+            dosificacion: line.dosis ?? '',
+            total: line.totalCantidad ?? '',
+            deposito: null,
+            uuid: line._id || uuidv7(),
+          })
+        }
+      }
+
+      const servicios: any[] = []
+      if (matchingPlan.laboresLineasIds?.length) {
+        const labResp = await db.allDocs({
+          keys: matchingPlan.laboresLineasIds,
+          include_docs: true,
+        })
+        for (const row of labResp.rows) {
+          const line: any = row.doc
+          if (!line) continue
+          let laborDoc = null
+          if (line.laborId) {
+            try {
+              laborDoc = await dbContext.laborsServices.get(line.laborId)
+            } catch (labErr) {
+              console.warn('Labor not found for plan line', line.laborId, labErr)
+            }
+          }
+          servicios.push({
+            servicio: laborDoc || { _id: line.laborId, service: laborDoc?.service || laborDoc?.name || line.laborId },
+            contratista: matchingPlan.contratista || formData.detalles?.contratista || null,
+            comentario: line.comentario || '',
+            unidades: line.hectareas || matchingPlan.area || formData.detalles?.hectareas,
+            uuid: line._id || uuidv7(),
+          })
+        }
+      }
+
+      const updatedDetalles = {
+        ...formData.detalles,
+        fecha_ejecucion_tentativa:
+          matchingPlan.fecha || formData.detalles?.fecha_ejecucion_tentativa,
+        hectareas: matchingPlan.area || formData.detalles?.hectareas,
+        cultivo: cropDoc || formData.detalles?.cultivo,
+        contratista: matchingPlan.contratista || formData.detalles?.contratista,
+        dosis: insumos.length ? insumos : formData.detalles?.dosis,
+        servicios: servicios.length ? servicios : formData.detalles?.servicios,
+        zafra: formData.detalles?.zafra || cicloDoc?.zafra || formData.detalles?.zafra,
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        detalles: updatedDetalles,
+        _sourcePlanActividadId: matchingPlan._id,
+        _originalPlanifData: matchingPlan,
+      }))
+      setAppliedPlan({ planDoc: matchingPlan, cicloDoc })
+      setSnackbarMessage(t('Planificación aplicada al formulario'))
+      setOpenSnackbar(true)
+    } catch (err) {
+      console.error('Error al aplicar la planificación', err)
+      setSnackbarMessage(t('No se pudo aplicar la planificación'))
+      setOpenSnackbar(true)
+    } finally {
+      setIsApplyingPlan(false)
+    }
+  }, [matchingPlan, formData, t, db])
 
   // Fixed handleStepClick function
   const handleStepClick = (index) => {
@@ -684,6 +891,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     };
   }, [isSaving]);
 
+  useEffect(() => {
+    findMatchingPlanificacion()
+  }, [findMatchingPlanificacion])
+
   return (
     <Container className="py-6">
       <Card className="shadow-lg">
@@ -795,6 +1006,54 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
         {/* Content */}
         <CardBody className="p-4">
+          {activeStep === 0 && (
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <div className="d-flex flex-column">
+                <small className="text-muted">
+                  {t('Si hay una planificación que coincida (campaña, cultivo y tipo), puedes autocompletarla.')}
+                </small>
+                {matchingPlan && (
+                  <small className="text-success">
+                    {t('Planificación encontrada y lista para aplicar.')}
+                  </small>
+                )}
+                {!matchingPlan && (
+                  <small className="text-muted">
+                    {isCheckingPlan
+                      ? t('Buscando planificación coincidente...')
+                      : t('No se encontró planificación coincidente aún.')}
+                  </small>
+                )}
+              </div>
+              <Button
+                color={matchingPlan ? 'warning' : 'secondary'}
+                onClick={handleApplyPlannedActivity}
+                disabled={
+                  !matchingPlan || isCheckingPlan || isApplyingPlan || isSaving
+                }
+                className="d-flex align-items-center gap-2"
+                title={
+                  matchingPlan
+                    ? t('Aplicar planificación coincidente')
+                    : t('No hay planificación compatible')
+                }
+                id="apply-plan-button"
+              >
+                {isCheckingPlan || isApplyingPlan ? (
+                  <span className="d-flex align-items-center gap-2">
+                    <Spinner size="sm" />
+                    {t('Buscando...')}
+                  </span>
+                ) : (
+                  <span className="d-flex align-items-center gap-2">
+                    <Sprout size={16} />
+                    {t('Programar')}
+                  </span>
+                )}
+              </Button>
+            </div>
+          )}
+
           <PlanActivityContent
             step={activeStep}
             activityType={activityType}

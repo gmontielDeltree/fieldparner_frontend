@@ -165,63 +165,148 @@ class Devices {
     let devices_last_telemetry = await this.devices_publicos_get();
     let detalles = await this.get_all_details();
 
-    //console.log("LAST TELEMETRY", devices_last_telemetry);
+    const buildMarker = () => {
+      const accent = "#6fb5f2";
+
+      const container = document.createElement("div");
+      Object.assign(container.style, {
+        width: "40px",
+        height: "46px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        gap: "3px",
+        cursor: "pointer",
+      });
+
+      const bubble = document.createElement("div");
+      Object.assign(bubble.style, {
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        background: "#ffffff",
+        boxShadow: "0 6px 12px rgba(0,0,0,0.12)",
+        border: `1px solid ${accent}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "transform 140ms ease, box-shadow 140ms ease",
+      });
+
+      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      icon.setAttribute("width", "16");
+      icon.setAttribute("height", "16");
+      icon.setAttribute("viewBox", "0 0 24 24");
+      icon.setAttribute("fill", accent);
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute(
+        "d",
+        "M6 14a4 4 0 0 1 3.48-3.96A5 5 0 0 1 20 12.5a3.5 3.5 0 0 1-3.5 3.5H7a3 3 0 0 1-1-5.83A4.01 4.01 0 0 1 6 14z"
+      );
+      icon.appendChild(path);
+      bubble.appendChild(icon);
+
+      const stem = document.createElement("div");
+      Object.assign(stem.style, {
+        width: "6px",
+        height: "12px",
+        borderRadius: "3px",
+        background: accent,
+        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        transform: "translateY(-4px)",
+      });
+
+      container.appendChild(bubble);
+      container.appendChild(stem);
+
+      container.addEventListener("mouseenter", () => {
+        bubble.style.transform = "translateY(-2px) scale(1.05)";
+        bubble.style.boxShadow = "0 10px 18px rgba(0,0,0,0.16)";
+      });
+      container.addEventListener("mouseleave", () => {
+        bubble.style.transform = "translateY(0) scale(1)";
+        bubble.style.boxShadow = "0 6px 12px rgba(0,0,0,0.12)";
+      });
+
+      return container;
+    };
+
+    const ensurePopupStyle = () => {
+      if (document.getElementById("weather-popup-style")) return;
+      const style = document.createElement("style");
+      style.id = "weather-popup-style";
+      style.textContent = `
+        .weather-popup .mapboxgl-popup-content {
+          background: transparent;
+          padding: 0;
+          border: none;
+          box-shadow: none;
+        }
+        .weather-popup .mapboxgl-popup-tip {
+          border-top-color: transparent;
+          border-bottom-color: transparent;
+        }
+      `;
+      document.head.appendChild(style);
+    };
+
+    if (map["__weatherMarkers"] && Array.isArray(map["__weatherMarkers"])) {
+      map["__weatherMarkers"].forEach((m) => m.remove());
+    }
+    map["__weatherMarkers"] = [];
 
     devices_last_telemetry.map((telemetria: DailyTelemetryCard) => {
       try {
         let latitud = extract_tele("latitud", telemetria).value;
         let longitud = extract_tele("longitud", telemetria).value;
 
-        // if (telemetria.device_id === "f008d1ffffd30a6c") {
-        //   latitud = -35.1579821;
-        //   longitud = -59.09232;
-        // }
-
         let temperatura = extract_tele("temperatura", telemetria).value;
         let humedad = extract_tele("humedad", telemetria).value;
         let presion = extract_tele("presion", telemetria).value;
 
-        const el = document.createElement("div");
-        el.className = "marker";
-
-        el.style.backgroundImage = `url('/centralmeteorologica70_90.webp')`;
-        el.style.backgroundSize = "cover";
-
-        el.style.width = `35px`;
-        el.style.height = `45px`;
-        //el.style.backgroundSize = '100%';
-        el.style.cursor = "pointer";
-
+        const el = buildMarker();
+        ensurePopupStyle();
         let detalles_de_este = detalles.find(
           (d) => d.device_id === telemetria.device_id
         );
         if (detalles_de_este) {
-          // Popup que no se cierra ni tiene boton de cerrar
-          const popup = new Popup({ closeOnClick: false, closeButton: false });
-          popup.setHTML(`<div style:'display:flex'>
-          <div style='font-weight:bold'>${detalles_de_este.nombre}</div>
-          <div style='font-size:10px;font-weight: lighter;'>${formatISO(
-            fromUnixTime(telemetria.ts_last)
-          )}</div>
-            <ul style='padding-left:2em'>
-              <li>Temperatura: ${temperatura}ºC</li>
-              <li>Humedad: ${humedad}%</li>
-              <li>Presión: ${presion}hPa.</li>
-            </ul>
+          const popupContent = `<div style="
+            background:#ffffff;
+            color:#1f2937;
+            padding:10px 12px;
+            border-radius:10px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.12);
+            border:1px solid #e5e7eb;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size:13px;
+            line-height:1.4;
+            min-width:180px;
+          ">
+            <div style="font-weight:600; margin-bottom:2px;">${detalles_de_este.nombre}</div>
+            <div style="font-size:11px; color:#6b7280; margin-bottom:6px;">${formatISO(
+              fromUnixTime(telemetria.ts_last)
+            )}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+              <div>Temp: <strong>${temperatura}ºC</strong></div>
+              <div>Humedad: <strong>${humedad}%</strong></div>
+              <div>Presión: <strong>${presion} hPa</strong></div>
             </div>
-          `);
-          popup.setOffset([0, -45]);
-          //popup.setLngLat([longitud, latitud])
-          // popup.addTo(map)
+          </div>`;
 
-          //console.info("LATLON", latitud, longitud);
-          //
+          const popup = new Popup({
+            closeOnClick: false,
+            closeButton: false,
+            closeOnMove: false,
+            offset: 10,
+            maxWidth: "260px",
+            className: "weather-popup",
+          }).setHTML(popupContent);
+
           const marker = new Marker({ element: el, anchor: "bottom" })
             .setLngLat([longitud, latitud])
-            .setPopup(popup)
             .addTo(map);
 
-          /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, () => {
             let ev = new CustomEvent("ver-telemetria-del-dia", {
               detail: telemetria,
@@ -231,12 +316,12 @@ class Devices {
             marker.getElement().dispatchEvent(ev);
           });
 
-          marker.getElement().addEventListener("mouseenter", () => {
-            marker.togglePopup();
-          });
-          marker.getElement().addEventListener("mouseleave", () => {
-            marker.togglePopup();
-          });
+          const showPopup = () => popup.setLngLat([longitud, latitud]).addTo(map);
+          const hidePopup = () => popup.remove();
+          marker.getElement().addEventListener("mouseenter", showPopup);
+          marker.getElement().addEventListener("mouseleave", hidePopup);
+
+          map["__weatherMarkers"].push(marker);
         }
       } catch (e) {
         console.info("Error Al hacer el marcador de dispositivo");
@@ -251,6 +336,97 @@ class Devices {
     console.log("WEATHER STATIONS - LAST TELEMETRY", devices_last_telemetry);
     console.log("WEATHER STATIONS - DETAILS", detalles);
 
+    if (map["__weatherMarkers"] && Array.isArray(map["__weatherMarkers"])) {
+      map["__weatherMarkers"].forEach((m) => m.remove());
+    }
+    map["__weatherMarkers"] = [];
+
+    const buildMarker = () => {
+      const accent = "#6fb5f2";
+
+      const container = document.createElement("div");
+      Object.assign(container.style, {
+        width: "40px",
+        height: "46px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        gap: "3px",
+        cursor: "pointer",
+      });
+
+      const bubble = document.createElement("div");
+      Object.assign(bubble.style, {
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        background: "#ffffff",
+        boxShadow: "0 6px 12px rgba(0,0,0,0.12)",
+        border: `1px solid ${accent}`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "transform 140ms ease, box-shadow 140ms ease",
+      });
+
+      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      icon.setAttribute("width", "16");
+      icon.setAttribute("height", "16");
+      icon.setAttribute("viewBox", "0 0 24 24");
+      icon.setAttribute("fill", accent);
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute(
+        "d",
+        "M6 14a4 4 0 0 1 3.48-3.96A5 5 0 0 1 20 12.5a3.5 3.5 0 0 1-3.5 3.5H7a3 3 0 0 1-1-5.83A4.01 4.01 0 0 1 6 14z"
+      );
+      icon.appendChild(path);
+      bubble.appendChild(icon);
+
+      const stem = document.createElement("div");
+      Object.assign(stem.style, {
+        width: "6px",
+        height: "12px",
+        borderRadius: "3px",
+        background: accent,
+        boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+        transform: "translateY(-4px)",
+      });
+
+      container.appendChild(bubble);
+      container.appendChild(stem);
+
+      container.addEventListener("mouseenter", () => {
+        bubble.style.transform = "translateY(-2px) scale(1.05)";
+        bubble.style.boxShadow = "0 10px 18px rgba(0,0,0,0.16)";
+      });
+      container.addEventListener("mouseleave", () => {
+        bubble.style.transform = "translateY(0) scale(1)";
+        bubble.style.boxShadow = "0 6px 12px rgba(0,0,0,0.12)";
+      });
+
+      return container;
+    };
+
+    const ensurePopupStyle = () => {
+      if (document.getElementById("weather-popup-style")) return;
+      const style = document.createElement("style");
+      style.id = "weather-popup-style";
+      style.textContent = `
+        .weather-popup .mapboxgl-popup-content {
+          background: transparent;
+          padding: 0;
+          border: none;
+          box-shadow: none;
+        }
+        .weather-popup .mapboxgl-popup-tip {
+          border-top-color: transparent;
+          border-bottom-color: transparent;
+        }
+      `;
+      document.head.appendChild(style);
+    };
+
     devices_last_telemetry.map((telemetria: DailyTelemetryCard) => {
       try {
         console.log("WEATHER STATIONS - Processing telemetria:", telemetria);
@@ -258,56 +434,52 @@ class Devices {
         let longitud = extract_tele("longitud", telemetria).value;
         console.log("WEATHER STATIONS - Coords:", latitud, longitud);
 
-        // if (telemetria.device_id === "f008d1ffffd30a6c") {
-        //   latitud = -35.1579821;
-        //   longitud = -59.09232;
-        // }
-
         let temperatura = extract_tele("temperatura", telemetria).value;
         let humedad = extract_tele("humedad", telemetria).value;
         let presion = extract_tele("presion", telemetria).value;
 
-        const el = document.createElement("div");
-        el.className = "marker";
-
-        el.style.backgroundImage = `url('/centralmeteorologica70_90.webp')`;
-        el.style.backgroundSize = "cover";
-
-        el.style.width = `35px`;
-        el.style.height = `45px`;
-        //el.style.backgroundSize = '100%';
-        el.style.cursor = "pointer";
-
+        const el = buildMarker();
+        ensurePopupStyle();
         let detalles_de_este = detalles.find(
           (d) => d.device_id === telemetria.device_id
         );
         if (detalles_de_este) {
-          // Popup que no se cierra ni tiene boton de cerrar
-          const popup = new Popup({ closeOnClick: false, closeButton: false });
-          popup.setHTML(`<div style:'display:flex'>
-          <div style='font-weight:bold'>${detalles_de_este.nombre}</div>
-          <div style='font-size:10px;font-weight: lighter;'>${formatISO(
-            fromUnixTime(telemetria.ts_last)
-          )}</div>
-            <ul style='padding-left:2em'>
-              <li>Temperatura: ${temperatura}ºC</li>
-              <li>Humedad: ${humedad}%</li>
-              <li>Presión: ${presion}hPa.</li>
-            </ul>
+          const popupContent = `<div style="
+            background:#ffffff;
+            color:#1f2937;
+            padding:10px 12px;
+            border-radius:10px;
+            box-shadow:0 10px 25px rgba(0,0,0,0.12);
+            border:1px solid #e5e7eb;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-size:13px;
+            line-height:1.4;
+            min-width:180px;
+          ">
+            <div style="font-weight:600; margin-bottom:2px;">${detalles_de_este.nombre}</div>
+            <div style="font-size:11px; color:#6b7280; margin-bottom:6px;">${formatISO(
+              fromUnixTime(telemetria.ts_last)
+            )}</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+              <div>Temp: <strong>${temperatura}ºC</strong></div>
+              <div>Humedad: <strong>${humedad}%</strong></div>
+              <div>Presión: <strong>${presion} hPa</strong></div>
             </div>
-          `);
-          popup.setOffset([0, -45]);
-          //popup.setLngLat([longitud, latitud])
-          // popup.addTo(map)
+          </div>`;
 
-          //console.info("LATLON", latitud, longitud);
-          //
+          const popup = new Popup({
+            closeOnClick: false,
+            closeButton: false,
+            closeOnMove: false,
+            offset: 10,
+            maxWidth: "260px",
+            className: "weather-popup",
+          }).setHTML(popupContent);
+
           const marker = new Marker({ element: el, anchor: "bottom" })
             .setLngLat([longitud, latitud])
-            .setPopup(popup)
             .addTo(map);
 
-          marker.getPopup().remove();
           /** https://stackoverflow.com/questions/31448397/how-to-add-click-listener-on-marker-in-mapbox-gl-js */
           marker.getElement().addEventListener(touchEvent, (e) => {
             console.log("Marker E", e);
@@ -315,13 +487,12 @@ class Devices {
             onClick(telemetria.device_id, telemetria._id.split(":")[2]);
           });
 
-          marker.getElement().addEventListener("mouseenter", () => {
-            marker.togglePopup();
-          });
-          marker.getElement().addEventListener("mouseleave", () => {
-            //marker.togglePopup();
-            marker.getPopup().remove();
-          });
+          const showPopup = () => popup.setLngLat([longitud, latitud]).addTo(map);
+          const hidePopup = () => popup.remove();
+          marker.getElement().addEventListener("mouseenter", showPopup);
+          marker.getElement().addEventListener("mouseleave", hidePopup);
+
+          map["__weatherMarkers"].push(marker);
         }
       } catch (e) {
         console.error("WEATHER STATIONS - Error creating marker:", e, telemetria);
