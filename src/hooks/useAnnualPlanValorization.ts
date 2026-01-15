@@ -140,12 +140,19 @@ export const useAnnualPlanValorization = () => {
         } : 'NOT FOUND');
       }
 
+      const normalize = (val: any) => (val ?? '').toString();
+      const currentAccountId = normalize(user?.accountId);
+      const ciclosByAccount = currentAccountId
+        ? ciclos.filter((ciclo) => normalize((ciclo as any).accountId) === currentAccountId)
+        : ciclos;
+
+      console.log('[useAnnualPlanValorization] Ciclos by account:', ciclosByAccount.length, 'of', ciclos.length);
+
       // Transformar ciclos a formato AnnualPlan
       // NO filtramos por campoId ya que no está guardado en los ciclos
-      const valorizations: IAnnualPlan[] = ciclos
+      const valorizations: IAnnualPlan[] = ciclosByAccount
         .filter(ciclo => ciclo.campanaId && ciclo.loteId) // Solo necesitamos campanaId y loteId
         .map((ciclo) => {
-          const normalize = (val: any) => (val ?? '').toString();
 
           const campaign = currentCampaigns.find((c: any) =>
             normalize(c?._id) === normalize(ciclo.campanaId) ||
