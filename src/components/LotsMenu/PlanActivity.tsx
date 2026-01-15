@@ -135,6 +135,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
   const { createWithdrawalOrder } = useOrder()
   let isEditing = existingActivity && Object.keys(existingActivity).length > 0
+  const isNewActivity = !isEditing && !verificationMode
   const selectedCampaign = useAppSelector(
     (state) => state.campaign.selectedCampaign,
   )
@@ -230,6 +231,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
   const findMatchingPlanificacion = useCallback(async () => {
     try {
+      if (!isNewActivity) {
+        setMatchingPlan(null)
+        return
+      }
       setIsCheckingPlan(true)
       setMatchingPlan(null)
 
@@ -292,7 +297,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     } finally {
       setIsCheckingPlan(false)
     }
-  }, [db, rawActivityType, formData?.detalles?.cultivo, selectedCampaign])
+  }, [db, rawActivityType, formData?.detalles?.cultivo, selectedCampaign, isNewActivity])
 
   const getMissingFieldsMessages = (step) => {
     const fields = []
@@ -1006,7 +1011,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
 
         {/* Content */}
         <CardBody className="p-4">
-          {activeStep === 0 && (
+          {activeStep === 0 && isNewActivity && (
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div className="d-flex flex-column">
                 <small className="text-muted">

@@ -240,7 +240,7 @@ function Activity({
                 variant="outlined"
                 size="small"
               />
-              <Tooltip title={t('Confirmá para reservar stock y dejarla lista para ejecutar')}>
+              <Tooltip title={t('Abrí la planificación para revisarla y modificarla')}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -254,7 +254,7 @@ function Activity({
                     }
                   }}
                 >
-                  {t('Confirmar planificación')}
+                  {t('Editar planificación')}
                 </Button>
               </Tooltip>
             </Box>

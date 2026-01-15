@@ -341,22 +341,61 @@ export const Activities = ({
       }}
     >
       {plannedActivities.length > 0 && (
-        <Box sx={{
-          border: '1px solid #e5e7eb',
-          backgroundColor: '#f9fafb',
-          borderRadius: '8px',
-          padding: '12px',
-          marginTop: '-8px'
-        }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box
+          sx={{
+            border: '1px solid #e5e7eb',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            marginTop: '-8px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 2,
+              flexWrap: 'wrap',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip color="warning" label={t('Hay actividades pendientes de confirmación')} />
-              <span>({plannedActivities.length})</span>
+              <Chip
+                label={t('Hay planificaciones pendientes de revisión')}
+                variant="outlined"
+                color="warning"
+                sx={{ fontWeight: 600 }}
+              />
+              <Chip
+                label={plannedActivities.length}
+                size="small"
+                sx={{
+                  backgroundColor: '#fff7ed',
+                  color: '#9a3412',
+                  fontWeight: 700,
+                  border: '1px solid #fed7aa',
+                }}
+              />
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button size="small" variant="outlined" onClick={() => confirmPlannedBulk(plannedActivities.map(a => a.actividad._id))}>{t('Confirmar todas')}</Button>
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={() =>
+                  confirmPlannedBulk(plannedActivities.map(a => a.actividad._id))
+                }
+              >
+                {t('Confirmar todas')}
+              </Button>
               {selectedToConfirm.length > 0 && (
-                <Button size="small" variant="contained" onClick={() => confirmPlannedBulk(selectedToConfirm)}>{t('Confirmar seleccionadas')} ({selectedToConfirm.length})</Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() => confirmPlannedBulk(selectedToConfirm)}
+                >
+                  {t('Confirmar seleccionadas')} ({selectedToConfirm.length})
+                </Button>
               )}
             </Box>
           </Box>
