@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useModules, useMenuModules, useAppSelector, useSystem } from '../../hooks';
 import { MenuModules } from '../../interfaces/menuModules';
 import { Modules } from '../../interfaces/modules';
+import { System } from '../../interfaces/system';
 
 const parseMenuOrder = (s?: string) => {
   if (!s) return Number.MAX_SAFE_INTEGER;
@@ -36,6 +37,24 @@ const getModuleLabel = (mod: Modules | any, lang: string) => {
   return mod.moduleNameEs || '';
 };
 
+const isFieldPartnerSystem = (entry?: System) => {
+  if (!entry) return false;
+  const normalizedId = String(entry.id || entry._id || '')
+    .trim()
+    .toLowerCase();
+  if (normalizedId === 'fp') return true;
+
+  const normalizedName = String(entry.system || '').trim().toLowerCase();
+  return normalizedName === 'fieldpartner';
+};
+
+const getFieldPartnerVersion = (systems?: System[]) => {
+  if (!systems || !systems.length) return '';
+  const target = systems.find(isFieldPartnerSystem);
+  if (target && target.version) return target.version;
+  return systems[0]?.version || '';
+};
+
 export interface UseSidebarReturn {
   openCollapse: string;
   setOpenCollapse: (collapse: string) => void;
@@ -61,7 +80,7 @@ export const useSidebar = (): UseSidebarReturn => {
   const { t, i18n } = useTranslation();
   const { user, modules: userModules, status: authStatus } = useAppSelector((s: any) => s.auth || {});
   const { getSystem, system } = useSystem();
-  const version = system.length ? system[0].version : '';
+  const version = getFieldPartnerVersion(system);
 
   // backend hooks
   const { modules, getModules, isLoading: isLoadingModules } = useModules();
