@@ -1,7 +1,6 @@
 import {
   FormControl,
   FormControlLabel,
-  FormHelperText,
   Grid,
   InputAdornment,
   InputLabel,
@@ -102,7 +101,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
               label={t("_document")}
               name="documento"
               value={documento}
-              error={documentError || (documento && !validateDocument(documento))}
+              error={documentError || (!!documento && !validateDocument(documento))}
               onBlur={handleVerifyTaxId}
               onChange={handleDocumentInput}
               helperText={
@@ -243,7 +242,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           name="email"
           value={email}
           onChange={handleInputChange}
-          error={emailError || (email && !validateEmail(email))}
+          error={emailError || (!!email && !validateEmail(email))}
           helperText={
             emailError 
               ? t("field_required")
@@ -278,7 +277,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
                   }
                 }}
               />
-          {countryError && <FormHelperText>{t("error_message")}</FormHelperText>}
+          {countryError}
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={5}>
@@ -304,7 +303,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           name="contactoPrincipal"
           value={contactoPrincipal}
           onChange={handlePhoneInput}
-          error={contactoPrincipal && !validatePhone(contactoPrincipal)}
+          error={!!contactoPrincipal && !validatePhone(contactoPrincipal)}
           helperText={
             contactoPrincipal && !validatePhone(contactoPrincipal)
               ? t("phone_format_error")
@@ -339,7 +338,7 @@ export const BusinessForm: React.FC<BusinessFormProps> = ({
           name="contactoSecundario"
           value={contactoSecundario}
           onChange={handlePhoneInput}
-          error={contactoSecundario && !validatePhone(contactoSecundario)}
+          error={!!contactoSecundario && !validatePhone(contactoSecundario)}
           helperText={
             contactoSecundario && !validatePhone(contactoSecundario)
               ? t("phone_format_error")

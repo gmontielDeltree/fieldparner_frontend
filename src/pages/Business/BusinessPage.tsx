@@ -68,7 +68,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ isQuickAdd = false }
   const [activeStep, setActiveStep] = useState(0);
   const [nameError, setNameError] = useState(false);
   const [documentError, setDocumentError] = useState(false);
-  const [countryError, _] = useState(false);
+  const [countryError, setCountryError] = useState(false);
   const [legajoError, setLegajoError] = useState(false);
   const [cuitError, setCuitError] = useState(false);
   const [razonSocialError, setRazonSocialError] = useState(false);
@@ -200,9 +200,16 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ isQuickAdd = false }
   );
 
   const validateForm = () => {
-    if (formulario.tipoEntidad === TipoEntidad.JURIDICA.toString()) {
-      let hasError = false;
+    let hasError = false;
 
+    const isCountryValid = !!formulario.pais?.trim();
+    setCountryError(!isCountryValid);
+    if (!isCountryValid) {
+      hasError = true;
+      console.log("Error de validación: País está vacío");
+    }
+
+    if (formulario.tipoEntidad === TipoEntidad.JURIDICA.toString()) {
       if (formulario.cuit?.trim() === "") {
         setCuitError(true);
         hasError = true;
@@ -226,11 +233,7 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ isQuickAdd = false }
       } else {
         setEmailError(false);
       }
-
-      return !hasError;
     } else {
-      let hasError = false;
-
       if (formulario.nombreCompleto?.trim() === "") {
         setNameError(true);
         hasError = true;
@@ -254,9 +257,9 @@ export const BusinessPage: React.FC<BusinessPageProps> = ({ isQuickAdd = false }
       } else {
         setLegajoError(false);
       }
-
-      return !hasError;
     }
+
+    return !hasError;
   };
 
   const handleNext = () => {
