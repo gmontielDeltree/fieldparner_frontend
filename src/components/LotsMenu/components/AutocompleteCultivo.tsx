@@ -112,19 +112,8 @@ export const AutocompleteCultivo = ({ value, onChange }) => {
       options={crops}
       isOptionEqualToValue={(option,value)=>option._id ===value._id}
       getOptionLabel={(option) => {
-        // Value selected with enter, right from the input
-        //  if (typeof option === "string") {
-        //    return option;
-        //  }
-        // Add "xxx" option created dynamically
-        // if (option.label) {
-        //   return option.label;
-        // }
-        // Regular option
-        let lang = i18n.language;
-        let label = labelInLang(option,lang);
-        return option.descriptionES;
-        
+        const lang = i18n.language;
+        return labelInLang(option, lang);
       }}
       // renderOption={(props, option) => {
       //   let lang = i18n.language;

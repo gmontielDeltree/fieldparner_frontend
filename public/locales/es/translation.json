@@ -1370,5 +1370,6 @@
   "update_productive_unit": "Actualizar Unidad Productiva",
   "new_contract_sale_cereal": "Nuevo Contrato de Venta de Cereales",
   "update_contract_sale_cereal": "Actualizar Contrato de Venta de Cereales",
-  "license": "Licencia"
+  "license": "Licencia",
+  "available_integrations": "Integraciones disponibles"
 }
