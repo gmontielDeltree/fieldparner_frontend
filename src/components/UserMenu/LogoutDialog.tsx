@@ -7,6 +7,7 @@ import {
   Typography,
   Button
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 interface LogoutDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ const LogoutDialog: React.FC<LogoutDialogProps> = ({
   onConfirm
 }) => {
   const [loading, setLoading] = React.useState<boolean>(false);
+  const { t } = useTranslation();
 
   const handleConfirm = async (): Promise<void> => {
     setLoading(true);
@@ -39,23 +41,23 @@ const LogoutDialog: React.FC<LogoutDialogProps> = ({
       maxWidth="xs"
       fullWidth
     >
-      <DialogTitle>Cerrar sesión</DialogTitle>
+      <DialogTitle>{t('title_close_session')}</DialogTitle>
       <DialogContent>
         <Typography>
-          ¿Está seguro que desea cerrar sesión?
+          {t('confirm_close_session')}
         </Typography>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         <Button onClick={onClose} color="inherit" disabled={loading}>
-          Cancelar
+          {t('cancel')}
         </Button>
-        <Button 
-          onClick={handleConfirm} 
-          variant="contained" 
+        <Button
+          onClick={handleConfirm}
+          variant="contained"
           color="error"
           disabled={loading}
         >
-          {loading ? 'Cerrando...' : 'Cerrar sesión'}
+          {loading ? t("closing") : t("title_close_session")}
         </Button>
       </DialogActions>
     </Dialog>

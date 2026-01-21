@@ -1374,5 +1374,11 @@
   "new_contract_sale_cereal": "Novo Contrato de Venda de Cereais",
   "update_contract_sale_cereal": "Atualizar Contrato de Venda de Cereais",
   "license": "Licença",
-    "available_integrations": "Integrações disponíveis"
+  "available_integrations": "Integrações disponíveis",
+  "title_close_session": "Fechar sessão",
+  "confirm_close_session": "Tem certeza de que deseja fechar a sessão?",
+  "closing": "Fechando",
+  "integrations": "Integrações",
+  "fields": "Campos",
+  "calendar_activities": "Calendário de Atividades"
 }

@@ -1364,5 +1364,11 @@
   "new_contract_sale_cereal": "New Contract Sale Cereal",
   "update_contract_sale_cereal": "Update Contract Sale Cereal",
   "license": "License",
-  "available_integrations": "Available Integrations"
+  "available_integrations": "Available Integrations",
+  "title_close_session": "Close Session",
+  "confirm_close_session": "Are you sure you want to close the session?",
+  "closing": "Closing",
+  "integrations": "Integrations",
+  "fields": "Fields",
+  "calendar_activities": "Activities Calendar"
 }

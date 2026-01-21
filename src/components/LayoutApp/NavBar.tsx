@@ -202,14 +202,14 @@ export const NavBar: React.FC<NavBarProps> = ({
               <ButtonBase
                 onClick={selectAvatar}
                 sx={{ borderRadius: '50%', marginRight: '18px' }}
-                title="Campos"
+                title={t('fields')}
               >
                 <Avatar alt="Campo" src={iconoCampo} sx={avatarStyle()} />
               </ButtonBase>
               <ButtonBase
                 onClick={() => navigate('/init/overview/fields/integrations')}
                 sx={{ borderRadius: '50%', marginRight: '18px' }}
-                title="Integraciones"
+                title={t('integrations')}
               >
                 <Avatar
                   alt="Integrations"
@@ -220,7 +220,7 @@ export const NavBar: React.FC<NavBarProps> = ({
 
               {/* Calendar Button */}
               <Tooltip
-                title="Calendario de Actividades"
+                title={t('calendar_activities')}
                 enterDelay={500}
                 leaveDelay={200}
               >
