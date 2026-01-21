@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import styles from "../components/Integrations/integraciones.module.css";
 import { Box, Button, Typography } from "@mui/material";
 import { CloseButtonPage } from "../components";
+import { t } from "i18next";
 
 export const IntegrationsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export const IntegrationsPage: React.FC = () => {
         >
           <Box display="flex" alignItems="center">
             <Typography variant="h5" sx={{ ml: { sm: 2 } }}>
-              Integraciones Disponibles
+              {t("available_integrations")}
             </Typography>
           </Box>
           <CloseButtonPage />
