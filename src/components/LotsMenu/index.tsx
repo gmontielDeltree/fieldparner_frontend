@@ -30,6 +30,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const [selectedCategory, setSelectedCategory] = useState<null | string>(null)
   const db = dbContext.fields
   const [activities, setActivities] = useState<any>(null)
+  const [plannedActivitiesCount, setPlannedActivitiesCount] = useState<number>(0)
   const { t } = useTranslation()
 
   // Información de actividad que se está editando:
@@ -70,6 +71,22 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
 
       let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
       let _actividades_docs = s.reverse()
+
+      // Contar actividades planificadas para el banner (sin cargarlas en la lista)
+      try {
+        let planificadasResponse = await gbl_docs_starting(
+          'planactividad',
+          true,
+          true,
+          true
+        )
+        let planificadas = only_docs(planificadasResponse) || []
+        const count = planificadas.filter((doc: any) => doc && doc.loteId === uuid_del_lote).length
+        setPlannedActivitiesCount(count)
+      } catch (err) {
+        console.log('Error contando actividades planificadas:', err)
+        setPlannedActivitiesCount(0)
+      }
 
       let result = await db.allDocs({
         startkey: 'ejecucion:',
@@ -293,6 +310,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
             setActivities={setActivities}
             editingActivityInfo={editingActivityInfo}
             handleEditActivity={handleEditActivity}
+            plannedActivitiesCount={plannedActivitiesCount}
           />
         </div>
       </Paper>

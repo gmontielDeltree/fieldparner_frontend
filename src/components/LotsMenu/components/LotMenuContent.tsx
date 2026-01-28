@@ -27,6 +27,7 @@ interface LotMenuContentProps {
     isExecuting?: boolean,
     type?: string,
   ) => void
+  plannedActivitiesCount?: number
 }
 
 const LotMenuContent: React.FC<LotMenuContentProps> = ({
@@ -40,6 +41,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
   setActivities,
   editingActivityInfo,
   handleEditActivity,
+  plannedActivitiesCount = 0,
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -184,6 +186,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         lotDoc={lot}
         fieldDoc={field}
         handleEditActivity={handleEditActivity}
+        plannedActivitiesCount={plannedActivitiesCount}
       />
     )
   }

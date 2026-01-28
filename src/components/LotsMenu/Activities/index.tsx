@@ -7,7 +7,7 @@ import SoilAnalysisIcon from '../../../images/icons/ground-sample.png'
 import ApplicationIcon from '../../../images/icons/application.png'
 import PreparadoIcon from '../../../images/icons/preparation.png'
 import Snackbar from '@mui/material/Snackbar'
-import { Paper, Box } from '@mui/material'
+import { Paper, Box, Chip } from '@mui/material'
 import MuiAlert from '@mui/material/Alert'
 import './Activities.css'
 import { styled } from '@mui/material/styles'
@@ -43,6 +43,7 @@ export const Activities = ({
   fieldDoc,
   lotDoc,
   handleEditActivity,
+  plannedActivitiesCount = 0,
 }) => {
   const [userMessage, setUserMessage] = useState('')
   const db = dbContext.fields
@@ -272,6 +273,37 @@ export const Activities = ({
         lotDoc={lotDoc}
         activitiesData={activitiesData}
       />
+      {plannedActivitiesCount > 0 && (
+        <Box
+          sx={{
+            border: '1px solid #e5e7eb',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+            borderRadius: '12px',
+            padding: '12px 14px',
+            marginTop: '-8px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={t('Hay planificaciones pendientes de revisión')}
+              variant="outlined"
+              color="warning"
+              sx={{ fontWeight: 600 }}
+            />
+            <Chip
+              label={plannedActivitiesCount}
+              size="small"
+              sx={{
+                backgroundColor: '#fff7ed',
+                color: '#9a3412',
+                fontWeight: 700,
+                border: '1px solid #fed7aa',
+              }}
+            />
+          </Box>
+        </Box>
+      )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
