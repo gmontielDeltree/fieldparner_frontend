@@ -1,109 +1,85 @@
 import React, { useEffect, useState } from "react";
 import TextField from "@mui/material/TextField";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
 import Autocomplete, { createFilterOptions } from "@mui/material/Autocomplete";
 import { useTranslation } from "react-i18next";
-import { capitalizeText } from "../../../helpers/helper";
-import { CultivoItem, useCrops } from "../../../hooks/useCrops";
-import { Cultivo } from "../../../interfaces/insumos";
-import { Crop, CropsRepository } from "../../../classes/Crops";
-import { WarehouseRepository } from "../../../classes/WarehouseRepository";
 import { Deposit } from "@types";
+import { useDeposit } from "../../../hooks";
 
-const filter = createFilterOptions<CropOptionType>();
+const filter = createFilterOptions<DepositOptionType>();
 
-interface CropOptionType extends Deposit {
+interface DepositOptionType extends Partial<Deposit> {
   inputValue?: string;
 }
 
-export const AutocompleteDeposito = ({ value, onChange }) => {
-  const { t } = useTranslation();
-  const [crops, setCrops] = useState<any[]>([]);
+interface AutocompleteDepositoProps {
+  value: Deposit | null;
+  onChange: (deposit: Deposit | null) => void;
+}
 
-  const [cropsRepo, _] = useState(new WarehouseRepository());
+export const AutocompleteDeposito: React.FC<AutocompleteDepositoProps> = ({ value, onChange }) => {
+  const { t } = useTranslation();
+  const { deposits, getDeposits, isLoading } = useDeposit();
+
+  const [_value, setValue] = useState<DepositOptionType | null>(value || null);
 
   useEffect(() => {
-    cropsRepo.getAll().then((cropsFromDB) => {
-      setCrops(cropsFromDB);
-    });
-
-    cropsRepo.attachObserver((cropsFromDB) => {
-      // console.log("Settin Crops Again");
-      setCrops(cropsFromDB);
-    });
+    getDeposits();
   }, []);
-
-  const [_value, setValue] = React.useState<CropOptionType | null>(value || null);
 
   // Sync internal state when parent value changes
   useEffect(() => {
     setValue(value || null);
   }, [value]);
 
-  useEffect(()=>{
-    // console.log("_value",_value)
-    onChange(_value)
-  },[_value])
+  useEffect(() => {
+    onChange(_value as Deposit | null);
+  }, [_value]);
 
   return (
     <Autocomplete
       value={_value}
+      loading={isLoading}
       onChange={(event, newValue) => {
         if (typeof newValue === "string") {
           setValue({
             description: `${newValue}`,
           });
         } else if (newValue && newValue.inputValue) {
-          // Create a new value from the user input
-          cropsRepo
-            .add({ description: newValue.inputValue })
-            .then((c) => setValue(c));
+          // For now, just set the description - creating new deposits should be done elsewhere
+          setValue({
+            description: newValue.inputValue,
+          });
         } else {
           setValue(newValue);
         }
       }}
       filterOptions={(options, params) => {
         const filtered = filter(options, params);
-
-        const { inputValue } = params;
-        // Suggest the creation of a new value
-        const isExisting = options.some(
-          (option) => inputValue === option.description
-        );
-        if (inputValue !== "" && !isExisting) {
-          filtered.push({
-            inputValue,
-            description: `${t("_add")} "${inputValue}"`,
-          });
-        }
-
         return filtered;
       }}
       selectOnFocus
       clearOnBlur
       handleHomeEndKeys
-      id="free-solo-with-text-demo"
-      options={crops}
+      id="autocomplete-deposito"
+      options={deposits}
       getOptionLabel={(option) => {
-        // Value selected with enter, right from the input
         if (typeof option === "string") {
           return option;
         }
-        // Add "xxx" option created dynamically
         if (option.description) {
           return option.description;
         }
-        // Regular option
-        return option.description;
+        return "";
       }}
-      renderOption={(props, option) => <li {...props} key={option._id || option.inputValue || option.description}>{option.description}</li>}
-     
-      freeSolo
+      renderOption={(props, option) => (
+        <li {...props} key={option._id || option.inputValue || option.description}>
+          {option.description}
+        </li>
+      )}
+      isOptionEqualToValue={(option, value) => {
+        if (!option || !value) return false;
+        return option._id === value._id || option.description === value.description;
+      }}
       renderInput={(params) => (
         <TextField {...params} label={t("_warehouse")} />
       )}
