@@ -42,6 +42,7 @@ const PlanActivityContent: React.FC<PlanActivityContentProps> = ({
           setFormData={setFormData}
           showActivityType={activityType === 'application'}
           selectedCampaign={selectedCampaign}
+          mode="execute"
         />
       )
     case 1:

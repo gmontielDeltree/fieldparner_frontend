@@ -394,21 +394,52 @@ function PersonalFormUnified({
         {(formData.tipo === 'siembra' || formData.tipo === 'sowing' ||
           formData.tipo === 'preparado' || formData.tipo === 'preparation') && (
           <Grid item xs={12} sm={6}>
-            {/* Siempre mostramos Zafra como solo lectura en planificación:
-                - Primero usamos la zafra que venga en formData.detalles.zafra (por ciclo)
-                - Si no hay, usamos la(s) zafra(s) de la campaña como texto */}
-            <TextField
-              fullWidth
-              label={t('Zafra')}
-              value={
-                formData.detalles?.zafra ||
-                (Array.isArray(campaign?.zafra)
-                  ? campaign.zafra.join(' / ')
-                  : (campaign?.zafra || ''))
+            {(() => {
+              // Obtener las zafras disponibles de la campaña
+              const campaignZafras = Array.isArray(campaign?.zafra) 
+                ? campaign.zafra 
+                : (campaign?.zafra ? [campaign.zafra] : []);
+              
+              // Verificar si viene de planificación anual:
+              // - mode === 'plan' indica que viene del editor de planificación anual
+              // - _originalPlanifData o isPlanificada indica que es una actividad planificada
+              const comesFromAnnualPlanning = mode === 'plan' || formData._originalPlanifData || formData.isPlanificada;
+              
+              // Si viene de planificación anual, mostrar como solo lectura
+              if (comesFromAnnualPlanning) {
+                return (
+                  <TextField
+                    fullWidth
+                    label={t('Zafra')}
+                    value={
+                      formData.detalles?.zafra ||
+                      (campaignZafras.length === 1 ? campaignZafras[0] : campaignZafras.join(' / '))
+                    }
+                    disabled
+                    InputProps={{ readOnly: true }}
+                  />
+                );
               }
-              disabled
-              InputProps={{ readOnly: true }}
-            />
+              
+              // Si viene del menú de lotes (mode === 'execute' o sin mode), mostrar dropdown
+              return (
+                <FormControl fullWidth>
+                  <InputLabel id="zafra-select-label">{t('Zafra')}</InputLabel>
+                  <Select
+                    labelId="zafra-select-label"
+                    label={t('Zafra')}
+                    value={formData.detalles?.zafra || ''}
+                    onChange={(e) => onFieldChange('zafra', e.target.value)}
+                  >
+                    {campaignZafras.map((zafra) => (
+                      <MenuItem key={zafra} value={zafra}>
+                        {zafra}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              );
+            })()}
           </Grid>
         )}
 
