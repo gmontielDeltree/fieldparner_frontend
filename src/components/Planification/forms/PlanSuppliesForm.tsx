@@ -9,7 +9,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { styled } from "@mui/material/styles";
-import { useSupply } from "../../../hooks";
+import { useSupply, useCrops } from "../../../hooks";
 import Swal from "sweetalert2";
 import { useTranslation } from "react-i18next";
 import uuid4 from "uuid4";
@@ -57,17 +57,71 @@ function PlanSuppliesForm({
 }: PlanSuppliesFormProps) {
   const { t } = useTranslation();
   const { getSupplies, isLoading } = useSupply();
+  const { getCrops, crops } = useCrops();
 
   const [selectedSupply, setSelectedSupply] = useState<any>(null);
   const [dosificacion, setDosificacion] = useState("");
   const [total, setTotal] = useState("");
   const [formKey, setFormKey] = useState(0);
 
+  // Función para normalizar IDs y compararlos de forma flexible
+  const normalizeId = (id?: string) => {
+    if (!id) return "";
+    const parts = String(id).split(":");
+    return parts[parts.length - 1].trim().toLowerCase();
+  };
+
   // Get cultivoId from formData or prop
   const getCultivoId = () => {
     if (cultivoIdProp) return cultivoIdProp;
     const cultivo = formData?.detalles?.cultivo || (formData as any)?.cultivo;
     return cultivo?._id || cultivo?.id || null;
+  };
+
+  // Get cultivo object from formData
+  const getCultivoObject = () => {
+    return formData?.detalles?.cultivo || (formData as any)?.cultivo || null;
+  };
+
+  // Función mejorada para verificar compatibilidad
+  const isSupplyCompatibleWithCrop = (supply: any): boolean => {
+    if (!supply?.cropId) return true;
+
+    const cultivoId = getCultivoId();
+    const cultivo = getCultivoObject();
+    if (!cultivoId) return true;
+
+    // Comparación 1: IDs normalizados
+    const normalizedSupplyCropId = normalizeId(supply.cropId);
+    const normalizedCultivoId = normalizeId(cultivoId);
+
+    if (normalizedSupplyCropId === normalizedCultivoId) {
+      return true;
+    }
+
+    // Comparación 2: Buscar por nombre del cultivo
+    const supplyCrop = crops.find((c: any) =>
+      normalizeId(c._id) === normalizedSupplyCropId ||
+      c._id === supply.cropId
+    );
+
+    if (supplyCrop && cultivo) {
+      const supplyCropName = (supplyCrop.descriptionES || supplyCrop.descriptionEN || "").toLowerCase().trim();
+      const activityCropName = (cultivo.descriptionES || cultivo.descriptionEN || (cultivo as any).name || "").toLowerCase().trim();
+
+      if (supplyCropName && activityCropName && supplyCropName === activityCropName) {
+        return true;
+      }
+    }
+
+    console.log("🔍 PlanSuppliesForm - Comparación de compatibilidad fallida:", {
+      supplyCropId: supply.cropId,
+      cultivoId,
+      normalizedSupplyCropId,
+      normalizedCultivoId,
+    });
+
+    return false;
   };
 
   // Get hectares from formData
@@ -83,11 +137,12 @@ function PlanSuppliesForm({
 
     const cultivoId = getCultivoId();
 
-    if (cultivoId && supply.cropId !== cultivoId) {
+    // Si no hay cultivo definido pero el insumo requiere uno
+    if (!cultivoId && supply.cropId) {
       Swal.fire({
-        icon: "error",
+        icon: "warning",
         title: t("incompatibleSupply"),
-        text: t("supplyNotCompatibleWithCrop"),
+        text: t("supplyNotCompatibleWithCrop") + " (" + t("noCropDefinedInCycle") + ")",
         customClass: {
           container: "swal-above-mui-dialog",
         },
@@ -95,11 +150,12 @@ function PlanSuppliesForm({
       return false;
     }
 
-    if (!cultivoId && supply.cropId) {
+    // Usar la función de compatibilidad mejorada
+    if (!isSupplyCompatibleWithCrop(supply)) {
       Swal.fire({
-        icon: "warning",
+        icon: "error",
         title: t("incompatibleSupply"),
-        text: t("supplyNotCompatibleWithCrop") + " (" + t("noCropDefinedInCycle") + ")",
+        text: t("supplyNotCompatibleWithCrop"),
         customClass: {
           container: "swal-above-mui-dialog",
         },
@@ -199,6 +255,7 @@ function PlanSuppliesForm({
 
   useEffect(() => {
     getSupplies();
+    getCrops();
   }, []);
 
   if (isLoading) return <div>{t("loading")}</div>;
