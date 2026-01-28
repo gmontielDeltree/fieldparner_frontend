@@ -241,8 +241,9 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       const campaignId = getSelectedCampaignId()
       const cropId = getCropIdFromForm()
       const typeId = normalizeId(rawActivityType)
+      const currentLotId = normalizeId(lot?.id || lot?.uuid || lot?._id)
 
-      if (!campaignId || !cropId || !typeId) {
+      if (!campaignId || !cropId || !typeId || !currentLotId) {
         return
       }
 
@@ -283,10 +284,17 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
         })
       }
 
+      // Filtrar por cultivo Y por lote
       const firstMatch = candidates.find((plan) => {
         const ciclo = cicloDocs[plan.cicloId]
         const planCropId = normalizeId(plan.cultivoId || ciclo?.cultivoId)
-        return planCropId && planCropId === cropId
+        const planLotId = normalizeId(ciclo?.loteId)
+
+        // Debe coincidir cultivo Y lote
+        const sameCrop = planCropId && planCropId === cropId
+        const sameLot = planLotId && planLotId === currentLotId
+
+        return sameCrop && sameLot
       })
 
       if (firstMatch) {
@@ -297,7 +305,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
     } finally {
       setIsCheckingPlan(false)
     }
-  }, [db, rawActivityType, formData?.detalles?.cultivo, selectedCampaign, isNewActivity])
+  }, [db, rawActivityType, formData?.detalles?.cultivo, selectedCampaign, isNewActivity, lot])
 
   const getMissingFieldsMessages = (step) => {
     const fields = []
