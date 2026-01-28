@@ -146,6 +146,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
   const [maxStepReached, setMaxStepReached] = useState(0)
   const theme = useTheme()
   const { user } = useAppSelector((state) => state.auth)
+  const selectedCampaign = useAppSelector((state) => state.campaign.selectedCampaign)
   const isEditing = existingActivity && Object.keys(existingActivity).length > 0
 
   const floating = keyframes`
@@ -676,7 +677,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           supply: dosis.insumo || dosis.selectedOption,
           withdrawalAmount: depositSupplyOrder.withdrawalAmount || 0,
           _id: depositSupplyOrder._id,
-          depositId: dosis.deposito._id,
+          depositId: dosis.deposito?._id || '',
           supplyId: (dosis.insumo || dosis.selectedOption)?._id,
         },
       ]
@@ -720,6 +721,19 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     // Ensure we're using the Spanish activity type, not the translated one
     executionDetails.tipo = rawActivityType;
 
+    // Incluir información de campaña y zafra para referencia
+    executionDetails.campaña = existingActivity?.campaña || selectedCampaign || formData.campaña;
+    (executionDetails as any).campanaId = existingActivity?.campaña?.campaignId || selectedCampaign?.campaignId || selectedCampaign?._id;
+
+    // Zafra: puede venir de la actividad existente o de los detalles
+    const existingZafra = (existingActivity?.detalles as any)?.zafra || (existingActivity as any)?.zafra;
+    if (!(executionDetails.detalles as any).zafra) {
+      (executionDetails.detalles as any).zafra = existingZafra;
+    }
+    if (!(executionDetails as any).zafra) {
+      (executionDetails as any).zafra = existingZafra;
+    }
+
     console.log(t('executionDetails'), executionDetails);
 
     // Lista para almacenar insumos sin stock
@@ -736,17 +750,23 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
         }
 
         try {
-          // Verificar si existe stock
-          const responseStockSupply = await getStock({
-            id: supplyInfo._id,
-            campaignId: executionDetails.campaña?.campaignId || '',
-            tipo: TipoStock.INSUMO,
-            depositId: dosis.deposito._id,
-            nroLot: dosis.nro_lote,
-            location: dosis.ubicacion
-          });
+          // Verificar si existe stock (solo si hay depósito definido)
+          if (dosis.deposito?._id) {
+            const responseStockSupply = await getStock({
+              id: supplyInfo._id,
+              campaignId: executionDetails.campaña?.campaignId || '',
+              tipo: TipoStock.INSUMO,
+              depositId: dosis.deposito._id,
+              nroLot: dosis.nro_lote,
+              location: dosis.ubicacion
+            });
 
-          if (!responseStockSupply || responseStockSupply.length === 0) {
+            if (!responseStockSupply || responseStockSupply.length === 0) {
+              suppliesWithoutStock.push(supplyInfo.name);
+            }
+          } else {
+            // Sin depósito, no se puede verificar stock
+            console.warn(`Insumo ${supplyInfo.name} sin depósito definido`);
             suppliesWithoutStock.push(supplyInfo.name);
           }
         } catch (error) {
@@ -826,7 +846,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           id: supplyInfo._id,
           campaignId: executionDetails.campaña?.campaignId || '',
           tipo: TipoStock.INSUMO,
-          depositId: dosis.deposito._id,
+          depositId: dosis.deposito?._id || '',
           nroLot: dosis.nro_lote,
           location: dosis.ubicacion
         };
@@ -882,10 +902,12 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
             console.log('Usando orden de retiro existente para:', supplyInfo.name);
             // await removeReservedStock(dosis);
             initConfirmWithdrawal(dosis.orden_de_retiro as WithdrawalOrder);
-          } else {
-            // Si no hay orden de retiro, usar el flujo normal de stock movement
+          } else if (dosis.deposito) {
+            // Si no hay orden de retiro pero hay depósito, usar el flujo normal de stock movement
             console.log('No hay orden de retiro, usando flujo normal de stock para:', supplyInfo.name);
             await addNewStockMovement(newMovement, supplyInfo as any, dosis.deposito);
+          } else {
+            console.warn(`Insumo ${supplyInfo.name} sin depósito definido, no se puede crear movimiento de stock`);
           }
         } catch (error) {
           console.error(
@@ -974,21 +996,21 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
           delete executionDetails._rev;
           // Actualizar estado de la actividad antes de crear la ejecución
           updateActivityStateToCompleted(existingActivity._id as any)
-            .catch((e)=> console.warn('No se pudo actualizar estado de actividad (not_found path):', e))
+            .catch((e) => console.warn('No se pudo actualizar estado de actividad (not_found path):', e))
             .finally(() => db.put(executionDetails)
-            .then(() => {
-              console.log(t('documentCreated'), 'success');
+              .then(() => {
+                console.log(t('documentCreated'), 'success');
 
-              Swal.fire({
-                title: t('activityExecuted'),
-                text: t('executionSaved'),
-                icon: 'success',
-                confirmButtonText: t('accept')
-              }).then(() => {
-                setIsSaving(false);
-                backToActivites();
-              });
-            }))
+                Swal.fire({
+                  title: t('activityExecuted'),
+                  text: t('executionSaved'),
+                  icon: 'success',
+                  confirmButtonText: t('accept')
+                }).then(() => {
+                  setIsSaving(false);
+                  backToActivites();
+                });
+              }))
             .catch((err: any) => {
               console.error(t('docCreateError'), err);
               setIsSaving(false);

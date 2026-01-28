@@ -136,8 +136,8 @@ function ExecutionContent(props) {
                       /> */}
                       <Chip
                         icon={<BusinessIcon />}
-                        label={`${t('contractor')}: ${execution.contratista
-                          ? execution.detalles.contratista.nombreCompleto + "-" + execution.detalles.contratista.razonSocial
+                        label={`${t('contractor')}: ${execution.detalles?.contratista
+                          ? (execution.detalles.contratista.nombreCompleto || '') + (execution.detalles.contratista.razonSocial ? " - " + execution.detalles.contratista.razonSocial : '')
                           : t('notAvailable')
                           }`}
                         style={{ margin: "5px" }}
@@ -231,6 +231,33 @@ function ExecutionContent(props) {
                 </Box>
               )}
 
+              {/* Campaña */}
+              {(execution.campaña || execution.campanaId) && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('campaign')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.campaña?.name || 
+                     execution.campaña?.campaignId ||
+                     execution.campanaId ||
+                     t('notAvailable')}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Zafra */}
+              {(execution.detalles?.zafra || execution.zafra) && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">
+                    {t('Zafra')}:
+                  </Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {execution.detalles?.zafra || execution.zafra}
+                  </Typography>
+                </Box>
+              )}
+
               {/* Hectáreas */}
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">
@@ -259,10 +286,11 @@ function ExecutionContent(props) {
               {execution.tipo === "cosecha" && execution.detalles?.deposito && (
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">
-                    {t('deposit')}:
+                    {t('deposit_label')}:
                   </Typography>
                   <Typography variant="body1" gutterBottom>
-                    {execution.detalles.deposito.name || 
+                    {execution.detalles.deposito.description || 
+                     execution.detalles.deposito.name || 
                      execution.detalles.deposito.nombreDeposito || 
                      t('notAvailable')}
                   </Typography>
@@ -273,7 +301,7 @@ function ExecutionContent(props) {
               {execution.tipo === "cosecha" && execution.detalles?.rinde_obtenido && (
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">
-                    {t('yieldObtained')}:
+                    {t('yield')}:
                   </Typography>
                   <Typography variant="body1" gutterBottom>
                     {execution.detalles.rinde_obtenido} ton/ha
@@ -308,15 +336,15 @@ function ExecutionContent(props) {
               {execution.detalles?.business && (
                 <Box>
                   <Typography variant="subtitle2" color="text.secondary">
-                    {t('agronomicEngineer')}:
+                    {t('engineer')}:
                   </Typography>
                   <Typography variant="body1" gutterBottom>
                     {typeof execution.detalles.business === 'string'
-                      ? execution.detalles.business
+                      ? (execution.detalles.business.length > 30 ? t('notAvailable') : execution.detalles.business)
                       : (execution.detalles.business.nombreCompleto ||
                          execution.detalles.business.razonSocial ||
                          execution.detalles.business.name ||
-                         execution.detalles.business._id ||
+                         execution.detalles.business.nombreComercial ||
                          t('notAvailable'))}
                   </Typography>
                 </Box>
@@ -372,16 +400,28 @@ function ExecutionContent(props) {
                   <strong>{t('crop')}:</strong> {execution.detalles.cultivo.name}
                 </Typography>
               )}
-              
-              {execution.detalles?.deposito?.name && execution.tipo === 'cosecha' && (
+
+              {(execution.campaña || execution.campanaId) && (
                 <Typography variant="body2">
-                  <strong>{t('deposit')}:</strong> {execution.detalles.deposito.name}
+                  <strong>{t('campaign')}:</strong> {execution.campaña?.name || execution.campaña?.campaignId || execution.campanaId}
+                </Typography>
+              )}
+
+              {(execution.detalles?.zafra || execution.zafra) && (
+                <Typography variant="body2">
+                  <strong>{t('Zafra')}:</strong> {execution.detalles?.zafra || execution.zafra}
+                </Typography>
+              )}
+              
+              {(execution.detalles?.deposito?.description || execution.detalles?.deposito?.name) && execution.tipo === 'cosecha' && (
+                <Typography variant="body2">
+                  <strong>{t('deposit_label')}:</strong> {execution.detalles.deposito.description || execution.detalles.deposito.name}
                 </Typography>
               )}
               
               {execution.detalles?.rinde_obtenido && execution.tipo === 'cosecha' && (
                 <Typography variant="body2">
-                  <strong>{t('yieldObtained')}:</strong> {execution.detalles.rinde_obtenido} ton/ha
+                  <strong>{t('yield')}:</strong> {execution.detalles.rinde_obtenido} ton/ha
                 </Typography>
               )}
             </Box>
