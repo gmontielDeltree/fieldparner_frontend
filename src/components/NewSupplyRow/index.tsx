@@ -19,7 +19,7 @@ import { useForm, useStockMovement } from "../../hooks";
 import uuid4 from "uuid4";
 import { getShortDate } from "../../helpers/dates";
 import { Loading } from "..";
-import { TipoStock } from "../../interfaces/stock";
+import { StockItem, TipoStock } from '../../interfaces/stock';
 import {
   AutocompleteCampaign,
   AutocompleteCrop,
@@ -66,6 +66,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
     nroLot,
     dueDate,
     amount,
+    formulario,
     handleInputChange,
     reset,
     setFormulario,
@@ -102,13 +103,19 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
   };
 
   const onClickAdd = () => {
-    if (isCrop && (!cropSelected || !depositSelected)) return;
-    if (!isCrop && (!supplySelected || !depositSelected)) return;
-
+    if (isCrop && (!cropSelected || !depositSelected)) {
+      console.log('Missing crop or deposit');
+      return;
+    }
+    if (!isCrop && (!supplySelected || !depositSelected)) {
+      console.log('Missing supply or deposit');
+      return;
+    }
+    
     addNewSupplyOrCultive(
       {
         id: uuid4(),
-        campaignId: campaignSelected?._id || "",
+        campaignId: isCrop ? campaignSelected?._id || "" : campaignSelected?.campaignId || "",
         zafra: (availableZafras.length ? (undefined as unknown as string) : undefined),
         deposit: depositSelected,
         supply: supplySelected,
@@ -144,6 +151,7 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
       nroLot: string
     ) => {
       let newAmount = 0;
+
       if (isCrop) {
         const cropStock = await getStock({
           tipo: TipoStock.CULTIVO,
@@ -151,26 +159,37 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
           depositId,
           location,
           nroLot,
-          campaignId: campaignSelected?._id || "",
+          campaignId: campaignSelected?.campaignId || "",
         });
-        if (cropStock) newAmount = cropStock[0].currentStock;
+        if (cropStock) newAmount = cropStock[0]?.currentStock || 0;
+
       } else {
+        console.log('get stock;', {
+          id,
+          tipo: TipoStock.INSUMO,
+          campaignId: campaignSelected?.campaignId || "",
+          depositId,
+          location,
+          nroLot,
+        })
         const supplyStock = await getStock({
           id,
           tipo: TipoStock.INSUMO,
-          campaignId: campaignSelected?._id || "",
+          campaignId: campaignSelected?.campaignId || "",
           depositId,
           location,
           nroLot,
         });
-        if (supplyStock) newAmount = supplyStock[0].currentStock;
+        if (supplyStock) newAmount = supplyStock[0]?.currentStock || 0;
+
       }
       setFormulario((prev) => ({ ...prev, amount: newAmount }));
     };
 
     const id = isCrop ? cropSelected?._id : supplySelected?._id;
+
     if (id && location && campaignSelected && depositSelected?._id) {
-      void fetchStock(id, depositSelected._id, location, nroLot);
+      fetchStock(id, depositSelected._id, location, nroLot);
     }
   }, [
     campaignSelected,
@@ -180,8 +199,6 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
     location,
     nroLot,
     isCrop,
-    getStock,
-    setFormulario,
   ]);
 
   return (
@@ -222,7 +239,8 @@ export const NewSupplyCropRow: React.FC<SupplyAndCropProps> = ({
             <Select
               labelId="zafra-label"
               id="zafra"
-              value={(initialStateNewSupply as any).zafra || ""}
+              name="zafra"
+              value={formulario.zafra || ""}
               label="Zafra"
               onChange={(e) => setFormulario((prev) => ({ ...prev, zafra: e.target.value as string }))}
             >

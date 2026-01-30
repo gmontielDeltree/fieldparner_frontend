@@ -32,8 +32,7 @@ export const useUser = () => {
 
       if (!user) throw new Error(t("user_not_found"));
       const dataUser = { ...userDto, modulePermissions: userDto.modulePermissions.map(Number) };
-      console.log('dataUser', dataUser);
-      debugger;
+      
       const response = await fieldpartnerAPI.post(`${controller}`, dataUser);
 
       if (response)

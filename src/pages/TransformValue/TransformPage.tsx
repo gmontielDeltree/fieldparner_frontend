@@ -163,7 +163,6 @@ export const TransformPage: React.FC = () => {
             const { supply, deposit } = newSupply;
             const supplyId = supply?._id || "";
             const depositId = deposit?._id || "";
-
             if (!supplyId && !depositId) return false;
 
             let currentStock = 0;
@@ -175,7 +174,8 @@ export const TransformPage: React.FC = () => {
                 location: newSupply.location,
                 nroLot: newSupply.nroLot
             });
-            currentStock = result ? result[0].currentStock : 0;
+            
+            currentStock = result ? result[0]?.currentStock || 0 : 0;
 
             if (type === "origin") {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
@@ -259,7 +259,7 @@ export const TransformPage: React.FC = () => {
             }
                 // cropId, depositId, newTransformValue.location, newTransformValue.nroLot
             );
-            currentStock = result ? result[0].currentStock : 0;
+            currentStock = result ? result[0]?.currentStock : 0;
 
             if (type === "origin") {
                 //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
@@ -442,7 +442,7 @@ export const TransformPage: React.FC = () => {
                             fullWidth
                         />
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid item xs={12} sm={9}>
                         <TextField
                             variant="outlined"
                             type="text"
@@ -456,7 +456,7 @@ export const TransformPage: React.FC = () => {
                             fullWidth
                         />
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    {/* <Grid item xs={12} sm={3}>
                         <TextField
                             variant="outlined"
                             type="text"
@@ -467,7 +467,7 @@ export const TransformPage: React.FC = () => {
                             fullWidth
                             disabled
                         />
-                    </Grid>
+                    </Grid> */}
                 </Grid>
                 <BorderContainer key="supplies-origin">
                     <Box sx={{ mb: 3, mt: 1 }}>
@@ -536,7 +536,7 @@ export const TransformPage: React.FC = () => {
                             supplies={supplies}
                             deposits={deposits}
                             crops={dataCrops}
-                            disabledCrops
+                            disabledCrops={false}
                             showDueDate
                             addNewSupplyOrCultive={addSupplyOrCropDestination}
                             onChangeSupply={(_item) => {

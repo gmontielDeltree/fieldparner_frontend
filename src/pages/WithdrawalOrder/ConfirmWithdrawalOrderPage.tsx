@@ -9,7 +9,6 @@ import {
 import { DataTable, ItemRow, Loading, TableCellStyled, TemplateLayout } from '../../components';
 import { Box, Button, Grid, IconButton, InputAdornment, Paper, TableContainer, TextField, Tooltip, Typography } from '@mui/material';
 import {
-    Assignment as AssignmentIcon,
     Add as AddIcon,
     Delete as DeleteIcon
 } from '@mui/icons-material';
@@ -40,7 +39,7 @@ export const NewWithdrawalRow = ({ row, addNewWithdrawal }: NewWithdrawalRowProp
         });
         reset();
     }
-
+    console.log('row', row)
     return (
         <ItemRow key={row._id}>
             <TableCellStyled align="left">{row.supply?.name} </TableCellStyled>
@@ -51,7 +50,7 @@ export const NewWithdrawalRow = ({ row, addNewWithdrawal }: NewWithdrawalRowProp
             <TableCellStyled align='center'>{row.nroLot || "-"}</TableCellStyled>
             <TableCellStyled align="center">{row.supply?.unitMeasurement}</TableCellStyled>
             <TableCellStyled align='center'>{row.originalAmount}</TableCellStyled>
-            <TableCellStyled align='center'>{(row.originalAmount - row.withdrawalAmount)}</TableCellStyled>
+            <TableCellStyled align='center'>{Number(row.originalAmount - row.withdrawalAmount)}</TableCellStyled>
             <TableCellStyled align='center'>{
                 <TextField
                     variant="outlined"

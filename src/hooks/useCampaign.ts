@@ -19,9 +19,10 @@ export const useCampaign = () => {
         if (!user) throw new Error("User not found");
       }
       
-      const accountId = import.meta.env.PROD
-        ? user?.accountId
-        : "ec3590d5c24e5bec5a21299d30013596";
+      // const accountId = import.meta.env.PROD
+      //   ? user?.accountId
+      //   : "ec3590d5c24e5bec5a21299d30013596";
+      const accountId = user?.accountId;
       
       console.log("Getting campaigns for accountId:", accountId);
       

@@ -583,7 +583,7 @@ export interface WithdrawalsByDepositSupply extends Document {
   amount: number;
 }
 
-//Deposito e Insumo de una Orden de retiro
+//Detalle del retiro de un insumo/deposito de una Orden de retiro
 export interface DepositSupplyOrder extends Document {
   order: number;
   accountId: string;

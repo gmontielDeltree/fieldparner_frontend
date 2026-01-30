@@ -167,7 +167,13 @@ export const useOrder = () => {
                 order: nroOrder,
                 accountId: user.accountId
             };
-            let depositSuppliesOrder = inputsToBeWithdrawan.map(s => ({ ...s, order: nroOrder }));
+
+            let depositSuppliesOrder =
+                inputsToBeWithdrawan.map(s => ({
+                    ...s,
+                    order: nroOrder,
+                    // withdrawalAmount: 0 //TODO: DEJAMOS CON EL VALOR ORIGINAL A RETIRAR O 0 
+                }));
 
             //Actualizamos la reserva del stock del insumo
             // con inputsToBeWithdrawan.originalAmount
@@ -291,6 +297,7 @@ export const useOrder = () => {
                 const withdraw = responseAll[2].docs.find(b => b._id === withdrawalOrder.withdrawId);
                 const deposits = responseAll[4].docs.map(d => d as Deposit);
                 const supplies = responseAll[5].docs.map(s => s as Supply);
+
                 if (!withdraw || !campaign) throw new Error("Business or Campaign not found");
                 if (!withdrawalOrderActive) {
                     dispatch(setWithdrawalOrderActive({
@@ -326,10 +333,11 @@ export const useOrder = () => {
             setIsLoading(false);
         }
     }
-
+    //todo: CONSULTAR SI CADA VEZ Q CONFIRMO UN RETIRO DE UNA ORDEN AUTOMATICA , DEBO INCREMENTAR LA RESERVA DEL STOCK O SOLO CUANDO SE CREA LA ORDEN
+    //todo: QUE PASA SI AL EJECUTAR UNA ACTIVADAD LABORAL QUE SOLO FUE GUARDADA (RESERVO STOCK CON)
     const confirmWithdrawalOrder = async (inputsToBeWithdrawan: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
-        
+
         try {
             if (!user) throw new Error(t("user_not_found"));
             if (!withdrawalOrderActive) throw new Error(t("withdrawal_order_not_found"));
@@ -355,6 +363,7 @@ export const useOrder = () => {
                     withdrawalAmount
                 };
             });
+
             updateDepositSupplies.forEach(u => {
                 if (Number(u.originalAmount) > Number(u.withdrawalAmount)) {
                     isComplete = false;
@@ -363,7 +372,7 @@ export const useOrder = () => {
             });
 
             const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
-            if (!responseStock) throw new Error("Stock not found");
+            if (!responseStock) { console.error("Stock no encontrado"); return };
             const docsStock = responseStock.docs;
             let updateStockSupplies: Stock[] = [];
 
@@ -378,11 +387,14 @@ export const useOrder = () => {
                             w.supplyId === s.id &&
                             w.location === s.location &&
                             w.nroLot === s.nroLot) {
-                            updateStockSupplies.push({
-                                ...s,
-                                currentStock: (Number(s.currentStock) - Number(w.amount)),
-                                reservedStock: (Number(s.reservedStock) - Number(w.amount))
-                            });
+                            let stockInsumo = { ...s };
+                            
+                            stockInsumo.reservedStock = (Number(s.reservedStock) - Number(w.amount));
+                            
+                            if (withdrawalOrderActive.type.toLowerCase() === WithdrawalOrderType.Manual.toLowerCase()) {
+                                stockInsumo.currentStock = (Number(s.currentStock) - Number(w.amount));
+                            }
+                            updateStockSupplies.push(stockInsumo);
                         }
                     });
                 }
@@ -493,55 +505,10 @@ export const useOrder = () => {
         }
     }
 
-    const confirmLaborOrder = async (listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
-        setIsLoading(true);
-        try {
-            if (!user) throw new Error(t("user_not_found"));
-            // if (!withdrawalOrderActive) throw new Error("Withdrawal Order not found");
 
-            //Registro de los retiros 
-            const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
-                accountId: w.accountId,
-                amount: Number(w.amount),
-                depositSupplyOrderId: w._id,
-                order: w.order,
-                withdrawalDate,
-            } as WithdrawalsByDepositSupply));
-
-            //Actualizamos la cantidad retirada
-            const updateDepositSupplies: DepositSupplyOrder[] = listWithdrawals.map(w => {
-                const { amount, ...newObject } = w;
-                let withdrawalAmount = Number(w.withdrawalAmount + amount);
-                return {
-                    ...newObject,
-                    withdrawalAmount
-                };
-            });
-
-            let responseAll = await Promise.all([
-                dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
-                dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
-            ]);
-
-            setIsLoading(false);
-
-            if (responseAll) {
-                NotificationService.showSuccess(
-                    t("successful_confirmation"),
-                    {},
-                    t("withdrawal_order_label")
-                );
-                return true;
-            }
-
-            return false;
-        } catch (error) {
-            console.log(t('error_log'), error);
-            setIsLoading(false);
-            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
-            return false;
-        }
-    }
+    // AGREGAR UN BOOLEANO PARA SABER CUANDO EJECUTA LA ORDEN 
+    // SI EJECUTA , HAY Q BUSCAR TODOS LOS RETIROS Q HIZO Y SUMAR ESOS MONTOS , LUEGO DESCONTAR DEL STOCK Y REMOVER LO RESERVADO
+    // SI NO EJECUTA , SOLO INCREMENTA EL STOCK RESERVADO Y NO TOCA EL STOCK ACTUAL
 
     const confirmAutomaticWithdrawalOrder = async (withdrawalOrder: WithdrawalOrder, listWithdrawals: DepositSupplyOrderItem[], withdrawalDate: string) => {
         setIsLoading(true);
@@ -549,8 +516,6 @@ export const useOrder = () => {
             if (!user) throw new Error(t("user_not_found"));
             if (!withdrawalOrder) throw new Error(t("withdrawal_order_not_found"));
 
-            let isComplete = true;
-            
             const newWithdrawals: WithdrawalsByDepositSupply[] = listWithdrawals.map(w => ({
                 accountId: w.accountId,
                 amount: Number(w.amount || 0),
@@ -568,13 +533,6 @@ export const useOrder = () => {
                     ...newObject,
                     withdrawalAmount
                 };
-            });
-            
-            updateDepositSupplies.forEach(u => {
-                if (Number(u.originalAmount) > Number(u.withdrawalAmount)) {
-                    isComplete = false;
-                    return;
-                }
             });
 
             const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
@@ -631,10 +589,9 @@ export const useOrder = () => {
                 dbContext.stockMovements.bulkDocs(newMovements),
             ]);
 
-            if (isComplete) {
-                let updateOrder = { ...withdrawalOrder, state: OrderStatus.Completed };
-                await dbContext.withdrawalOrders.put(updateOrder);
-            }
+            //Una vez q se confirma la orden automatica, se marca como completada
+            let updateOrder = { ...withdrawalOrder, state: OrderStatus.Completed };
+            await dbContext.withdrawalOrders.put(updateOrder);
 
             setIsLoading(false);
 
@@ -720,7 +677,6 @@ export const useOrder = () => {
         deleteWithdrawalOrder,
         getOrderDetailByNumber,
         createLaborOrder,
-        confirmLaborOrder,
         getLaborOrder,
         getHistoryWithdrawOrder
     }

@@ -53,7 +53,7 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
   const [selectedService, setSelectedService] = useState<any>(null)   // Servicio seleccionado (objeto completo)
   const [contractor, setContractor] = useState('')
   const [comment, setComment] = useState('')
-  const [units, setUnits] = useState(0)
+  const [units, setUnits] = useState("")
   const [art, setArt] = useState('')
 
   // Fila(s) de servicios agregados
@@ -109,7 +109,7 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
     setSelectedService(null)
     setContractor('')
     setComment('')
-    setUnits(0)
+    setUnits('')
     if (isBrazil && isFitosanitaria) setArt('')
   }
 
@@ -172,8 +172,8 @@ function ServicesForm({ formData, setFormData, mode = 'execute' }: ServicesFormP
               <NumberFieldWithUnits
                 fullWidth
                 label={t('units')}
-                value={Number(units)}
-                onChange={(e) => setUnits(Number(e.target.value))}
+                value={units}
+                onChange={(e) => setUnits(e.target.value)}
                 unit={t('hectares')}
               />
             </Grid>
