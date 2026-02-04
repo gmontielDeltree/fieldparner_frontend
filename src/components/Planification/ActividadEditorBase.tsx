@@ -517,6 +517,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
               formData={formData}
               setFormData={setFormData}
               mode="plan"
+              planningOrigin="annual"
               showActivityType={false}
               activities={sowingActivities}
             />
