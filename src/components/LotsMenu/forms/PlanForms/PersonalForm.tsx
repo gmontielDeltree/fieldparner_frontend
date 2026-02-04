@@ -50,6 +50,7 @@ function PersonalFormUnified({
   mode = 'plan',
   activities = [],
   selectedCampaign = null,
+  planningOrigin = 'lot', // 'lot' (menu de lotes) | 'annual' (planificación anual)
 }) {
   const { t } = useTranslation();
   
@@ -401,9 +402,12 @@ function PersonalFormUnified({
                 : (campaign?.zafra ? [campaign.zafra] : []);
               
               // Verificar si viene de planificación anual:
-              // - mode === 'plan' indica que viene del editor de planificación anual
-              // - _originalPlanifData o isPlanificada indica que es una actividad planificada
-              const comesFromAnnualPlanning = mode === 'plan' || formData._originalPlanifData || formData.isPlanificada;
+              // - planningOrigin === 'annual' indica que viene del editor de planificación anual
+              // - _originalPlanifData o isPlanificada indica que proviene de una planificación aplicada / actividad planificada
+              const comesFromAnnualPlanning =
+                planningOrigin === 'annual' ||
+                formData._originalPlanifData ||
+                formData.isPlanificada;
               
               // Si viene de planificación anual, mostrar como solo lectura
               if (comesFromAnnualPlanning) {
