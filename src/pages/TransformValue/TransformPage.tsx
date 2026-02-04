@@ -252,7 +252,7 @@ export const TransformPage: React.FC = () => {
             const result = await getStock({
                 id: cropId,
                 tipo: TipoStock.CULTIVO,
-                campaignId: newTransformValue.campaignId,
+                campaignId: newTransformValue.campaignId, // TODO: revisar si cuando ejecuta la activadad de una cosecha, esta prop se guarda con el _id de la campaña correcta
                 depositId,
                 location: newTransformValue.location,
                 nroLot: newTransformValue.nroLot

@@ -1370,5 +1370,10 @@
   "closing": "Closing",
   "integrations": "Integrations",
   "fields": "Fields",
-  "calendar_activities": "Activities Calendar"
+  "calendar_activities": "Activities Calendar",
+  "available": "Available",
+  "committed": "Committed",
+  "delivered": "Delivered",
+  "available_to_sell": "Available to sell",
+  "pending_delivery": "Pending delivery"
 }

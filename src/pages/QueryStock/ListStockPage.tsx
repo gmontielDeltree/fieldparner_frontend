@@ -260,7 +260,7 @@ export const ListStockPage: React.FC = () => {
                 <Tab
                   label={
                     <Box>
-                      {t("Cultivos")} <QueryStatsIcon sx={{ ml: 1 }} />
+                      {t("_crop")} <QueryStatsIcon sx={{ ml: 1 }} />
                     </Box>
                   }
                   {...a11yProps(2)}
@@ -554,11 +554,11 @@ export const ListStockPage: React.FC = () => {
                       { text: t("_crop"), align: "left" },
                       { text: t("_campaign"), align: "center" },
                       { text: "Zafra", align: "center" },
-                      { text: t("Disponible"), align: "center" },
-                      { text: t("Comprometido"), align: "center" },
-                      { text: t("Entregado"), align: "center" },
-                      { text: t("Disponible para vender"), align: "center" },
-                      { text: t("Falta entregar"), align: "center" },
+                      { text: t("available"), align: "center" },
+                      { text: t("committed"), align: "center" },
+                      { text: t("delivered"), align: "center" },
+                      { text: t("available_to_sell"), align: "center" },
+                      { text: t("pending_delivery"), align: "center" },
                     ]}
                     isLoading={loadingCrops}
                   >

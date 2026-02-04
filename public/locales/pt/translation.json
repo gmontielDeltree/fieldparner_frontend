@@ -1380,5 +1380,10 @@
   "closing": "Fechando",
   "integrations": "Integrações",
   "fields": "Campos",
-  "calendar_activities": "Calendário de Atividades"
+  "calendar_activities": "Calendário de Atividades",
+  "available": "Disponível",
+  "committed": "Comprometido",
+  "delivered": "Entregue",
+  "available_to_sell": "Disponível para vender",
+  "pending_delivery": "Falta entregar"
 }
