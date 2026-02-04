@@ -194,18 +194,41 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     if (existingActivity) {
       console.log('🔄 CARGANDO ACTIVIDAD EXISTENTE:', existingActivity)
       console.log('📋 DOSIS EN ACTIVIDAD EXISTENTE:', existingActivity.detalles?.dosis)
+      console.log('🌾 ZAFRA EN ACTIVIDAD EXISTENTE:', existingActivity.detalles?.zafra || existingActivity.zafra)
       if (existingActivity.detalles?.dosis) {
         existingActivity.detalles.dosis.forEach((dosis, index) => {
           console.log(`📦 DOSIS ${index + 1}:`, dosis)
           console.log(`   ⚡ Orden de retiro:`, dosis.orden_de_retiro)
         })
       }
-      setFormData(existingActivity)
+      
+      // Obtener zafra de múltiples fuentes
+      const campaignZafra = Array.isArray(selectedCampaign?.zafra)
+        ? selectedCampaign.zafra[0]
+        : selectedCampaign?.zafra;
+      
+      const zafraToUse = 
+        existingActivity.detalles?.zafra || 
+        existingActivity.zafra ||
+        campaignZafra;
+      
+      // Asegurar que la zafra esté presente en los detalles
+      const activityWithZafra = {
+        ...existingActivity,
+        detalles: {
+          ...existingActivity.detalles,
+          zafra: existingActivity.detalles?.zafra || zafraToUse
+        },
+        zafra: existingActivity.zafra || zafraToUse
+      };
+      
+      console.log('🌾 ZAFRA FINAL PARA FORMULARIO:', activityWithZafra.detalles.zafra)
+      setFormData(activityWithZafra)
     } else {
       console.log('📝 CREANDO ACTIVIDAD VACÍA')
       setFormData(getEmptyActivity())
     }
-  }, [existingActivity])
+  }, [existingActivity, selectedCampaign])
 
   useEffect(() => {
     getSupplies()
@@ -725,8 +748,29 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
     executionDetails.campaña = existingActivity?.campaña || selectedCampaign || formData.campaña;
     (executionDetails as any).campanaId = existingActivity?.campaña?.campaignId || selectedCampaign?.campaignId || selectedCampaign?._id;
 
-    // Zafra: puede venir de la actividad existente o de los detalles
-    const existingZafra = (existingActivity?.detalles as any)?.zafra || (existingActivity as any)?.zafra;
+    // Zafra: buscar en múltiples fuentes en orden de prioridad:
+    // 1. Detalles de la actividad existente
+    // 2. Propiedad raíz de la actividad existente
+    // 3. Detalles del formulario actual
+    // 4. Campaña seleccionada (puede ser un array o string)
+    const campaignZafra = Array.isArray(selectedCampaign?.zafra)
+      ? selectedCampaign.zafra[0]
+      : selectedCampaign?.zafra;
+    
+    const existingZafra = 
+      (existingActivity?.detalles as any)?.zafra || 
+      (existingActivity as any)?.zafra ||
+      (formData?.detalles as any)?.zafra ||
+      campaignZafra;
+    
+    console.log('🌾 ZAFRA DEBUG:', {
+      fromActivityDetalles: (existingActivity?.detalles as any)?.zafra,
+      fromActivityRoot: (existingActivity as any)?.zafra,
+      fromFormDetalles: (formData?.detalles as any)?.zafra,
+      fromCampaign: campaignZafra,
+      finalZafra: existingZafra
+    });
+    
     if (!(executionDetails.detalles as any).zafra) {
       (executionDetails.detalles as any).zafra = existingZafra;
     }
