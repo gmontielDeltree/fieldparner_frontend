@@ -104,7 +104,8 @@ export const usePlanActivity = (
             // Flags
             fertilizacion: sourceData.fertilizacion || existingActivity.detalles?.fertilizacion || false,
             fitosanitaria: sourceData.fitosanitaria || existingActivity.detalles?.fitosanitaria || false,
-            zafra: sourceData.zafra || existingActivity.detalles?.zafra || '',
+            zafra: sourceData.zafra || existingActivity.detalles?.zafra || 
+                   (Array.isArray(selectedCampaign?.zafra) ? selectedCampaign.zafra[0] : selectedCampaign?.zafra) || '',
             
             // Sowing-specific fields (handle both original and mapped formats)
             densidad_objetivo: sourceData.densidadObjetivo || sourceData.detalles?.densidad_objetivo || existingActivity.detalles?.densidad_objetivo,
@@ -150,6 +151,13 @@ export const usePlanActivity = (
         setFormData(activityData);
       } else {
         // Regular activity handling
+        // Get zafra from campaign if not present in activity
+        const campaignZafra = Array.isArray(selectedCampaign?.zafra)
+          ? selectedCampaign.zafra[0]
+          : selectedCampaign?.zafra;
+        
+        const existingZafra = existingActivity.detalles?.zafra || existingActivity.zafra || campaignZafra;
+        
         const activityData = {
           ...getEmptyActivity(), // Start with empty structure
           ...existingActivity,   // Override with existing data
@@ -157,6 +165,7 @@ export const usePlanActivity = (
             ...getEmptyActivity().detalles, // Ensure all detail fields exist
             ...(existingActivity.detalles || {}), // Override with existing details
             hectareas: existingActivity.detalles?.hectareas || lot.properties.hectareas,
+            zafra: existingZafra, // Ensure zafra is set
           },
           condiciones: {
             ...getEmptyActivity().condiciones, // Ensure all condition fields exist
@@ -164,7 +173,9 @@ export const usePlanActivity = (
           },
           lote_uuid: existingActivity.lote_uuid || lot.id,
           tipo: existingActivity.tipo || translatedActivityType?.toLowerCase() || '',
+          zafra: existingZafra, // Also set at root level
         };
+        console.log('🌾 Regular activity zafra:', existingZafra);
         setFormData(activityData);
       }
     } else {

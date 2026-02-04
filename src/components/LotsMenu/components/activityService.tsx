@@ -142,6 +142,21 @@ export const saveActivity = async (
 
   if (validActivityTypes.includes(actividad.tipo)) {
     actividad.campaña = selectedCampaign;
+    
+    // Ensure zafra is set from campaign if not already present in activity details
+    if (!actividad.detalles?.zafra && selectedCampaign?.zafra) {
+      const campaignZafra = Array.isArray(selectedCampaign.zafra)
+        ? selectedCampaign.zafra[0]
+        : selectedCampaign.zafra;
+      
+      if (!actividad.detalles) {
+        actividad.detalles = {};
+      }
+      actividad.detalles.zafra = campaignZafra;
+      actividad.zafra = campaignZafra;
+      
+      console.log("saveActivity: Zafra set from campaign:", campaignZafra);
+    }
   }
 
   // Standardize all supplies in the activity
