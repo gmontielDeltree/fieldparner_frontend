@@ -30,11 +30,11 @@ import {
   Warehouse as WarehouseIcon,
   Search as SearchIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useSupply, useAppSelector, useStockMovement } from "../../hooks";
+import { useAppDispatch, useSupply, useAppSelector } from "../../hooks";
 import { uiOpenModal } from "../../redux/ui";
 import { setSupplyActive } from "../../redux/supply";
 import { useTranslation } from "react-i18next";
-import { StockItem, TipoStock } from "../../interfaces/stock";
+import { StockItem } from "../../interfaces/stock";
 import { dbContext } from "../../services";
 
 
@@ -83,7 +83,7 @@ export const ListStockPage: React.FC = () => {
     getStockByDeposits,
     getStockData,
   } = useSupply();
-  const { getStock } = useStockMovement();
+  // const { getStock } = useStockMovement();
   const [tabValue, setTabValue] = React.useState(0);
   const [cropStockData, setCropStockData] = useState<any[]>([]);
   const [loadingCrops, setLoadingCrops] = useState(false);
@@ -111,8 +111,8 @@ export const ListStockPage: React.FC = () => {
   const columnsByDeposit: ColumnProps[] = [
     { text: t("_warehouse"), align: "left" },
     { text: t("_location"), align: "left" },
-    { text: t("_type_suppy"), align: "left" },
-    { text: t("_supply"), align: "center" },
+    { text: t("_type"), align: "left" },
+    { text: `${t("_supply")} / ${t("_crop")}`, align: "center" },
     { text: "UM", align: "center" },
     { text: t("current_stock"), align: "center" },
     { text: t("reserved_stock"), align: "center" },
@@ -212,7 +212,8 @@ export const ListStockPage: React.FC = () => {
     else if (tabValue === 2) loadCropStock();
   }, [tabValue]);
 
-  console.log('stockBySupplies', stockBySupplies)
+  console.log('filteredStockByDeposits', filteredStockByDeposits)
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {isLoading && <Loading loading={true} />}
@@ -346,7 +347,7 @@ export const ListStockPage: React.FC = () => {
                     isLoading={isLoading}
                   >
                     {filteredStockBySupplies
-                      // .filter((s) => (showStockValueZero ? s : s.currentStock > 0))
+                      .filter((s) => !s.dataCrop)
                       .map((stock) => (
                         <ItemRow key={stock._id} hover>
                           <TableCellStyled align="left">{stock?.dataSupply?.type}</TableCellStyled>
@@ -514,12 +515,12 @@ export const ListStockPage: React.FC = () => {
                             {row?.dataDeposit?.description.trim()}
                           </TableCellStyled>
                           <TableCellStyled align="left">
-                            {row?.location.trim()}
+                            {row?.location.trim() || row?.dataDeposit?.locations[0] || "-"}
                           </TableCellStyled>
-                          <TableCellStyled>{row?.dataSupply?.type}</TableCellStyled>
-                          <TableCellStyled align="center">{row?.dataSupply?.name}</TableCellStyled>
+                          <TableCellStyled>{row?.dataSupply?.type || row?.dataCrop?.cropType}</TableCellStyled>
+                          <TableCellStyled align="center">{row?.dataSupply?.name || row?.dataCrop?.descriptionEN}</TableCellStyled>
                           <TableCellStyled align="center">
-                            {row?.dataSupply?.unitMeasurement}
+                            {row?.dataSupply?.unitMeasurement || "-"}
                           </TableCellStyled>
                           <TableCellStyled align="center">
                             <Chip
