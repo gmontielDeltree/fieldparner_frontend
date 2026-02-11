@@ -34,7 +34,7 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
     const listTransportDocument = useMemo(() => {
         if (transportDocumentsItem.length === 0) return [];
         let transportFiltered = transportDocumentsItem.filter((item) =>
-            item.exitField?.campaignId === formData.campaniaId && item.exitField?.cropId === formData.cultivoId);
+            item.exitField?.campaignId === formData.campaniaId && (!formData.cultivoId || item.exitField?.cropId === formData.cultivoId));
         transportFiltered = transportFiltered.filter((item) =>
             !listTransportByCertificate.some((itemFilter) => itemFilter.numeroCartaPorte === item.nroCartaPorte));
         return transportFiltered;
@@ -42,7 +42,7 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
 
     useEffect(() => {
         getTransportDocuments();
-    }, []);
+    }, [formData.campaniaId, formData.cultivoId]);
 
     return (
         <Box>
@@ -62,7 +62,7 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                                 <Grid item xs={12} sm={4}>
                                     <ListItemText
                                         primary={<Typography variant="caption" color="text.secondary">Depositario</Typography>}
-                                        secondary={<Typography variant="body2">{depositary?.razonSocial || formData.depositante?.razonSocial || '-'}</Typography>}
+                                        secondary={<Typography variant="body2">{depositary?.razonSocial || formData.depositario?.razonSocial || '-'}</Typography>}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>

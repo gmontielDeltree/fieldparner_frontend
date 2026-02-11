@@ -81,7 +81,7 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                             <Grid item xs={12} sm={4}>
                                 <ListItemText
                                     primary={<Typography variant="caption" color="text.secondary">Depositario</Typography>}
-                                    secondary={<Typography variant="body2">{depositary?.razonSocial || formData.depositante?.razonSocial || '-'}</Typography>}
+                                    secondary={<Typography variant="body2">{depositary?.razonSocial || formData.depositario?.razonSocial || '-'}</Typography>}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={4}>

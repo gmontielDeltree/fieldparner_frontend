@@ -20,8 +20,92 @@ export const useMenuModules = () => {
       if (response.rows.length) {
         const documents: MenuModules[] = response.rows.map(row => row.doc as MenuModules);
 
+        // Inyectar menú Salida de Campo si no existe - TODO: remover cuando esté en la DB
+        const hasExitField = documents.some(m =>
+          m.route?.includes('exit-field')
+        );
+        if (!hasExitField) {
+          const agriculturaMenu = documents.find(m =>
+            (m.module as any)?.moduleNameEs?.toLowerCase().includes('agricultura')
+          );
+
+          const agriculturaModule = agriculturaMenu?.module || {
+            _id: 'module:agricultura',
+            moduleNameEs: 'Agricultura',
+            moduleNameEn: 'Agriculture',
+            moduleNamePt: 'Agricultura',
+            icon: 'Agriculture',
+            orden: 3,
+          };
+
+          const orderBase = agriculturaMenu?.order?.split('.')[0] || '3';
+
+          const debugExitFieldMenu: MenuModules = {
+            _id: 'menu:exit-field',
+            id: 9997,
+            module: agriculturaModule as any,
+            order: `${orderBase}.97`,
+            menuOption: 'Salida de Campo',
+            menuOptionEn: 'Field Exit',
+            menuOptionPt: 'Saída de Campo',
+            systemType: 'web',
+            menuType: 'sidebar',
+            details: '',
+            full: '/init/overview/exit-field',
+            light: '',
+            icon: 'AgricultureOutlined',
+            route: '/init/overview/exit-field',
+            permission: true,
+          } as MenuModules;
+
+          documents.push(debugExitFieldMenu);
+          console.debug('[useMenuModules] DEBUG: Inyectado menú Salida de Campo');
+        }
+
+        // Inyectar menú Documentos de Transporte si no existe - TODO: remover cuando esté en la DB
+        const hasTransportDocuments = documents.some(m =>
+          m.route?.includes('transport-documents')
+        );
+        if (!hasTransportDocuments) {
+          const agriculturaMenu = documents.find(m =>
+            (m.module as any)?.moduleNameEs?.toLowerCase().includes('agricultura')
+          );
+
+          const agriculturaModule = agriculturaMenu?.module || {
+            _id: 'module:agricultura',
+            moduleNameEs: 'Agricultura',
+            moduleNameEn: 'Agriculture',
+            moduleNamePt: 'Agricultura',
+            icon: 'Agriculture',
+            orden: 3,
+          };
+
+          const orderBase = agriculturaMenu?.order?.split('.')[0] || '3';
+
+          const debugTransportDocumentsMenu: MenuModules = {
+            _id: 'menu:transport-documents',
+            id: 9998,
+            module: agriculturaModule as any,
+            order: `${orderBase}.98`,
+            menuOption: 'Documentos de Transporte',
+            menuOptionEn: 'Transport Documents',
+            menuOptionPt: 'Documentos de Transporte',
+            systemType: 'web',
+            menuType: 'sidebar',
+            details: '',
+            full: '/init/overview/transport-documents',
+            light: '',
+            icon: 'LocalShipping',
+            route: '/init/overview/transport-documents',
+            permission: true,
+          } as MenuModules;
+
+          documents.push(debugTransportDocumentsMenu);
+          console.debug('[useMenuModules] DEBUG: Inyectado menú Documentos de Transporte');
+        }
+
         // Inyectar menú de debug si no existe ya - TODO: remover cuando esté en la DB
-        const hasValorizacion = documents.some(m => 
+        const hasValorizacion = documents.some(m =>
           m.route === '/overview/annual-plan-valorization' || 
           m.route === '/init/overview/annual-plan-valorization'
         );
