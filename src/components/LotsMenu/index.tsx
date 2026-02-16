@@ -166,7 +166,7 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
       getActivities(lot.id).then((res) => setActivities(res))
       dispatch(setLotActive(lot))
     }
-  }, [lot, selectedCategory, dispatch])
+  }, [lot, selectedCategory, dispatch, selectedCampaign])
 
   // La función handleEditActivity establece la categoría según el tipo de edición
   const handleEditActivity = (
