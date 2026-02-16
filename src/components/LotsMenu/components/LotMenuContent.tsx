@@ -78,9 +78,21 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
     categoryMatches(key)
   )
 
-  // Para el selector de siembras necesitamos todas las actividades del lote.
-  // Dejamos de filtrar por campaña para no perder siembras de campañas previas.
-  const filteredActivities = activities || []
+  // Todas las actividades del lote (sin filtrar por campaña).
+  // Se usa para el selector de siembras en PlanActivity (cosecha/aplicación).
+  const allActivities = activities || []
+
+  // Actividades filtradas por la campaña seleccionada para la vista principal.
+  const filteredActivities = allActivities.filter((activityData: any) => {
+    if (!selectedCampaign) return true
+    const act = activityData?.actividad || activityData
+    const actCampaignId =
+      act?.campaña?.campaignId ||
+      act?.campaña?._id ||
+      act?.campanaId
+    const selectedId = selectedCampaign._id || selectedCampaign.campaignId
+    return actCampaignId === selectedId
+  })
 
   if (!selectedCampaign && !isAccessibleWithoutCampaign) {
     return (
@@ -219,7 +231,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         activityType={'harvesting'}
         lot={lot}
         fieldName={field.nombre}
-        lotActivities={filteredActivities}
+        lotActivities={allActivities}
         db={db}
         backToActivites={backToActivites}
       />
@@ -231,7 +243,7 @@ const LotMenuContent: React.FC<LotMenuContentProps> = ({
         activityType={'application'}
         lot={lot}
         fieldName={field.nombre}
-        lotActivities={filteredActivities}
+        lotActivities={allActivities}
         db={db}
         backToActivites={backToActivites}
       />

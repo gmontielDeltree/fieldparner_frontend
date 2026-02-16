@@ -245,11 +245,17 @@ export const RemitenteForm: React.FC<TransportDocumentFormProps & RemitenteFormP
                         label="Campo"
                         onChange={handleSelectChange}
                     >
-                        {exitFields?.map((c) => (
-                            <MenuItem key={c._id} value={c._id}>
-                                {c.field?.nombre}
-                            </MenuItem>
-                        ))}
+                        {exitFields?.map((c) => {
+                            const campo = c.field?.nombre || '-';
+                            const lote = c.lot?.properties?.nombre || '-';
+                            const cultivo = c.crop?.descriptionES || c.crop?.crop || '-';
+                            const kg = c.kgNet != null ? c.kgNet : '-';
+                            return (
+                                <MenuItem key={c._id} value={c._id}>
+                                    {`${campo} / ${lote} / ${cultivo} / ${kg} kg`}
+                                </MenuItem>
+                            );
+                        })}
                     </Select>
                     <FormHelperText>{formValues.salidaCampoId.message}</FormHelperText>
                 </FormControl>

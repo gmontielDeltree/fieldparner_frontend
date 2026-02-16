@@ -63,7 +63,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           <TextFieldGray
             variant='outlined'
             label={t('campaign')}
-            value={selectedFieldOutput?.campaignId || "-"}
+            value={selectedFieldOutput?.campaign?.name || selectedFieldOutput?.campaignId || "-"}
             fullWidth
           />
         </Grid>
@@ -71,7 +71,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
           <TextFieldGray
             variant='outlined'
             label={t('crop')}
-            value={selectedFieldOutput?.cultive || "-"}
+            value={selectedFieldOutput?.crop?.descriptionES || selectedFieldOutput?.crop?.crop || "-"}
             fullWidth
           />
         </Grid>

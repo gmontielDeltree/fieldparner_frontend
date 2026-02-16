@@ -146,7 +146,10 @@ export const SideBar: React.FC<SideBarProps> = ({ drawerWidth, open, handleSideB
                           (m as any).light ||
                           (m as any).details ||
                           '#';
-                        const label = getMenuLabel(m, lang) || m.menuOption || '';
+                        const rawLabel = getMenuLabel(m, lang) || m.menuOption || '';
+                        const menuKey = `menu_${rawLabel}`;
+                        const translated = t(menuKey);
+                        const label = translated !== menuKey ? translated : rawLabel;
                         const selected = to !== '#' && pathname.startsWith(to);
                         return (
                           <ListItemButton

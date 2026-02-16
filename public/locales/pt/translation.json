@@ -98,7 +98,7 @@
   "title_sale_cereal": "Contrato de Venda de Cereais",
   "operation_date": "Data de Operação",
   "_crop": "Colheita",
-  "_crop_of": "Crop de",
+  "_crop_of": "Cultivo de",
   "_item": "Item",
   "_waybill": "Conhecimento de Transporte",
   "ticket_receipt": "Bilhete/Recibo",
@@ -1385,5 +1385,7 @@
   "committed": "Comprometido",
   "delivered": "Entregue",
   "available_to_sell": "Disponível para vender",
-  "pending_delivery": "Falta entregar"
+  "pending_delivery": "Falta entregar",
+  "menu_Agregar Campo": "Adicionar Campo",
+  "menu_Agregar Lote": "Adicionar Lote"
 }

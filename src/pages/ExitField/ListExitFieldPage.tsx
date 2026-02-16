@@ -40,10 +40,7 @@ export const ListExitFieldPage: React.FC = () => {
       width: 150,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: params => {
-        const lote = params.row.field?.lotes.find(l => l._id === params.row.lotId);
-        return lote?.properties?.nombre || '';
-      },
+      valueGetter: params => params.row.lot?.properties?.nombre || '',
     },
     {
       field: 'campaignId',
@@ -51,6 +48,7 @@ export const ListExitFieldPage: React.FC = () => {
       width: 180,
       align: 'left',
       headerAlign: 'left',
+      valueGetter: params => params.row.campaign?.name || params.row.campaignId || '',
     },
     {
       field: 'zafra',
@@ -80,7 +78,7 @@ export const ListExitFieldPage: React.FC = () => {
       width: 180,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: params => params.row.transport?.nombreCompleto || '',
+      valueGetter: params => params.row.transport?.razonSocial || params.row.transport?.nombreCompleto || '',
     },
     {
       field: 'kgNet',
