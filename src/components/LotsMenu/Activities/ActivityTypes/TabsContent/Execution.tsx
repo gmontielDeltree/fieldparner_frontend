@@ -27,6 +27,7 @@ import { dbContext } from "../../../../../services";
 import { Ejecucion } from "../../../../../interfaces/activity";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "../../../../../hooks";
 
 // ─── Styled Components (matching Planification design) ──────────────
 
@@ -131,6 +132,17 @@ function ExecutionContent(props) {
   const [execution, setExecution] = useState<Ejecucion>(null);
   const db = dbContext.fields;
   const { t } = useTranslation();
+  const { user } = useAppSelector((state) => state.auth);
+  const isArgentina = user?.countryId === 'AR';
+  const isBrazil = user?.countryId === 'BR';
+
+  // Convert stored ton/ha value to display unit
+  const formatYield = (tonValue: number) => {
+    if (isArgentina) return (tonValue * 10).toFixed(2);  // quintales
+    if (isBrazil) return (tonValue * 1000 / 60).toFixed(2);  // sacas
+    return tonValue;
+  };
+  const yieldUnit = isArgentina ? 'qq/ha' : isBrazil ? 'sc/ha' : 'ton/ha';
 
   useEffect(() => {
     const fetchExecution = async () => {
@@ -394,7 +406,7 @@ function ExecutionContent(props) {
                     <TrendingUpIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
                     <Box>
                       <InfoLabel>{t('yield')}</InfoLabel>
-                      <InfoValue>{execution.detalles.rinde_obtenido} ton/ha</InfoValue>
+                      <InfoValue>{formatYield(Number(execution.detalles.rinde_obtenido))} {yieldUnit}</InfoValue>
                     </Box>
                   </InfoRow>
                 </Grid>
@@ -538,7 +550,7 @@ function ExecutionContent(props) {
                 <TrendingUpIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
                 <Box>
                   <InfoLabel>{t('yield')}</InfoLabel>
-                  <InfoValue>{execution.detalles.rinde_obtenido} ton/ha</InfoValue>
+                  <InfoValue>{formatYield(Number(execution.detalles.rinde_obtenido))} {yieldUnit}</InfoValue>
                 </Box>
               </InfoRow>
             )}
