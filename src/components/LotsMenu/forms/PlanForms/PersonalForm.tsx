@@ -53,7 +53,9 @@ function PersonalFormUnified({
   planningOrigin = 'lot', // 'lot' (menu de lotes) | 'annual' (planificación anual)
 }) {
   const { t } = useTranslation();
-  
+  const { user } = useAppSelector((state) => state.auth);
+  const isBrazil = user?.countryId === 'BR';
+
   // Obtener la campaña seleccionada del store si no viene por props
   const campaignFromStore = useAppSelector((state) => state.campaign.selectedCampaign);
   const campaign = selectedCampaign || campaignFromStore;
@@ -557,10 +559,21 @@ function PersonalFormUnified({
             <NumberFieldWithUnits
               size="small"
               fullWidth
-              label={t('Yield Obtained (ton/ha)')}
-              value={formData.detalles?.rinde_obtenido || ''}
-              onChange={(e) => onFieldChange('rinde_obtenido', e.target.value)}
-              unit="ton/ha"
+              label={isBrazil ? t('Yield Obtained (sc/ha)') : t('Yield Obtained (ton/ha)')}
+              value={
+                isBrazil
+                  ? (formData.detalles?.rinde_obtenido ? (Number(formData.detalles.rinde_obtenido) * 1000 / 60) : '')
+                  : (formData.detalles?.rinde_obtenido || '')
+              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (isBrazil && val !== '') {
+                  onFieldChange('rinde_obtenido', Number(val) * 60 / 1000);
+                } else {
+                  onFieldChange('rinde_obtenido', val);
+                }
+              }}
+              unit={isBrazil ? "sc/ha" : "ton/ha"}
               allowNegative={false}
               allowDecimals={true}
             />

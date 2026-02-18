@@ -39,6 +39,8 @@ interface HarvestYieldFormProps {
   convertTonsToKg: (tons: number) => number;
   convertTonsToQuintals: (tons: number) => number;
   convertQuintalsToTons: (quintals: number) => number;
+  convertTonsToSacas: (tons: number) => number;
+  convertSacasToTons: (sacas: number) => number;
 }
 
 const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
@@ -49,9 +51,12 @@ const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
   convertKgToTons,
   convertTonsToKg,
   convertTonsToQuintals,
-  convertQuintalsToTons
+  convertQuintalsToTons,
+  convertTonsToSacas,
+  convertSacasToTons
 }) => {
   const isArgentina = user?.countryId === 'AR';
+  const isBrazil = user?.countryId === 'BR';
   const [yieldPerHa, setYieldPerHa] = useState<number | string>(
     formData.detalles?.rinde_estimado ? convertKgToTons(formData.detalles.rinde_estimado) : ''
   );
@@ -107,11 +112,11 @@ const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
               fullWidth
-              label={isArgentina ? t('Yield per hectare (qq/ha)') : t('Yield per hectare (ton/ha)')}
+              label={isArgentina ? t('Yield per hectare (qq/ha)') : isBrazil ? t('Yield per hectare (sc/ha)') : t('Yield per hectare (ton/ha)')}
               value={
                 yieldPerHa === ''
                   ? ''
-                  : (isArgentina ? convertTonsToQuintals(Number(yieldPerHa)) : yieldPerHa)
+                  : (isArgentina ? convertTonsToQuintals(Number(yieldPerHa)) : isBrazil ? convertTonsToSacas(Number(yieldPerHa)) : yieldPerHa)
               }
               onChange={(e) => {
                 const inputValue = e.target.value;
@@ -119,13 +124,13 @@ const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
                   onYieldPerHaChange('');
                 } else {
                   const numVal = Number(inputValue);
-                  const tonsValue = isArgentina ? convertQuintalsToTons(numVal) : numVal;
+                  const tonsValue = isArgentina ? convertQuintalsToTons(numVal) : isBrazil ? convertSacasToTons(numVal) : numVal;
                   onYieldPerHaChange(tonsValue);
                 }
               }}
-              unit={isArgentina ? "qq/ha" : "ton/ha"}
+              unit={isArgentina ? "qq/ha" : isBrazil ? "sc/ha" : "ton/ha"}
             />
-            {isArgentina && yieldPerHa !== '' && (
+            {(isArgentina || isBrazil) && yieldPerHa !== '' && (
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                 {t('Equivalent')}: {Number(yieldPerHa).toFixed(2)} ton/ha
               </Typography>
@@ -134,11 +139,11 @@ const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
           <Grid item xs={12} sm={6}>
             <NumberFieldWithUnits
               fullWidth
-              label={isArgentina ? t('Total estimated yield (qq)') : t('Total estimated yield (ton)')}
+              label={isArgentina ? t('Total estimated yield (qq)') : isBrazil ? t('Total estimated yield (sc)') : t('Total estimated yield (ton)')}
               value={
                 totalYield === ''
                   ? ''
-                  : (isArgentina ? convertTonsToQuintals(Number(totalYield)) : totalYield)
+                  : (isArgentina ? convertTonsToQuintals(Number(totalYield)) : isBrazil ? convertTonsToSacas(Number(totalYield)) : totalYield)
               }
               onChange={(e) => {
                 const inputValue = e.target.value;
@@ -146,13 +151,13 @@ const HarvestYieldForm: React.FC<HarvestYieldFormProps> = ({
                   onTotalYieldChange('');
                 } else {
                   const numVal = Number(inputValue);
-                  const tonsValue = isArgentina ? convertQuintalsToTons(numVal) : numVal;
+                  const tonsValue = isArgentina ? convertQuintalsToTons(numVal) : isBrazil ? convertSacasToTons(numVal) : numVal;
                   onTotalYieldChange(tonsValue);
                 }
               }}
-              unit={isArgentina ? "qq" : "ton"}
+              unit={isArgentina ? "qq" : isBrazil ? "sc" : "ton"}
             />
-            {isArgentina && totalYield !== '' && (
+            {(isArgentina || isBrazil) && totalYield !== '' && (
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
                 {t('Equivalent')}: {Number(totalYield).toFixed(2)} ton
               </Typography>
@@ -268,6 +273,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   // Unit conversion functions
   const convertTonsToQuintals = (tons: number) => tons * 10;
   const convertQuintalsToTons = (quintals: number) => quintals / 10;
+  const convertTonsToSacas = (tons: number) => tons * 1000 / 60;
+  const convertSacasToTons = (sacas: number) => sacas * 60 / 1000;
   const convertTonsToKg = (tons: number) => tons * 1000;
   const convertKgToTons = (kg: number) => kg / 1000;
 
@@ -509,6 +516,8 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
                 convertTonsToKg={convertTonsToKg}
                 convertTonsToQuintals={convertTonsToQuintals}
                 convertQuintalsToTons={convertQuintalsToTons}
+                convertTonsToSacas={convertTonsToSacas}
+                convertSacasToTons={convertSacasToTons}
               />
             )}
             {formData.tipo === 'aplicacion' && <ActivityDetailsForm />}
