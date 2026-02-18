@@ -52,9 +52,9 @@ function PersonalFormUnified({
   selectedCampaign = null,
   planningOrigin = 'lot', // 'lot' (menu de lotes) | 'annual' (planificación anual)
 }) {
-  const { t } = useTranslation();
-  const { user } = useAppSelector((state) => state.auth);
-  const isBrazil = user?.countryId === 'BR';
+  const { t, i18n } = useTranslation();
+  const isPortuguese = i18n.language?.startsWith('pt');
+  const isSpanish = i18n.language?.startsWith('es');
 
   // Obtener la campaña seleccionada del store si no viene por props
   const campaignFromStore = useAppSelector((state) => state.campaign.selectedCampaign);
@@ -559,21 +559,27 @@ function PersonalFormUnified({
             <NumberFieldWithUnits
               size="small"
               fullWidth
-              label={isBrazil ? t('Yield Obtained (sc/ha)') : t('Yield Obtained (ton/ha)')}
+              label={isPortuguese ? t('Yield Obtained (sc/ha)') : isSpanish ? t('Yield Obtained (qq/ha)') : t('Yield Obtained (ton/ha)')}
               value={
-                isBrazil
+                isPortuguese
                   ? (formData.detalles?.rinde_obtenido ? (Number(formData.detalles.rinde_obtenido) * 1000 / 60) : '')
-                  : (formData.detalles?.rinde_obtenido || '')
+                  : isSpanish
+                    ? (formData.detalles?.rinde_obtenido ? (Number(formData.detalles.rinde_obtenido) * 10) : '')
+                    : (formData.detalles?.rinde_obtenido || '')
               }
               onChange={(e) => {
                 const val = e.target.value;
-                if (isBrazil && val !== '') {
+                if (val === '') {
+                  onFieldChange('rinde_obtenido', val);
+                } else if (isPortuguese) {
                   onFieldChange('rinde_obtenido', Number(val) * 60 / 1000);
+                } else if (isSpanish) {
+                  onFieldChange('rinde_obtenido', Number(val) / 10);
                 } else {
                   onFieldChange('rinde_obtenido', val);
                 }
               }}
-              unit={isBrazil ? "sc/ha" : "ton/ha"}
+              unit={isPortuguese ? "sc/ha" : isSpanish ? "qq/ha" : "ton/ha"}
               allowNegative={false}
               allowDecimals={true}
             />

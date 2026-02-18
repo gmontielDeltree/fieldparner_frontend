@@ -27,7 +27,6 @@ import { dbContext } from "../../../../../services";
 import { Ejecucion } from "../../../../../interfaces/activity";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "../../../../../hooks";
 
 // ─── Styled Components (matching Planification design) ──────────────
 
@@ -131,18 +130,17 @@ function ExecutionContent(props) {
   const { activity, handleEditActivity } = props;
   const [execution, setExecution] = useState<Ejecucion>(null);
   const db = dbContext.fields;
-  const { t } = useTranslation();
-  const { user } = useAppSelector((state) => state.auth);
-  const isArgentina = user?.countryId === 'AR';
-  const isBrazil = user?.countryId === 'BR';
+  const { t, i18n } = useTranslation();
+  const isPortuguese = i18n.language?.startsWith('pt');
+  const isSpanish = i18n.language?.startsWith('es');
 
   // Convert stored ton/ha value to display unit
   const formatYield = (tonValue: number) => {
-    if (isArgentina) return (tonValue * 10).toFixed(2);  // quintales
-    if (isBrazil) return (tonValue * 1000 / 60).toFixed(2);  // sacas
+    if (isSpanish) return (tonValue * 10).toFixed(2);  // quintales
+    if (isPortuguese) return (tonValue * 1000 / 60).toFixed(2);  // sacas
     return tonValue;
   };
-  const yieldUnit = isArgentina ? 'qq/ha' : isBrazil ? 'sc/ha' : 'ton/ha';
+  const yieldUnit = isSpanish ? 'qq/ha' : isPortuguese ? 'sc/ha' : 'ton/ha';
 
   useEffect(() => {
     const fetchExecution = async () => {
