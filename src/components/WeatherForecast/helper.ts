@@ -36,7 +36,10 @@ export const forecastWeather = async (
   position: LngLatLike,
   date = new Date()
 ) => {
-  const startDate = new Date(date);
+  const now = new Date();
+  // Open-Meteo forecast API only accepts dates within its allowed range.
+  // If the requested date is in the past, fall back to today.
+  const startDate = new Date(date) < now ? now : new Date(date);
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + 4);
 
