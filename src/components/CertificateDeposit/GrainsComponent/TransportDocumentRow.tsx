@@ -23,28 +23,28 @@ export const TransportDocumentRow: React.FC<TransportDocumentRowProps> = ({
                 {item.fechaCartaPorte}
             </TableCell>
             <TableCell align="center">
-                {item.kgNeto}
+                {item.kgNeto.toLocaleString()}
             </TableCell>
             <TableCell align="center">
-                {item.kgMermaZarandeo}
+                {item.kgMermaZarandeo.toLocaleString()}
             </TableCell>
             <TableCell align="center">
-                $ {item.tarifaZarandeo}
+                $ {item.tarifaZarandeo.toLocaleString()}
             </TableCell>
             <TableCell align="center">
-                $ {item.importeZarandeo}
+                $ {item.importeZarandeo.toLocaleString()}
             </TableCell>
             <TableCell align="center">
                 {item.humedadSecado}
             </TableCell>
             <TableCell align="center">
-                {item.kgMermaSecado}
+                {item.kgMermaSecado.toLocaleString()}
             </TableCell>
             <TableCell align="center">
-                $ {item.tarifaSecado}
+                $ {item.tarifaSecado.toLocaleString()}
             </TableCell>
             <TableCell align="center">
-                $ {item.importeSecado}
+                $ {item.importeSecado.toLocaleString()}
             </TableCell>
             <TableCell align="center">
                 <IconButton onClick={() => onDelete(item)} color="inherit" size='small'>

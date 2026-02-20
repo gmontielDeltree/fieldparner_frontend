@@ -533,6 +533,7 @@ export interface ExitFieldItem extends ExitField {
   transport?: Business;
   field?: Field;
   campaign?: Campaign;
+  lot?: Lot;
   // trucker?: Business;
   // harvester?: Business;
 }

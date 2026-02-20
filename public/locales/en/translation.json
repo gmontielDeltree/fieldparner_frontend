@@ -495,8 +495,10 @@
   "Estimated Yield": "Estimated Yield",
   "Yield per hectare (qq/ha)": "Yield per hectare (qq/ha)",
   "Yield per hectare (ton/ha)": "Yield per hectare (ton/ha)",
+  "Yield per hectare (sc/ha)": "Yield per hectare (sc/ha)",
   "Total estimated yield (qq)": "Total estimated yield (qq)",
   "Total estimated yield (ton)": "Total estimated yield (ton)",
+  "Total estimated yield (sc)": "Total estimated yield (sc)",
   "Equivalent": "Equivalent",
   "Planning Status and Details": "Planning Status and Details",
   "Open": "Open",
@@ -526,6 +528,8 @@
   "Hectares": "Hectares",
   "Hectares to treat": "Hectares to treat",
   "Yield Obtained (ton/ha)": "Yield Obtained (ton/ha)",
+  "Yield Obtained (qq/ha)": "Yield Obtained (qq/ha)",
+  "Yield Obtained (sc/ha)": "Yield Obtained (sc/ha)",
   "error_zip_code": "Please check that the Postal Code matches the country.",
   "lot": "Lot",
   "area": "Area",
@@ -1376,5 +1380,7 @@
   "delivered": "Delivered",
   "available_to_sell": "Available to sell",
   "pending_delivery": "Pending delivery",
-  "quintal_quote": "Quintal Quote"
+  "quintal_quote": "Quintal Quote",
+  "menu_Agregar Campo": "Add Field",
+  "menu_Agregar Lote": "Add Lot"
 }

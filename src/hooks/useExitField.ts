@@ -24,21 +24,28 @@ export const useExitField = () => {
                 }),
                 dbContext.crops.allDocs({ include_docs: true }),
                 dbContext.socialEntities.find({ selector: { "accountId": user?.accountId } }),
-                dbContext.fields.find({ selector: { "accountId": user?.accountId } })
+                dbContext.fields.find({ selector: { "accountId": user?.accountId } }),
+                dbContext.campaigns.find({ selector: { "accountId": user?.accountId } })
             ]);
             const exitFields = promisesResult[0].docs;
             const crops = promisesResult[1].rows.map(row => row.doc as Crop);
             const socialEntities = promisesResult[2].docs;
             const fields = promisesResult[3].docs;
+            const campaigns = promisesResult[4].docs;
 
             if (exitFields.length) {
-                // const documents = exitFields.map(row => row as ExitField);
                 const documents: ExitFieldItem[] = exitFields.map((row) => {
+                    const fieldDoc = fields.find(s => s._id === row.fieldId);
+                    const lot = fieldDoc?.lotes?.find((l: any) =>
+                        (l.properties?.uuid || l.id) === row.lotId
+                    );
                     return {
                         ...row,
                         crop: crops.find(s => s._id === row.cropId),
                         transport: socialEntities.find(s => s._id === row.transportId),
-                        field: fields.find(s => s._id === row.fieldId),
+                        field: fieldDoc,
+                        campaign: campaigns.find((c: any) => c._id === row.campaignId || c.campaignId === row.campaignId),
+                        lot,
                     } as ExitFieldItem
                 });
                 setExitFields(documents);

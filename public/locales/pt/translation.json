@@ -98,7 +98,7 @@
   "title_sale_cereal": "Contrato de Venda de Cereais",
   "operation_date": "Data de Operação",
   "_crop": "Colheita",
-  "_crop_of": "Crop de",
+  "_crop_of": "Cultivo de",
   "_item": "Item",
   "_waybill": "Conhecimento de Transporte",
   "ticket_receipt": "Bilhete/Recibo",
@@ -496,8 +496,10 @@
   "Estimated Yield": "Rendimento Estimado",
   "Yield per hectare (qq/ha)": "Rendimento por hectare (qq/ha)",
   "Yield per hectare (ton/ha)": "Rendimento por hectare (ton/ha)",
+  "Yield per hectare (sc/ha)": "Rendimento por hectare (sc/ha)",
   "Total estimated yield (qq)": "Rendimento estimado total (qq)",
   "Total estimated yield (ton)": "Rendimento estimado total (ton)",
+  "Total estimated yield (sc)": "Rendimento estimado total (sc)",
   "Equivalent": "Equivalente",
   "Planning Status and Details": "Status e Detalhes do Planejamento",
   "Open": "Aberto",
@@ -527,6 +529,8 @@
   "Hectares": "Hectares",
   "Hectares to treat": "Hectares a tratar",
   "Yield Obtained (ton/ha)": "Rendimento Obtido (ton/ha)",
+  "Yield Obtained (qq/ha)": "Rendimento Obtido (qq/ha)",
+  "Yield Obtained (sc/ha)": "Rendimento Obtido (sc/ha)",
   "lot": "Lote",
   "area": "Área",
   "pendingActivities": "At. Pendentes",
@@ -1386,5 +1390,7 @@
   "delivered": "Entregue",
   "available_to_sell": "Disponível para vender",
   "pending_delivery": "Falta entregar",
-  "quintal_quote": "Cotação por Sacas"
+  "quintal_quote": "Cotação por Sacas",
+  "menu_Agregar Campo": "Adicionar Campo",
+  "menu_Agregar Lote": "Adicionar Lote"
 }
