@@ -746,6 +746,21 @@ export enum CurrencyCode {
   EURO = 'EUR',
 }
 
+export enum CodeCurrency {
+  ARS = '$',
+  BRL = 'R$',
+  USD = 'U$D',
+  CHL = '$', // ojo: acá parece que debería ser CLP
+}
+
+// Mapa principal: obliga a cubrir TODAS las monedas de CurrencyCode
+export const currencySymbolMap: Record<CurrencyCode, string> = {
+  [CurrencyCode.ARG]: CodeCurrency.ARS,
+  [CurrencyCode.BRA]: CodeCurrency.BRL,
+  [CurrencyCode.CHL]: CodeCurrency.CHL,
+  [CurrencyCode.USA]: CodeCurrency.USD,
+  [CurrencyCode.EURO]: '€', // no existe en CodeCurrency, lo agregás acá
+}
 export enum TypeMovement {
   Ajustes = 'Ajustes',
   Compra = 'Compra',

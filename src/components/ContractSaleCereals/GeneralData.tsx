@@ -17,11 +17,12 @@ import React, { ChangeEvent, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
-import { Campaign, Crop } from '../../types';
+import { Campaign, Crop, CurrencyCode } from '../../types';
 import { FormValueState, useAppSelector } from '../../hooks';
 import { Company } from '../../interfaces/company';
-import { StockItem } from '../../interfaces/stock';
+
 import { AutocompleteCrop } from '../Autocomplete';
+import { Helper } from '../../helpers/helper';
 
 
 interface Props {
@@ -260,7 +261,7 @@ export const GeneralData: React.FC<Props> = ({
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {valueCurrency ? valueCurrency : "-"}
+                {valueCurrency ? Helper.parseDecimalPointToComaWithCurrency(valueCurrency, user?.currency || "") : "-"}
               </Typography>}
           />
         </FormControl>
@@ -285,7 +286,7 @@ export const GeneralData: React.FC<Props> = ({
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
-                {valueUSD ? valueUSD : "-"}
+                {valueUSD ? Helper.parseDecimalPointToComaWithCurrency(valueUSD, CurrencyCode.USA || "") : "-"}
               </Typography>}
           />
         </FormControl>
@@ -294,25 +295,3 @@ export const GeneralData: React.FC<Props> = ({
     </Grid>
   )
 }
-
-//  <FormControl key="crop-select" error={formValues.cropId.isError} fullWidth>
-//           <InputLabel id="crop">{t("_crop")}</InputLabel>
-//           <Select
-//             labelId="crop"
-//             name="cropId"
-//             value={formValues.cropId.value}
-//             label={t("_crop")}
-//             MenuProps={{
-//               PaperProps: {
-//                 style: { maxHeight: 248 }//Tamaño para 5 opciones
-//               }
-//             }}
-//             onChange={handleSelectChange}
-//           >
-//             {crops?.map((crop) => (
-//               <MenuItem key={crop._id} value={crop._id}>
-//                 {crop["descriptionES"]} {/* Cambiar por idioma seleccionado */}
-//               </MenuItem>
-//             ))}
-//           </Select>
-//         </FormControl>

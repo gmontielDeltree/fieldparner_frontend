@@ -1,3 +1,5 @@
+import { CurrencyCode, currencySymbolMap } from "../types";
+
 export const capitalizeText = (text: string, allText: boolean = false): string => {
     // Verificar si la cadena está vacía
     if (text === '') return '';
@@ -22,7 +24,7 @@ export class Helper {
     static parseDecimalPointToComaWithCurrency(
         value: number,
         currency: string,
-        maxDecimal: number
+        maxDecimal: number = 2
     ): string {
         if (value === undefined) return '';
         const valueWithZeroes = value.toLocaleString('en', {
@@ -34,9 +36,9 @@ export class Helper {
             .toString()
             .replace('.', ',')}`;
 
-        // if (currency === Currency.Pesos) {
-        //     newValue = `${currency}${valueWithZeroes.toString().replace('.', ',')}`;
-        // }
+        if (currency) {
+            newValue = `${currencySymbolMap[currency as CurrencyCode]}${valueWithZeroes.toString().replace('.', ',')}`;
+        }
         newValue = Helper.numberWithThousandsSeparate(newValue);
         return newValue;
     }
