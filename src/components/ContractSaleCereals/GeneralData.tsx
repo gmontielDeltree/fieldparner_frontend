@@ -20,6 +20,8 @@ import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { Campaign, Crop } from '../../types';
 import { FormValueState, useAppSelector } from '../../hooks';
 import { Company } from '../../interfaces/company';
+import { StockItem } from '../../interfaces/stock';
+import { AutocompleteCrop } from '../Autocomplete';
 
 
 interface Props {
@@ -52,8 +54,9 @@ export const GeneralData: React.FC<Props> = ({
   const { kg, quintalQuote, USDQuote } = formValues;
 
   const valueCurrency = useMemo(() => {
+    const valueQuintal = 100;
     if (formValues.kg.value && formValues.quintalQuote.value) {
-      const value= Number(formValues.kg.value) * Number(formValues.quintalQuote.value) * 100;
+      const value = (Number(formValues.kg.value) / valueQuintal) * Number(formValues.quintalQuote.value);
       handleFormValueChange("amountValue", value.toString());
       return value;
     }
@@ -138,27 +141,17 @@ export const GeneralData: React.FC<Props> = ({
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={3}>
-        <FormControl key="crop-select" error={formValues.cropId.isError} fullWidth>
-          <InputLabel id="crop">{t("_crop")}</InputLabel>
-          <Select
-            labelId="crop"
-            name="cropId"
-            value={formValues.cropId.value}
-            label={t("_crop")}
-            MenuProps={{
-              PaperProps: {
-                style: { maxHeight: 248 }//Tamaño para 5 opciones
+        {
+          <AutocompleteCrop
+            value={crops.find(s => s._id === formValues?.cropId?.value) || null}
+            options={crops}
+            onChange={(newValue) => {
+              if (newValue?._id) {
+                handleFormValueChange("cropId", newValue._id);
               }
             }}
-            onChange={handleSelectChange}
-          >
-            {crops?.map((crop) => (
-              <MenuItem key={crop._id} value={crop._id}>
-                {crop["descriptionES"]} {/* Cambiar por idioma seleccionado */}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          />
+        }
       </Grid>
       <Grid item xs={12} sm={3}>
         <FormControlLabel
@@ -251,7 +244,7 @@ export const GeneralData: React.FC<Props> = ({
         <TextField
           variant="outlined"
           type="number"
-          label={"Cotizacion Quintal"}
+          label={t("quintal_quote")}
           name={"quintalQuote"}
           error={formValues.quintalQuote.isError}
           helperText={formValues.quintalQuote.message}
@@ -301,3 +294,25 @@ export const GeneralData: React.FC<Props> = ({
     </Grid>
   )
 }
+
+//  <FormControl key="crop-select" error={formValues.cropId.isError} fullWidth>
+//           <InputLabel id="crop">{t("_crop")}</InputLabel>
+//           <Select
+//             labelId="crop"
+//             name="cropId"
+//             value={formValues.cropId.value}
+//             label={t("_crop")}
+//             MenuProps={{
+//               PaperProps: {
+//                 style: { maxHeight: 248 }//Tamaño para 5 opciones
+//               }
+//             }}
+//             onChange={handleSelectChange}
+//           >
+//             {crops?.map((crop) => (
+//               <MenuItem key={crop._id} value={crop._id}>
+//                 {crop["descriptionES"]} {/* Cambiar por idioma seleccionado */}
+//               </MenuItem>
+//             ))}
+//           </Select>
+//         </FormControl>

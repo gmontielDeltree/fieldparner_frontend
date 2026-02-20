@@ -1385,5 +1385,6 @@
   "committed": "Comprometido",
   "delivered": "Entregue",
   "available_to_sell": "Disponível para vender",
-  "pending_delivery": "Falta entregar"
+  "pending_delivery": "Falta entregar",
+  "quintal_quote": "Cotação por Sacas"
 }

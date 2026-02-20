@@ -1375,5 +1375,6 @@
   "committed": "Committed",
   "delivered": "Delivered",
   "available_to_sell": "Available to sell",
-  "pending_delivery": "Pending delivery"
+  "pending_delivery": "Pending delivery",
+  "quintal_quote": "Quintal Quote"
 }

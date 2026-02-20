@@ -3,12 +3,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
-import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations } from '../../hooks';
+import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations, useSupply } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
-import { TipoEntidad } from '../../types';
+import { Crop, TipoEntidad } from '../../types';
 import Swal from 'sweetalert2';
+import { TipoStock } from '../../interfaces/stock';
 
 
 const initialState: FormValueState<ContractSaleCereal> = {
@@ -68,7 +69,8 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const { businesses: socialEntities, getBusinesses } = useBusiness();
   const { campaigns, getCampaigns } = useCampaign();
   const { companies, getCompanies } = useCompany();
-  const { dataCrops, getCrops } = useCrops();
+  // const { dataCrops, getCrops } = useCrops();
+  const { stockBySupplies: dataStockCropOrSupply, getStockData } = useSupply();
   const { originsDestinations, getOriginDestinations } = useOriginDestinations();
   const { getContractNumber, getContractSaleCerealByContractNumber, addContractSaleCereal, isLoading: loading } = useContractSaleCereals();
 
@@ -94,7 +96,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
             <GeneralData
               key="sale-cereals-general-data"
               formValues={formValues}
-              crops={dataCrops}
+              crops={dataStockCropOrSupply.filter(item => item.tipo === TipoStock.CULTIVO).map(s => ({ ...s, ...s.dataCrop })) as Crop[]}
               campaigns={campaigns}
               companies={companies}
               handleInputChange={handleInputChange}
@@ -126,7 +128,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
       formValues,
       socialEntities,
       campaigns,
-      dataCrops,
+      dataStockCropOrSupply,
       originsDestinations,
       listDeliveryDates,
       companies,
@@ -231,7 +233,8 @@ export const ContractSaleCerealsPage: React.FC = () => {
       await Promise.all([
         getBusinesses(),
         getCampaigns(),
-        getCrops(),
+        // getCrops(),
+        getStockData(),
         getOriginDestinations(),
         getCompanies()
       ]);
@@ -253,7 +256,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
           variant="outlined"
           sx={{ p: { xs: 2, md: 1 } }}
         >
-          <Typography className='mt-5' component="h2" align="center" variant="h4" sx={{ mb: 1,}}>
+          <Typography className='mt-5' component="h2" align="center" variant="h4" sx={{ mb: 1, }}>
             {!formValues?.accountId?.value ? t("new_contract_sale_cereal") : t("update_contract_sale_cereal")}
           </Typography>
           <Box
