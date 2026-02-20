@@ -12,6 +12,7 @@ export const useDeposit = () => {
   const { user } = useAppSelector((state) => state.auth);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
   const getDeposits = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);

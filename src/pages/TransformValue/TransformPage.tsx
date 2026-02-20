@@ -20,13 +20,14 @@ import {
     Delete as DeleteIcon
 } from '@mui/icons-material'
 import React, { useEffect, useState } from 'react';
-import { useAppSelector, useCrops, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../../hooks';
+import { useAppSelector, useDeposit, useForm, useStockMovement, useSupply, useTransformStock } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
-import { BorderContainer, NewSupplyCropRow, ItemRow, Loading, TableCellStyledBlack } from '../../components';
-import { ColumnProps, TransformSupply } from '../../types';
+import { BorderContainer, NewSupplyCropRow, ItemRow, Loading, TableCellStyledBlack, NewSupplyRow } from '../../components';
+import { ColumnProps, FormDataTransformValue, TransformSupply } from '../../types';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Stock, StockItem, TipoStock } from '../../interfaces/stock';
+import { CropStockData, ListStockCropOrSupply, Stock, StockItem, TipoStock } from '../../interfaces/stock';
+
 
 const today = getShortDate();
 
@@ -41,7 +42,7 @@ type SupplyRowProps = {
 const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
     const { supply, crop, deposit } = row;
     const isCrop = !!crop;
-
+    console.log('row', row)
     return (
         <ItemRow>
             <TableCell>
@@ -51,7 +52,7 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
                 {deposit?.description}
             </TableCell>
             <TableCell>
-                {row.location || "-"}
+                {row.location || deposit?.locations[0] || "-"}
             </TableCell>
             <TableCell>
                 {row.nroLot || "-"}
@@ -69,12 +70,11 @@ const SupplyRow: React.FC<SupplyRowProps> = ({ row, type, deleteRow }) => {
                             {row.currentStock}
                         </TableCell>
                         <TableCell align='center'>
-                            {/* {supply?.reservedStock} */}
-                            -
+
+                            {row.pending}
                         </TableCell>
                         <TableCell align='center'>
-                            {/* {(row.currentStock - supply.reservedStock)} */}
-                            -
+                            {row.available}
                         </TableCell>
                     </>
                 )
@@ -111,20 +111,21 @@ const initialStateTransform = {
     detail: ""
 };
 
+
 export const TransformPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAppSelector(state => state.auth);
-    const [originTransformValues, setOriginTransformValues] = useState<TransformSupply[]>([]);
-    const [destinationTransformValue, setDestinationTransformValue] = useState<TransformSupply[]>([]);
-    const [stockBySupplies, setStockBySupplies] = useState<StockItem[]>([]);
-    const [stockByCrops, setStockByCrops] = useState<StockItem[]>([]);
-    const { isLoading, supplies, getSupplies } = useSupply();
-    const { dataCrops, getCrops } = useCrops();
+    const [itemsOrigin, setItemsOrigin] = useState<TransformSupply[]>([]);
+    const [itemsDestination, setItemsDestination] = useState<TransformSupply[]>([]);
+    const [currentStockCropOrSupplies, setCurrentStockCropOrSupplies] = useState<ListStockCropOrSupply | null>({ stockByCrops: [], stockBySupplies: [] });
+
+    const { isLoading, supplies, stockBySupplies: dataStockCropOrSupply, getSupplies, getStockData } = useSupply();
+
     const { isLoading: depositLoading,
         deposits,
         getDeposits,
         getDepositsBySupplyId,
-        getDepositsByCropId } = useDeposit();
+    } = useDeposit();
     const { t } = useTranslation();
     const {
         operationDate,
@@ -132,7 +133,7 @@ export const TransformPage: React.FC = () => {
         handleInputChange,
         reset,
     } = useForm(initialStateTransform);
-    const { isLoading: loadingTransform, getStock } = useStockMovement();
+    const { isLoading: loadingTransform } = useStockMovement();
     const { transformStock } = useTransformStock();
 
     const originColumns: ColumnProps[] = [
@@ -158,236 +159,177 @@ export const TransformPage: React.FC = () => {
         { text: t("hours_per_employee"), align: "center" },
     ];
 
-    const validateSupplyStock = async (newSupply: TransformSupply, type: "origin" | "destination" = "origin") => {
-        try {
-            const { supply, deposit } = newSupply;
-            const supplyId = supply?._id || "";
-            const depositId = deposit?._id || "";
-            if (!supplyId && !depositId) return false;
-
-            let currentStock = 0;
-            const result = await getStock({
-                id: supplyId,
-                tipo: TipoStock.INSUMO,
-                campaignId: newSupply.campaignId,
-                depositId,
-                location: newSupply.location,
-                nroLot: newSupply.nroLot
-            });
-            
-            currentStock = result ? result[0]?.currentStock || 0 : 0;
-
-            if (type === "origin") {
-                //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
-                if (result && currentStock > 0) {
-                    let supplyStock: StockItem = result[0];
-                    supplyStock.currentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
-                    supplyStock.lastUpdate = new Date().toLocaleDateString();
-                    if (supplyStock.currentStock <= 0) {
-                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
-                        return false;
-                    }
-                    setStockBySupplies([{ ...supplyStock }, ...stockBySupplies]);
-                    setOriginTransformValues([...originTransformValues,
-                    {
-                        ...newSupply,
-                        amount: newSupply.amount,
-                        currentStock: result[0].currentStock
-                    }]);
-                    return true;
-                }
-                else {
-                    Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
-                    return false;
-                }
-            }
-            else {
-                if (originTransformValues.length === 0) {
-                    Swal.fire('Insumos Origen', 'Debe haber al menos un Insumo.', 'error');
-                    return false;
-                }
-                if (result) {
-                    let supplyStock: Stock = result[0];
-                    supplyStock.currentStock = (Number(supplyStock.currentStock) + Number(newSupply.amount));
-                    supplyStock.lastUpdate = new Date().toLocaleDateString();
-                    setStockBySupplies([{ ...supplyStock }, ...stockBySupplies]);
-                    setDestinationTransformValue([...destinationTransformValue, { ...newSupply, amount: newSupply.amount }]);
-                } else {
-                    if (!user) throw new Error("User not found");
-                    const newSupplyStock: Stock = {
-                        id: supplyId,
-                        tipo: TipoStock.INSUMO,
-                        campaignId: newSupply.campaignId,
-                        accountId: user.accountId,
-                        depositId: depositId,
-                        location: newSupply.location,
-                        nroLot: newSupply.nroLot,
-                        currentStock: Number(newSupply.amount),
-                        fieldId: "",
-                        fieldLot: "",
-                        reservedStock: 0,
-                        lastUpdate: new Date().toLocaleDateString(),
-
-                    };
-                    setStockBySupplies([...stockBySupplies, newSupplyStock]);
-                    setDestinationTransformValue([...destinationTransformValue, newSupply]);
-                }
-
-            }
-        } catch (error) {
-            console.log('error', error);
-            return false;
-        }
-    }
-
-    const validateCropStock = async (newTransformValue: TransformSupply, type: "origin" | "destination" = "origin") => {
-        try {
-            const { deposit, crop } = newTransformValue;
-            const cropId = crop?._id || "";
-            const depositId = deposit?._id || "";
-
-            if (!cropId && !depositId) return false;
-
-            let currentStock = 0;
-            const result = await getStock({
-                id: cropId,
-                tipo: TipoStock.CULTIVO,
-                campaignId: newTransformValue.campaignId, // TODO: revisar si cuando ejecuta la activadad de una cosecha, esta prop se guarda con el _id de la campaña correcta
-                depositId,
-                location: newTransformValue.location,
-                nroLot: newTransformValue.nroLot
-            }
-                // cropId, depositId, newTransformValue.location, newTransformValue.nroLot
-            );
-            currentStock = result ? result[0]?.currentStock : 0;
-
-            if (type === "origin") {
-                //Chequeamos que el insumo/deposito/ubicacion/lote tenga stock y que la cantidad sea menor al stock actual
-                if (result && currentStock > 0) {
-                    let cropStock: Stock = result[0];
-                    cropStock.currentStock = (Number(cropStock.currentStock) - Number(newTransformValue.amount));
-                    cropStock.lastUpdate = new Date().toLocaleDateString();
-                    if (cropStock.currentStock <= 0) {
-                        Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
-                        return false;
-                    }
-                    setStockByCrops([{ ...cropStock }, ...stockByCrops]);
-                    setOriginTransformValues([...originTransformValues,
-                    {
-                        ...newTransformValue,
-                        amount: newTransformValue.amount,
-                        currentStock: result[0].currentStock
-                    }]);
-                    return true;
-                }
-                else {
-                    Swal.fire('Stock insuficiente.', 'No tiene stock del cultivo.', 'error');
-                    return false;
-                }
-            }
-            else {
-                if (originTransformValues.length === 0) {
-                    Swal.fire('Insumos Origen', 'Debe haber al menos un cultivo.', 'error');
-                    return false;
-                }
-                if (result) {
-                    let cropStock: Stock = result[0];
-                    cropStock.currentStock = (Number(cropStock.currentStock) + Number(newTransformValue.amount));
-                    cropStock.lastUpdate = new Date().toLocaleDateString();
-                    setStockByCrops([{ ...cropStock }, ...stockByCrops]);
-                    setDestinationTransformValue([...destinationTransformValue, { ...newTransformValue, amount: newTransformValue.amount }]);
-                } else {
-                    if (!user) throw new Error("User not found");
-                    const newCropStock: Stock = {
-                        accountId: user.accountId,
-                        depositId: depositId,
-                        campaignId: newTransformValue.campaignId,
-                        id: cropId,
-                        tipo: TipoStock.CULTIVO,
-                        fieldId: "",
-                        fieldLot: "",
-                        reservedStock: 0,
-                        lastUpdate: new Date().toLocaleDateString(),
-                        location: newTransformValue.location,
-                        nroLot: newTransformValue.nroLot,
-                        currentStock: Number(newTransformValue.amount),
-                    };
-                    setStockByCrops([...stockByCrops, newCropStock]);
-                    setDestinationTransformValue([...destinationTransformValue, newTransformValue]);
-                }
-
-            }
-        } catch (error) {
-            console.log('error', error);
-            return false;
-        }
-    }
 
     //ORIGIN
-    const addSupplyOrCropOrigin = (newSupply: TransformSupply, isCrop: boolean) => {
-        if (isCrop) validateCropStock(newSupply, "origin");
-        else validateSupplyStock(newSupply, "origin");
+    const addSupplyOrCropOrigin = (itemSelected: StockItem, formValues: FormDataTransformValue) => {
+
+        if (itemSelected.tipo === TipoStock.INSUMO) {
+            if (itemsOrigin?.some(item => item?.supply?._id === itemSelected.id)) {
+                Swal.fire('Item ya agregado', 'El insumo ya fue agregado en la lista de origen.', 'error');
+                return;
+            }
+            let supplyStock = {
+                ...itemSelected,
+                currentStock: (Number(itemSelected.currentStock) - Number(formValues.amount)),
+            };
+            delete supplyStock.dataCampaign;
+            delete supplyStock.dataField;
+            delete supplyStock.dataCrop;
+            delete supplyStock.dataDeposit;
+            delete supplyStock.dataSupply;
+
+            if (currentStockCropOrSupplies) {
+                setCurrentStockCropOrSupplies({
+                    ...currentStockCropOrSupplies,
+                    stockBySupplies: [...currentStockCropOrSupplies?.stockBySupplies, supplyStock]
+                });
+                setItemsOrigin([...itemsOrigin, {
+                    id: supplyStock.id,
+                    campaignId: formValues.campaignId,
+                    zafra: "",
+                    deposit: itemSelected.dataDeposit,
+                    supply: itemSelected.dataSupply,
+                    crop: null,
+                    location: formValues.location || itemSelected.location,
+                    nroLot: formValues.nroLot || itemSelected.nroLot,
+                    dueDate: formValues.dueDate,
+                    amount: Number(formValues.amount),
+                    currentStock: itemSelected.currentStock,
+                    available: (Number(itemSelected.currentStock) - Number(formValues.amount)),
+                    pending: itemSelected.reservedStock || 0,
+                }]);
+            }
+        } else {
+            if (itemsOrigin?.some(item => item?.crop?._id === itemSelected.id)) {
+                Swal.fire('Item ya agregado', 'El cultivo ya fue agregado en la lista de origen.', 'error');
+                return;
+            }
+
+            if (currentStockCropOrSupplies) {
+                let cropStock = {
+                    _rev: itemSelected._rev,
+                    _id: itemSelected._id || "",
+                    accountId: itemSelected.accountId || "",
+                    campaignId: itemSelected.campaignId || "",
+                    cropId: itemSelected.dataCrop?._id || "",
+                    currentStock: (Number(itemSelected.currentStock) - Number(formValues.amount)),
+                    committedStock: itemSelected.reservedStock || 0,
+                    deliveredStock: itemSelected.reservedStock || 0,
+                    lastUpdate: today,
+                    available: (Number(itemSelected.currentStock) - Number(formValues.amount)) - (itemSelected.reservedStock || 0),
+                    pending: (itemSelected.reservedStock || 0) - (itemSelected.reservedStock || 0),
+                    zafra: formValues.zafra,
+                    campaign: formValues.campaignId,
+                } as CropStockData;
+                setCurrentStockCropOrSupplies({
+                    ...currentStockCropOrSupplies,
+                    stockByCrops: [...currentStockCropOrSupplies?.stockByCrops, { ...cropStock }]
+                });
+                setItemsOrigin([...itemsOrigin, {
+                    id: cropStock._id,
+                    campaignId: formValues.campaignId,
+                    zafra: formValues.zafra,
+                    deposit: null,
+                    supply: null,
+                    crop: itemSelected.dataCrop || null,
+                    location: formValues.location || itemSelected.location,
+                    nroLot: formValues.nroLot || itemSelected.nroLot,
+                    dueDate: formValues.dueDate,
+                    amount: Number(formValues.amount),
+                    currentStock: cropStock.currentStock,
+                    available: cropStock.available,
+                    pending: cropStock.pending
+                }]);
+            }
+        }
     }
 
     const deleteRowOrigin = (id: string) => {
-        const supplyToRemove = originTransformValues.find(s => s.id === id);
-        if (!supplyToRemove) return;
-        const { supply, crop, deposit, location, nroLot } = supplyToRemove;
-        setOriginTransformValues(originTransformValues.filter(o => o.id !== id));
-        if (crop) {
-            setStockByCrops(stockByCrops.filter(s =>
-                s.id !== crop?._id &&
-                s.depositId !== deposit?._id &&
-                s.location !== location &&
-                s.nroLot !== nroLot));
-        } else {
-            setStockBySupplies(stockBySupplies.filter(s =>
-                s.id !== supply?._id &&
-                s.depositId !== deposit?._id &&
-                s.location !== location &&
-                s.nroLot !== nroLot));
-        }
+        const itemRemove = itemsOrigin.find(s => s.id === id);
+        if (!itemRemove) return;
+
+        if (currentStockCropOrSupplies)
+            setCurrentStockCropOrSupplies({
+                ...currentStockCropOrSupplies,
+                stockBySupplies: currentStockCropOrSupplies?.stockBySupplies.filter(s => s.id !== id),
+                stockByCrops: currentStockCropOrSupplies?.stockByCrops.filter(s => s._id !== id)
+            });
+        setItemsOrigin(itemsOrigin.filter(o => o.id !== id));
     }
 
-    const addSupplyOrCropDestination = (newSupply: TransformSupply, isCrop: boolean) => {
-        if (isCrop) validateCropStock(newSupply, "destination");
-        else validateSupplyStock(newSupply, "destination");
+    const addSupplyDestination = (itemSelected: StockItem | null, formValues: FormDataTransformValue) => {
+        let supplyStock: Stock;
+
+        //Stock existente, lo actualizamos
+        if (itemSelected) {
+            supplyStock = { ...itemSelected };
+            supplyStock.currentStock = (Number(supplyStock.currentStock) + Number(formValues.amount));
+            supplyStock.lastUpdate = new Date().toLocaleDateString();
+
+        } else {
+            //Stock nuevo
+            supplyStock = {
+                id: formValues.supplyId,
+                tipo: TipoStock.INSUMO,
+                campaignId: formValues.campaignId,
+                accountId: user?.accountId || "",
+                depositId: formValues.depositId,
+                location: formValues.location || "",
+                nroLot: formValues.nroLot || "",
+                currentStock: Number(formValues.amount),
+                fieldId: "",
+                fieldLot: "",
+                reservedStock: 0,
+                lastUpdate: new Date().toLocaleDateString(),
+            };
+        }
+        if (currentStockCropOrSupplies)
+            setCurrentStockCropOrSupplies({ ...currentStockCropOrSupplies, stockBySupplies: [...currentStockCropOrSupplies?.stockBySupplies, supplyStock] });
+
+        setItemsDestination([...itemsDestination, {
+            id: supplyStock.id,
+            campaignId: formValues.campaignId,
+            zafra: "",
+            deposit: deposits.find(d => d._id === formValues.depositId) || null,
+            supply: supplies.find(s => s._id === formValues.supplyId) || null,
+            crop: null,
+            location: "",
+            nroLot: "",
+            dueDate: formValues.dueDate,
+            amount: Number(formValues.amount),
+            currentStock: itemSelected?.currentStock || 0,
+            available: (Number(itemSelected?.currentStock || 0) - Number(formValues.amount)),
+            pending: itemSelected?.reservedStock || 0,
+        }]);
     }
 
     const deleteRowDestination = (id: string) => {
-        const supplyToRemove = destinationTransformValue.find(s => s.id === id);
-        if (!supplyToRemove) return;
-        const { supply, crop, deposit, location, nroLot } = supplyToRemove;
-        setOriginTransformValues(destinationTransformValue.filter(o => o.id !== id));
-        if (crop) {
-            setStockByCrops(stockByCrops.filter(s =>
-                s.id !== crop?._id &&
-                s.depositId !== deposit?._id &&
-                s.location !== location &&
-                s.nroLot !== nroLot));
-        } else {
-            setStockBySupplies(stockBySupplies.filter(s =>
-                s.id !== supply?._id &&
-                s.depositId !== deposit?._id &&
-                s.location !== location &&
-                s.nroLot !== nroLot));
-        }
+        const itemRemove = itemsDestination.find(s => s.id === id);
+        if (!itemRemove) return;
+
+        if (currentStockCropOrSupplies)
+            setCurrentStockCropOrSupplies({
+                ...currentStockCropOrSupplies,
+                stockBySupplies: currentStockCropOrSupplies?.stockBySupplies.filter(s => s.id !== id),
+                stockByCrops: currentStockCropOrSupplies?.stockByCrops.filter(s => s._id !== id)
+            });
+        setItemsDestination(itemsDestination.filter(o => o.id !== id));
     }
 
     const onClickCancel = () => {
-        setOriginTransformValues([]);
-        setDestinationTransformValue([]);
-        setStockBySupplies([]);
-        setStockByCrops([]);
+        setItemsOrigin([]);
+        setItemsDestination([]);
+        setCurrentStockCropOrSupplies({ stockByCrops: [], stockBySupplies: [] });
         reset();
         navigate("/init/overview/value-transform");
     }
 
     const createTransform = async () => {
+        if (!currentStockCropOrSupplies) return;
         await transformStock(
-            originTransformValues,
-            destinationTransformValue,
-            stockBySupplies,
+            itemsOrigin,
+            itemsDestination,
+            currentStockCropOrSupplies,
             detail,
             operationDate
         );
@@ -400,7 +342,7 @@ export const TransformPage: React.FC = () => {
     useEffect(() => {
         getSupplies();
         getDeposits();
-        getCrops();
+        getStockData();
     }, [])
 
     return (
@@ -473,19 +415,13 @@ export const TransformPage: React.FC = () => {
                     <Box sx={{ mb: 3, mt: 1 }}>
                         <NewSupplyCropRow
                             key="new-supply-to-origin"
-                            crops={dataCrops}
-                            supplies={supplies}
+                            listItemStock={dataStockCropOrSupply}
                             deposits={deposits}
-                            disabledCrops={false}
                             showDueDate
-                            addNewSupplyOrCultive={addSupplyOrCropOrigin}
+                            addNewItem={addSupplyOrCropOrigin}
                             onChangeSupply={(item) => {
                                 if (!item._id) return;
                                 getDepositsBySupplyId(item._id);
-                            }}
-                            onChangeCrop={(item) => {
-                                if (!item._id) return;
-                                getDepositsByCropId(item._id);
                             }}
                         />
                     </Box>
@@ -513,7 +449,7 @@ export const TransformPage: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {originTransformValues.map((originSupply) => (
+                                {itemsOrigin.map((originSupply) => (
                                     <SupplyRow
                                         key={originSupply.id}
                                         type='origin'
@@ -531,21 +467,16 @@ export const TransformPage: React.FC = () => {
                 </Typography>
                 <BorderContainer key="supplies-destination">
                     <Box sx={{ mb: 3, mt: 1 }}>
-                        <NewSupplyCropRow
+                        <NewSupplyRow
                             key="new-supply-to-destination"
                             supplies={supplies}
                             deposits={deposits}
-                            crops={dataCrops}
-                            disabledCrops={false}
-                            showDueDate
-                            addNewSupplyOrCultive={addSupplyOrCropDestination}
+                            addNewItem={addSupplyDestination}
                             onChangeSupply={(_item) => {
                                 getDeposits();
                                 //Cada vez q cambie el insumo/cultivo en destino, volvemos a buscar los depositos para q pueda "ubicarlos" en sus depositos.
                             }}
-                            onChangeCrop={(_item) => {
-                                getDeposits();
-                            }}
+
                         />
                     </Box>
                     <TableContainer
@@ -572,7 +503,7 @@ export const TransformPage: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {destinationTransformValue.map((originSupply) => (
+                                {itemsDestination.map((originSupply) => (
                                     <SupplyRow
                                         key={originSupply.id}
                                         type="destination"
@@ -597,7 +528,7 @@ export const TransformPage: React.FC = () => {
                     <Grid item xs={12} sm={3}>
                         <Button
                             variant="contained"
-                            disabled={destinationTransformValue.length === 0}
+                            disabled={itemsDestination.length === 0}
                             color="success"
                             onClick={() => saveTransformStock()}
                             fullWidth>

@@ -144,14 +144,23 @@ export const useSupply = () => {
                 }),
                 dbContext.crops.allDocs({ include_docs: true }),
                 // ✅ AGREGADO: Leer cropDeposits para incluir cosechas
-                dbContext.cropDeposits.find({
+                // dbContext.cropDeposits.find({
+                //     selector: {
+                //         "accountId": user?.accountId
+                //     }
+                // }),
+                //Stock de cultivos
+                dbContext.cropStockControl.find({
                     selector: {
-                        "accountId": user?.accountId
+                        "$and": [
+                            { "accountId": user?.accountId },
+                            { "licenceId": user.licenceId }
+                        ],
                     }
-                })
+                }),
             ]);
 
-            const [resultStock, supplies, crops, cropDepositsResult] = promisesResult;
+            const [resultStock, supplies, crops, cropStockControlResult] = promisesResult;
 
             // Procesar stock legacy (insumos y crops antiguos)
             const stockIds = resultStock?.docs.map(s => s.id) || [];
@@ -188,46 +197,34 @@ export const useSupply = () => {
             });
 
             // ✅ AGREGADO: Procesar cropDeposits (cosechas)
-            const cropIds = cropDepositsResult?.docs.map((cd: any) => cd.cropId) || [];
+            const cropIds = cropStockControlResult?.docs.map((cd: any) => cd.cropId) || [];
             const groupCropIds = Array.from(new Set(cropIds));
 
             groupCropIds.forEach(cropId => {
-                const foundCropDeposits = cropDepositsResult.docs.filter((cd: any) => cd.cropId === cropId);
+                const foundCropDeposits = cropStockControlResult.docs.filter((cd: any) => cd.cropId === cropId);
                 const foundCrop = crops.rows.map(row => row.doc as Crop).find(c => c._id === cropId);
 
                 if (foundCrop) {
-                    // Sumar stock de todos los depósitos para este cultivo
-                    const totalCurrentStock = foundCropDeposits.reduce((acc: number, cd: any) =>
-                        acc + (cd.currentStockKg || 0), 0);
-                    const totalReservedStock = foundCropDeposits.reduce((acc: number, cd: any) =>
-                        acc + (cd.reservedStockKg || 0), 0);
 
-                    // Verificar si ya existe en dataStock (del stock legacy)
-                    const existingIndex = dataStock.findIndex(ds => ds.id === cropId);
-                    if (existingIndex >= 0) {
-                        // Sumar al stock existente
-                        dataStock[existingIndex].currentStock += totalCurrentStock;
-                        dataStock[existingIndex].reservedStock += totalReservedStock;
-                    } else {
-                        // Crear nuevo registro
-                        dataStock.push({
-                            _id: foundCropDeposits[0]._id,
-                            _rev: foundCropDeposits[0]._rev,
-                            id: cropId,
-                            tipo: TipoStock.CULTIVO,
-                            accountId: user.accountId,
-                            depositId: foundCropDeposits[0].depositId || '',
-                            location: '',
-                            nroLot: '',
-                            campaignId: foundCropDeposits[0].campaignId || '',
-                            fieldId: foundCropDeposits[0].fieldId || '',
-                            fieldLot: foundCropDeposits[0].lotId || '',
-                            currentStock: totalCurrentStock,
-                            reservedStock: totalReservedStock,
-                            lastUpdate: foundCropDeposits[0].lastUpdate,
-                            dataCrop: foundCrop,
-                        });
-                    }
+                    // Crear nuevo registro
+                    dataStock.push({
+                        _id: foundCropDeposits[0]._id,
+                        _rev: foundCropDeposits[0]._rev,
+                        id: cropId,
+                        tipo: TipoStock.CULTIVO,
+                        accountId: user.accountId,
+                        depositId: '',
+                        location: '',
+                        nroLot: '',
+                        campaignId: foundCropDeposits[0].campaignId || '',
+                        fieldId: '',
+                        fieldLot: '',
+                        currentStock: foundCropDeposits[0].currentStock,
+                        reservedStock: foundCropDeposits[0].committedStock,
+                        lastUpdate: foundCropDeposits[0].lastUpdate,
+                        dataCrop: foundCrop,
+                        zafra: foundCropDeposits[0].zafra || '',
+                    });
                 }
             });
 
@@ -396,7 +393,7 @@ export const useSupply = () => {
 
             if (response.ok) {
                 NotificationService.showAdded({ name: newSupply.name }, t("supply_label"));
-                
+
                 // Retornar el objeto creado para el modal (si se necesita)
                 const createdSupply = { ...newSupply, accountId: user.accountId, countryId: user.countryId };
                 return createdSupply;

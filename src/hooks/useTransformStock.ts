@@ -1,11 +1,10 @@
 import { Movement, StockMovement, StockMovementItem, TransformSupply, TypeMovement } from "../types";
-import { useStockMovement } from ".";
 import { useAppDispatch, useAppSelector } from ".";
 import { useState } from "react";
 import { getShortDate } from "../helpers/dates";
 import { dbContext } from "../services";
 import { onLogout } from "../redux/auth";
-import { Stock } from "../interfaces/stock";
+import { CropStockControl, ListStockCropOrSupply } from "../interfaces/stock";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 
@@ -18,6 +17,7 @@ type TransformMovementGroup = {
     }
 };
 
+
 export const useTransformStock = () => {
 
     const dispatch = useAppDispatch();
@@ -26,20 +26,21 @@ export const useTransformStock = () => {
     const [error, setError] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const { t } = useTranslation();
-    const stockMovementHook = useStockMovement();
-    const { updateCropStockTables } = stockMovementHook;
+    // const stockMovementHook = useStockMovement();
+    // const { updateCropStockTables } = stockMovementHook;
+
 
     //Nueva Transformacion/Valor agregado
     const transformStock = async (
         supplyOrCultiveOrigin: TransformSupply[],
         supplyOrCultiveDestination: TransformSupply[],
-        stockBySupplies: Stock[],
+        currentStockCropOrSupply: ListStockCropOrSupply,
         detail: string,
         operationDate: string) => {
         setIsLoading(true);
         try {
             let newMovements: StockMovement[] = [];
-
+            debugger;
             if (!user) { dispatch(onLogout(t("session_expired"))); return; }
             const { accountId, id: userId } = user;
             //Recorremos cada insumo/cultivo deposito , ubicacion, lote para crear su movimiento.
@@ -58,24 +59,24 @@ export const useTransformStock = () => {
                     voucher: "",
                     totalValue: 0,
                     hours: "", //TODO: ?
-                    depositId: ts.deposit._id,
-                    supplyId: ts.supply?._id,
+                    depositId: ts.deposit?._id || "",
+                    supplyId: ts.supply?._id || "",
                     isCrop,
-                    cropId: ts.crop?._id,
+                    cropId: ts.crop?._id || "",
                     detail,
                     operationDate,
                     dueDate: ts.dueDate,
                     isIncome: false,
-                    location: ts.location,
+                    location: ts.location || "",
                     movement: Movement.Manual,
-                    nroLot: ts.nroLot,
+                    nroLot: ts.nroLot || "",
                     typeMovement: TypeMovement.Transformacion,
                 }
                 newMovements.push(newMovement);
                 // Si es cultivo en ORIGEN, actualizar tablas de cultivos
-                if (isCrop) {
-                    updateCropStockTables(newMovement, ts.crop, ts.deposit, { zafra: ts.zafra });
-                }
+                // if (isCrop) {
+                //     updateCropStockTables(newMovement, ts.crop, ts.deposit, { zafra: ts.zafra });
+                // }
             });
             // Creamos los movimientos de insumo/cultivo, deposito ubicacion lote 
             supplyOrCultiveDestination.forEach(sa => {
@@ -99,18 +100,38 @@ export const useTransformStock = () => {
                     operationDate,
                     dueDate: sa.dueDate,
                     isIncome: true,
-                    location: sa.location,
+                    location: sa.location || "",
                     movement: Movement.Manual,
-                    nroLot: sa.nroLot,
+                    nroLot: sa.nroLot || "",
                     typeMovement: TypeMovement.Transformacion,
                 });
             });
 
-            // Actualizar stock: solo insumos en tabla stock (cultivos se actualizan en updateCropStockTables)
             let promisesAll: Promise<Array<PouchDB.Core.Response | PouchDB.Core.Error>>[] = [
-                dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stock.bulkDocs(stockBySupplies),
+                dbContext.stockMovements.bulkDocs(newMovements)
+                // dbContext.stock.bulkDocs(currentStockCropOrSupply),
             ];
+            if (currentStockCropOrSupply.stockBySupplies.length)
+                promisesAll.push(dbContext.stock.bulkDocs(currentStockCropOrSupply.stockBySupplies));
+
+            //Neceistamos que los datos de stockByCrops sean los mismos del dbContext (CropStockControl) para hacer el bulkDocs, por eso mapeamos a ese formato.
+            if (currentStockCropOrSupply.stockByCrops.length)
+                promisesAll.push(dbContext.cropStockControl.bulkDocs(
+                    currentStockCropOrSupply.stockByCrops.map(c => ({
+                        _id: c._id,
+                        _rev: c._rev,
+                        accountId: user.accountId,
+                        licenceId: user.licenceId,
+                        zafra: c.zafra,
+                        campaignId: c.campaign,
+                        cropId: c.cropId,
+                        currentStock: c.currentStock,
+                        committedStock: c.committedStock,
+                        deliveredStock: c.deliveredStock,
+                        lastUpdate: today,
+                    } as CropStockControl))
+                ));
+
             const responseAll = await Promise.all(promisesAll);
 
             if (responseAll)

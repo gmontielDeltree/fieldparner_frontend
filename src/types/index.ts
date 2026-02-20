@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Business } from '../interfaces/socialEntity';
-import { TipoStock } from '../interfaces/stock';
+import { CropStockControl, CropStockData, TipoStock } from '../interfaces/stock';
 import { Company } from '../interfaces/company';
 import { ModulesUsers } from '../interfaces/menuModules';
 
@@ -478,18 +478,20 @@ export interface DepositDestination {
 //TODO: refactorizar para que no tenga objetos anidados
 export interface TransformSupply {
   id: string;
-  supply: Supply | null;
+  supply?: Supply | null;
   campaignId: string;
-  crop: Crop | null;
-  deposit: Deposit | null;
-  location: string;
-  nroLot: string;
+  crop?: Crop | null;
+  deposit?: Deposit | null;
+  location?: string;
+  nroLot?: string;
   dueDate: string;
   amount: number;
-  currentStock: number;
   hours?: string;
   employee?: string;
   zafra?: string;
+  currentStock: number;
+  available: number;
+  pending: number;
 }
 
 export interface ExitField extends Document {
@@ -903,4 +905,16 @@ export interface UpdateUserDTO {
   username: string;
   language: string;
   photoName?: string;
+}
+
+export interface FormDataTransformValue {
+  campaignId: string;
+  zafra: string;
+  supplyId: string;
+  cropId: string;
+  depositId: string;
+  location: string;
+  nroLot: string;
+  dueDate: string;
+  amount: number;
 }

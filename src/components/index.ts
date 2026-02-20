@@ -23,10 +23,10 @@ export * from './Modals/HistoryWithdrawOrder';
 export * from './Modals/DetailStockMovement';
 export * from './Modals/ViewComponentModal/ViewComponentModal';
 export * from './CloseButton';
-export * from './NewSupplyRow';
+export * from './NewSupplyRow/NewSupplyCropRow';
 export * from './BorderContainer';
 
-export * from './NewSupplyRow';
+export * from './NewSupplyRow/NewSupplyRow';
 export * from './ExitField/GeneralData';
 export * from './ExitField/TransportDestination';
 export * from './PaisTableCell/PaisTableCell';
