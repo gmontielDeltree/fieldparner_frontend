@@ -9,7 +9,6 @@ import { useExitField } from '../../hooks';
 import { GridColDef } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import { ExitFieldItem } from '../../types';
-import i18n from '../../i18n';
 
 export const ListExitFieldPage: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +31,6 @@ export const ListExitFieldPage: React.FC = () => {
       width: 150,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: params => params.row.field?.nombre || '',
     },
     {
       field: 'loteName',
@@ -40,15 +38,13 @@ export const ListExitFieldPage: React.FC = () => {
       width: 150,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: params => params.row.lot?.properties?.nombre || '',
     },
     {
-      field: 'campaignId',
+      field: 'campaignName',
       headerName: t('_campaign'),
       width: 180,
       align: 'left',
       headerAlign: 'left',
-      valueGetter: params => params.row.campaign?.name || params.row.campaignId || '',
     },
     {
       field: 'zafra',
@@ -63,14 +59,6 @@ export const ListExitFieldPage: React.FC = () => {
       width: 150,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: params => {
-        if (!params.row.crop) return '';
-        return i18n.language === 'es'
-          ? params.row.crop.descriptionES
-          : i18n.language === 'en'
-          ? params.row.crop.descriptionEN
-          : params.row.crop.descriptionPT;
-      },
     },
     {
       field: 'transportName',
@@ -78,7 +66,6 @@ export const ListExitFieldPage: React.FC = () => {
       width: 180,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: params => params.row.transport?.razonSocial || params.row.transport?.nombreCompleto || '',
     },
     {
       field: 'kgNet',

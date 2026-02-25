@@ -39,13 +39,23 @@ export const useExitField = () => {
                     const lot = fieldDoc?.lotes?.find((l: any) =>
                         (l.properties?.uuid || l.id) === row.lotId
                     );
+                    const crop = crops.find(s => s._id === row.cropId);
+                    const transport = socialEntities.find(s => s._id === row.transportId);
+                    const campaign = campaigns.find((c: any) => c._id === row.campaignId || c.campaignId === row.campaignId);
+
                     return {
                         ...row,
-                        crop: crops.find(s => s._id === row.cropId),
-                        transport: socialEntities.find(s => s._id === row.transportId),
+                        crop,
+                        transport,
                         field: fieldDoc,
-                        campaign: campaigns.find((c: any) => c._id === row.campaignId || c.campaignId === row.campaignId),
+                        campaign,
                         lot,
+                        // Agregar campos planos para la tabla (como annual-plan-valorization)
+                        fieldName: fieldDoc?.nombre || fieldDoc?.name || '',
+                        loteName: lot?.properties?.nombre || lot?.properties?.name || '',
+                        cropName: crop?.descriptionES || crop?.descriptionEN || crop?.descriptionPT || crop?.name || '',
+                        transportName: transport?.razonSocial || transport?.nombreCompleto || transport?.name || '',
+                        campaignName: campaign?.name || campaign?.description || '',
                     } as ExitFieldItem
                 });
                 setExitFields(documents);
