@@ -55,6 +55,53 @@ export const ActividadEditorDialogNoButton = ({
   refreshCiclos: () => any;
   ciclo?: any;
 }) => {
+  const { t } = useTranslation();
+
+  // Map activity type to translated label
+  const getActivityLabel = (tipo: string) => {
+    const normalizedType = tipo?.toLowerCase();
+    switch (normalizedType) {
+      case 'preparado':
+      case 'preparation':
+        return t('preparation');
+      case 'siembra':
+      case 'sowing':
+        return t('sowing');
+      case 'aplicacion':
+      case 'application':
+        return t('application');
+      case 'cosecha':
+      case 'harvesting':
+        return t('harvesting');
+      default:
+        return tipo;
+    }
+  };
+
+  // Get activity icon and color
+  const getActivityStyle = (tipo: string) => {
+    const normalizedType = tipo?.toLowerCase();
+    switch (normalizedType) {
+      case 'preparado':
+      case 'preparation':
+        return { icon: preparadoIcon, color: '#6b7280', emoji: '🔧' };
+      case 'siembra':
+      case 'sowing':
+        return { icon: categoryIcon1, color: '#10b981', emoji: '🌱' };
+      case 'aplicacion':
+      case 'application':
+        return { icon: categoryIcon2, color: '#3b82f6', emoji: '💧' };
+      case 'cosecha':
+      case 'harvesting':
+        return { icon: categoryIcon3, color: '#f59e0b', emoji: '🌾' };
+      default:
+        return { icon: null, color: '#6b7280', emoji: '📋' };
+    }
+  };
+
+  const activityStyle = getActivityStyle(actividad.tipo);
+  const activityLabel = getActivityLabel(actividad.tipo);
+
   return (
     <Dialog
       open={open}
@@ -62,31 +109,69 @@ export const ActividadEditorDialogNoButton = ({
       keepMounted
       onClose={handleClose}
       maxWidth={"lg"}
+      fullWidth
       aria-describedby="alert-dialog-slide-description"
+      PaperProps={{
+        sx: {
+          borderRadius: "16px",
+          overflow: "hidden",
+        }
+      }}
     >
+      {/* Modern Header with Gradient */}
       <Box
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingX: "1rem",
+          background: `linear-gradient(135deg, ${activityStyle.color} 0%, ${activityStyle.color}dd 100%)`,
+          color: "white",
+          padding: "24px 32px",
+          position: "relative",
         }}
       >
-        {editing ? (
-          <DialogTitle>
-            Editando plan de {actividad.tipo.toLocaleUpperCase()}
-          </DialogTitle>
-        ) : (
-          <DialogTitle>
-            Nuevo plan de {actividad.tipo.toLocaleUpperCase()}
-          </DialogTitle>
-        )}
-        <IconButton onClick={handleClose}>
-          <CancelIcon />
-        </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {activityStyle.icon && (
+            <Avatar
+              src={activityStyle.icon}
+              sx={{
+                width: 56,
+                height: 56,
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                border: "2px solid rgba(255, 255, 255, 0.3)",
+                backdropFilter: "blur(10px)",
+              }}
+              imgProps={{
+                style: {
+                  objectFit: 'contain',
+                  padding: '8px',
+                },
+              }}
+            />
+          )}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
+              {editing ? t('editActivity') : t('newActivity')}
+            </Typography>
+            <Typography variant="body1" sx={{ opacity: 0.95, fontWeight: 500 }}>
+              {activityStyle.emoji} {activityLabel}
+            </Typography>
+          </Box>
+          <Tooltip title={t('close')}>
+            <IconButton
+              onClick={handleClose}
+              sx={{
+                color: "white",
+                backgroundColor: "rgba(255, 255, 255, 0.15)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.25)",
+                },
+              }}
+            >
+              <CancelIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
 
-      <DialogContent>
+      <DialogContent sx={{ p: 0 }}>
         <ActividadEditorBase
           tipo={actividad.tipo}
           actividadDoc={actividad}
@@ -99,10 +184,6 @@ export const ActividadEditorDialogNoButton = ({
           ciclo={ciclo}
         />
       </DialogContent>
-      {/* <DialogActions>
-    <Button onClick={handleClose}>Disagree</Button>
-    <Button onClick={handleClose}>Agree</Button>
-  </DialogActions> */}
     </Dialog>
   );
 };
