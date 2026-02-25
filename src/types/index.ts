@@ -536,6 +536,12 @@ export interface ExitFieldItem extends ExitField {
   lot?: Lot;
   // trucker?: Business;
   // harvester?: Business;
+  // Campos planos para la tabla (como annual-plan-valorization)
+  fieldName?: string;
+  loteName?: string;
+  cropName?: string;
+  transportName?: string;
+  campaignName?: string;
 }
 
 export interface Campaign extends Document {
