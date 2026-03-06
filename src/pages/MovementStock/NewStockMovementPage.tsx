@@ -111,6 +111,7 @@ export const NewStockMovementPage: React.FC = () => {
   const [locationDestinationSelected, setLocationDestinationSelected] = useState('');
   const [movementTypeSelected, setMovementTypeSelected] = useState<MovementType | null>(null);
   const [documentFile, setDocumentFile] = React.useState<File | null>(null);
+  const [amountInput, setAmountInput] = useState<string>('');
 
   const { depositId: depositOrigin, supplyId, location } = formValues;
   const {
@@ -172,6 +173,7 @@ export const NewStockMovementPage: React.FC = () => {
         destination,
       );
       reset();
+      setAmountInput('');
     } catch (error) {
       console.log('createMovement error:', error);
     }
@@ -468,8 +470,20 @@ export const NewStockMovementPage: React.FC = () => {
                     name='amount'
                     error={formValues.amount.isError}
                     helperText={formValues.amount.message}
-                    value={formValues.amount.value}
-                    onChange={handleInputChange}
+                    value={amountInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '') {
+                        setAmountInput('');
+                        handleFormValueChange('amount', 0);
+                      } else {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue) && numValue >= 0) {
+                          setAmountInput(numValue.toString());
+                          handleFormValueChange('amount', numValue);
+                        }
+                      }
+                    }}
                     InputProps={{
                       startAdornment: <InputAdornment position='start' />,
                     }}
@@ -677,8 +691,20 @@ export const NewStockMovementPage: React.FC = () => {
                     name='amount'
                     error={formValues.amount.isError}
                     helperText={formValues.amount.message}
-                    value={formValues.amount.value}
-                    onChange={handleInputChange}
+                    value={amountInput}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '') {
+                        setAmountInput('');
+                        handleFormValueChange('amount', 0);
+                      } else {
+                        const numValue = parseFloat(value);
+                        if (!isNaN(numValue) && numValue >= 0) {
+                          setAmountInput(numValue.toString());
+                          handleFormValueChange('amount', numValue);
+                        }
+                      }
+                    }}
                     InputProps={{
                       startAdornment: <InputAdornment position='start' />,
                     }}

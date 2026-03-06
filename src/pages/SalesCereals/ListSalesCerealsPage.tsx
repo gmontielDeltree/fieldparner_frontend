@@ -9,20 +9,8 @@ import { GridRenderCellParams } from '@mui/x-data-grid';
 import { Box, IconButton, Tooltip, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useContractSaleCereals } from '../../hooks';
+import { formatNumber } from '../../helpers/helper';
 
-// Función para formatear números con separador de miles (.) y decimales (,)
-const formatNumber = (value: number | string | null | undefined): string => {
-  if (value === null || value === undefined || value === '') return '-';
-
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-
-  if (isNaN(num)) return '-';
-
-  return num.toLocaleString('es-AR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-};
 
 //TODO: calcular los kg entregados y el valor cobrado
 //TODO: permitir editar solo si ninguna carta de porte tiene el nro de contrato

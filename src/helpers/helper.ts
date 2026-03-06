@@ -48,3 +48,17 @@ export class Helper {
     }
 
 }
+
+// Función para formatear números con separador de miles (.) y decimales (,)
+export const formatNumber = (value: number | string | null | undefined): string => {
+  if (value === null || value === undefined || value === '') return '-';
+
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+
+  if (isNaN(num)) return '-';
+
+  return num.toLocaleString('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { IconButton } from '@mui/material';
 import { StockMovementItem, TypeMovement } from '../../types';
 import { DetailStockMovementModal, GenericListPage } from '../../components';
+import { formatNumber } from '../../helpers/helper';
 
 export const StockMovementPage: React.FC = () => {
   const { stockMovements, getStockMovements } = useStockMovement();
@@ -105,7 +106,7 @@ export const StockMovementPage: React.FC = () => {
         movementType: sm.typeMovement,
         isIncome: sm.isIncome ? t('_income') : t('_outcome'),
         um: sm.supply?.unitMeasurement || '-',
-        amount: sm.amount,
+        amount: formatNumber(sm.amount),
         documentFile: sm.documentFile?.originalName,
       };
     });
