@@ -43,6 +43,8 @@ export const TableCorporateContract: React.FC<Props> = ({
 
     const { isLoading, companies, getCompanies } = useCompany();
 
+    const [percentageInput, setPercentageInput] = React.useState<string>('');
+
 
     const columns: ColumnProps[] = [
         { text: t("_company"), align: "left" },
@@ -103,11 +105,32 @@ export const TableCorporateContract: React.FC<Props> = ({
                         <TextField
                             label={t("percentage_of_participation")}
                             name="percentageOfParticipation"
-                            value={formValues.percentageOfParticipation}
-                            onChange={handleInputChange}
+                            value={percentageInput}
+                            onChange={(e) => {
+                                const value = e.target.value;
+
+                                if (value === '') {
+                                    setPercentageInput('');
+                                    setFormValues(prevState => ({
+                                        ...prevState,
+                                        percentageOfParticipation: 0
+                                    }));
+                                } else {
+                                    // Parsear a número para eliminar ceros al inicio
+                                    const numValue = parseFloat(value);
+                                    if (!isNaN(numValue) && numValue >= 0) {
+                                        // Convertir de vuelta a string sin ceros iniciales
+                                        setPercentageInput(numValue.toString());
+                                        setFormValues(prevState => ({
+                                            ...prevState,
+                                            percentageOfParticipation: numValue
+                                        }));
+                                    }
+                                }
+                            }}
                             // error={errors.percentageOfParticipation}
                             // helperText={errors.percentageOfParticipation ? t("field_required") : t("numeric_values_only")}
-                            inputProps={{ inputMode: 'decimal' }}
+                            // inputProps={{ inputMode: 'decimal' }}
                             type="number"
                             InputLabelProps={{ shrink: true }}
                             fullWidth
@@ -136,6 +159,7 @@ export const TableCorporateContract: React.FC<Props> = ({
                                     id: uuid4()
                                 });
                                 reset();
+                                setPercentageInput('');
                             }}>
                             <AddIcon />
                         </Fab>
