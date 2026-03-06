@@ -34,6 +34,7 @@ interface Props {
   listDeliveryDates: string[];
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
+  handleFormValueChange: (key: string, value: string) => void;
   addDeliveryDate: (date: string) => void;
   deleteDeliveryDate: (date: string) => void;
 }  // handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
@@ -48,6 +49,7 @@ export const Details: React.FC<Props> = ({
   companies,
   handleInputChange,
   handleSelectChange,
+  handleFormValueChange,
   addDeliveryDate,
   deleteDeliveryDate,
 }) => {
@@ -185,7 +187,15 @@ export const Details: React.FC<Props> = ({
               label="%"
               name="brokerPercentage"
               value={formValues.brokerPercentage.value}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  handleFormValueChange("brokerPercentage", '0');
+                } else {
+                  const numValue = Number(value);
+                  handleFormValueChange("brokerPercentage", numValue >= 0 ? numValue.toString() : '0');
+                }
+              }}
               fullWidth
             />
           </Grid>
@@ -196,7 +206,15 @@ export const Details: React.FC<Props> = ({
               label="Importe"
               name="brokerAmountValue"
               value={formValues.brokerAmountValue.value}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  handleFormValueChange("brokerAmountValue", '0');
+                } else {
+                  const numValue = Number(value);
+                  handleFormValueChange("brokerAmountValue", numValue >= 0 ? numValue.toString() : '0');
+                }
+              }}
               fullWidth
             />
           </Grid>
@@ -228,7 +246,15 @@ export const Details: React.FC<Props> = ({
               label="%"
               name="comissionAgentPercentage"
               value={formValues.comissionAgentPercentage.value}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  handleFormValueChange("comissionAgentPercentage", '0');
+                } else {
+                  const numValue = Number(value);
+                  handleFormValueChange("comissionAgentPercentage", numValue >= 0 ? numValue.toString() : '0');
+                }
+              }}
               fullWidth
             />
           </Grid>
@@ -239,7 +265,15 @@ export const Details: React.FC<Props> = ({
               label="Importe"
               name="comissionAgentAmountValue"
               value={formValues.comissionAgentAmountValue.value}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '') {
+                  handleFormValueChange("comissionAgentAmountValue", '0');
+                } else {
+                  const numValue = Number(value);
+                  handleFormValueChange("comissionAgentAmountValue", numValue >= 0 ? numValue.toString() : '0');
+                }
+              }}
               fullWidth
             />
           </Grid>

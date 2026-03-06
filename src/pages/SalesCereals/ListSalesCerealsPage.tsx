@@ -23,6 +23,21 @@ const titleColums = {
   valueCollected: 'Valor Cobrado',
   status: 'Estado',
 };
+
+// Función para formatear números con separador de miles (.) y decimales (,)
+const formatNumber = (value: number | string | null | undefined): string => {
+  if (value === null || value === undefined || value === '') return '-';
+
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+
+  if (isNaN(num)) return '-';
+
+  return num.toLocaleString('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
 //TODO: calcular los kg entregados y el valor cobrado
 //TODO: permitir editar solo si ninguna carta de porte tiene el nro de contrato
 export const ListSalesCerealsPage: React.FC = () => {
@@ -65,7 +80,7 @@ export const ListSalesCerealsPage: React.FC = () => {
       field: 'campaignId',
       headerName: 'Campaña',
       flex: 1,
-      renderCell: (params: GridRenderCellParams) => params.row?.campaign?.campaignId || '-',
+      renderCell: (params: GridRenderCellParams) => params.row?.campaign?.name || '-',
     },
     {
       field: 'zafra',
@@ -87,6 +102,7 @@ export const ListSalesCerealsPage: React.FC = () => {
       field: 'kg',
       headerName: titleColums.kg,
       flex: 1,
+      renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'currency',
@@ -97,16 +113,19 @@ export const ListSalesCerealsPage: React.FC = () => {
       field: 'amountValue',
       headerName: titleColums.amountValue,
       flex: 1,
+      renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'kgDelivered',
       headerName: titleColums.kgDelivered,
       flex: 1,
+      renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'valueCollected',
       headerName: titleColums.valueCollected,
       flex: 1,
+      renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'status',

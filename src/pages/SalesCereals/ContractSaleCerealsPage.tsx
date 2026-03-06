@@ -115,6 +115,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
               companies={companies}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
+              handleFormValueChange={handleFormValueChange}
               addDeliveryDate={addDeliveryDate}
               listDeliveryDates={listDeliveryDates}
               deleteDeliveryDate={deleteDeliveryDate}
