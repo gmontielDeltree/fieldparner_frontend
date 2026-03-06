@@ -1385,5 +1385,16 @@
   "pending_delivery": "Pending delivery",
   "quintal_quote": "Quintal Quote",
   "menu_Agregar Campo": "Add Field",
-  "menu_Agregar Lote": "Add Lot"
+  "menu_Agregar Lote": "Add Lot",
+  "contract_sale_number": "Contract Sale Number",
+  "date_created": "Date",
+  "society": "Company",
+  "zafra": "Harvest",
+  "cultive": "Crop",
+  "kilograms": "Kilograms",
+  "currency": "Currency",
+  "amount_value": "Amount",
+  "kg_delivered": "Kg Delivered",
+  "value_collected": "Amount Collected",
+  "_all": "All"
 }

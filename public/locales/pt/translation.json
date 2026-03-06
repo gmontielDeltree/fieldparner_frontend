@@ -1395,5 +1395,16 @@
   "pending_delivery": "Falta entregar",
   "quintal_quote": "Cotizaçao Saca",
   "menu_Agregar Campo": "Adicionar Campo",
-  "menu_Agregar Lote": "Adicionar Lote"
+  "menu_Agregar Lote": "Adicionar Lote",
+  "contract_sale_number": "Nº Contrato Venda",
+  "date_created": "Data",
+  "society": "Sociedade",
+  "zafra": "Safra",
+  "cultive": "Cultura",
+  "kilograms": "Quilos",
+  "currency": "Moeda",
+  "amount_value": "Valor",
+  "kg_delivered": "Kg Entregues",
+  "value_collected": "Valor Cobrado",
+  "_all": "Todos"
 }

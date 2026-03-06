@@ -10,20 +10,6 @@ import { Box, IconButton, Tooltip, FormControl, InputLabel, Select, MenuItem } f
 import { useTranslation } from 'react-i18next';
 import { useContractSaleCereals } from '../../hooks';
 
-const titleColums = {
-  nroContractSale: 'Nro Contrato Venta',
-  dateCreated: 'Fecha',
-  society: 'Sociedad',
-  campaign: 'Campaña',
-  cultive: 'Cultivo',
-  kg: 'Kilos',
-  currency: 'Moneda',
-  amountValue: 'Valor',
-  kgDelivered: 'Kg Entregados',
-  valueCollected: 'Valor Cobrado',
-  status: 'Estado',
-};
-
 // Función para formatear números con separador de miles (.) y decimales (,)
 const formatNumber = (value: number | string | null | undefined): string => {
   if (value === null || value === undefined || value === '') return '-';
@@ -51,12 +37,12 @@ export const ListSalesCerealsPage: React.FC = () => {
   const columns = [
     {
       field: 'contractSaleNumber',
-      headerName: 'Nro Contrato Venta',
+      headerName: t('contract_sale_number'),
       flex: 1,
     },
     {
       field: 'dateCreated',
-      headerName: 'Fecha',
+      headerName: t('date_created'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => {
         if (!params.value) return '-';
@@ -72,19 +58,19 @@ export const ListSalesCerealsPage: React.FC = () => {
     },
     {
       field: 'companyId',
-      headerName: 'Sociedad',
+      headerName: t('society'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => params.row?.company?.socialReason || '-',
     },
     {
       field: 'campaignId',
-      headerName: 'Campaña',
+      headerName: t('_campaign'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => params.row?.campaign?.name || '-',
     },
     {
       field: 'zafra',
-      headerName: 'Zafra',
+      headerName: t('zafra'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => {
         const z = (params.row?.campaign && (params.row.campaign as any).zafra) || null;
@@ -94,42 +80,42 @@ export const ListSalesCerealsPage: React.FC = () => {
     },
     {
       field: 'cropId',
-      headerName: 'Cultivo',
+      headerName: t('cultive'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => params.row?.crop?.descriptionES || '-',
     },
     {
       field: 'kg',
-      headerName: titleColums.kg,
+      headerName: t('kilograms'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'currency',
-      headerName: 'Moneda',
+      headerName: t('currency'),
       flex: 1,
     },
     {
       field: 'amountValue',
-      headerName: titleColums.amountValue,
+      headerName: t('amount_value'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'kgDelivered',
-      headerName: titleColums.kgDelivered,
+      headerName: t('kg_delivered'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'valueCollected',
-      headerName: titleColums.valueCollected,
+      headerName: t('value_collected'),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => formatNumber(params.value),
     },
     {
       field: 'status',
-      headerName: titleColums.status,
+      headerName: t('status'),
       flex: 1,
     },
     {
@@ -139,9 +125,9 @@ export const ListSalesCerealsPage: React.FC = () => {
       sorteable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Box display='flex' justifyContent='center'>
-          <Tooltip title='Edit'>
+          <Tooltip title={t('icon_edit')}>
             <IconButton
-              aria-label='Edit'
+              aria-label={t('icon_edit')}
               onClick={() => {
                 console.log('edit', params.row._id);
               }}
@@ -153,9 +139,9 @@ export const ListSalesCerealsPage: React.FC = () => {
               <EditIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip title='Delete'>
+          <Tooltip title={t('icon_delete')}>
             <IconButton
-              aria-label='Delete'
+              aria-label={t('icon_delete')}
               disabled
               onClick={() => console.log(params.row._id, params.row._rev)}
               sx={{
@@ -187,9 +173,9 @@ export const ListSalesCerealsPage: React.FC = () => {
       editItemPath={id => `/init/overview/sales-cereals/edit/${id}`}
       headerContent={
         <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Zafra</InputLabel>
-          <Select label="Zafra" value={zafraFilter} onChange={(e) => setZafraFilter(e.target.value)}>
-            <MenuItem value="">{t('all')}</MenuItem>
+          <InputLabel>{t('zafra')}</InputLabel>
+          <Select label={t('zafra')} value={zafraFilter} onChange={(e) => setZafraFilter(e.target.value)}>
+            <MenuItem value="">{t('_all')}</MenuItem>
             {Array.from(new Set(contractsSaleCerealsFull
               .map(c => (c.campaign as any)?.zafra)
               .flatMap((z: any) => Array.isArray(z) ? z : (z ? [z] : []))

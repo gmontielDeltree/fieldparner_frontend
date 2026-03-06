@@ -1390,6 +1390,17 @@
   "delivered": "Entregado",
   "available_to_sell": "Disponible para vender",
   "pending_delivery": "Falta entregar",
-  "quintal_quote": "Cotizacion Quintal"
+  "quintal_quote": "Cotizacion Quintal",
+  "contract_sale_number": "Nro Contrato Venta",
+  "date_created": "Fecha",
+  "society": "Sociedad",
+  "zafra": "Zafra",
+  "cultive": "Cultivo",
+  "kilograms": "Kilos",
+  "currency": "Moneda",
+  "amount_value": "Valor",
+  "kg_delivered": "Kg Entregados",
+  "value_collected": "Valor Cobrado",
+  "_all": "Todos"
 
 }
