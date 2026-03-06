@@ -211,7 +211,15 @@ export const GeneralData: React.FC<Props> = ({
           name={"kms"}
           error={formValues.kms.isError}
           helperText={formValues.kms.message}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '') {
+              handleFormValueChange("kms", "");
+            } else {
+              const numValue = Number(value);
+              handleFormValueChange("kms", numValue >= 0 ? numValue.toString() : "0");
+            }
+          }}
           value={formValues.kms.value}
           fullWidth
         />
@@ -225,7 +233,15 @@ export const GeneralData: React.FC<Props> = ({
           error={formValues.kg.isError}
           helperText={formValues.kg.message}
           value={formValues.kg.value}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '') {
+              handleFormValueChange("kg", "");
+            } else {
+              const numValue = Number(value);
+              handleFormValueChange("kg", numValue >= 0 ? numValue.toString() : "0");
+            }
+          }}
           fullWidth
         />
       </Grid>
@@ -250,7 +266,15 @@ export const GeneralData: React.FC<Props> = ({
           error={formValues.quintalQuote.isError}
           helperText={formValues.quintalQuote.message}
           value={formValues.quintalQuote.value}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '') {
+              handleFormValueChange("quintalQuote", "");
+            } else {
+              const numValue = Number(value);
+              handleFormValueChange("quintalQuote", numValue >= 0 ? numValue.toString() : "0");
+            }
+          }}
           fullWidth
         />
       </Grid>
@@ -275,7 +299,15 @@ export const GeneralData: React.FC<Props> = ({
           error={formValues.USDQuote.isError}
           helperText={formValues.USDQuote.message}
           value={formValues.USDQuote.value}
-          onChange={handleInputChange}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '') {
+              handleFormValueChange("USDQuote", "");
+            } else {
+              const numValue = Number(value);
+              handleFormValueChange("USDQuote", numValue >= 0 ? numValue.toString() : "0");
+            }
+          }}
           fullWidth
         />
       </Grid>
