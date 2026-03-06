@@ -45,6 +45,7 @@ export const DepositPage: React.FC = () => {
     silo: false,
     deposit: false,
     siloBagId: "",
+    taxId: "",
     status: EnumStatusContract.Inactivo,
   };
 
@@ -147,7 +148,7 @@ export const DepositPage: React.FC = () => {
     }
   };
 
-  const handleLocationChange = (newLocation) => {
+  const handleLocationChange = (newLocation: { lng: number; lat: number }) => {
     setFormulario(prev => ({
       ...prev,
       geolocation: newLocation
