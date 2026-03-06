@@ -185,7 +185,9 @@ export const GeneralData: React.FC<Props> = ({
           variant="outlined"
           type="date"
           label={"Fecha"}
+          name="dateCreated"
           value={formValues.dateCreated.value}
+          onChange={handleInputChange}
           fullWidth
         />
       </Grid>
