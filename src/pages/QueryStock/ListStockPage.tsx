@@ -177,21 +177,22 @@ export const ListStockPage: React.FC = () => {
     if (!user) return;
     setLoadingCrops(true);
     try {
-      const [cropsRes, depositsRes, controlRes] = await Promise.all([
+      const [cropsRes, controlRes, campaignsRes] = await Promise.all([
         dbContext.crops.allDocs({ include_docs: true }),
-        dbContext.deposits.find({ selector: { accountId: user.accountId } }),
         dbContext.cropStockControl.find({ selector: { accountId: user.accountId } }),
+        dbContext.campaigns.find({ selector: { accountId: user.accountId } })
       ]);
       const crops = cropsRes.rows.map(r => r.doc);
-      const deposits = depositsRes.docs;
       const controls = controlRes.docs;
+      const campaigns = campaignsRes.docs;
 
       const data = controls.map((ctrl: any) => {
         const crop = crops.find((c: any) => c._id === ctrl.cropId);
+        const campaign = campaigns.find((c: any) => c._id === ctrl.campaignId);
         return {
           _id: ctrl._id,
           cropName: crop?.descriptionES || crop?.descriptionEN || ctrl.cropId,
-          campaign: ctrl.campaignId,
+          campaign: campaign?.name || ctrl.campaignId,
           zafra: ctrl.zafra || '-',
           currentStock: ctrl.currentStock || 0,
           committedStock: ctrl.committedStock || 0,
