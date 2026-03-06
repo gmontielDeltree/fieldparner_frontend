@@ -66,6 +66,7 @@ export const SupplyPage: React.FC = () => {
     name: false,
     type: false,
     cropId: false,
+    unitMeasurement: false,
   })
   const { supplies, isLoading, createSupply, updateSupply, getSupplies } = useSupply();
   const { isLoading: loadingCrops, dataCrops, getCrops } = useCrops();
@@ -112,6 +113,9 @@ export const SupplyPage: React.FC = () => {
   }
 
   const handleAddSupply = () => {
+    let notUnit = { unitMeasurement: !formulario.unitMeasurement.trim() };
+    setFormErrors({ ...formErrors, ...notUnit });
+    if (Object.values({ ...formErrors, ...notUnit }).some((error) => error)) return;
     addNewSupply();
   };
 
@@ -150,6 +154,7 @@ export const SupplyPage: React.FC = () => {
             <StockForm
               key="stockForm"
               formValues={formulario}
+              formErrors={formErrors}
               handleInputChange={handleInputChange}
               handleSelectChange={handleSelectChange}
             />
@@ -173,7 +178,7 @@ export const SupplyPage: React.FC = () => {
     let formErrors = {
       name: !formulario.name.trim(),
       type: !formulario.type.trim(),
-      cropId: (isSeedType  && !formulario.cropId?.trim()),
+      cropId: (isSeedType && !formulario.cropId?.trim())
     };
     setFormErrors(formErrors);
     if (Object.values(formErrors).some((error) => error)) return;

@@ -1,5 +1,6 @@
 import {
   FormControl,
+  FormHelperText,
   Grid,
   InputAdornment,
   InputLabel,
@@ -15,17 +16,19 @@ import { useTranslation } from "react-i18next";
 
 export interface StockFormProps {
   formValues: Supply;
+  formErrors: Record<string, boolean>;
   handleInputChange: ({ target }: ChangeEvent<HTMLInputElement>) => void;
   handleSelectChange: ({ target }: SelectChangeEvent) => void;
 }
 
 export const StockForm: React.FC<StockFormProps> = ({
   formValues,
+  formErrors,
   handleInputChange,
   handleSelectChange,
 }) => {
   const { type, name, unitMeasurement, replenishmentPoint } = formValues;
-const {t} = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <Grid container spacing={2} alignItems="center" justifyContent="center">
@@ -64,7 +67,9 @@ const {t} = useTranslation();
         />
       </Grid>
       <Grid item xs={12} sm={6}>
-        <FormControl fullWidth>
+        <FormControl
+          error={formErrors.unitMeasurement}
+          fullWidth>
           <InputLabel id="unidadMedida">{t("unit_of_measure")}</InputLabel>
           <Select
             labelId="unidadMedida"
@@ -80,6 +85,7 @@ const {t} = useTranslation();
               </MenuItem>
             ))}
           </Select>
+          <FormHelperText>{formErrors.unitMeasurement ? t("this_field_is_mandatory") : ""}</FormHelperText>
         </FormControl>
       </Grid>
       <Grid item xs={12} sm={6}>
