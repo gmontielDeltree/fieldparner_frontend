@@ -164,6 +164,7 @@ export const OverviewRoutes: React.FC = () => {
         <Route path="/overview/exit-field/new" element={<NewExitFieldPage />} />
 
         <Route path="/overview/campaign-results" element={<CampaignsResultsPage />} />
+        <Route path="/overview/campaign-expenses" element={<CampaignsResultsPage />} />
 
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route
