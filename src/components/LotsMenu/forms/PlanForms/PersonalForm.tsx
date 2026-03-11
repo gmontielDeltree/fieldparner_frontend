@@ -488,18 +488,18 @@ function PersonalFormUnified({
           </LocalizationProvider>
         </Grid>
 
+        {(formData.tipo === 'cosecha' || formData.tipo === 'harvesting') && (
+          <Grid item xs={12} sm={6}>
+            <AutocompleteDeposito
+              value={formData.detalles?.deposito || null}
+              onChange={(value) => onFieldChange('deposito', value)}
+              allowCreate={true}
+            />
+          </Grid>
+        )}
+
         {mode === 'execute' ? (
           <>
-            {/* Campo Depósito solo aparece en la ejecución de Cosecha - T2-74 */}
-            {(formData.tipo === 'cosecha' || formData.tipo === 'harvesting') && (
-              <Grid item xs={12} sm={6}>
-                <AutocompleteDeposito
-                  value={formData.detalles?.deposito}
-                  onChange={(value) => onFieldChange('deposito', value)}
-                />
-              </Grid>
-            )}
-
             <Grid item xs={12}>
               <SectionTitle>{t('Schedule and Area')}</SectionTitle>
             </Grid>
