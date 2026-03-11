@@ -264,6 +264,60 @@ export const useAnnualPlanValorization = () => {
     }
   }, [campaigns, fields, crops, user?.accountId, t]);
 
+  const createAnnualPlanValorization = async (valorizationData: any) => {
+    try {
+      // Find the matching ciclo by campanaId + loteId
+      const result = await db.allDocs({
+        include_docs: true,
+        startkey: "ciclo:",
+        endkey: "ciclo:\ufff0",
+      });
+
+      const ciclos = result.rows
+        .filter((row) => row.doc && !row.id.startsWith("_"))
+        .map((row) => row.doc as unknown as ICiclosPlanificacion);
+
+      const matchingCiclo = ciclos.find(c =>
+        c.campanaId === valorizationData.campanaId &&
+        (c.loteId === valorizationData.loteId || c.loteId === valorizationData.loteName)
+      );
+
+      if (!matchingCiclo) {
+        throw new Error('No matching planning cycle found for this campaign and lot');
+      }
+
+      // Update the ciclo with valorization data
+      const updatedCiclo = {
+        ...matchingCiclo,
+        rindeHistorico: valorizationData.rindeHistorico,
+        monedaAlterId: valorizationData.monedaAlterId,
+        cotizMonAlt: valorizationData.cotizMonAlt,
+        operacMonAlt: valorizationData.operacMonAlt,
+        cotizFutCer: valorizationData.cotizFutCer,
+        valorizada: true,
+      };
+
+      await db.put(updatedCiclo as any);
+      await getAnnualPlanValorizations();
+
+      NotificationService.showSuccess(
+        t("valorization_created") || "Valorization created",
+        null,
+        t("valorization_label")
+      );
+
+      return updatedCiclo;
+    } catch (error) {
+      console.error("Error creating valorization:", error);
+      NotificationService.showError(
+        t("error_creating_valorization") || "Error creating valorization",
+        error,
+        t("valorization_label")
+      );
+      throw error;
+    }
+  };
+
   const updateAnnualPlanValorization = async (valorization: IAnnualPlan) => {
     try {
       // Actualizar el ciclo en dbContext.fields con los datos de valorización
@@ -331,6 +385,7 @@ export const useAnnualPlanValorization = () => {
     annualPlanValorizations,
     isLoading,
     getAnnualPlanValorizations,
+    createAnnualPlanValorization,
     updateAnnualPlanValorization,
     deleteAnnualPlanValorization,
   };

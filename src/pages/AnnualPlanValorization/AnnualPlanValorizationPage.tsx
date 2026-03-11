@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box,
@@ -70,6 +70,7 @@ import {
   IAnnualPlanValorization
 } from "../../interfaces/annualPlanValorization";
 import {
+  ICiclosPlanificacion,
   IActividadPlanificacion,
   IInsumosPlanificacion,
   ILaboresPlanificacion
@@ -101,7 +102,7 @@ interface FormData {
 
 export const AnnualPlanValorizationPage: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const isEditMode = !!id;
 
@@ -109,7 +110,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const { campaigns, getCampaigns } = useCampaign();
   const { fields, getFields } = useField();
   const { crops, getCrops } = useCrops();
-  const { country: countries } = useCountry();
+  const { country: countries, getCountries } = useCountry();
   const { getLineasInsumos, getLineasServicios } = usePlanActividad();
   const ciclos = useListaDeCiclos();
   const { getLaborFromId } = useLabores();
@@ -125,10 +126,15 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [maxStepReached, setMaxStepReached] = useState(0);
 
-  // Mock data - esto vendría de la base de datos
   const [annualPlan, setAnnualPlan] = useState<any | null>(null);
   const [insumos, setInsumos] = useState<IInsumosxAnnualPlan[]>([]);
   const [servicios, setServicios] = useState<IServicxAnnualPlan[]>([]);
+  const [cultivoNombre, setCultivoNombre] = useState('');
+  const hasLoadedEditData = useRef(false);
+
+  // Brazil uses "Sacas" (60kg) instead of "Toneladas" (1000kg) for commodity pricing
+  const isBrazilMode = i18n.language === 'pt';
+  const cotizDivisor = isBrazilMode ? 60 : 1000;
 
   // Form data
   const [formData, setFormData] = useState<FormData>({
@@ -167,14 +173,16 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     getCampaigns();
     getFields();
     getCrops();
+    getCountries();
     ciclos.refreshCiclos();
   }, []);
 
   useEffect(() => {
-    if (isEditMode && campaigns.length > 0 && fields.length > 0) {
+    if (isEditMode && campaigns.length > 0 && fields.length > 0 && crops.length > 0 && !hasLoadedEditData.current) {
+      hasLoadedEditData.current = true;
       loadValorizationData();
     }
-  }, [id, campaigns, fields]);
+  }, [id, campaigns, fields, crops]);
 
   // Inicializar campos disponibles cuando se cargan los fields
   useEffect(() => {
@@ -197,79 +205,80 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const loadValorizationData = async () => {
     setLoading(true);
     try {
-      // TODO: Cargar datos de valorización existente
-      // Por ahora, solo reseteamos el formulario
-      if (campaigns.length > 0 && fields.length > 0) {
-        setFormData({
-          campanaId: campaigns[0]._id || '',
-          zafra: 'Ciclo 1',
-          campoId: fields[0]._id || '',
-          loteId: fields[0].lotes?.[0]?.properties.nombre || '',
-          has: fields[0].lotes?.[0]?.properties.hectareas || 0,
-          rindeHistorico: '',
-          cotizFutCer: '',
-          monedaAlterId: '',
-          cotizMonAlt: 0,
-          operacMonAlt: 'dividir',
-          gastosMonLocal: 0,
-          gastosMonAlt: 0,
-          rendimientoMonLocal: 0,
-          rendimientoMonAlt: 0,
-          tendenciaMonLocal: 0,
-          tendenciaMonAlt: 0,
-        });
+      if (!id) return;
+
+      // Load the specific ciclo by its ID from the database
+      const cicloDoc = await dbContext.fields.get(id) as unknown as ICiclosPlanificacion;
+      setAnnualPlan(cicloDoc);
+
+      // Find the campaign
+      const campaign = campaigns.find(c => c._id === cicloDoc.campanaId);
+
+      // Find the field and lote for this ciclo
+      let foundField: Field | undefined;
+      let foundLote: Lot | undefined;
+      for (const field of fields) {
+        if (!field.lotes) continue;
+        const lote = field.lotes.find((l: any) =>
+          l.id === cicloDoc.loteId ||
+          l.properties?.uuid === cicloDoc.loteId ||
+          l.properties?.nombre === cicloDoc.loteId
+        );
+        if (lote) {
+          foundField = field;
+          foundLote = lote;
+          break;
+        }
       }
 
-      // Simular insumos
-      setInsumos([
-        {
-          _id: 'ins1',
-          annualPlanId: 'plan1',
-          labor: 'Siembra',
-          item: 'Insumo 1',
-          insumoId: 'ins1',
-          cantidad: 50,
-          cantidadHa: 50,
-          valorUnidad: 0,
-          valorTotal: 0,
-          accountId: '',
-          created: { userId: '', date: '' },
-          modified: { userId: '', date: '' },
-        },
-        {
-          _id: 'ins2',
-          annualPlanId: 'plan1',
-          labor: 'Aplicac',
-          item: 'Insumo 2',
-          insumoId: 'ins2',
-          cantidad: 100,
-          cantidadHa: 100,
-          valorUnidad: 0,
-          valorTotal: 0,
-          accountId: '',
-          created: { userId: '', date: '' },
-          modified: { userId: '', date: '' },
-        },
-      ]);
+      // Populate availableZafras from campaign
+      if (campaign?.zafra) {
+        const zafrasFromCampaign = Array.isArray(campaign.zafra)
+          ? campaign.zafra
+          : (typeof campaign.zafra === 'string' ? [campaign.zafra] : []);
+        setAvailableZafras(zafrasFromCampaign.map((z, i) => ({ id: `zafra_${i}`, name: z })));
+      }
 
-      // Simular servicios
-      setServicios([
-        {
-          _id: 'serv1',
-          annualPlanId: 'plan1',
-          labor: 'Cosecha',
-          item: 'Servicio 1',
-          servicioId: 'serv1',
-          descripcion: 'Cosecha',
-          cantidad: 1,
-          cantidadHa: 1,
-          valorUnidad: 0,
-          valorTotal: 0,
-          accountId: '',
-          created: { userId: '', date: '' },
-          modified: { userId: '', date: '' },
-        },
-      ]);
+      // Populate available campos and lotes
+      setAvailableCampos(fields);
+      if (foundField?.lotes) {
+        setAvailableLotes(foundField.lotes);
+      }
+
+      // Get the zafra value
+      const zafra = cicloDoc.zafra ||
+        (Array.isArray(campaign?.zafra) ? campaign.zafra[0] : campaign?.zafra) || '';
+
+      // Get crop name
+      const crop = crops.find((c: any) =>
+        c._id === cicloDoc.cultivoId ||
+        (c as any)?.id === cicloDoc.cultivoId
+      );
+      const cropName = (crop as any)?.crop || (crop as any)?.name || (crop as any)?.nombre || '';
+      setCultivoNombre(cropName);
+
+      // Set form data with real values from the ciclo
+      setFormData({
+        campanaId: cicloDoc.campanaId || '',
+        zafra: zafra,
+        campoId: foundField?._id || cicloDoc.campoId || '',
+        loteId: foundLote?.properties?.nombre || cicloDoc.loteId || '',
+        has: foundLote?.properties?.hectareas || 0,
+        rindeHistorico: (cicloDoc as any).rindeHistorico || '',
+        cotizFutCer: (cicloDoc as any).cotizFutCer || '',
+        monedaAlterId: (cicloDoc as any).monedaAlterId || '',
+        cotizMonAlt: (cicloDoc as any).cotizMonAlt || 0,
+        operacMonAlt: (cicloDoc as any).operacMonAlt || 'dividir',
+        gastosMonLocal: 0,
+        gastosMonAlt: 0,
+        rendimientoMonLocal: 0,
+        rendimientoMonAlt: 0,
+        tendenciaMonLocal: 0,
+        tendenciaMonAlt: 0,
+      });
+
+      // Load planification data for this specific ciclo only
+      await loadPlanificationData(cicloDoc.campanaId, foundField?._id || '', cicloDoc.loteId, zafra, [cicloDoc]);
     } catch (error) {
       console.error("Error loading valorization data:", error);
     } finally {
@@ -305,22 +314,37 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         return newFormData;
       });
 
-      // Actualizar insumos/servicios si existen
-      if (insumos.length > 0 || servicios.length > 0) {
-        const updatedInsumos = insumos.map(insumo => ({
-          ...insumo,
-          valorTotal: (insumo.valorUnidad || 0) * (insumo.cantidadHa || 0) * newHectareas
-        }));
-        const updatedServicios = servicios.map(servicio => ({
-          ...servicio,
-          valorTotal: (servicio.valorUnidad || 0) * newHectareas
-        }));
+      // Find the matching ciclo for this campaign + lote and load its planification data
+      const loteUuid = selectedLot?.properties?.uuid || loteValue;
+      const loteGeoId = (selectedLot as any)?.id || loteValue;
+      const matchingCiclo = ciclos.ciclos?.find(c =>
+        c.campanaId === formData.campanaId &&
+        (c.loteId === loteUuid || c.loteId === loteGeoId || c.loteId === loteValue)
+      );
 
-        setInsumos(updatedInsumos);
-        setServicios(updatedServicios);
+      if (matchingCiclo) {
+        // Set crop name from the matching ciclo
+        const crop = crops.find((c: any) => c._id === matchingCiclo.cultivoId);
+        setCultivoNombre((crop as any)?.crop || (crop as any)?.name || (crop as any)?.nombre || '');
 
-        // Recalcular totales
-        setTimeout(() => recalcularTotalesConDatos(updatedInsumos, updatedServicios), 0);
+        // Load planification data for this specific ciclo
+        loadPlanificationData(formData.campanaId, formData.campoId, loteValue, formData.zafra, [matchingCiclo]);
+      } else {
+        // No matching ciclo found - update existing insumos/servicios totals
+        if (insumos.length > 0 || servicios.length > 0) {
+          const updatedInsumos = insumos.map(insumo => ({
+            ...insumo,
+            valorTotal: (insumo.valorUnidad || 0) * (insumo.cantidadHa || 0) * newHectareas
+          }));
+          const updatedServicios = servicios.map(servicio => ({
+            ...servicio,
+            valorTotal: (servicio.valorUnidad || 0) * newHectareas
+          }));
+
+          setInsumos(updatedInsumos);
+          setServicios(updatedServicios);
+          setTimeout(() => recalcularTotalesConDatos(updatedInsumos, updatedServicios), 0);
+        }
       }
     } else {
       // Si no encuentra el lote, solo actualizar el loteId
@@ -377,7 +401,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             campaignCycles.forEach(ciclo => {
               if (ciclo.cultivoId) {
                 const crop = crops.find(c => c._id === ciclo.cultivoId);
-                const zafraName = crop ? `${t('harvest')} ${crop.name}` : `${t('harvest')} ${ciclo.cultivoId}`;
+                const zafraName = crop ? `${t('harvest')} ${(crop as any).name || (crop as any).crop || crop._id}` : `${t('harvest')} ${ciclo.cultivoId}`;
                 uniqueZafras.set(ciclo.cultivoId, { id: ciclo.cultivoId, name: zafraName });
               }
             });
@@ -396,9 +420,9 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             has: 0
           };
 
-          if (value) {
-            loadPlanificationData(value as string, '', '', '');
-          }
+          // Clear insumos/servicios - they will reload when the user selects a lote
+          setInsumos([]);
+          setServicios([]);
         }
         break;
 
@@ -514,7 +538,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const cotizFutCerVal = typeof currentFormData.cotizFutCer === 'string' ? parseFloat(currentFormData.cotizFutCer) || 0 : currentFormData.cotizFutCer;
 
       const rindeKgHa = rindeHistoricoVal * 100; // Convertir quintales a kg
-      const rendimientoTotal = rindeKgHa * currentFormData.has * (cotizFutCerVal / 1000); // Cotización es por tonelada
+      const rendimientoTotal = rindeKgHa * currentFormData.has * (cotizFutCerVal / cotizDivisor); // saca (60kg) para Brasil, tonelada (1000kg) para otros
 
       // Calcular tendencia
       const tendencia = rendimientoTotal - gastosTotal;
@@ -571,10 +595,9 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const selectedCampaign = campaigns.find(c => c._id === formData.campanaId);
       const selectedField = fields.find(f => f._id === formData.campoId);
       const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === formData.loteId);
-      const cultivoId = ciclos.ciclos?.find(c =>
+      const cultivoId = annualPlan?.cultivoId || ciclos.ciclos?.find(c =>
         c.campanaId === formData.campanaId &&
-        c.campoId === formData.campoId &&
-        c.loteId === selectedLot?.properties.uuid
+        (c.loteId === selectedLot?.properties.uuid || c.loteId === (selectedLot as any)?.id || c.loteId === formData.loteId)
       )?.cultivoId || '';
       const selectedCrop = crops.find(c => c._id === cultivoId);
 
@@ -583,41 +606,46 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const rindeKgHa = rindeHistoricoVal * 100; // Convertir quintales a kg
       const cosechaEstimadaTn = (rindeKgHa * formData.has) / 1000; // Convertir a toneladas
 
-      // Crear objeto de valorización
-      const valorizationData: Omit<IAnnualPlanValorization, "_id" | "_rev"> = {
-        annualPlanId: `plan_${formData.campanaId}_${formData.campoId}_${formData.loteId}`,
-        campanaId: formData.campanaId,
-        campanaName: selectedCampaign?.name || '',
-        zafra: formData.zafra,
-        campoId: formData.campoId,
-        campoName: selectedField?.nombre || '',
-        loteId: selectedLot?.properties.uuid || formData.loteId,
-        loteName: selectedLot?.properties.nombre || formData.loteId,
-        has: formData.has,
-        cultivoId: cultivoId,
-        cultivoName: (selectedCrop as any)?.name || '',
-        cosechaEstimada: cosechaEstimadaTn,
-        tendenciaMonLocal: formData.tendenciaMonLocal,
-        status: 'abierto',
-        accountId: user?.accountId || '',
-        created: {
-          userId: user?.id || '',
-          date: new Date().toISOString()
-        },
-        modified: {
-          userId: user?.id || '',
-          date: new Date().toISOString()
-        }
-      };
-
       if (isEditMode) {
+        // In edit mode, update the ciclo document directly with valorization parameters
         await updateAnnualPlanValorization({
-          ...valorizationData,
           _id: id!,
-          _rev: annualPlan?._rev
-        } as IAnnualPlanValorization);
+          _rev: annualPlan?._rev,
+          campanaId: formData.campanaId,
+          campanaName: selectedCampaign?.name || '',
+          zafra: formData.zafra,
+          campoId: formData.campoId,
+          campoNombre: selectedField?.nombre || '',
+          loteId: selectedLot?.properties.uuid || formData.loteId,
+          loteNombre: selectedLot?.properties.nombre || formData.loteId,
+          has: formData.has,
+          cultivoId: cultivoId,
+          cultivoNombre: cultivoNombre,
+          cosechaEstimada: cosechaEstimadaTn,
+          status: 'abierto',
+          // Valorization-specific fields
+          rindeHistorico: rindeHistoricoVal,
+          cotizFutCer: typeof formData.cotizFutCer === 'string' ? parseFloat(formData.cotizFutCer) || 0 : formData.cotizFutCer,
+          monedaAlterId: formData.monedaAlterId,
+          cotizMonAlt: formData.cotizMonAlt,
+          operacMonAlt: formData.operacMonAlt,
+          valorizada: true,
+          accountId: user?.accountId || '',
+          created: annualPlan?.created || { userId: user?.id || '', date: new Date().toISOString() },
+          modified: { userId: user?.id || '', date: new Date().toISOString() },
+        } as IAnnualPlan);
       } else {
-        await createAnnualPlanValorization(valorizationData);
+        // New mode - find the matching ciclo and update it with valorization data
+        await createAnnualPlanValorization({
+          campanaId: formData.campanaId,
+          loteId: selectedLot?.properties.uuid || formData.loteId,
+          loteName: selectedLot?.properties.nombre || formData.loteId,
+          rindeHistorico: rindeHistoricoVal,
+          cotizFutCer: typeof formData.cotizFutCer === 'string' ? parseFloat(formData.cotizFutCer) || 0 : formData.cotizFutCer,
+          monedaAlterId: formData.monedaAlterId,
+          cotizMonAlt: formData.cotizMonAlt,
+          operacMonAlt: formData.operacMonAlt,
+        });
       }
 
       // TODO: Guardar también los detalles de insumos y servicios en una colección separada
@@ -675,10 +703,9 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const selectedCampaign = campaigns.find(c => c._id === formData.campanaId);
       const selectedField = fields.find(f => f._id === formData.campoId);
       const selectedLot = selectedField?.lotes.find(l => l.properties.nombre === formData.loteId);
-      const cultivoId = ciclos.ciclos?.find(c =>
+      const cultivoId = annualPlan?.cultivoId || ciclos.ciclos?.find(c =>
         c.campanaId === formData.campanaId &&
-        c.campoId === formData.campoId &&
-        c.loteId === selectedLot?.properties.uuid
+        (c.loteId === selectedLot?.properties.uuid || c.loteId === (selectedLot as any)?.id || c.loteId === formData.loteId)
       )?.cultivoId || '';
       const selectedCrop = crops.find(c => c._id === cultivoId);
 
@@ -752,7 +779,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     const cotizFutCerVal = typeof formData.cotizFutCer === 'string' ? parseFloat(formData.cotizFutCer) || 0 : formData.cotizFutCer;
 
     const rindeKgHa = rindeHistoricoVal * 100;
-    const rendimientoTotal = rindeKgHa * formData.has * (cotizFutCerVal / 1000);
+    const rendimientoTotal = rindeKgHa * formData.has * (cotizFutCerVal / cotizDivisor);
 
     // Calcular tendencia
     const tendencia = rendimientoTotal - gastosTotal;
@@ -767,22 +794,22 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   };
 
   const getCropName = () => {
-    // TODO: Obtener el cultivo desde la planificación seleccionada
-    return 'Soja';
+    return cultivoNombre || '';
   };
 
-  const loadPlanificationData = async (campanaId: string, campoId: string, loteId: string, zafra: string) => {
+  const loadPlanificationData = async (campanaId: string, campoId: string, loteId: string, zafra: string, targetCiclos?: ICiclosPlanificacion[]) => {
     try {
-      console.log('Loading planification data for campaign:', { campanaId, zafra });
+      console.log('Loading planification data:', { campanaId, loteId, zafra, hasTargetCiclos: !!targetCiclos });
 
       // Limpiar arrays al inicio
       setInsumos([]);
       setServicios([]);
 
-      // Buscar TODOS los ciclos de la campaña (no solo del lote específico)
-      const allCampaignCycles = ciclos.ciclos?.filter(c =>
-        c.campanaId === campanaId
-      ) || [];
+      // Use specific ciclos if provided, otherwise filter by campaign + lote
+      const allCampaignCycles = targetCiclos || (ciclos.ciclos?.filter(c =>
+        c.campanaId === campanaId &&
+        (!loteId || c.loteId === loteId)
+      ) || []);
 
       console.log('Found campaign cycles:', allCampaignCycles.length);
       console.log('Campaign cycles:', allCampaignCycles);
@@ -1093,118 +1120,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       console.log(`Total IDs de servicios: ${allServiciosIds?.length || 0}`);
 
       if (allServiciosIds?.length === 0) {
-        console.log('⚠️  No se encontraron servicios porque las actividades de esta campaña no tienen laboresLineasIds definidos');
-        console.log('💡  Esto puede ser normal si las actividades solo usan insumos o si son actividades internas');
-        console.log('🔍  Iniciando investigación de actividades con servicios en toda la base de datos...');
-
-        // Investigar si existen actividades con servicios en toda la base de datos
-        try {
-          const allActivitiesResult = await dbContext.fields.allDocs({
-            startkey: 'planactividad:',
-            endkey: 'planactividad:\ufff0',
-            include_docs: true,
-            limit: 100 // Limitar para evitar sobrecarga
-          });
-
-          console.log('🔍  Total de actividades planificadas encontradas:', allActivitiesResult.rows.length);
-
-          let activitiesWithServices = 0;
-          let activitiesWithInsumos = 0;
-          let totalActivities = 0;
-          const sampleActivitiesWithServices = [];
-
-          for (const row of allActivitiesResult.rows) {
-            if (row.doc) {
-              totalActivities++;
-              const activity = row.doc as any;
-
-              if (activity.laboresLineasIds && activity.laboresLineasIds.length > 0) {
-                activitiesWithServices++;
-                if (sampleActivitiesWithServices.length < 3) {
-                  sampleActivitiesWithServices.push({
-                    id: activity._id,
-                    tipo: activity.tipo,
-                    campanaId: activity.campanaId,
-                    laboresCount: activity.laboresLineasIds.length,
-                    insumosCount: activity.insumosLineasIds?.length || 0
-                  });
-                }
-              }
-
-              if (activity.insumosLineasIds && activity.insumosLineasIds.length > 0) {
-                activitiesWithInsumos++;
-              }
-            }
-          }
-
-          console.log('📊  ESTADÍSTICAS DE ACTIVIDADES PLANIFICADAS:');
-          console.log(`     • Total de actividades: ${totalActivities}`);
-          console.log(`     • Con insumos: ${activitiesWithInsumos} (${totalActivities > 0 ? ((activitiesWithInsumos / totalActivities) * 100).toFixed(1) : 0}%)`);
-          console.log(`     • Con servicios: ${activitiesWithServices} (${totalActivities > 0 ? ((activitiesWithServices / totalActivities) * 100).toFixed(1) : 0}%)`);
-
-          if (sampleActivitiesWithServices.length > 0) {
-            console.log('🎯  EJEMPLOS DE ACTIVIDADES CON SERVICIOS:');
-            sampleActivitiesWithServices.forEach((sample, index) => {
-              console.log(`       ${index + 1}. ${sample.id} (${sample.tipo}) - ${sample.laboresCount} servicios, ${sample.insumosCount} insumos`);
-            });
-
-            // Si encontramos actividades con servicios, intentar cargar una como ejemplo
-            const exampleActivity = sampleActivitiesWithServices[0];
-            console.log('🧪  Intentando cargar servicios de actividad ejemplo:', exampleActivity.id);
-
-            try {
-              const exampleDoc = await dbContext.fields.get(exampleActivity.id) as any;
-              const exampleLaboresResult = await dbContext.fields.allDocs({
-                keys: exampleDoc.laboresLineasIds,
-                include_docs: true
-              });
-
-              console.log('🔍  Servicios de ejemplo encontrados:', exampleLaboresResult.rows.length);
-
-              const serviciosEjemplo: IServicxAnnualPlan[] = [];
-              for (const laborRow of exampleLaboresResult.rows) {
-                if (laborRow.doc) {
-                  const lineaLabor = laborRow.doc as any;
-                  const labor = getLaborFromId(lineaLabor.laborId);
-
-                  serviciosEjemplo.push({
-                    _id: `example_servicio_${Date.now()}_${Math.random()}`,
-                    annualPlanId: 'temp_plan_id',
-                    labor: lineaLabor.laborNombre || labor?.name || t('service'),
-                    item: lineaLabor.laborNombre || labor?.name || t('service'),
-                    servicioId: lineaLabor.laborId,
-                    descripcion: lineaLabor.comentario || t('service'),
-                    cantidad: 1,
-                    cantidadHa: 1, // Por hectárea
-                    valorUnidad: lineaLabor.costoPorHectarea || 0,
-                    valorTotal: 0,
-                    accountId: '',
-                    created: { userId: '', date: '' },
-                    modified: { userId: '', date: '' },
-                  });
-                }
-              }
-
-              if (serviciosEjemplo.length > 0) {
-                console.log('✅  Cargando servicios de ejemplo basados en actividades reales:', serviciosEjemplo);
-                setServicios(serviciosEjemplo);
-              } else {
-                console.log('❌  No se pudieron cargar servicios de ejemplo');
-                setServicios([]);
-              }
-            } catch (exampleError) {
-              console.error('❌  Error cargando servicios de ejemplo:', exampleError);
-              setServicios([]);
-            }
-          } else {
-            console.log('❌  NO SE ENCONTRARON ACTIVIDADES CON SERVICIOS EN LA BASE DE DATOS');
-            console.log('💡  RECOMENDACIÓN: Crear nuevas actividades planificadas con servicios usando el editor de planificación');
-            setServicios([]);
-          }
-        } catch (investigationError) {
-          console.error('❌  Error durante la investigación de actividades:', investigationError);
-          setServicios([]);
-        }
+        console.log('No services found for this ciclo - this is normal if activities only use supplies');
       }
 
     } catch (error) {
@@ -1425,7 +1341,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                 </InputAdornment>
               ),
             }}
-            helperText={t("local_currency_per_ton")}
+            helperText={isBrazilMode ? 'R$/Saca (60kg)' : t("local_currency_per_ton")}
           />
         </Grid>
         <Grid item xs={12} md={3}>
@@ -1607,7 +1523,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
                 ARS {formatNumber(totales.rendimientoTotal)}
               </Typography>
               <Typography variant="caption" display="block" color="text.secondary">
-                {formData.rindeHistorico} qq/ha × {formData.has} ha × ${formData.cotizFutCer}/tn
+                {formData.rindeHistorico} qq/ha × {formData.has} ha × ${formData.cotizFutCer}/{isBrazilMode ? 'saca' : 'tn'}
               </Typography>
             </Box>
           </Grid>
