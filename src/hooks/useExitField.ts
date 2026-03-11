@@ -36,9 +36,13 @@ export const useExitField = () => {
             if (exitFields.length) {
                 const documents: ExitFieldItem[] = exitFields.map((row) => {
                     const fieldDoc = fields.find(s => s._id === row.fieldId);
-                    const lot = fieldDoc?.lotes?.find((l: any) =>
-                        (l.properties?.uuid || l.id) === row.lotId
-                    );
+                    // Compatibilidad: algunos registros guardan lotId como uuid/id y otros como nombre del lote
+                    const lot = fieldDoc?.lotes?.find((l: any) => {
+                        const loteUuid = l.properties?.uuid;
+                        const loteGeoId = l.id;
+                        const loteNombre = l.properties?.nombre || l.properties?.name || l.properties?.description;
+                        return [loteUuid, loteGeoId, loteNombre].some(v => v === row.lotId);
+                    });
                     const crop = crops.find(s => s._id === row.cropId);
                     const transport = socialEntities.find(s => s._id === row.transportId);
                     const campaign = campaigns.find((c: any) => c._id === row.campaignId || c.campaignId === row.campaignId);
@@ -93,8 +97,22 @@ export const useExitField = () => {
                 cropId: newExitField.cropId
             });
 
+            // Si no existe registro de stock, crear uno con stock inicial = 0
+            // (permite registrar salidas que generan stock negativo / a regularizar)
             if (!stockOfCrop) {
-                throw new Error(t("insufficientOrNotFoundStock"));
+                const newStockDoc = {
+                    accountId,
+                    licenceId: user.licenceId || accountId,
+                    campaignId: newExitField.campaignId,
+                    cropId: newExitField.cropId,
+                    zafra: newExitField.zafra || '',
+                    currentStock: 0,
+                    committedStock: 0,
+                    deliveredStock: 0,
+                    lastUpdate: new Date().toISOString(),
+                };
+                const created = await dbContext.cropStockControl.post(newStockDoc as any);
+                stockOfCrop = await dbContext.cropStockControl.get(created.id) as any;
             }
 
             // Restar del stock disponible
