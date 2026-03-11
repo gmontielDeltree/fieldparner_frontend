@@ -140,6 +140,14 @@ export const useAuthStore = () => {
       const expiration = localStorage.getItem('token_expiration');
 
       if (new Date().getTime() > Number(expiration)) {
+        // Limpiar sesión en el backend cuando el token expiró
+        if (userSession) {
+          const parsedUser = JSON.parse(userSession) as User;
+          await fieldpartnerAPI.post(`${controller}/logout`, {
+            cognitoId: parsedUser.id,
+          }).catch(() => {});
+        }
+        localStorage.clear();
         dispatch(onLogout(''));
         return;
       }
@@ -161,6 +169,13 @@ export const useAuthStore = () => {
         navigate(lastPath, { replace: true });
       }
     } catch (error) {
+      // Limpiar sesión en el backend antes de hacer logout local
+      if (userSession) {
+        const parsedUser = JSON.parse(userSession) as User;
+        await fieldpartnerAPI.post(`${controller}/logout`, {
+          cognitoId: parsedUser.id,
+        }).catch(() => {});
+      }
       localStorage.clear();
       dispatch(onLogout(''));
     }
@@ -199,9 +214,17 @@ export const useAuthStore = () => {
   // }
   // };
 
-  const startLogout = () => {
+  const startLogout = async () => {
     dispatch(startLoading());
     try {
+      const userSession = localStorage.getItem('user_session');
+      if (userSession) {
+        const parsedUser = JSON.parse(userSession) as User;
+        await fieldpartnerAPI.post(`${controller}/logout`, {
+          cognitoId: parsedUser.id,
+        }).catch(() => {});
+      }
+
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('token_expiration');
