@@ -242,7 +242,7 @@ export const ActividadCardBase: React.FC = ({
             />
             <Chip
               size="small"
-              label={`Total insumos: ${totalInsumosCantidad.toFixed(2)}`}
+              label={`${t("supplies")} ${t("_total_quantity")}: ${totalInsumosCantidad.toFixed(2)}`}
               sx={{
                 backgroundColor: alpha("#0f172a", 0.08),
                 border: `1px solid ${alpha("#0f172a", 0.12)}`,
@@ -252,14 +252,14 @@ export const ActividadCardBase: React.FC = ({
             {totalLaboresHectareas > 0 && (
               <Chip
                 size="small"
-                label={`Has servicios: ${totalLaboresHectareas.toFixed(2)} ha`}
+                label={`${t("hectares")} ${t("services")}: ${totalLaboresHectareas.toFixed(2)} ha`}
                 sx={{ backgroundColor: alpha("#0ea5e9", 0.1), fontWeight: 600 }}
               />
             )}
             {!!loteId && (
               <Chip
                 size="small"
-                label={`Lote: ${resolvedNames.lotName}`}
+                label={`${t("_lot")}: ${resolvedNames.lotName}`}
                 variant="outlined"
                 sx={{ maxWidth: 190 }}
               />
@@ -267,7 +267,7 @@ export const ActividadCardBase: React.FC = ({
             {!!campoId && (
               <Chip
                 size="small"
-                label={`Campo: ${resolvedNames.fieldName}`}
+                label={`${t("_field")}: ${resolvedNames.fieldName}`}
                 variant="outlined"
                 sx={{ maxWidth: 220 }}
               />
@@ -310,7 +310,7 @@ export const ActividadCardBase: React.FC = ({
               label={
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("contractor")}</Typography>
-                  <Chip size="small" label={contratista ? "Asignado" : t("notAvailable")} />
+                  <Chip size="small" label={contratista ? t("assigned") : t("notAvailable")} />
                 </Box>
               }
             >
@@ -325,7 +325,7 @@ export const ActividadCardBase: React.FC = ({
               label={
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("supplies")}</Typography>
-                  <Chip size="small" label={`${lineasInsumos?.length || 0} líneas`} />
+                  <Chip size="small" label={`${lineasInsumos?.length || 0} ${t("_lines")}`} />
                 </Box>
               }
             >
@@ -350,27 +350,27 @@ export const ActividadCardBase: React.FC = ({
                   >
                     <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2 }}>
                       <Box sx={{ fontWeight: 600 }}>
-                        {indec + 1}. {insumo?.name || "Insumo"}
+                        {indec + 1}. {insumo?.name || t("supply")}
                       </Box>
                       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
                         {i.dosis !== undefined && (
                           <Chip
                             size="small"
                             variant="outlined"
-                            label={`Dosis: ${Number(i.dosis || 0).toFixed(2)} ${insumo?.unitMeasurement || ""}/ha`}
+                            label={`${t("dose")}${Number(i.dosis || 0).toFixed(2)} ${insumo?.unitMeasurement || ""}/ha`}
                           />
                         )}
                         {i.hectareas !== undefined && (
                           <Chip
                             size="small"
                             variant="outlined"
-                            label={`Has: ${Number(i.hectareas || 0).toFixed(2)}`}
+                            label={`${t("hectares")}: ${Number(i.hectareas || 0).toFixed(2)}`}
                           />
                         )}
                         {i.totalCantidad !== undefined && (
                           <Chip
                             size="small"
-                            label={`Total: ${Number(i.totalCantidad || 0).toFixed(2)} ${insumo?.unitMeasurement || ""}`}
+                            label={`${t("_total_quantity")}: ${Number(i.totalCantidad || 0).toFixed(2)} ${insumo?.unitMeasurement || ""}`}
                             sx={{ fontWeight: 700 }}
                           />
                         )}
@@ -385,7 +385,7 @@ export const ActividadCardBase: React.FC = ({
               label={
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("services")}</Typography>
-                  <Chip size="small" label={`${lineasLabores?.length || 0} líneas`} />
+                  <Chip size="small" label={`${lineasLabores?.length || 0} ${t("_lines")}`} />
                 </Box>
               }
             >
@@ -413,14 +413,14 @@ export const ActividadCardBase: React.FC = ({
                       <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
                         <Chip
                           size="small"
-                          label={`Has: ${(Number(i.hectareas || i.area || area) || 0).toFixed(2)} ha`}
+                          label={`${t("hectares")}: ${(Number(i.hectareas || i.area || area) || 0).toFixed(2)} ha`}
                           sx={{ fontWeight: 700 }}
                         />
                         {i.comentario && (
                           <Chip
                             size="small"
                             variant="outlined"
-                            label={`Obs: ${String(i.comentario).slice(0, 36)}${String(i.comentario).length > 36 ? "..." : ""}`}
+                            label={`${t("observations")}: ${String(i.comentario).slice(0, 36)}${String(i.comentario).length > 36 ? "..." : ""}`}
                           />
                         )}
                       </Box>

@@ -149,8 +149,8 @@ export const AutocompleteDeposito: React.FC<AutocompleteDepositoProps> = ({
                 zipCode: "",
                 locality: "",
                 province: "",
-                country: "Argentina",
-                locations: ["General"],
+                country: user.countryId || "",
+                locations: [],
               };
 
               const created = await dbContext.deposits.post(doc as Deposit);
