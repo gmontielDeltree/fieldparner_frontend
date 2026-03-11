@@ -29,6 +29,8 @@ import {
   Landscape,
   Event,
   FilterList,
+  CheckCircleRounded,
+  ScheduleRounded,
 } from '@mui/icons-material'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, parseISO, isValid } from 'date-fns'
 import { es, enUS, ptBR } from 'date-fns/locale'
@@ -85,6 +87,8 @@ const activityColors = {
   cosecha: '#f59e0b',
   preparado: '#6b7280',
 }
+
+type ActivityStatusType = 'executed' | 'scheduled'
 
 const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onClose }) => {
   const theme = useTheme()
@@ -222,15 +226,24 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
       regularActivitiesResult.rows.forEach((row) => {
         const doc = row.doc as any
         if (doc) {
+          const selectedCampaignId = selectedCampaign?._id || selectedCampaign?.campaignId || selectedCampaign?.id
+          const docCampaignId =
+            doc.campaña?.campaignId ||
+            doc.campaña?._id ||
+            doc.campanaId ||
+            doc.campaignId
+
           // Check if activity matches current campaign by ID or name
-          const matchesCampaign = doc.campaña?.campaignId === effectiveCampaignId ||
-                                 doc.campaña?.campaignId === selectedCampaign?.name ||
-                                 doc.campaña?.name === selectedCampaign?.name
+          const matchesCampaign =
+            docCampaignId === effectiveCampaignId ||
+            docCampaignId === selectedCampaignId ||
+            docCampaignId === selectedCampaign?.name ||
+            doc.campaña?.name === selectedCampaign?.name
 
           console.log('Activity:', {
             id: doc._id,
             tipo: doc.tipo,
-            campaignId: doc.campaña?.campaignId,
+            campaignId: docCampaignId,
             campaignName: doc.campaña?.name,
             expectedCampaignId: effectiveCampaignId,
             expectedCampaignName: selectedCampaign?.name,
@@ -241,10 +254,18 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
         }
 
         // Match by campaign ID or campaign name
+        const selectedCampaignId = selectedCampaign?._id || selectedCampaign?.campaignId || selectedCampaign?.id
+        const docCampaignId =
+          doc?.campaña?.campaignId ||
+          doc?.campaña?._id ||
+          doc?.campanaId ||
+          doc?.campaignId
+
         const matchesCampaign = doc && (
-          doc.campaña?.campaignId === effectiveCampaignId ||
-          doc.campaña?.campaignId === selectedCampaign?.name ||
-          doc.campaña?.name === selectedCampaign?.name
+          docCampaignId === effectiveCampaignId ||
+          docCampaignId === selectedCampaignId ||
+          docCampaignId === selectedCampaign?.name ||
+          doc?.campaña?.name === selectedCampaign?.name
         )
 
         if (matchesCampaign) {
@@ -341,7 +362,10 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
       const fieldsSet = new Map<string, string>()
       allActivities.forEach(activity => {
         // Only count if activity has a valid date
-        const activityDateStr = activity.detalles?.fecha_ejecucion_tentativa
+        const activityDateStr =
+          activity.detalles?.fecha_ejecucion_tentativa ||
+          (activity as any).detalles?.fecha_ejecucion ||
+          (activity as any).fecha
         if (!activityDateStr) return
 
         try {
@@ -387,7 +411,10 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
 
   const getActivitiesForDate = (date: Date) => {
     return activities.filter(activity => {
-      const activityDateStr = activity.detalles?.fecha_ejecucion_tentativa
+      const activityDateStr =
+        activity.detalles?.fecha_ejecucion_tentativa ||
+        (activity as any).detalles?.fecha_ejecucion ||
+        (activity as any).fecha
       if (!activityDateStr) return false
 
       // Check if activity belongs to a selected field
@@ -406,6 +433,27 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
         return false
       }
     })
+  }
+
+  const getActivityStatus = (activity: Activity): ActivityStatusType => {
+    const normalized = String(activity?.estado || '').toLowerCase()
+    const isExecuted =
+      normalized === 'completada' ||
+      normalized === 'ejecutada' ||
+      normalized === 'completed' ||
+      normalized === 'executed'
+    if (isExecuted) return 'executed'
+    if (activity?.isPlanificada) return 'scheduled'
+    return 'scheduled'
+  }
+
+  const getStatusForType = (dayActivities: Activity[], tipo: string): ActivityStatusType => {
+    const sameTypeActivities = dayActivities.filter((a) => a.tipo === tipo)
+    const hasExecuted = sameTypeActivities.some((a) => getActivityStatus(a) === 'executed')
+    // If there are mixed statuses, keep it as scheduled to signal pending/planned work.
+    return hasExecuted && sameTypeActivities.every((a) => getActivityStatus(a) === 'executed')
+      ? 'executed'
+      : 'scheduled'
   }
 
   const renderCalendarDays = () => {
@@ -445,6 +493,7 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
         {days.map((day) => {
           const dayActivities = getActivitiesForDate(day)
           const hasActivities = dayActivities.length > 0
+          const isToday = isSameDay(day, new Date())
           
           return (
             <Grid item xs={12 / 7} key={day.toISOString()}>
@@ -454,8 +503,17 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
                   height: 80,
                   p: 0.5,
                   cursor: hasActivities ? 'pointer' : 'default',
-                  backgroundColor: hasActivities ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
-                  border: `1px solid ${theme.palette.divider}`,
+                  backgroundColor: hasActivities
+                    ? alpha(theme.palette.primary.main, 0.04)
+                    : isToday
+                      ? alpha(theme.palette.primary.main, 0.02)
+                      : 'transparent',
+                  border: isToday
+                    ? `1px solid ${alpha(theme.palette.primary.main, 0.45)}`
+                    : `1px solid ${theme.palette.divider}`,
+                  boxShadow: isToday
+                    ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.12)} inset`
+                    : undefined,
                   transition: 'all 0.2s',
                   '&:hover': hasActivities ? {
                     backgroundColor: alpha(theme.palette.primary.main, 0.08),
@@ -491,7 +549,7 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
                         {dayActivities.length}
                       </Typography>
                     )}
-                    <Box sx={{ display: 'flex', gap: 0.3, flexWrap: 'wrap', justifyContent: 'center' }}>
+                    <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', justifyContent: 'center' }}>
                       {[...new Set(dayActivities.map(a => a.tipo))].slice(0, 3).map((tipo, index) => (
                         <Tooltip
                           key={tipo}
@@ -519,13 +577,51 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
                           arrow
                         >
                           <Box sx={{ position: 'relative', cursor: 'pointer' }}>
-                            {React.cloneElement(activityIcons[tipo] || <Event />, {
-                              sx: {
-                                fontSize: 20,
-                                color: activityColors[tipo] || '#9ca3af',
-                                opacity: 0.9,
-                              }
-                            })}
+                            <Box
+                              sx={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: 1.5,
+                                backgroundColor: alpha(activityColors[tipo] || '#9ca3af', 0.12),
+                                border: `1px solid ${alpha(activityColors[tipo] || '#9ca3af', 0.2)}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              {React.cloneElement(activityIcons[tipo] || <Event />, {
+                                sx: {
+                                  fontSize: 16,
+                                  color: activityColors[tipo] || '#9ca3af',
+                                  opacity: 0.95,
+                                }
+                              })}
+                            </Box>
+                            {getStatusForType(dayActivities, tipo) === 'executed' ? (
+                              <CheckCircleRounded
+                                sx={{
+                                  position: 'absolute',
+                                  right: -5,
+                                  bottom: -5,
+                                  fontSize: 13,
+                                  color: '#16a34a',
+                                  backgroundColor: '#fff',
+                                  borderRadius: '50%',
+                                }}
+                              />
+                            ) : (
+                              <ScheduleRounded
+                                sx={{
+                                  position: 'absolute',
+                                  right: -5,
+                                  bottom: -5,
+                                  fontSize: 13,
+                                  color: '#f59e0b',
+                                  backgroundColor: '#fff',
+                                  borderRadius: '50%',
+                                }}
+                              />
+                            )}
                           </Box>
                         </Tooltip>
                       ))}
@@ -665,7 +761,7 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
 
       {/* Activity Legend */}
       <Box sx={{ p: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center', mb: 1.5 }}>
           {Object.entries(activityColors).map(([tipo, color]) => (
             <Chip
               key={tipo}
@@ -679,6 +775,22 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
               }}
             />
           ))}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Chip
+            icon={<CheckCircleRounded sx={{ color: '#16a34a !important' }} />}
+            label={t('executed')}
+            size="small"
+            variant="outlined"
+            sx={{ borderColor: alpha('#16a34a', 0.4), backgroundColor: alpha('#16a34a', 0.06) }}
+          />
+          <Chip
+            icon={<ScheduleRounded sx={{ color: '#f59e0b !important' }} />}
+            label={t('planned')}
+            size="small"
+            variant="outlined"
+            sx={{ borderColor: alpha('#f59e0b', 0.4), backgroundColor: alpha('#f59e0b', 0.08) }}
+          />
         </Box>
       </Box>
 
