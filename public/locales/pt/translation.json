@@ -1243,6 +1243,7 @@
   "complete_all_fields_message": "Complete todos os campos de valor unitário para calcular a valorização total",
   "valorization_parameters": "Parâmetros de valorização",
   "yield": "Rendimento",
+  "kgObtained": "Kg obtidos",
   "start_valorization": "Iniciar valorização",
   "estimated_harvest_tn": "Colheita estimada (tn)",
   "trend_local_currency": "Tendência (Moeda local)",

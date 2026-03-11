@@ -1233,6 +1233,7 @@
   "complete_all_fields_message": "Complete all unit value fields to calculate total valorization",
   "valorization_parameters": "Valorization parameters",
   "yield": "Yield",
+  "kgObtained": "Kg obtained",
   "start_valorization": "Start valorization",
   "estimated_harvest_tn": "Estimated harvest (tn)",
   "trend_local_currency": "Trend (Local currency)",

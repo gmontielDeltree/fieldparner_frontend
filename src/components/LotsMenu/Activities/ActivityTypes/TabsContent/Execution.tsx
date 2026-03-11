@@ -141,6 +141,12 @@ function ExecutionContent(props) {
     return tonValue;
   };
   const yieldUnit = isSpanish ? 'qq/ha' : isPortuguese ? 'sc/ha' : 'ton/ha';
+  const getHarvestKgObtained = (executionDoc: Ejecucion | null) => {
+    const yieldTonPerHa = Number(executionDoc?.detalles?.rinde_obtenido || 0);
+    const hectares = Number(executionDoc?.detalles?.hectareas || 0);
+    if (!yieldTonPerHa || !hectares) return 0;
+    return yieldTonPerHa * hectares * 1000;
+  };
 
   useEffect(() => {
     const fetchExecution = async () => {
@@ -410,6 +416,18 @@ function ExecutionContent(props) {
                 </Grid>
               )}
 
+              {execution.tipo === "cosecha" && execution.detalles?.rinde_obtenido && (
+                <Grid item xs={12} sm={6}>
+                  <InfoRow>
+                    <AgricultureIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+                    <Box>
+                      <InfoLabel>{t('kgObtained')}</InfoLabel>
+                      <InfoValue>{getHarvestKgObtained(execution).toLocaleString('es-AR')} kg</InfoValue>
+                    </Box>
+                  </InfoRow>
+                </Grid>
+              )}
+
               {execution.detalles?.fecha_hora_inicio && (
                 <Grid item xs={12} sm={6}>
                   <InfoRow>
@@ -549,6 +567,16 @@ function ExecutionContent(props) {
                 <Box>
                   <InfoLabel>{t('yield')}</InfoLabel>
                   <InfoValue>{formatYield(Number(execution.detalles.rinde_obtenido))} {yieldUnit}</InfoValue>
+                </Box>
+              </InfoRow>
+            )}
+
+            {execution.tipo === 'cosecha' && execution.detalles?.rinde_obtenido && (
+              <InfoRow>
+                <AgricultureIcon sx={{ fontSize: '1rem', color: 'text.secondary' }} />
+                <Box>
+                  <InfoLabel>{t('kgObtained')}</InfoLabel>
+                  <InfoValue>{getHarvestKgObtained(execution).toLocaleString('es-AR')} kg</InfoValue>
                 </Box>
               </InfoRow>
             )}

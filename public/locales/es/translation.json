@@ -1240,6 +1240,7 @@
   "complete_all_fields_message": "Complete todos los campos de valor unitario para calcular la valorización total",
   "valorization_parameters": "Parámetros de valorización",
   "yield": "Rendimiento",
+  "kgObtained": "Kg obtenidos",
   "start_valorization": "Iniciar valorización",
   "estimated_harvest_tn": "Cosecha estimada (tn)",
   "trend_local_currency": "Tendencia (Moneda local)",
