@@ -8,13 +8,12 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { TreeView } from "@mui/x-tree-view/TreeView";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import {
-  IActividadPlanificacion,
   IInsumosPlanificacion,
   ILaboresPlanificacion,
 } from "../../interfaces/planification";
@@ -31,6 +30,7 @@ import {
   usePlanActividad,
   usePlanificationActividad,
 } from "../../hooks/usePlanifications";
+import { useField } from "../../hooks/useField";
 import { InsumosContext } from "./contexts/InsumosContext";
 import { LaboresContext } from "./contexts/LaboresContext";
 import { CiclosContext } from "./contexts/CiclosContext";
@@ -59,6 +59,7 @@ export const ActividadCardBase: React.FC = ({
   const { removeActividad } = usePlanActividad();
   const { getInsumoFromId } = useContext(InsumosContext);
   const { getLaborLabelFromId } = useContext(LaboresContext);
+  const { fields, getFields } = useField();
 
   const { refreshCiclos } = useContext(CiclosContext); // useCiclos(ciclo.campanaId,loteId)
 
@@ -97,6 +98,37 @@ export const ActividadCardBase: React.FC = ({
     nota: notaIcon,
   };
   const icon = iconByType[tipo as keyof typeof iconByType] || siembraIcon;
+  const totalInsumosCantidad =
+    lineasInsumos?.reduce((acc, lin: any) => acc + Number(lin.totalCantidad || 0), 0) || 0;
+  const totalLaboresHectareas =
+    lineasLabores?.reduce((acc, lin: any) => acc + Number(lin.hectareas || 0), 0) || 0;
+  const resolvedNames = useMemo(() => {
+    const fieldFound = (fields || []).find((f: any) => f?._id === campoId);
+    const lotFound = fieldFound?.lotes?.find((l: any) =>
+      l?.id === loteId ||
+      l?.properties?.uuid === loteId ||
+      l?.properties?.nombre === loteId,
+    );
+
+    return {
+      fieldName:
+        fieldFound?.nombre ||
+        fieldFound?.name ||
+        fieldFound?.description ||
+        campoId ||
+        "",
+      lotName:
+        lotFound?.properties?.nombre ||
+        lotFound?.properties?.name ||
+        lotFound?.id ||
+        loteId ||
+        "",
+    };
+  }, [fields, campoId, loteId]);
+
+  useEffect(() => {
+    getFields();
+  }, []);
 
   if (loading) return <div>Loading</div>;
   return (
@@ -197,30 +229,106 @@ export const ActividadCardBase: React.FC = ({
             />
           </Box>
           <Divider sx={{ mb: 1.2, opacity: 0.5 }} />
+          <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap", mb: 1.3 }}>
+            <Chip
+              size="small"
+              label={`${t("supplies")}: ${lineasInsumos?.length || 0}`}
+              sx={{ backgroundColor: alpha(cardColor || "#94a3b8", 0.09), fontWeight: 600 }}
+            />
+            <Chip
+              size="small"
+              label={`${t("services")}: ${lineasLabores?.length || 0}`}
+              sx={{ backgroundColor: alpha(cardColor || "#94a3b8", 0.09), fontWeight: 600 }}
+            />
+            <Chip
+              size="small"
+              label={`Total insumos: ${totalInsumosCantidad.toFixed(2)}`}
+              sx={{
+                backgroundColor: alpha("#0f172a", 0.08),
+                border: `1px solid ${alpha("#0f172a", 0.12)}`,
+                fontWeight: 700,
+              }}
+            />
+            {totalLaboresHectareas > 0 && (
+              <Chip
+                size="small"
+                label={`Has servicios: ${totalLaboresHectareas.toFixed(2)} ha`}
+                sx={{ backgroundColor: alpha("#0ea5e9", 0.1), fontWeight: 600 }}
+              />
+            )}
+            {!!loteId && (
+              <Chip
+                size="small"
+                label={`Lote: ${resolvedNames.lotName}`}
+                variant="outlined"
+                sx={{ maxWidth: 190 }}
+              />
+            )}
+            {!!campoId && (
+              <Chip
+                size="small"
+                label={`Campo: ${resolvedNames.fieldName}`}
+                variant="outlined"
+                sx={{ maxWidth: 220 }}
+              />
+            )}
+          </Box>
           <TreeView
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpandIcon={<ChevronRightIcon />}
             sx={{
+              "& .MuiTreeItem-root": {
+                mb: 0.7,
+              },
               "& .MuiTreeItem-content": {
-                borderRadius: "8px",
-                py: 0.2,
+                borderRadius: "10px",
+                py: 0.5,
+                px: 0.8,
+                border: `1px solid ${alpha(cardColor || "#94a3b8", 0.16)}`,
+                backgroundColor: alpha(cardColor || "#94a3b8", 0.04),
+                transition: "all .2s ease",
               },
               "& .MuiTreeItem-content:hover": {
-                backgroundColor: alpha(cardColor || "#94a3b8", 0.08),
+                backgroundColor: alpha(cardColor || "#94a3b8", 0.10),
+              },
+              "& .MuiTreeItem-content.Mui-expanded": {
+                backgroundColor: alpha(cardColor || "#94a3b8", 0.12),
               },
               "& .MuiTreeItem-label": {
                 fontWeight: 600,
+                width: "100%",
+              },
+              "& .MuiTreeItem-group": {
+                ml: 1.2,
+                pl: 1.2,
+                borderLeft: `2px solid ${alpha(cardColor || "#94a3b8", 0.22)}`,
               },
             }}
           >
-            <TreeItem nodeId="10" label={t("contractor")}>
+            <TreeItem
+              nodeId={`${actividadId}-contractor`}
+              label={
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("contractor")}</Typography>
+                  <Chip size="small" label={contratista ? "Asignado" : t("notAvailable")} />
+                </Box>
+              }
+            >
               {!contratista && <p>{t("noContractorAssigned")}</p>}
               {contratista?.razonSocial?.length
                 ? contratista?.razonSocial
                 : contratista?.nombreCompleto}
             </TreeItem>
 
-            <TreeItem nodeId="1" label={t("supplies")}>
+            <TreeItem
+              nodeId={`${actividadId}-supplies`}
+              label={
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("supplies")}</Typography>
+                  <Chip size="small" label={`${lineasInsumos?.length || 0} líneas`} />
+                </Box>
+              }
+            >
               {lineasInsumos?.length === 0 && (
                 <p>{t("noSuppliesForActivity")}</p>
               )}
@@ -229,39 +337,92 @@ export const ActividadCardBase: React.FC = ({
                 let insumo = getInsumoFromId(i.insumoId);
                 return (
                   <Box
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderRadius: "8px",
+                      px: 1,
+                      py: 0.7,
+                      mb: 0.5,
+                      backgroundColor: alpha("#0f172a", 0.03),
+                    }}
                   >
-                    <Box>{insumo?.name}</Box>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "1rem",
-                      }}
-                    >
-                      {/* {i.totalCantidad?.toFixed(2)} {insumo?.unitMeasurement} */}
-                      <Box sx={{ fontWeight: "bold" }}>
-                        USD {i.totalCosto?.toFixed(2)}
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2 }}>
+                      <Box sx={{ fontWeight: 600 }}>
+                        {indec + 1}. {insumo?.name || "Insumo"}
+                      </Box>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
+                        {i.dosis !== undefined && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={`Dosis: ${Number(i.dosis || 0).toFixed(2)} ${insumo?.unitMeasurement || ""}/ha`}
+                          />
+                        )}
+                        {i.hectareas !== undefined && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={`Has: ${Number(i.hectareas || 0).toFixed(2)}`}
+                          />
+                        )}
+                        {i.totalCantidad !== undefined && (
+                          <Chip
+                            size="small"
+                            label={`Total: ${Number(i.totalCantidad || 0).toFixed(2)} ${insumo?.unitMeasurement || ""}`}
+                            sx={{ fontWeight: 700 }}
+                          />
+                        )}
                       </Box>
                     </Box>
                   </Box>
                 );
               })}
             </TreeItem>
-            <TreeItem nodeId="5" label={t("services")}>
+            <TreeItem
+              nodeId={`${actividadId}-services`}
+              label={
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("services")}</Typography>
+                  <Chip size="small" label={`${lineasLabores?.length || 0} líneas`} />
+                </Box>
+              }
+            >
               {lineasLabores?.length === 0 && (
                 <p>{t("noServicesForActivity")}</p>
               )}
               {lineasLabores?.map((i, indec) => {
                 return (
                   <Box
-                    sx={{ display: "flex", justifyContent: "space-between" }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderRadius: "8px",
+                      px: 1,
+                      py: 0.7,
+                      mb: 0.5,
+                      backgroundColor: alpha("#0f172a", 0.03),
+                    }}
                   >
-                    <Box>{getLaborLabelFromId(i.laborId)}</Box>
-                    <Box>
-                      <Box sx={{ fontWeight: "bold" }}>
-                        USD {i.totalCosto?.toFixed(2)}
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.2, width: "100%" }}>
+                      <Box sx={{ fontWeight: 600 }}>
+                        {indec + 1}. {getLaborLabelFromId(i.laborId)}
+                      </Box>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.6 }}>
+                        <Chip
+                          size="small"
+                          label={`Has: ${(Number(i.hectareas || i.area || area) || 0).toFixed(2)} ha`}
+                          sx={{ fontWeight: 700 }}
+                        />
+                        {i.comentario && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            label={`Obs: ${String(i.comentario).slice(0, 36)}${String(i.comentario).length > 36 ? "..." : ""}`}
+                          />
+                        )}
                       </Box>
                     </Box>
                   </Box>

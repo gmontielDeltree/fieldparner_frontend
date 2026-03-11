@@ -438,10 +438,9 @@ export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
       {/* Header con información de campaña */}
       <Box
         sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "#1976d2",
           color: "white",
           padding: "16px",
-          borderRadius: "12px 12px 0 0",
         }}
       >
         <Box

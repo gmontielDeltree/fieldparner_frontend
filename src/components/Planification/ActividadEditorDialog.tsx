@@ -320,9 +320,8 @@ export default function ActividadEditorDialog({
           textAlign: "center",
           pb: 4, // Increased padding bottom from 3 to 4
           pt: 4, // Increased padding top from 3 to 4
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "#1976d2",
           color: "white",
-          borderRadius: "16px 16px 0 0"
         }}>
           <Typography variant="h5" sx={{ fontWeight: 600, mb: 1 }}>
             🌾 {t("selectActivityType")}

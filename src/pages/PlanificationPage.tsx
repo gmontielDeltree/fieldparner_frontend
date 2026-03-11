@@ -416,7 +416,7 @@ export const PlanificationPage: React.FC = () => {
                 sx={{
                   position: "absolute",
                   zIndex: 2,
-                  backgroundColor: "#f8fafcaa", // Reduced opacity from 'ee' to 'aa' to show map better
+                  backgroundColor: "#f8fafcaa",
                   minHeight: "100vh",
                   padding: "16px",
                 }}
@@ -424,19 +424,17 @@ export const PlanificationPage: React.FC = () => {
               >
                 <Grid item xs={12} md={6}>
                   <Paper
-                    elevation={3}
+                    elevation={5}
                     sx={{
                       maxHeight: "calc(100vh - 32px)",
-                      borderRadius: "12px",
                       overflow: "hidden",
-                      backgroundColor: "rgba(255, 255, 255, 0.95)", // Semi-transparent background
-                      backdropFilter: "blur(10px)", // Add blur effect for better readability
+                      backgroundColor: "#fff",
                     }}
                   >
                     {/* Header */}
                     <Box
                       sx={{
-                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        background: "#1976d2",
                         color: "white",
                         paddingY: "16px",
                         paddingX: "24px",
@@ -670,13 +668,11 @@ export const PlanificationPage: React.FC = () => {
                   crops.crops?.length && (
                     <Grid item xs={12} md={6}>
                       <Paper
-                        elevation={3}
+                        elevation={5}
                         sx={{
-                          borderRadius: "12px",
                           overflow: "hidden",
                           maxHeight: "calc(100vh - 32px)",
-                          backgroundColor: "rgba(255, 255, 255, 0.95)", // Semi-transparent background
-                          backdropFilter: "blur(10px)", // Add blur effect for better readability
+                          backgroundColor: "#fff",
                         }}
                       >
                         <PlanificationByField
