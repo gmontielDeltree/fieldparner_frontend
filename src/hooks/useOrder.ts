@@ -8,9 +8,7 @@ import {
     Numerator,
     NumeratorType,
     OrderStatus,
-    StockMovement,
     Supply,
-    TypeMovement,
     WithdrawalOrder,
     WithdrawalOrderItem,
     WithdrawalOrderType,
@@ -20,7 +18,7 @@ import {
 import { useState } from "react";
 import { setWithdrawalOrderActive } from "../redux/withdrawalOrder";
 import { onLogout } from '../redux/auth';
-import { Stock } from '../interfaces/stock';
+
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 import { Business } from "../interfaces/socialEntity";
@@ -175,55 +173,9 @@ export const useOrder = () => {
                     // withdrawalAmount: 0 //TODO: DEJAMOS CON EL VALOR ORIGINAL A RETIRAR O 0 
                 }));
 
-            //Actualizamos la reserva del stock del insumo
-            // con inputsToBeWithdrawan.originalAmount
-            const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
-            if (!responseStock) throw new Error("Error database stock");
-
-            const docsStock = responseStock.docs;
-            let updatesStock: Stock[] = [];
-
-            inputsToBeWithdrawan.forEach(w => {
-                if (w.supplyId) {
-                    docsStock.forEach(s => {
-                        if (newWithdrawalOrder.campaignId === s.campaignId &&
-                            w.depositId === s.depositId &&
-                            w.supplyId === s.id &&
-                            w.location === s.location &&
-                            w.nroLot === s.nroLot) {
-                            updatesStock.push({
-                                ...s, reservedStock: (Number(s.reservedStock) + Number(w.originalAmount))
-                            });
-                        }
-                    });
-                }
-            });
-
-            //Creamos los movimientos de stock
-            let newMovements = inputsToBeWithdrawan.map(w => ({
-                accountId: user.accountId,
-                amount: w.originalAmount, //Monto que se reserva para retirar
-                campaignId: newWithdrawalOrder.campaignId,
-                creationDate: newWithdrawalOrder.creationDate,
-                depositId: w.depositId,
-                supplyId: w.supplyId,
-                isCrop: false,
-                cropId: "",
-                location: w.location,
-                nroLot: w.nroLot,
-                detail: `Cantidad reservada del insumo: ${w.originalAmount}`,
-                voucher: nroOrder.toString(),
-                isIncome: false,
-                movement,
-                operationDate: newWithdrawalOrder.creationDate,
-                typeMovement: TypeMovement.OrdenRetiro,
-            } as StockMovement));
-
             const response = await Promise.all([
                 dbContext.withdrawalOrders.post(newOrder),
                 dbContext.depositSupplyOrder.bulkDocs(depositSuppliesOrder),
-                dbContext.stockMovements.bulkDocs(newMovements),
-                dbContext.stock.bulkDocs(updatesStock),
                 putLastNumerator(lastNumerator),
             ]);
 
@@ -371,61 +323,9 @@ export const useOrder = () => {
                 }
             });
 
-            const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
-            if (!responseStock) { console.error("Stock no encontrado"); return };
-            const docsStock = responseStock.docs;
-            let updateStockSupplies: Stock[] = [];
-
-            //Actualizamos el stock actual del insumo, descontando el monto que retira
-            //Ademas, descontamos del stock reservado el monto que retira
-            //inputsToBeWithdrawan.amount
-            inputsToBeWithdrawan.forEach(w => {
-                if (w.supplyId) {
-                    docsStock.forEach(s => {
-                        if (withdrawalOrderActive.campaignId === s.campaignId &&
-                            w.depositId === s.depositId &&
-                            w.supplyId === s.id &&
-                            w.location === s.location &&
-                            w.nroLot === s.nroLot) {
-                            let stockInsumo = { ...s };
-                            
-                            stockInsumo.reservedStock = (Number(s.reservedStock) - Number(w.amount));
-                            
-                            if (withdrawalOrderActive.type.toLowerCase() === WithdrawalOrderType.Manual.toLowerCase()) {
-                                stockInsumo.currentStock = (Number(s.currentStock) - Number(w.amount));
-                            }
-                            updateStockSupplies.push(stockInsumo);
-                        }
-                    });
-                }
-            });
-            if (updateStockSupplies.length) {
-                await dbContext.stock.bulkDocs(updateStockSupplies);
-            }
-
-            let newMovements = inputsToBeWithdrawan.map(w => ({
-                accountId: user.accountId,
-                amount: w.amount,
-                campaignId: withdrawalOrderActive?.campaign?._id,
-                creationDate: withdrawalDate,
-                depositId: w.deposit?._id,
-                supplyId: w.supply?._id,
-                isCrop: false,
-                cropId: "",
-                location: w.location,
-                nroLot: w.nroLot,
-                detail: `Cantidad retirada del insumo: ${w.amount}`,
-                voucher: withdrawalOrderActive.order.toString(),
-                isIncome: false,
-                movement: withdrawalOrderActive.type,
-                operationDate: withdrawalDate,
-                typeMovement: TypeMovement.OrdenRetiro,
-            } as StockMovement));
-
             let responseAll = await Promise.all([
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
-                dbContext.stockMovements.bulkDocs(newMovements),
             ]);
 
             if (isComplete) {
@@ -535,58 +435,9 @@ export const useOrder = () => {
                 };
             });
 
-            const responseStock = await dbContext.stock.find({ selector: { "accountId": user.accountId } });
-            if (!responseStock) throw new Error("Stock not found");
-            const docsStock = responseStock.docs;
-            let updateStockSupplies: Stock[] = [];
-
-            //Actualizamos el stock actual del insumo, descontando el monto que retira
-            //Ademas, descontamos del stock reservado el monto que retira
-            //inputsToBeWithdrawan.amount
-            listWithdrawals.forEach(w => {
-                if (w.supplyId) {
-                    docsStock.forEach(s => {
-                        if (withdrawalOrder.campaignId === s.campaignId &&
-                            w.depositId === s.depositId &&
-                            w.supplyId === s.id &&
-                            w.location === s.location &&
-                            w.nroLot === s.nroLot) {
-                            updateStockSupplies.push({
-                                ...s,
-                                currentStock: (Number(s.currentStock) - Number(w.amount || w.withdrawalAmount || 0)),
-                                reservedStock: (Number(s.reservedStock) - Number(w.amount || w.withdrawalAmount || 0))
-                            });
-                        }
-                    });
-                }
-            });
-            if (updateStockSupplies.length) {
-                await dbContext.stock.bulkDocs(updateStockSupplies);
-            }
-
-            let newMovements = listWithdrawals.map(w => ({
-                accountId: user.accountId,
-                amount: w.amount,
-                campaignId: withdrawalOrder.campaignId,
-                creationDate: withdrawalDate,
-                depositId: w.deposit?._id,
-                supplyId: w.supply?._id,
-                isCrop: false,
-                cropId: "",
-                location: w.location,
-                nroLot: w.nroLot,
-                detail: withdrawalOrder.reason,
-                voucher: withdrawalOrder.order.toString(),
-                isIncome: false,
-                movement: withdrawalOrder.type,
-                operationDate: withdrawalDate,
-                typeMovement: TypeMovement.OrdenRetiro,
-            } as StockMovement));
-
             let responseAll = await Promise.all([
                 dbContext.withdrawalsByDepositSupply.bulkDocs(newWithdrawals),
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
-                dbContext.stockMovements.bulkDocs(newMovements),
             ]);
 
             //Una vez q se confirma la orden automatica, se marca como completada
