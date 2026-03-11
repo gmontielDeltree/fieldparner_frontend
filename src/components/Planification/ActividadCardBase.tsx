@@ -4,7 +4,9 @@ import {
   Card,
   CardContent,
   Chip,
+  Divider,
   Typography,
+  alpha,
 } from "@mui/material";
 import React, { useContext, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -88,7 +90,13 @@ export const ActividadCardBase: React.FC = ({
 
   const fechaString = (fechaa) => format(parseISO(fechaa), "dd MMMM yyyy");
 
-  let icon = siembraIcon;
+  const iconByType = {
+    siembra: siembraIcon,
+    cosecha: cosechaIcon,
+    aplicacion: aplicacionIcon,
+    nota: notaIcon,
+  };
+  const icon = iconByType[tipo as keyof typeof iconByType] || siembraIcon;
 
   if (loading) return <div>Loading</div>;
   return (
@@ -103,36 +111,69 @@ export const ActividadCardBase: React.FC = ({
         editing={true}
       />
       <Card
-        sx={{ maxWidth: "100%", minWidth: "50%", backgroundColor: cardColor }}
+        sx={{
+          maxWidth: "100%",
+          minWidth: "50%",
+          borderRadius: "14px",
+          border: `1px solid ${alpha(cardColor || "#94a3b8", 0.28)}`,
+          background: `linear-gradient(180deg, ${alpha(cardColor || "#94a3b8", 0.14)} 0%, rgba(255,255,255,0.98) 40%)`,
+          boxShadow: "0 6px 18px rgba(15, 23, 42, 0.10)",
+          transition: "all 0.2s ease",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.16)",
+          },
+        }}
       >
-        <CardContent>
+        <CardContent sx={{ p: 2.2 }}>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
+              mb: 1.2,
             }}
           >
-            {fechaString(fecha)} {ejecutada && "EJECUTADA"}
+            <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600 }}>
+              {fechaString(fecha)}
+            </Typography>
+            <Chip
+              size="small"
+              label={ejecutada ? t("executed") : t("planned")}
+              sx={{
+                fontWeight: 700,
+                height: 24,
+                backgroundColor: ejecutada ? alpha("#16a34a", 0.14) : alpha("#f59e0b", 0.15),
+                color: ejecutada ? "#166534" : "#92400e",
+                border: `1px solid ${ejecutada ? alpha("#16a34a", 0.35) : alpha("#f59e0b", 0.35)}`,
+              }}
+            />
           </Box>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-between",
-              marginBottom: "8px",
+              alignItems: "center",
+              marginBottom: "10px",
             }}
           >
             <div
               style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
             >
               <Avatar
-                sx={{ bgcolor: red[500] }}
+                sx={{
+                  bgcolor: alpha(cardColor || red[500], 0.15),
+                  border: `1px solid ${alpha(cardColor || red[500], 0.35)}`,
+                  width: 42,
+                  height: 42,
+                }}
                 aria-label="recipe"
                 src={icon}
               ></Avatar>
               <Typography
-                variant="h5"
+                variant="h6"
                 component="div"
+                sx={{ fontWeight: 700, letterSpacing: "-0.01em" }}
                 onClick={() => console.log(actividadId)}
               >
                 {tipo.toUpperCase()} de {area} has.
@@ -155,9 +196,22 @@ export const ActividadCardBase: React.FC = ({
               }}
             />
           </Box>
+          <Divider sx={{ mb: 1.2, opacity: 0.5 }} />
           <TreeView
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpandIcon={<ChevronRightIcon />}
+            sx={{
+              "& .MuiTreeItem-content": {
+                borderRadius: "8px",
+                py: 0.2,
+              },
+              "& .MuiTreeItem-content:hover": {
+                backgroundColor: alpha(cardColor || "#94a3b8", 0.08),
+              },
+              "& .MuiTreeItem-label": {
+                fontWeight: 600,
+              },
+            }}
           >
             <TreeItem nodeId="10" label={t("contractor")}>
               {!contratista && <p>{t("noContractorAssigned")}</p>}
@@ -216,15 +270,16 @@ export const ActividadCardBase: React.FC = ({
             </TreeItem>
           </TreeView>
           <Box
-            sx={{ display: "flex", justifyContent: "flex-end", gap: "0.2rem" }}
+            sx={{ display: "flex", justifyContent: "flex-end", gap: "0.4rem", mt: 1 }}
           >
             {precioEstimadoCosecha && (
               <Chip
                 label={precioEstimadoCosecha?.toFixed(2) + " USD/tn"}
                 title="Precio Estimado"
                 sx={{
-                  backgroundColor: "#436716",
-                  color: "#FFD567",
+                  backgroundColor: alpha("#166534", 0.14),
+                  color: "#14532d",
+                  border: `1px solid ${alpha("#166534", 0.22)}`,
                   fontWeight: "bold",
                 }}
               />
@@ -235,8 +290,9 @@ export const ActividadCardBase: React.FC = ({
                 label={rindeEstimado?.toFixed(2) + " tn/ha"}
                 title="Rinde Estimado"
                 sx={{
-                  backgroundColor: "#16672f",
-                  color: "#FFD567",
+                  backgroundColor: alpha("#0f766e", 0.14),
+                  color: "#115e59",
+                  border: `1px solid ${alpha("#0f766e", 0.22)}`,
                   fontWeight: "bold",
                 }}
               />
