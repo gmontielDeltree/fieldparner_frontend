@@ -1,0 +1,217 @@
+import { Alert, Box, Button, ButtonGroup, Container, Link, Paper, TextField, Typography } from '@mui/material'
+import React, { useState } from 'react';
+import { useAuthStore, useForm } from '../hooks'
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Loading } from '../components';
+// import { Refresh as RefreshIcon } from '@mui/icons-material';
+
+export const ConfirmAuthPage: React.FC = () => {
+    const navigate = useNavigate();
+    const [resendMessage, setResendMessage] = useState<string>('');
+    const {
+        cod1, cod2, cod3, cod4, cod5, cod6, handleInputChange
+    } = useForm({
+        cod1: '',
+        cod2: '',
+        cod3: '',
+        cod4: '',
+        cod5: '',
+        cod6: '',
+    });
+    const { isLoading, errorMessage, startConfirm, resendVerificationCode } = useAuthStore();
+    const email = localStorage.getItem("username_temp");
+
+    const handleOnClickConfirm = () => {
+        let confirmationCode = '' + cod1 + cod2 + cod3 + cod4 + cod5 + cod6;
+        if (confirmationCode !== '')
+            startConfirm(confirmationCode);
+    }
+
+    const handleResendCode = () => {
+        if (email) {
+            setResendMessage('');
+            resendVerificationCode(email, () => {
+                setResendMessage('Código reenviado exitosamente a tu correo electrónico.');
+                setTimeout(() => {
+                    setResendMessage('');
+                }, 5000);
+            });
+        }
+    }
+
+    const onCLickCancel = () => {
+        localStorage.removeItem("username_temp");
+        navigate("/init/auth/login");
+    }
+
+    if (!email) {
+        return <Navigate to="/init/auth/login" />
+    }
+
+    return (
+        <Container maxWidth="sm" component={Paper}
+            sx={{
+                width: '100%',
+                paddingLeft: 0,
+                paddingRight: 0,
+                // backgroundColor: '#f2f2f2'
+            }}>
+            {
+                isLoading && <Loading key="loading-auth" loading={true} />
+            }
+            <Box
+                sx={{
+                    marginTop: 12,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}>
+                <Box display="flex" sx={{ margin: 'auto', mb: 3, p: 3 }}>
+                    <Box sx={{
+                        width: 40,
+                        height: 40,
+                        backgroundImage: 'url(/assets/images/logos/agrootolss_logo_sol.png)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat'
+                    }} />
+                    <Typography component="h5" variant='h5' ml={1} >FieldPartner</Typography>
+                </Box>
+
+                <Typography component="h4" variant="h4" textAlign="center" mb={2} >
+                    Revisa tu correo
+                </Typography>
+                <Typography
+                    component="h6"
+                    variant="body1"
+                    textAlign="center"
+                    color={'GrayText'}
+                    mb={3}
+                >
+                    Por favor, hemos enviado un código de verificación al correo electrónico,
+                </Typography>
+                <ButtonGroup variant="outlined" aria-label="outlined button group">
+                    <TextField
+                        sx={{ maxWidth: "40px" }}
+                        color="primary"
+                        type="text"
+                        inputProps={{ maxLength: 1 }}
+                        name="cod1"
+                        value={cod1}
+                        onChange={handleInputChange}
+                        autoComplete='off'
+                        autoFocus
+                    />
+                    <TextField
+                        sx={{ maxWidth: "40px", mx: 1 }}
+                        color="primary"
+                        type="text"
+                        inputProps={{ maxLength: 1 }}
+                        name="cod2"
+                        value={cod2}
+                        onChange={handleInputChange}
+                        autoComplete='off'
+                        autoFocus
+                    />
+                    <TextField
+                        sx={{ maxWidth: "40px" }}
+                        color="primary"
+                        type="text"
+                        inputProps={{ maxLength: 1 }}
+                        name="cod3"
+                        value={cod3}
+                        onChange={handleInputChange}
+                        autoComplete='off'
+                        autoFocus
+                    />
+                    <TextField
+                        sx={{ maxWidth: "40px", mx: 1 }}
+                        color="primary"
+                        type="text"
+                        inputProps={{ maxLength: 1 }}
+                        name="cod4"
+                        value={cod4}
+                        onChange={handleInputChange}
+                        autoComplete='off'
+                        autoFocus
+                    />
+                    <TextField
+                        sx={{ maxWidth: "40px" }}
+                        color="primary"
+                        type="text"
+                        inputProps={{ maxLength: 1 }}
+                        name="cod5"
+                        value={cod5}
+                        onChange={handleInputChange}
+                        autoComplete='off'
+                        autoFocus
+                    />
+                    <TextField
+                        sx={{ maxWidth: "40px", mx: 1 }}
+                        color="primary"
+                        type="text"
+                        inputProps={{ maxLength: 1 }}
+                        name="cod6"
+                        value={cod6}
+                        onChange={handleInputChange}
+                        autoComplete='off'
+                        autoFocus
+                    />
+                </ButtonGroup>
+                {
+                    errorMessage && (
+                        <Alert severity="error" sx={{ my: 2 }} >{errorMessage}</Alert>
+                    )
+                }
+                {
+                    resendMessage && (
+                        <Alert severity="success" sx={{ my: 2 }} >{resendMessage}</Alert>
+                    )
+                }
+
+                {/* Mensaje de reenvío de código */}
+                <Box sx={{ mt: 3, mb: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                        ¿No recibiste el código?{' '}
+                        <Link
+                            component="button"
+                            variant="body2"
+                            onClick={handleResendCode}
+                            sx={{
+                                cursor: 'pointer',
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                                '&:hover': {
+                                    textDecoration: 'underline',
+                                },
+                            }}
+                        >
+                            Reenviar código
+                        </Link>
+                    </Typography>
+                </Box>
+
+                <Button
+                    type="button"
+                    color='primary'
+                    fullWidth
+                    variant="contained"
+                    onClick={() => handleOnClickConfirm()}
+                    sx={{ mt: 2, mb: 2 }}
+                >
+                    CONFIRMAR
+                </Button>
+                <Button
+                    type="button"
+                    color='secondary'
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => onCLickCancel()}
+                    sx={{ mt: 1, mb: 2 }}
+                >
+                    Cancelar
+                </Button>
+            </Box>
+        </Container>
+    )
+}

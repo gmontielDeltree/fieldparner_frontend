@@ -1,0 +1,104 @@
+@media only screen and (max-width: 600px) {
+  .mioffcanvas {
+    width: 100%;
+  }
+}
+
+.mioffcanvas {
+  width: 50%;
+}
+
+.humedad-body {
+  background-image: url('/sensor-humedad/suelo.webp');
+  background-repeat: no-repeat;
+  background-position-y: -60px;
+}
+
+.offcanvas-humedad-body {
+  background-image: url('/sensor-humedad/blur_bg.webp'),
+    linear-gradient(rgba(255, 255, 255, 0), rgb(78, 62, 55));
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-blend-mode: normal;
+}
+
+.charts-body {
+  background-image: url('/sensor-humedad/blur_bg.webp');
+  background-position-y: -70px;
+}
+
+.offcanvas-sensores-body {
+  background-image: url('/sky-1441936_1280.jpg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.header-blue {
+  /* color: #0348d9; */
+  background-color: #0348d9;
+}
+
+.profundidad {
+  left: 10px;
+  background-color: whitesmoke;
+  width: 80px;
+}
+.profundidad-1 {
+  top: 300px;
+}
+.profundidad-2 {
+  top: 500px;
+}
+
+.humedad {
+  left: 310px;
+  background-color: whitesmoke;
+  width: 80px;
+}
+.humedad-1 {
+  top: 300px;
+}
+.humedad-2 {
+  top: 500px;
+}
+
+.temperatura {
+  left: 310px;
+  background-color: whitesmoke;
+  width: 80px;
+}
+.temperatura-1 {
+  top: 400px;
+}
+.temperatura-2 {
+  top: 600px;
+}
+
+.sensor-imagen {
+  background-image: url('/sensor-humedad/sensor-humedad-suelo.webp');
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.sensor-1 {
+  position: relative;
+  top: 150px;
+}
+
+.sensor-2 {
+  position: relative;
+  top: 180px;
+}
+
+.segundo-sensor {
+  top: 500px;
+}
+
+.chart-1 {
+  height: 200px;
+}
+
+.spacer {
+  height: 110px;
+}
