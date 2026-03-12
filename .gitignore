@@ -34,7 +34,7 @@ campaigns/
 campaing-expenses/
 categories/
 certificate-deposit/
-companies/
+/companies/
 companies-by-contract/
 contract-delivery-dates/
 contract-sale-cereals/
@@ -71,13 +71,13 @@ test-supplies/
 transport-document-certificate-deposit/
 transport-documents/
 type-vehicles/
-users/
+/users/
 vehicles/
 withdrawal-orders/
 withdrawals-deposit-supply/
 zip-code-arg/
 zip-code-pry/
-zones/
+/zones/
 
 # PouchDB con prefijo "undefined" (cuando VITE_ENVIRONMENT no está definido)
 undefinedcampaigns/
