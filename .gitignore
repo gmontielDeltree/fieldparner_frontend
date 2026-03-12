@@ -30,7 +30,7 @@ credencialesField.js
 
 # PouchDB/LevelDB - Test databases
 # Ignora los directorios de bases de datos de PouchDB creados durante tests
-campaigns/
+/campaigns/
 campaing-expenses/
 categories/
 certificate-deposit/
@@ -46,10 +46,10 @@ crop-movements/
 crop-stock-control/
 crops/
 deposit-supply-order/
-deposits/
+/deposits/
 detail-purchase-order/
 exit-fields/
-fields/
+/fields/
 fields-by-product-unit/
 labors-services/
 licences-use/
@@ -65,7 +65,7 @@ purchase-order/
 social-entities/
 stock/
 stock-movements/
-supplies/
+/supplies/
 system/
 test-supplies/
 transport-document-certificate-deposit/
