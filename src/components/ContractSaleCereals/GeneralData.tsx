@@ -36,8 +36,6 @@ interface Props {
   handleFormValueChange: (key: string, value: string) => void;
 }
 
-//TODO: Cambiar los textos a idioma seleccionado
-
 
 export const GeneralData: React.FC<Props> = ({
   formValues,
@@ -80,7 +78,7 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <ListItemText
-            primary={<Typography variant='subtitle1'>Numero de Contrato</Typography>}
+            primary={<Typography variant='subtitle1'>{t("contract_sale_number")}</Typography>}
             sx={{ backgroundColor: "#f4f4f4", px: 1, borderRadius: 1 }}
             secondary={
               <Typography align='right' letterSpacing={1} variant='subtitle1'>
@@ -103,12 +101,12 @@ export const GeneralData: React.FC<Props> = ({
         <FormControl key="campaign-select"
           error={formValues.campaignId.isError}
           fullWidth>
-          <InputLabel id="campaign">Campaña</InputLabel>
+          <InputLabel id="campaign">{t("_campaign")}</InputLabel>
           <Select
             labelId="campaign"
             name="campaignId"
             value={formValues.campaignId.value}
-            label="Campaña"
+            label={t("_campaign")}
             onChange={handleSelectChange}
           >
             {campaigns?.map((c) => (
@@ -124,12 +122,12 @@ export const GeneralData: React.FC<Props> = ({
         <FormControl key="company-select"
           error={formValues.companyId.isError}
           fullWidth>
-          <InputLabel id="contract-corporate">Sociedad</InputLabel>
+          <InputLabel id="contract-corporate">{t("society")}</InputLabel>
           <Select
             labelId="contract-corporate"
             name="companyId"
             value={formValues.companyId.value}
-            label="Sociedad"
+            label={t("society")}
             onChange={handleSelectChange}
           >
             {companies?.map((item) => (
@@ -164,7 +162,7 @@ export const GeneralData: React.FC<Props> = ({
               onChange={(event) => handleCheckboxChange(event, true)}
             />
           }
-          label="Abierto"
+          label={t("Open")}
           labelPlacement="start"
         />
         <FormControlLabel
@@ -176,7 +174,7 @@ export const GeneralData: React.FC<Props> = ({
               onChange={(event) => handleCheckboxChange(event, false)}
             />
           }
-          label="Cerrado"
+          label={t("Closed")}
           labelPlacement="start"
         />
       </Grid>
@@ -184,7 +182,7 @@ export const GeneralData: React.FC<Props> = ({
         <TextField
           variant="outlined"
           type="date"
-          label={"Fecha"}
+          label={t("date_created")}
           name="dateCreated"
           value={formValues.dateCreated.value}
           onChange={handleInputChange}
@@ -195,7 +193,7 @@ export const GeneralData: React.FC<Props> = ({
         <TextField
           variant="outlined"
           type="text"
-          label={"Tipo Contrato"}
+          label={t("contract_type")}
           name={"contractType"}
           error={formValues.contractType.isError}
           helperText={formValues.contractType.message}
@@ -209,10 +207,11 @@ export const GeneralData: React.FC<Props> = ({
         <TextField
           variant="outlined"
           type="number"
-          label={"Kms"}
+          label={t("kms_label")}
           name={"kms"}
           error={formValues.kms.isError}
           helperText={formValues.kms.message}
+          inputProps={{ style: { textAlign: 'right' } }}
           onChange={(e) => {
             const value = e.target.value;
             if (value === '') {
@@ -230,11 +229,12 @@ export const GeneralData: React.FC<Props> = ({
         <TextField
           variant="outlined"
           type="number"
-          label={"Kilos"}
+          label={t("kilograms")}
           name={"kg"}
           error={formValues.kg.isError}
           helperText={formValues.kg.message}
           value={formValues.kg.value}
+          inputProps={{ style: { textAlign: 'right' } }}
           onChange={(e) => {
             const value = e.target.value;
             if (value === '') {
@@ -250,7 +250,7 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <ListItemText
-            primary={<Typography variant='subtitle1'>Moneda</Typography>}
+            primary={<Typography variant='subtitle1'>{t("_currency")}</Typography>}
             sx={{ backgroundColor: "#f4f4f4", px: 1, borderRadius: 1 }}
             secondary={
               <Typography letterSpacing={1} variant='subtitle1'>
@@ -268,6 +268,7 @@ export const GeneralData: React.FC<Props> = ({
           error={formValues.quintalQuote.isError}
           helperText={formValues.quintalQuote.message}
           value={formValues.quintalQuote.value}
+          inputProps={{ style: { textAlign: 'right' } }}
           onChange={(e) => {
             const value = e.target.value;
             if (value === '') {
@@ -283,10 +284,10 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <ListItemText
-            primary={<Typography variant='subtitle2'>Valor Moneda</Typography>}
+            primary={<Typography variant='subtitle2'>{t("currency_value")}</Typography>}
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
-              <Typography letterSpacing={1} variant='subtitle1'>
+              <Typography align='right' letterSpacing={1} variant='subtitle1'>
                 {valueCurrency ? Helper.parseDecimalPointToComaWithCurrency(valueCurrency, user?.currency || "") : "-"}
               </Typography>}
           />
@@ -296,11 +297,12 @@ export const GeneralData: React.FC<Props> = ({
         <TextField
           variant="outlined"
           type="number"
-          label={"Cotizacion U$D/Kg"}
+          label={t("usd_quote_per_kg")}
           name={"USDQuote"}
           error={formValues.USDQuote.isError}
           helperText={formValues.USDQuote.message}
           value={formValues.USDQuote.value}
+          inputProps={{ style: { textAlign: 'right' } }}
           onChange={(e) => {
             const value = e.target.value;
             if (value === '') {
@@ -316,10 +318,10 @@ export const GeneralData: React.FC<Props> = ({
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <ListItemText
-            primary={<Typography variant='subtitle2'>Valor U$D</Typography>}
+            primary={<Typography variant='subtitle2'>{t("usd_value")}</Typography>}
             sx={{ backgroundColor: "#f4f4f4", px: 1 }}
             secondary={
-              <Typography letterSpacing={1} variant='subtitle1'>
+              <Typography align='right' letterSpacing={1} variant='subtitle1'>
                 {valueUSD ? Helper.parseDecimalPointToComaWithCurrency(valueUSD, CurrencyCode.USA || "") : "-"}
               </Typography>}
           />

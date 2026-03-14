@@ -3,6 +3,7 @@ import {
   FormHelperText,
   Grid,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
@@ -20,11 +21,11 @@ import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
 import { FormValueState } from '../../hooks';
 import { BusinessItem } from '../../interfaces/socialEntity';
-import { OriginDestinations } from '../../types';
+import { Geolocation, OriginDestinations } from '../../types';
+import { AddDestinationDialog } from './AddDestinationDialog';
 import dayjs from 'dayjs';
 import { Company } from '../../interfaces/company';
 
-//TODO: Cambiar los textos a idioma seleccionado
 
 interface Props {
   formValues: FormValueState<ContractSaleCereal>;
@@ -37,6 +38,7 @@ interface Props {
   handleFormValueChange: (key: string, value: string) => void;
   addDeliveryDate: (date: string) => void;
   deleteDeliveryDate: (date: string) => void;
+  onDestinationCreated: (name: string, geolocation: Geolocation) => Promise<void>;
 }  // handleCheckboxChange: ({ target }: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
 
 const initialDate = dayjs().add(1, "day").format("YYYY-MM-DD");
@@ -52,10 +54,12 @@ export const Details: React.FC<Props> = ({
   handleFormValueChange,
   addDeliveryDate,
   deleteDeliveryDate,
+  onDestinationCreated,
 }) => {
 
   const { t } = useTranslation();
   const [newDate, setNewDate] = useState<string>(initialDate);
+  const [destDialogOpen, setDestDialogOpen] = useState(false);
 
   const minDate = useMemo(() => {
     let dateMax = initialDate;
@@ -79,12 +83,12 @@ export const Details: React.FC<Props> = ({
             <FormControl key="producer-select"
               error={formValues.campaignId.isError}
               fullWidth>
-              <InputLabel id="producer">Productor/Vendedor</InputLabel>
+              <InputLabel id="producer">{t("producer_seller")}</InputLabel>
               <Select
                 labelId="producer"
                 name="producerId"
                 value={formValues.producerId.value}
-                label="Productor/Vendedor"
+                label={t("producer_seller")}
                 onChange={handleSelectChange}
               >
                 {companies.map((c) => (
@@ -100,12 +104,12 @@ export const Details: React.FC<Props> = ({
             <FormControl key="buyer-select"
               error={formValues.buyerId.isError}
               fullWidth>
-              <InputLabel id="buyer">Comprador/Destinatario</InputLabel>
+              <InputLabel id="buyer">{t("buyer_recipient")}</InputLabel>
               <Select
                 labelId="buyer"
                 name="buyerId"
                 value={formValues.buyerId.value}
-                label="Comprador/Destinatario"
+                label={t("buyer_recipient")}
                 onChange={handleSelectChange}
               >
                 {providers.map((c) => (
@@ -121,13 +125,24 @@ export const Details: React.FC<Props> = ({
             <FormControl key="destination-select"
               error={formValues.destinationId.isError}
               fullWidth>
-              <InputLabel id="destination">Destino</InputLabel>
+              <InputLabel id="destination">{t("_destination")}</InputLabel>
               <Select
                 labelId="destination"
                 name="destinationId"
                 value={formValues.destinationId.value}
-                label="Destino"
+                label={t("_destination")}
                 onChange={handleSelectChange}
+                endAdornment={
+                  <InputAdornment position="end" sx={{ mr: 2 }}>
+                    <IconButton
+                      size="small"
+                      onClick={() => setDestDialogOpen(true)}
+                      title={t("_add")}
+                    >
+                      <AddIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                }
               >
                 {destinations?.map((item) => (
                   <MenuItem key={item._id} value={item._id}>
@@ -138,16 +153,22 @@ export const Details: React.FC<Props> = ({
               <FormHelperText>{formValues.destinationId.message}</FormHelperText>
             </FormControl>
           </Grid>
+
+          <AddDestinationDialog
+            open={destDialogOpen}
+            onClose={() => setDestDialogOpen(false)}
+            onSave={onDestinationCreated}
+          />
           <Grid item xs={12} sm={3}>
             <FormControl key="deliverer-select"
               error={formValues.delivererId.isError}
               fullWidth>
-              <InputLabel id="deliverer">Entregador</InputLabel>
+              <InputLabel id="deliverer">{t("deliverer")}</InputLabel>
               <Select
                 labelId="deliverer"
                 name="delivererId"
                 value={formValues.delivererId.value}
-                label="Entregador"
+                label={t("deliverer")}
                 onChange={handleSelectChange}
               >
                 {providers?.map((item) => (
@@ -163,12 +184,12 @@ export const Details: React.FC<Props> = ({
             <FormControl key="broker-select"
               error={formValues.brokerId.isError}
               fullWidth>
-              <InputLabel id="broker">Corredor</InputLabel>
+              <InputLabel id="broker">{t("broker")}</InputLabel>
               <Select
                 labelId="broker"
                 name="brokerId"
                 value={formValues.brokerId.value}
-                label="Corredor"
+                label={t("broker")}
                 onChange={handleSelectChange}
               >
                 {providers?.map((item) => (
@@ -203,7 +224,7 @@ export const Details: React.FC<Props> = ({
             <TextField
               type="number"
               variant="outlined"
-              label="Importe"
+              label={t("_amount")}
               name="brokerAmountValue"
               value={formValues.brokerAmountValue.value}
               onChange={(e) => {
@@ -222,12 +243,12 @@ export const Details: React.FC<Props> = ({
             <FormControl key="comission-select"
               error={formValues.brokerId.isError}
               fullWidth>
-              <InputLabel id="comission-agent">Comisionista</InputLabel>
+              <InputLabel id="comission-agent">{t("commission_agent")}</InputLabel>
               <Select
                 labelId="comission-agent"
                 name="comissionAgentId"
                 value={formValues.comissionAgentId.value}
-                label="Comisionista"
+                label={t("commission_agent")}
                 onChange={handleSelectChange}
               >
                 {providers?.map((item) => (
@@ -262,7 +283,7 @@ export const Details: React.FC<Props> = ({
             <TextField
               type="number"
               variant="outlined"
-              label="Importe"
+              label={t("_amount")}
               name="comissionAgentAmountValue"
               value={formValues.comissionAgentAmountValue.value}
               onChange={(e) => {
@@ -283,7 +304,7 @@ export const Details: React.FC<Props> = ({
               variant='outlined'
               multiline
               maxRows={4}
-              label="Condicion"
+              label={t("_condition")}
               name="condition"
               value={formValues.condition.value}
               onChange={handleInputChange}
@@ -296,7 +317,7 @@ export const Details: React.FC<Props> = ({
               variant='outlined'
               multiline
               maxRows={4}
-              label="Forma de Pago"
+              label={t("payment_method")}
               name="mothodPayment"
               value={formValues.mothodPayment.value}
               onChange={handleInputChange}
@@ -307,7 +328,7 @@ export const Details: React.FC<Props> = ({
       </Grid>
       <Grid item xs={12} sm={2.5} component={Paper}>
         <Typography variant="h6" align='center' mb={1} sx={{ letterSpacing: "1px", fontWeight: "600" }}>
-          Entregas
+          {t("_deliveries")}
         </Typography>
         <Grid container spacing={1} alignItems="center" >
           <Grid
