@@ -100,6 +100,35 @@ export const useOriginDestinations = () => {
     }
   };
 
+  const quickCreateDestination = async (name: string, geolocation: { lat: number; lng: number } = { lat: -34, lng: -59 }): Promise<OriginDestinations | null> => {
+    if (!name.trim() || !user) return null;
+    setIsLoading(true);
+    try {
+      const newDest: OriginDestinations = {
+        name: name.trim(),
+        accountId: user.accountId,
+        licenceId: user.licenceId,
+        geolocation,
+        destino: true,
+        procedencia: false,
+      };
+      const response = await dbContext.originsDestinations.post(newDest);
+      setIsLoading(false);
+      if (response.ok) {
+        const created: OriginDestinations = { ...newDest, _id: response.id, _rev: response.rev };
+        setOriginDestinations(prev => [...prev, created]);
+        NotificationService.showAdded(name.trim(), originLabel);
+        return created;
+      }
+      return null;
+    } catch (error) {
+      console.log(error);
+      setIsLoading(false);
+      NotificationService.showError(t("unexpected_error"));
+      return null;
+    }
+  };
+
   const removeOriginDestinations = async (OriginDestinationsId: string, removeOriginDestinations: string) => {
     setIsLoading(true);
 
@@ -173,6 +202,7 @@ export const useOriginDestinations = () => {
     conceptoError,
 
     //* Métodos
+    quickCreateDestination,
     createOriginDestinations,
     getOriginDestinations,
     setOriginDestinations,

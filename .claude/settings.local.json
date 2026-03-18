@@ -15,7 +15,8 @@
       "Bash(gh pr merge:*)",
       "Bash(gh pr checkout:*)",
       "Bash(git fetch:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(node -e \"\nconst fs = require\\('fs'\\);\nconst files = [\n  'public/locales/en/translation.json',\n  'public/locales/es/translation.json',\n  'public/locales/pt/translation.json'\n];\n\nfiles.forEach\\(f => {\n  try {\n    const content = fs.readFileSync\\(f, 'utf8'\\);\n    const obj = JSON.parse\\(content\\);\n    console.log\\(f + ': JSON válido, ' + Object.keys\\(obj\\).length + ' claves únicas'\\);\n  } catch\\(e\\) {\n    console.log\\(f + ': ERROR - ' + e.message\\);\n  }\n}\\);\n\")"
     ],
     "deny": [],
     "ask": [],

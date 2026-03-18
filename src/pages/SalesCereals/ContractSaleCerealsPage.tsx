@@ -3,11 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
-import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations, useSupply } from '../../hooks';
+import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useFormValues, useOriginDestinations, useSupply } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
-import { Crop, TipoEntidad } from '../../types';
+import { Crop, Geolocation, TipoEntidad } from '../../types';
 import Swal from 'sweetalert2';
 import { TipoStock } from '../../interfaces/stock';
 
@@ -71,7 +71,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
   const { companies, getCompanies } = useCompany();
   // const { dataCrops, getCrops } = useCrops();
   const { stockBySupplies: dataStockCropOrSupply, getStockData } = useSupply();
-  const { originsDestinations, getOriginDestinations } = useOriginDestinations();
+  const { originsDestinations, getOriginDestinations, quickCreateDestination } = useOriginDestinations();
   const { getContractNumber, getContractSaleCerealByContractNumber, addContractSaleCereal, isLoading: loading } = useContractSaleCereals();
 
   const addDeliveryDate = (date: string) => {
@@ -80,6 +80,13 @@ export const ContractSaleCerealsPage: React.FC = () => {
 
   const deleteDeliveryDate = (date: string) => {
     setListDeliveryDates(listDeliveryDates.filter(item => item !== date));
+  };
+
+  const handleDestinationCreated = async (name: string, geolocation: Geolocation) => {
+    const newDest = await quickCreateDestination(name, geolocation);
+    if (newDest?._id) {
+      handleFormValueChange("destinationId", newDest._id);
+    }
   };
 
 
@@ -119,6 +126,7 @@ export const ContractSaleCerealsPage: React.FC = () => {
               addDeliveryDate={addDeliveryDate}
               listDeliveryDates={listDeliveryDates}
               deleteDeliveryDate={deleteDeliveryDate}
+              onDestinationCreated={handleDestinationCreated}
             />
           );
         default:
