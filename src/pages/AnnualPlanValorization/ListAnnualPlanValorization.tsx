@@ -29,7 +29,7 @@ import { useCampaign, useField, useCrops } from '../../hooks';
 
 export const ListAnnualPlanValorization: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     annualPlanValorizations,
     isLoading,
@@ -64,9 +64,10 @@ export const ListAnnualPlanValorization: React.FC = () => {
   }, [dataLoaded, campaigns.length, fields.length, crops.length]);
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-AR', {
+    const isBrazil = i18n.language === 'pt';
+    return new Intl.NumberFormat(isBrazil ? 'pt-BR' : 'es-AR', {
       style: 'currency',
-      currency: 'ARS',
+      currency: isBrazil ? 'BRL' : 'ARS',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);

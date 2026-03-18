@@ -6,37 +6,50 @@ import {
     LoginPage,
     RegisterPage
 } from '../pages';
-import { Grid, Paper } from '@mui/material';
+import { Box } from '@mui/material';
 
 export const PublicRoutes: React.FC = () => {
     return (
-
-        <Grid container component="main" sx={{ height: '100vh' }}>
-            {/* <CssBaseline /> */}
-            <Grid item xs={12} sm={8} md={4} component={Paper} elevation={6} square>
+        <Box
+            component="main"
+            sx={{
+                minHeight: '100vh',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'relative',
+                backgroundImage: 'url(/assets/images/load-bg.jpg)',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: 0,
+                    bgcolor: 'rgba(0, 0, 0, 0.3)',
+                    backdropFilter: 'blur(2px)',
+                },
+            }}
+        >
+            <Box
+                sx={{
+                    position: 'relative',
+                    zIndex: 1,
+                    width: '100%',
+                    maxWidth: 420,
+                    mx: 2,
+                    my: 4,
+                }}
+            >
                 <Routes>
                     <Route path='/auth/login' element={<LoginPage />} />
                     <Route path='/auth/register' element={<RegisterPage />} />
                     <Route path='/auth/confirm' element={<ConfirmAuthPage />} />
                     <Route path='/auth/forgot-password' element={<ForgotPasswordPage />} />
-
                     <Route path="/*" element={<Navigate to="/init/auth/login" />} />
                 </Routes>
-            </Grid>
-            <Grid
-                item
-                xs={false}
-                sm={4}
-                md={8}
-                sx={{
-                    backgroundImage: 'url(/assets/images/load-bg.jpg)',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundColor: (t) =>
-                        t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            />
-        </Grid>
+            </Box>
+        </Box>
     )
 }
