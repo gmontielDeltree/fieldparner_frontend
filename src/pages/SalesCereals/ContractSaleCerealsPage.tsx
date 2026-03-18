@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Box, Button, Container, Grid, Paper, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import { Loading, TemplateLayout } from '../../components';
 import { GeneralData, Details } from '../../components/ContractSaleCereals';
-import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useCrops, useFormValues, useOriginDestinations, useSupply } from '../../hooks';
+import { FormValueState, useBusiness, useCampaign, useCompany, useContractSaleCereals, useFormValues, useOriginDestinations, useSupply } from '../../hooks';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { ContractSaleCereal } from '../../interfaces/contract-sale-cereals';
