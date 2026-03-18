@@ -1410,7 +1410,6 @@
   "planning_copied_successfully": "Planejamento copiado com sucesso",
   "copy_complete_planning": "Cópia Planejamento Completo",
   "select_destination_campaign_hint": "Selecione a campanha de destino. Deve ter a mesma quantidade de safras que a de origem. Se não existir, pode criá-la aqui.",
-  "add_new_campaign": "Adicionar Nova Campanha",
   "destination_campaign": "Campanha de destino",
   "copy_action": "Copiar",
   "zafra_fina_invierno": "Fina Inverno",

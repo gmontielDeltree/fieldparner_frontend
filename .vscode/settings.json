@@ -1,0 +1,12 @@
+{
+    "cSpell.language": "en,es-ES",
+    "cSpell.words": [
+        "grafico"
+    ],
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "files.watcherExclude": {
+        "**/.git/**": true,
+        "**/node_modules/**": true
+      }
+    
+}
