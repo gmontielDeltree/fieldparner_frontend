@@ -220,7 +220,7 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           name="kmARecorrer"
           value={formValues.kmARecorrer.value}
           onChange={handleNumericInputChange}
-            inputProps={{
+          inputProps={{
             style: { textAlign: 'right' }
           }}
           InputProps={{

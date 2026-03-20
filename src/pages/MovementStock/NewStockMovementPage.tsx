@@ -155,9 +155,9 @@ export const NewStockMovementPage: React.FC = () => {
     try {
       let destination = depositDestinationSelected?._id
         ? {
-            depositId: depositDestinationSelected._id,
-            location: locationDestinationSelected,
-          }
+          depositId: depositDestinationSelected._id,
+          location: locationDestinationSelected,
+        }
         : undefined;
 
       if (!supplySelected || !depositSelected || !movementTypeSelected) return;
@@ -475,14 +475,17 @@ export const NewStockMovementPage: React.FC = () => {
                       const value = e.target.value;
                       if (value === '') {
                         setAmountInput('');
-                        handleFormValueChange('amount', 0);
+                        handleFormValueChange('amount', '0');
                       } else {
                         const numValue = parseFloat(value);
                         if (!isNaN(numValue) && numValue >= 0) {
                           setAmountInput(numValue.toString());
-                          handleFormValueChange('amount', numValue);
+                          handleFormValueChange('amount', numValue.toString());
                         }
                       }
+                    }}
+                    inputProps={{
+                      style: { textAlign: 'right' }
                     }}
                     InputProps={{
                       startAdornment: <InputAdornment position='start' />,
@@ -696,14 +699,17 @@ export const NewStockMovementPage: React.FC = () => {
                       const value = e.target.value;
                       if (value === '') {
                         setAmountInput('');
-                        handleFormValueChange('amount', 0);
+                        handleFormValueChange('amount', "0");
                       } else {
                         const numValue = parseFloat(value);
                         if (!isNaN(numValue) && numValue >= 0) {
                           setAmountInput(numValue.toString());
-                          handleFormValueChange('amount', numValue);
+                          handleFormValueChange('amount', numValue.toString());
                         }
                       }
+                    }}
+                    inputProps={{
+                      style: { textAlign: 'right' }
                     }}
                     InputProps={{
                       startAdornment: <InputAdornment position='start' />,
