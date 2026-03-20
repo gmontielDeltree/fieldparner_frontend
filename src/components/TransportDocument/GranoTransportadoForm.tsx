@@ -5,6 +5,7 @@ import { Loading } from '../Loading';
 import { getLocalityAndStateByZipCode } from '../../utils/getDataZipCode';
 import { CountryCode, ItemZipCode } from '../../types';
 import { useTranslation } from "react-i18next";
+import { formatNumber } from '../../helpers/helper';
 
 
 const TextFieldGray = styled(TextField)(() => ({
@@ -15,11 +16,25 @@ const TextFieldGray = styled(TextField)(() => ({
 export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
   formValues,
   selectedFieldOutput,
+  companies,
   contractSales,
   handleInputChange,
   handleSelectChange
 }) => {
   const { t } = useTranslation();
+
+  const normalizeLeadingZeros = (event: React.ChangeEvent<HTMLInputElement>): React.ChangeEvent<HTMLInputElement> => {
+    const { value, name } = event.target;
+    if (value.length > 1 && value.startsWith('0') && !value.startsWith('0.')) {
+      const normalized = value.replace(/^0+/, '') || '0';
+      return { ...event, target: { ...event.target, name, value: normalized } } as React.ChangeEvent<HTMLInputElement>;
+    }
+    return event;
+  };
+
+  const handleNumericInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange(normalizeLeadingZeros(event));
+  };
 
   const { cpSalidaCampo } = formValues;
   const [loadingZipCode, setLoadingZipCode] = useState(false);
@@ -67,7 +82,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={2}>
+        <Grid item xs={12} sm={3}>
           <TextFieldGray
             variant='outlined'
             label={t('crop')}
@@ -75,7 +90,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={2}>
+        <Grid item xs={12} sm={3}>
           <FormControl
             key="contract-select"
             fullWidth
@@ -91,7 +106,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             >
               {contractSales?.map((x) => (
                 <MenuItem key={x._id} value={x.contractSaleNumber}>
-                  {x.contractSaleNumber}
+                  {`N° ${x.contractSaleNumber} - ${ x.dateCreated} - ${companies?.find(c => c.companyId === x.companyId)?.name || ""}`}
                 </MenuItem>
               ))}
             </Select>
@@ -113,7 +128,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  {selectedFieldOutput?.kgNet || "-"}
+                  {formatNumber(selectedFieldOutput?.kgNet) || "-"}
                 </Typography>}
             />
           </FormControl>
@@ -183,9 +198,10 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             helperText={formValues.kgEstimado.message}
             inputProps={{
               min: 0,
+              style: { textAlign: 'right' }
             }}
             value={formValues.kgEstimado.value}
-            onChange={handleInputChange}
+            onChange={handleNumericInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
@@ -200,9 +216,9 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             name="kgBruto"
             error={formValues.kgBruto.isError}
             helperText={formValues.kgBruto.message}
-            inputProps={{ min: 0 }}
+            inputProps={{ min: 0, style: { textAlign: 'right' } }}
             value={formValues.kgBruto.value}
-            onChange={handleInputChange}
+            onChange={handleNumericInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
@@ -217,9 +233,9 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
             name="kgTara"
             error={formValues.kgTara.isError}
             helperText={formValues.kgTara.message}
-            inputProps={{ min: 0 }}
+            inputProps={{ min: 0, style: { textAlign: 'right' } }}
             value={formValues.kgTara.value}
-            onChange={handleInputChange}
+            onChange={handleNumericInputChange}
             InputProps={{
               startAdornment: <InputAdornment position="start" />,
             }}
@@ -233,7 +249,7 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
                 <Typography letterSpacing={1} variant='subtitle1'>
-                  {(formValues.kgBruto.value - formValues.kgTara.value) || "-"}
+                  {formatNumber(formValues.kgBruto.value - formValues.kgTara.value) || "-"}
                 </Typography>}
             />
           </FormControl>

@@ -24,6 +24,19 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
   deleteFile
 }) => {
 
+  const normalizeLeadingZeros = (event: React.ChangeEvent<HTMLInputElement>): React.ChangeEvent<HTMLInputElement> => {
+    const { value, name } = event.target;
+    if (value.length > 1 && value.startsWith('0') && !value.startsWith('0.')) {
+      const normalized = value.replace(/^0+/, '') || '0';
+      return { ...event, target: { ...event.target, name, value: normalized } } as React.ChangeEvent<HTMLInputElement>;
+    }
+    return event;
+  };
+
+  const handleNumericInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleInputChange(normalizeLeadingZeros(event));
+  };
+
   const removeFile = () => {
     handleFormValueChange("fileName", "");
     deleteFile();
@@ -202,11 +215,14 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
       <Grid item xs={12} sm={2}>
         <TextField
           variant="outlined"
-          type="text"
+          type="number"
           label="Kms"
           name="kmARecorrer"
           value={formValues.kmARecorrer.value}
-          onChange={handleInputChange}
+          onChange={handleNumericInputChange}
+            inputProps={{
+            style: { textAlign: 'right' }
+          }}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
@@ -248,7 +264,10 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           label="Tarifa Ref"
           name="tarifaRef"
           value={formValues.tarifaRef.value}
-          onChange={handleInputChange}
+          onChange={handleNumericInputChange}
+          inputProps={{
+            style: { textAlign: 'right' }
+          }}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,
           }}
@@ -262,12 +281,13 @@ export const TransportistaForm: React.FC<TransportDocumentFormProps & Transporti
           label="Tarifa TT"
           name="tarifaTT"
           value={formValues.tarifaTT.value}
-          onChange={handleInputChange}
+          onChange={handleNumericInputChange}
           inputProps={{
-            inputMode: 'numeric', // Modo de entrada solo para números
-            pattern: '[0-9]*', // Patrón para aceptar solo dígitos
-            min: 0, // Mínimo valor permitido (0 o más)
-            step: 1 // Paso de incremento
+            inputMode: 'numeric',
+            pattern: '[0-9]*',
+            min: 0,
+            step: 1,
+            style: { textAlign: 'right' }
           }}
           InputProps={{
             startAdornment: <InputAdornment position="start" />,

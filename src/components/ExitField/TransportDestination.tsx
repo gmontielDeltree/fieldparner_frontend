@@ -59,12 +59,12 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     const { t, i18n } = useTranslation();
 
     // Helper function to determine if a field has an error
-    const hasError = (field: string) => showErrors && errors[field];
+    const hasError = (field: string): boolean => Boolean(showErrors && errors[field]);
 
     // Helper function to format vehicle display text
     const formatVehicleDisplay = (vehicle: Vehicle) => {
         // Check if the vehicle has the necessary properties before trying to use them
-        const brand = vehicle.brand || '';
+        const brand = vehicle.make || '';
         const model = vehicle.model || '';
         const patent = vehicle.patent || '';
         const chassisNumber = vehicle.chassisNumber || '';
@@ -145,12 +145,30 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
         return true;
     };
 
+    // Removes leading zeros: "044" → "44", but preserves "0.5" and "0"
+    const normalizeLeadingZeros = (event: React.ChangeEvent<HTMLInputElement>): React.ChangeEvent<HTMLInputElement> => {
+        const { value, name } = event.target;
+        if (value.length > 1 && value.startsWith('0') && !value.startsWith('0.')) {
+            const normalized = value.replace(/^0+/, '') || '0';
+            const newEvent = {
+                target: { name, value: normalized }
+            } as React.ChangeEvent<HTMLInputElement>;
+            return newEvent;
+        }
+        return event;
+    };
+
     // Enhanced input change handler that first validates the input
     const handleValidatedInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        // If validation passes, proceed with the original handler
-        if (validatePositiveNumber(event)) {
-            handleInputChange(event);
+        const normalized = normalizeLeadingZeros(event);
+        if (validatePositiveNumber(normalized)) {
+            handleInputChange(normalized);
         }
+    };
+
+    // Handler for numeric fields that only need leading-zero normalization
+    const handleNumericInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        handleInputChange(normalizeLeadingZeros(event));
     };
 
     const onChangeVehicle = useCallback(({ target }: SelectChangeEvent) => {
@@ -322,7 +340,8 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     }}
                     inputProps={{
                         min: 0,
-                        step: "0.01"
+                        step: "0.01",
+                        style: { textAlign: 'right' }
                     }}
                     fullWidth
                     error={hasError('grossWeight')}
@@ -337,13 +356,14 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     label={t("tare_weight")}
                     name="tareWeight"
                     value={formValues.tareWeight}
-                    onChange={handleInputChange}
+                    onChange={handleValidatedInputChange}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
                     }}
                     inputProps={{
                         min: 0,
-                        step: "0.01"
+                        step: "0.01",
+                        style: { textAlign: 'right' }
                     }}
                     fullWidth
                     error={hasError('tareWeight')}
@@ -361,6 +381,9 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                     value={Math.max(0, netWeight)}
                     InputProps={{
                         startAdornment: <InputAdornment position="start" />,
+                    }}
+                    inputProps={{
+                        style: { textAlign: 'right' }
                     }}
                     fullWidth
                 />
@@ -381,14 +404,15 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label={`% ${t("_humidity")}`}
                         name="humidityPercentage"
                         value={formValues.humidityPercentage}
-                        onChange={handleInputChange}
+                        onChange={handleNumericInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
                         inputProps={{
                             min: 0,
                             max: 100,
-                            step: "0.1"
+                            step: "0.1",
+                            style: { textAlign: 'right' }
                         }}
                         fullWidth
                     />
@@ -401,14 +425,15 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label={`% ${t("_shrinkage")}`}
                         name="mermaPercentage"
                         value={formValues.mermaPercentage}
-                        onChange={handleInputChange}
+                        onChange={handleNumericInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
                         inputProps={{
                             min: 0,
                             max: 100,
-                            step: "0.1"
+                            step: "0.1",
+                            style: { textAlign: 'right' }
                         }}
                         fullWidth
                     />
@@ -421,14 +446,15 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label={`% ${t("_volatile")}`}
                         name="volatilePercentage"
                         value={formValues.volatilePercentage}
-                        onChange={handleInputChange}
+                        onChange={handleNumericInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
                         inputProps={{
                             min: 0,
                             max: 100,
-                            step: "0.1"
+                            step: "0.1",
+                            style: { textAlign: 'right' }
                         }}
                         fullWidth
                     />
@@ -441,14 +467,15 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         label={`% ${t("_other")}`}
                         name="otherPercentage"
                         value={formValues.otherPercentage}
-                        onChange={handleInputChange}
+                        onChange={handleNumericInputChange}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
                         inputProps={{
                             min: 0,
                             max: 100,
-                            step: "0.1"
+                            step: "0.1",
+                            style: { textAlign: 'right' }
                         }}
                         fullWidth
                     />
@@ -464,6 +491,9 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}
+                        inputProps={{
+                            style: { textAlign: 'right' }
+                        }}
                         fullWidth
                     />
                 </Grid>
@@ -476,6 +506,9 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         value={Math.max(0, kgNet)}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
+                        }}
+                        inputProps={{
+                            style: { textAlign: 'right' }
                         }}
                         fullWidth
                     />

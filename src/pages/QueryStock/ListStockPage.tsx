@@ -168,7 +168,6 @@ export const ListStockPage: React.FC = () => {
   };
 
   const onClickDeposit = (item: StockItem) => {
-    console.log('item', item)
     setSelectedSupplyDeposit(item);
     dispatch(uiOpenModal(DisplayModals.SupplyByLots));
   };
@@ -213,7 +212,6 @@ export const ListStockPage: React.FC = () => {
     else if (tabValue === 2) loadCropStock();
   }, [tabValue]);
 
-  console.log('filteredStockByDeposits', filteredStockByDeposits)
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>

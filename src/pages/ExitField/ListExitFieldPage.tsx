@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListPage } from '../../components';
 import {
@@ -9,6 +9,7 @@ import { useExitField } from '../../hooks';
 import { GridColDef } from '@mui/x-data-grid';
 import { useTranslation } from 'react-i18next';
 import { ExitFieldItem } from '../../types';
+import { formatNumber } from '../../helpers/helper';
 
 export const ListExitFieldPage: React.FC = () => {
   const navigate = useNavigate();
@@ -74,6 +75,8 @@ export const ListExitFieldPage: React.FC = () => {
       type: 'number',
       align: 'center',
       headerAlign: 'center',
+      renderCell: params => formatNumber(params.value)
+
     },
     {
       field: 'actions',

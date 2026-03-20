@@ -211,6 +211,7 @@ export const TransportDocumentPage: React.FC = () => {
           return (
             <GranoTransportadoForm
               formValues={formValues}
+              companies={companies}
               contractSales={contractsSaleCereals}
               selectedFieldOutput={selectedFieldOutput}
               handleInputChange={handleInputChange}
@@ -308,7 +309,8 @@ export const TransportDocumentPage: React.FC = () => {
     event.preventDefault();
     event.stopPropagation();
     const form = event.currentTarget;
-    if (validateForm(form)) handleNext();
+    // if (validateForm(form)) handleNext();
+    handleNext();
   };
 
   useEffect(() => {
