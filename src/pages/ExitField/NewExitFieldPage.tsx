@@ -23,7 +23,7 @@ import { validateStep, hasErrors } from '../../helpers/validation';
 import Swal from 'sweetalert2';
 
 const initialState: ExitFieldItem = {
-  creationDate: getShortDate(false, '-'),
+  creationDate: getShortDate(),
   campaignId: '',
   fieldId: '',
   lotId: '',

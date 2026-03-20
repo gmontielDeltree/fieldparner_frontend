@@ -4,7 +4,7 @@ import { useTransportDocument } from '../../hooks';
 
 
 import { GenericListPage } from '../../components';
-import { GridRenderCellParams } from '@mui/x-data-grid';
+import { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -12,6 +12,7 @@ import {
   PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import { urlImg } from '../../config';
+import { formatNumber } from '../../helpers/helper';
 
 const renderPdfIcon = (params: GridRenderCellParams) => {
   return (
@@ -44,7 +45,7 @@ export const ListTransportDocumentPage: React.FC = () => {
   // const { t } = useTranslation();
   const { transportDocumentsItem, getTransportDocuments } = useTransportDocument();
 
-  const columns = [
+  const columns: GridColDef[] = [
     { field: 'nroCartaPorte', headerName: 'Nro Carta Porte', flex: 1 },
     { field: 'fechaEmision', headerName: 'Fecha Emitida', flex: 1 },
     {
@@ -59,7 +60,12 @@ export const ListTransportDocumentPage: React.FC = () => {
       flex: 1,
       renderCell: (params: GridRenderCellParams) => params.row?.exitField?.cultive || '-',
     },
-    { field: 'kgEstimado', headerName: 'Kg Estimados', flex: 1 }, //salidaCampoId
+    {
+      field: 'kgEstimado',
+      headerName: 'Kg Estimados',
+      flex: 1,
+      renderCell: (params) => formatNumber(params?.value)
+    }, //salidaCampoId
     { field: 'status', headerName: 'Status', flex: 1 },
     {
       field: 'fileName',
@@ -71,7 +77,7 @@ export const ListTransportDocumentPage: React.FC = () => {
       field: 'actions',
       headerName: '',
       flex: 1,
-      sorteable: false,
+      sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Box display='flex' justifyContent='center'>
           <Tooltip title='Edit'>
