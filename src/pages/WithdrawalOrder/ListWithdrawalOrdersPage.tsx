@@ -39,24 +39,26 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
     // navigate(`/init/overview/order/${row.order}/history`);
   };
 
+   //TODO: Zafra, Cultivo ?"
+   
   const columns: GridColDef[] = useMemo(
     () => [
+      { field: 'order', headerName: "Nro", width: 120 },
       { field: 'type', headerName: t('type'), width: 120 },
       { field: 'creationDate', headerName: t('date'), width: 150 },
-      { field: 'order', headerName: t('order'), width: 120 },
-      { field: 'reason', headerName: t('_reason'), width: 200 },
+      {
+        field: 'campaign',
+        headerName: t('_campaign'),
+        width: 150,
+        valueGetter: params => params.row.campaign.name,
+      },
+      { field: 'labor', headerName: t('labor'), width: 200 },
       {
         field: 'withdraw',
         headerName: t('withdrawal_fem'),
         width: 150,
         valueGetter: params =>
           params.row.withdraw?.nombreCompleto || params.row.withdraw?.razonSocial,
-      },
-      {
-        field: 'campaign',
-        headerName: t('_campaign'),
-        width: 150,
-        valueGetter: params => params.row.campaign.name,
       },
       {
         field: 'state',

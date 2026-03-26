@@ -11,6 +11,7 @@ import {
   PictureAsPdf as PictureAsPdfIcon,
 } from '@mui/icons-material';
 import { urlImg } from '../../config';
+import { formatNumber } from '../../helpers/helper';
 
 const renderPdfIcon = (params: GridRenderCellParams) => {
   return (
@@ -61,9 +62,15 @@ export const ListCertificateDepositPage: React.FC = () => {
     },
     { field: 'planta', headerName: 'Planta Destino', flex: 1 },
     { field: 'campania', headerName: 'Campaña', flex: 1 },
-    { field: 'zafra', headerName: 'Zafra', flex: 1 },
     { field: 'cultivo', headerName: 'Cultivo', flex: 1 },
-    { field: 'kgConfirmados', headerName: 'KG Confirmados', flex: 1 },
+    {
+      field: 'kgConfirmados',
+      headerName: 'KG Confirmados',
+      flex: 1,
+      align: 'right',
+      headerAlign: 'center',
+      renderCell: (params: any) => formatNumber(params.value)
+    },
     {
       field: 'archivoCertificado',
       headerName: 'PDF',
@@ -74,7 +81,7 @@ export const ListCertificateDepositPage: React.FC = () => {
       field: 'actions',
       headerName: '',
       flex: 1,
-      sorteable: false,
+      sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Box display='flex' justifyContent='center'>
           <Tooltip title='Edit'>
@@ -122,17 +129,17 @@ export const ListCertificateDepositPage: React.FC = () => {
       setActiveItem={item => console.log('setActiveItem', item)}
       newItemPath='/init/overview/certificate-deposits/new'
       editItemPath={id => `/init/overview/deposit/${id}`}
-      headerContent={
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <InputLabel>Zafra</InputLabel>
-          <Select label="Zafra" value={zafraFilter} onChange={(e) => setZafraFilter(e.target.value)}>
-            <MenuItem value="">Todas</MenuItem>
-            {Array.from(new Set(certificateDepositsItem.map((c: any) => c.zafra).filter(Boolean))).map((z: any) => (
-              <MenuItem key={z} value={z}>{z}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      }
+      // headerContent={
+      //   <FormControl size="small" sx={{ minWidth: 200 }}>
+      //     <InputLabel>Zafra</InputLabel>
+      //     <Select label="Zafra" value={zafraFilter} onChange={(e) => setZafraFilter(e.target.value)}>
+      //       <MenuItem value="">Todas</MenuItem>
+      //       {Array.from(new Set(certificateDepositsItem.map((c: any) => c.zafra).filter(Boolean))).map((z: any) => (
+      //         <MenuItem key={z} value={z}>{z}</MenuItem>
+      //       ))}
+      //     </Select>
+      //   </FormControl>
+      // }
     />
   );
 };

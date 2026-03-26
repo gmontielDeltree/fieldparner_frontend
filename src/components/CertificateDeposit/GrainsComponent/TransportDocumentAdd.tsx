@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { useForm } from "../../../hooks";
 import { TransportDocumentItem } from "../../../interfaces/transportDocument";
 import { FormControl, Grid, IconButton, InputAdornment, InputLabel, ListItemText, MenuItem, Paper, Select, SelectChangeEvent, TextField, Typography } from '@mui/material';
@@ -36,6 +36,17 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
         importeSecado: 0,
     });
     const [selectedTransport, setSelectedTransport] = useState<TransportDocumentItem | null>(null);
+
+    const handleIntegerChange = (field: keyof TransportDocumentByCertificateDeposit, e: ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        if (rawValue === '') { setFormulario(prev => ({ ...prev, [field]: 0 })); return; }
+        const parsed = parseInt(rawValue, 10);
+        if (isNaN(parsed)) return;
+        if (rawValue !== String(parsed)) {
+            e.target.value = String(parsed);
+        }
+        setFormulario(prev => ({ ...prev, [field]: parsed }));
+    };
 
     const onChangeTransportDocument = (e: SelectChangeEvent) => {
         const transportDocumentFound = listTransportDocument.find((item) => item.nroCartaPorte === e.target.value);
@@ -91,7 +102,8 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                     name="kgNeto"
                     value={formValue.kgNeto}
                     InputProps={{ startAdornment: <InputAdornment position="start" /> }}
-                    onChange={handleInputChange}
+                    inputProps={{ style: { textAlign: 'right' } }}
+                    onChange={(e) => handleIntegerChange('kgNeto', e)}
                     fullWidth
                 />
             </Grid>
@@ -109,7 +121,8 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             name="kgMermaZarandeo"
                             value={formValue.kgMermaZarandeo}
                             InputProps={{ startAdornment: <InputAdornment position="start" /> }}
-                            onChange={handleInputChange}
+                            inputProps={{ style: { textAlign: 'right' } }}
+                            onChange={(e) => handleIntegerChange('kgMermaZarandeo', e)}
                             fullWidth
                         />
                     </Grid>
@@ -120,11 +133,10 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             label="Tarifa"
                             name="tarifaZarandeo"
                             value={formValue.tarifaZarandeo}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleIntegerChange('tarifaZarandeo', e)}
                             fullWidth
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                            }}
+                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            inputProps={{ style: { textAlign: 'right' } }}
                         />
                     </Grid>
                     <Grid item xs={6} sm={4}>
@@ -134,11 +146,10 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             label="Importe"
                             name="importeZarandeo"
                             value={formValue.importeZarandeo}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleIntegerChange('importeZarandeo', e)}
                             fullWidth
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                            }}
+                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            inputProps={{ style: { textAlign: 'right' } }}
                         />
                     </Grid>
                 </Grid>
@@ -156,7 +167,8 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             name="humedadSecado"
                             value={formValue.humedadSecado}
                             InputProps={{ startAdornment: <InputAdornment position="start" /> }}
-                            onChange={handleInputChange}
+                            inputProps={{ style: { textAlign: 'right' } }}
+                            onChange={(e) => handleIntegerChange('humedadSecado', e)}
                             fullWidth
                         />
                     </Grid>
@@ -168,7 +180,8 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             name="kgMermaSecado"
                             value={formValue.kgMermaSecado}
                             InputProps={{ startAdornment: <InputAdornment position="start" /> }}
-                            onChange={handleInputChange}
+                            inputProps={{ style: { textAlign: 'right' } }}
+                            onChange={(e) => handleIntegerChange('kgMermaSecado', e)}
                             fullWidth
                         />
                     </Grid>
@@ -179,11 +192,10 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             label="Tarifa"
                             name="tarifaSecado"
                             value={formValue.tarifaSecado}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleIntegerChange('tarifaSecado', e)}
                             fullWidth
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                            }}
+                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            inputProps={{ style: { textAlign: 'right' } }}
                         />
                     </Grid>
                     <Grid item xs={12} sm={3}>
@@ -193,11 +205,10 @@ export const TransportDocumentAdd: React.FC<TransportDocumentAddProps> = ({
                             label="Importe"
                             name="importeSecado"
                             value={formValue.importeSecado}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleIntegerChange('importeSecado', e)}
                             fullWidth
-                            InputProps={{
-                                startAdornment: <InputAdornment position="start" >$</InputAdornment>,
-                            }}
+                            InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                            inputProps={{ style: { textAlign: 'right' } }}
                         />
                     </Grid>
                 </Grid>

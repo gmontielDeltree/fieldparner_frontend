@@ -11,6 +11,7 @@ import {
     Scale as ScaleIcon,
     Receipt as ReceiptIcon
 } from '@mui/icons-material';
+import { formatNumber } from '../../helpers/helper';
 
 interface ReviewFormProps {
     formData: CertificateDeposit;
@@ -157,9 +158,9 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
                                         <TableRow key={item.numeroCartaPorte}>
                                             <TableCell>{item.numeroCartaPorte}</TableCell>
                                             <TableCell align="center">{item.fechaCartaPorte}</TableCell>
-                                            <TableCell align="right">{item.kgNeto.toLocaleString()}</TableCell>
-                                            <TableCell align="right">{item.humedadSecado}%</TableCell>
-                                            <TableCell align="right">$ {item.importeSecado.toLocaleString()}</TableCell>
+                                            <TableCell align="right">{formatNumber(item.kgNeto)}</TableCell>
+                                            <TableCell align="right">{formatNumber(item.humedadSecado)}%</TableCell>
+                                            <TableCell align="right">$ {formatNumber(item.importeSecado)}</TableCell>
                                         </TableRow>
                                     ))}
                                     {listTransportDocument.length === 0 && (
@@ -189,25 +190,25 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
                                 <Typography variant="body2" color="text.secondary">Peso Bruto:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">{formData.peso.pesoBruto.toLocaleString()} kg</Typography>
+                                <Typography variant="body2" align="right">{formatNumber(formData.peso.pesoBruto)} kg</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body2" color="text.secondary">Merma Volátil:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">- {formData.peso.mermas.volatil.toLocaleString()} kg</Typography>
+                                <Typography variant="body2" align="right">- {formatNumber(formData.peso.mermas.volatil)} kg</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body2" color="text.secondary">Merma Zarandeo:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">- {formData.peso.mermas.zarandeo.toLocaleString()} kg</Typography>
+                                <Typography variant="body2" align="right">- {formatNumber(formData.peso.mermas.zarandeo)} kg</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body2" color="text.secondary">Merma Secado:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">- {formData.peso.mermas.secado.toLocaleString()} kg</Typography>
+                                <Typography variant="body2" align="right">- {formatNumber(formData.peso.mermas.secado)} kg</Typography>
                             </Grid>
                             <Grid item xs={12}>
                                 <Divider sx={{ my: 1 }} />
@@ -217,7 +218,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body1" fontWeight="bold" align="right" color="primary">
-                                    {formData.peso.pesoNeto.toLocaleString()} kg
+                                    {formatNumber(formData.peso.pesoNeto)} kg
                                 </Typography>
                             </Grid>
                         </Grid>
@@ -237,31 +238,31 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
                                 <Typography variant="body2" color="text.secondary">Gastos Generales:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">$ {formData.servicios.gastosGenerales.toLocaleString()}</Typography>
+                                <Typography variant="body2" align="right">$ {formatNumber(formData.servicios.gastosGenerales)}</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body2" color="text.secondary">Secado:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">$ {formData.servicios.secado.toLocaleString()}</Typography>
+                                <Typography variant="body2" align="right">$ {formatNumber(formData.servicios.secado)}</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body2" color="text.secondary">Zarandeo:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">$ {formData.servicios.zarandeo.toLocaleString()}</Typography>
+                                <Typography variant="body2" align="right">$ {formatNumber(formData.servicios.zarandeo)}</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" color="text.secondary">IVA ({formData.servicios.alicuotaIva}):</Typography>
+                                <Typography variant="body2" color="text.secondary">IVA ({formatNumber(formData.servicios.alicuotaIva)}%):</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">$ {formData.servicios.importeIva.toLocaleString()}</Typography>
+                                <Typography variant="body2" align="right">$ {formatNumber(formData.servicios.importeIva)}</Typography>
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="body2" color="text.secondary">Otros:</Typography>
                             </Grid>
                             <Grid item xs={6}>
-                                <Typography variant="body2" align="right">$ {formData.servicios.otros.toLocaleString()}</Typography>
+                                <Typography variant="body2" align="right">$ {formatNumber(formData.servicios.otros)}</Typography>
                             </Grid>
                             <Grid item xs={12}>
                                 <Divider sx={{ my: 1 }} />
@@ -271,7 +272,7 @@ export const ReviewForm: React.FC<ReviewFormProps> = ({
                             </Grid>
                             <Grid item xs={6}>
                                 <Typography variant="h6" fontWeight="bold" align="right" color="success.main">
-                                    $ {formData.servicios.total.toLocaleString()}
+                                    $ {formatNumber(formData.servicios.total)}
                                 </Typography>
                             </Grid>
                         </Grid>

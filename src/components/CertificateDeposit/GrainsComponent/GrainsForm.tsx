@@ -29,6 +29,17 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
     updateListTransport
 }) => {
     const { t } = useTranslation();
+
+    const handleIntegerChange = (path: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        if (rawValue === '') { updateFormData(path, 0); return; }
+        const parsed = parseInt(rawValue, 10);
+        if (isNaN(parsed)) return;
+        if (rawValue !== String(parsed)) {
+            e.target.value = String(parsed);
+        }
+        updateFormData(path, parsed);
+    };
     const { isLoading, transportDocumentsItem, getTransportDocuments } = useTransportDocument();
 
     const listTransportDocument = useMemo(() => {
@@ -89,8 +100,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("storage")}
                         value={formData.tarifasCada100Kgrs.almacenaje}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.almacenaje', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.almacenaje', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -101,8 +113,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("hauling")}
                         value={formData.tarifasCada100Kgrs.acarreo}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.acarreo', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.acarreo', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -113,8 +126,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("generalExpenses")}
                         value={formData.tarifasCada100Kgrs.gastosGenerales}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.gastosGenerales', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.gastosGenerales', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -125,8 +139,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("screening")}
                         value={formData.tarifasCada100Kgrs.zarandeo}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.zarandeo', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.zarandeo', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -137,8 +152,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("other")}
                         value={formData.tarifasCada100Kgrs.otros}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.otros', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.otros', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -149,8 +165,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("perExcessPoint")}
                         value={formData.tarifasCada100Kgrs.porCptoExceso}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.porCptoExceso', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.porCptoExceso', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -166,8 +183,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         placeholder={t("from")}
                         value={formData.tarifasCada100Kgrs.secado.dePorcentaje}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.secado.dePorcentaje', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.secado.dePorcentaje', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">%</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -178,8 +196,9 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         placeholder={t("to")}
                         value={formData.tarifasCada100Kgrs.secado.aPorcentaje}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.secado.aPorcentaje', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.secado.aPorcentaje', e)}
                         InputProps={{ startAdornment: <InputAdornment position="start">%</InputAdornment> }}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -190,7 +209,8 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                         type="number"
                         label={t("dryingAmount")}
                         value={formData.tarifasCada100Kgrs.secado.montoSecado}
-                        onChange={(e) => updateFormData('tarifasCada100Kgrs.secado.montoSecado', Number(e.target.value))}
+                        onChange={(e) => handleIntegerChange('tarifasCada100Kgrs.secado.montoSecado', e)}
+                        inputProps={{ style: { textAlign: 'right' } }}
                         fullWidth
                         size="small"
                     />
@@ -226,14 +246,14 @@ export const GrainsForm: React.FC<GrainsFormProps> = ({
                             columns={[
                                 { text: t("transportDocNumber"), align: "left" },
                                 { text: t("date"), align: "center" },
-                                { text: t("netKg"), align: "center" },
-                                { text: t("wasteKg"), align: "center" },
-                                { text: t("rate"), align: "center" },
-                                { text: t("amount"), align: "center" },
-                                { text: t("humidityPercentage"), align: "center" },
-                                { text: t("wasteKg"), align: "center" },
-                                { text: t("rate"), align: "center" },
-                                { text: t("amount"), align: "center" },
+                                { text: t("netKg"), align: "right" },
+                                { text: t("wasteKg"), align: "right" },
+                                { text: t("rate"), align: "right" },
+                                { text: t("amount"), align: "right" },
+                                { text: t("humidityPercentage"), align: "right" },
+                                { text: t("wasteKg"), align: "right" },
+                                { text: t("rate"), align: "right" },
+                                { text: t("amount"), align: "right" },
                                 { text: "", align: "center" },
                             ]}
                             isLoading={isLoading}

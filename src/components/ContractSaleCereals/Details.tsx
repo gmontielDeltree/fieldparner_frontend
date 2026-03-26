@@ -208,6 +208,7 @@ export const Details: React.FC<Props> = ({
               label="%"
               name="brokerPercentage"
               value={formValues.brokerPercentage.value}
+              inputProps={{ style: { textAlign: 'right' } }}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === '') {
@@ -227,6 +228,7 @@ export const Details: React.FC<Props> = ({
               label={t("_amount")}
               name="brokerAmountValue"
               value={formValues.brokerAmountValue.value}
+              inputProps={{ style: { textAlign: 'right' } }}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === '') {
@@ -267,6 +269,7 @@ export const Details: React.FC<Props> = ({
               label="%"
               name="comissionAgentPercentage"
               value={formValues.comissionAgentPercentage.value}
+              inputProps={{ style: { textAlign: 'right' } }}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === '') {
@@ -285,6 +288,7 @@ export const Details: React.FC<Props> = ({
               variant="outlined"
               label={t("_amount")}
               name="comissionAgentAmountValue"
+              inputProps={{ style: { textAlign: 'right' } }}
               value={formValues.comissionAgentAmountValue.value}
               onChange={(e) => {
                 const value = e.target.value;

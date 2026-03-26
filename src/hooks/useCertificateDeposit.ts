@@ -3,7 +3,7 @@ import { CertificateDeposit, CertificateDepositItemRow, TransportDocumentByCerti
 import { useAppSelector } from "./useRedux";
 import { dbContext } from '../services';
 import { TransportDocument } from '../interfaces/transportDocument';
-import { EnumTransportDocumentStatus, Supply } from '../types';
+import { Campaign, EnumTransportDocumentStatus, Supply } from '../types';
 import dayjs from 'dayjs';
 import { CropStockControl } from '../interfaces/stock';
 import { useTranslation } from 'react-i18next';
@@ -26,19 +26,24 @@ export const useCertificateDeposit = () => {
                 }),
                 dbContext.supplies.find({
                     selector: { accountId: user.accountId }
+                }),
+                dbContext.campaigns.find({
+                    selector: { accountId: user.accountId }
                 })
             ]);
             const certificateDeposits = responseAll[0].docs.map(doc => doc as CertificateDeposit);
             const supplies = responseAll[1].docs.map(doc => doc as Supply);
+            const campaigns = responseAll[2].docs.map(doc => doc as Campaign);
             setCertificateDepositsItem(
                 certificateDeposits.map(doc => {
                     const supply = supplies.find(supply => supply._id === doc.cultivoId);
+                    const campaign = campaigns.find(camp => camp._id === doc.campaniaId);
                     return {
                         _id: doc._id,
                         _rev: doc._rev,
                         numeroCertificado: doc.certificacionElectronicaGranos?.coe || '',
                         archivoCertificado: doc.archivoCertificado,
-                        campania: doc.campaniaId,
+                        campania: campaign?.name || campaign?.description || '',
                         cultivo: supply?.name || doc.certificacionElectronicaGranos?.granoYTipo || "",
                         fechaEmision: doc.certificacionElectronicaGranos?.fechaEmision || '',
                         planta: doc.plantaNro || '',

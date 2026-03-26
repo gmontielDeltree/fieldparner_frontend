@@ -20,6 +20,16 @@ export const RatesForm: React.FC<RatesFormProps> = ({
     listTransportDocument,
     updateFormData
 }) => {
+    const handleIntegerChange = (path: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawValue = e.target.value;
+        if (rawValue === '') { updateFormData(path, 0); return; }
+        const parsed = parseInt(rawValue, 10);
+        if (isNaN(parsed)) return;
+        if (rawValue !== String(parsed)) {
+            e.target.value = String(parsed);
+        }
+        updateFormData(path, parsed);
+    };
     const totalServicios = useMemo(() => {
         return (
             Number(formData.servicios.gastosGenerales) +
@@ -118,7 +128,8 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Volátil Kg"
                                     value={formData.peso.mermas.volatil}
-                                    onChange={(e) => updateFormData('peso.mermas.volatil', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('peso.mermas.volatil', e)}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -129,7 +140,8 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Zarandeo Kg"
                                     value={formData.peso.mermas.zarandeo}
-                                    onChange={(e) => updateFormData('peso.mermas.zarandeo', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('peso.mermas.zarandeo', e)}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -140,7 +152,8 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Secado Kg"
                                     value={formData.peso.mermas.secado}
-                                    onChange={(e) => updateFormData('peso.mermas.secado', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('peso.mermas.secado', e)}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -184,8 +197,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Gastos Generales"
                                     value={formData.servicios.gastosGenerales}
-                                    onChange={(e) => updateFormData('servicios.gastosGenerales', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.gastosGenerales', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -207,8 +221,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Importe IVA"
                                     value={formData.servicios.importeIva}
-                                    onChange={(e) => updateFormData('servicios.importeIva', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.importeIva', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -219,8 +234,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Zarandeo"
                                     value={formData.servicios.zarandeo}
-                                    onChange={(e) => updateFormData('servicios.zarandeo', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.zarandeo', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -231,8 +247,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Cptos. no Gravados"
                                     value={formData.servicios.cptosNoGravados}
-                                    onChange={(e) => updateFormData('servicios.cptosNoGravados', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.cptosNoGravados', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -243,8 +260,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Secado"
                                     value={formData.servicios.secado}
-                                    onChange={(e) => updateFormData('servicios.secado', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.secado', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -255,8 +273,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Percepciones IVA"
                                     value={formData.servicios.percepcionesIva}
-                                    onChange={(e) => updateFormData('servicios.percepcionesIva', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.percepcionesIva', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -267,8 +286,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Otros"
                                     value={formData.servicios.otros}
-                                    onChange={(e) => updateFormData('servicios.otros', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.otros', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />
@@ -279,8 +299,9 @@ export const RatesForm: React.FC<RatesFormProps> = ({
                                     type="number"
                                     label="Otras Percepciones"
                                     value={formData.servicios.otrasPercepciones}
-                                    onChange={(e) => updateFormData('servicios.otrasPercepciones', Number(e.target.value))}
+                                    onChange={(e) => handleIntegerChange('servicios.otrasPercepciones', e)}
                                     InputProps={{ startAdornment: <InputAdornment position="start">$</InputAdornment> }}
+                                    inputProps={{ style: { textAlign: 'right' } }}
                                     fullWidth
                                     size="small"
                                 />

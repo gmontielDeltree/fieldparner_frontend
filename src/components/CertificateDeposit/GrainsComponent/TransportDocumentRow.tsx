@@ -22,28 +22,28 @@ export const TransportDocumentRow: React.FC<TransportDocumentRowProps> = ({
             <TableCell align="center">
                 {item.fechaCartaPorte}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 {item.kgNeto.toLocaleString()}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 {item.kgMermaZarandeo.toLocaleString()}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 $ {item.tarifaZarandeo.toLocaleString()}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 $ {item.importeZarandeo.toLocaleString()}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 {item.humedadSecado}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 {item.kgMermaSecado.toLocaleString()}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 $ {item.tarifaSecado.toLocaleString()}
             </TableCell>
-            <TableCell align="center">
+            <TableCell align="right">
                 $ {item.importeSecado.toLocaleString()}
             </TableCell>
             <TableCell align="center">
