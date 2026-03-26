@@ -34,8 +34,6 @@ const initialForm: Supply = {
   mermaVolatile: "",
   activePrincipal: "",
   replenishmentPoint: "",
-  currentStock: 0,
-  reservedStock: 0,
   generico: false,
   cropId: "",
   brand: "",

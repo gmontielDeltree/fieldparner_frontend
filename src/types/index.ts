@@ -215,8 +215,6 @@ export interface Supply extends Document {
   name: string;
   description?: string;
   unitMeasurement: string;
-  currentStock: number;
-  reservedStock: number;
   stockByLot: boolean;
   activePrincipal: string;
   mermaVolatile: string;

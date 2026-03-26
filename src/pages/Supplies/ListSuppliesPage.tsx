@@ -19,8 +19,6 @@ export const ListSuppliesPage: React.FC = () => {
     { field: 'type', headerName: t('_type'), flex: 1 },
     { field: 'name', headerName: t('_supply'), flex: 1 },
     { field: 'unitMeasurement', headerName: t('unit_of_measure'), flex: 1 },
-    { field: 'currentStock', headerName: t('current_stock'), flex: 1 },
-    { field: 'reservedStock', headerName: t('reserved_stock'), flex: 1 },
     { field: 'brand', headerName: t('brand'), flex: 1 },
     {
       field: 'actions',
