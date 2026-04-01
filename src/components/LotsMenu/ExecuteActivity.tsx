@@ -944,8 +944,7 @@ const ExecuteActivity: React.FC<ExecuteActivityProps> = ({
 
           if (dosis.orden_de_retiro) {
             console.log('Usando orden de retiro existente para:', supplyInfo.name);
-            // await removeReservedStock(dosis);
-            initConfirmWithdrawal(dosis.orden_de_retiro as WithdrawalOrder);
+            await initConfirmWithdrawal(dosis.orden_de_retiro as WithdrawalOrder);
           } else if (dosis.deposito) {
             // Si no hay orden de retiro pero hay depósito, usar el flujo normal de stock movement
             console.log('No hay orden de retiro, usando flujo normal de stock para:', supplyInfo.name);
