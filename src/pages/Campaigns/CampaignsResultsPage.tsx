@@ -30,6 +30,7 @@ import {
 import { useContractSaleCereals } from '../../hooks/useContractSaleCereals';
 import { useCampaingExpenses } from '../../hooks/useCampaignExpenses';
 import { ListCampingExpeses } from '../../interfaces/campaignExpenses';
+import { dbContext } from '../../services';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -180,6 +181,23 @@ export const CampaignsResultsPage: React.FC = () => {
     lote: '',
     cultivo: '',
   });
+  const [fields, setFields] = useState<any[]>([]);
+
+  const resolveLotInfo = (loteUuid: string) => {
+    for (const field of fields) {
+      if (!field?.features) continue;
+      const lot = field.features.find(
+        (f: any) => f.properties?.uuid === loteUuid || f.id === loteUuid
+      );
+      if (lot) {
+        return {
+          lotName: lot.properties?.nombre || lot.properties?.name || loteUuid,
+          fieldName: field.properties?.nombre || field.properties?.name || field.name || '',
+        };
+      }
+    }
+    return { lotName: loteUuid, fieldName: '' };
+  };
 
   const columns = [
     { field: 'campaña', headerName: t('_campaign'), flex: 0.8, filterable: false },
@@ -222,6 +240,9 @@ export const CampaignsResultsPage: React.FC = () => {
           getContractsSaleCereals(),
           getCampaingExpenses(),
           getExecutions(),
+          dbContext.fields.allDocs({ include_docs: true }).then(result => {
+            setFields(result.rows.map(row => row.doc).filter(Boolean));
+          }),
         ]);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -272,11 +293,11 @@ export const CampaignsResultsPage: React.FC = () => {
           contractsData = filteredContracts.map(contract => ({
             id: contract._id,
             campaña: selectedCampaign.name || '',
-            sociedad: contract.company?.name || '',
+            sociedad: contract.company?.socialReason || contract.company?.name || '',
             contrato: contract.contractSaleNumber || '',
             campo: contract.destination?.name || '',
             lote: '',
-            cultivo: contract.crop?.name || '',
+            cultivo: contract.crop?.descriptionES || contract.crop?.name || '',
             fecha: contract.dateCreated ? format(new Date(contract.dateCreated), 'dd/MM/yyyy') : '',
             tipo: t('_contract_type'),
             labor: '',
@@ -303,7 +324,7 @@ export const CampaignsResultsPage: React.FC = () => {
             return expense.listCamapingExpeses.map((item: ListCampingExpeses) => ({
               id: expense._id + '-' + item.id,
               campaña: selectedCampaign.name || '',
-              sociedad: '',
+              sociedad: item.company || '',
               contrato: '',
               campo: expense.field || '',
               lote: expense.lot || '',
@@ -324,37 +345,16 @@ export const CampaignsResultsPage: React.FC = () => {
         let executionsData = [];
         console.log('All Executions:', executions);
         if (executions && executions.length > 0) {
-          // TEMPORAL: Mostrar TODAS las ejecuciones que tengan campaña para demostración
-          // En producción, descomentar el filtro correcto
           const filteredExecutions = executions.filter(execution => {
-            // Por ahora, mostrar todas las ejecuciones que tengan campaña
-            return execution && execution.campaña;
-
-            /* FILTRO CORRECTO (descomentar cuando las campañas estén bien asociadas):
-              if (!execution || !execution.campaña) return false;
-              
-              const campaignObj = execution.campaña;
-              
-              // Comparar con múltiples posibles formatos de ID
-              const matchesCampaign = 
-                campaignObj.campaignId === campaign || 
-                campaignObj._id === campaign ||
-                campaignObj.campaignId === selectedCampaign.campaignId ||
-                campaignObj.campaignId === selectedCampaign.name ||
-                campaignObj.name === selectedCampaign.name ||
-                execution.campaña === campaign;
-              
-              if (matchesCampaign) {
-                console.log('✓ Matched Execution:', execution._id, 'Campaign:', campaignObj);
-              }
-              
-              return matchesCampaign;
-              */
+            if (!execution || !execution.campaña) return false;
+            const campaignObj = execution.campaña;
+            return (
+              campaignObj.campaignId === selectedCampaign.campaignId ||
+              campaignObj._id === campaign ||
+              campaignObj.name === selectedCampaign.name
+            );
           });
-          console.log(
-            'Filtered Executions (showing all with campaign):',
-            filteredExecutions.length,
-          );
+          console.log('Filtered Executions:', filteredExecutions.length);
           executionsData = filteredExecutions.map(execution => {
             // Calcular costo de la ejecución basado en insumos y servicios
             let costoTotal = 0;
@@ -375,13 +375,14 @@ export const CampaignsResultsPage: React.FC = () => {
               });
             }
 
+            const lotInfo = resolveLotInfo(execution.lote_uuid || '');
             return {
               id: execution._id,
               campaña: selectedCampaign.name || '',
-              sociedad: '', // Se podría obtener del campo o lote
+              sociedad: '',
               contrato: '',
-              campo: execution.campo || '',
-              lote: execution.lote_uuid || '',
+              campo: lotInfo.fieldName,
+              lote: lotInfo.lotName,
               cultivo:
                 execution.detalles?.cultivo?.descriptionES ||
                 execution.detalles?.cultivo?.name ||
@@ -390,7 +391,10 @@ export const CampaignsResultsPage: React.FC = () => {
                 ? format(new Date(execution.detalles.fecha_ejecucion), 'dd/MM/yyyy')
                 : '',
               tipo: t('_execution_type'),
-              labor: execution.tipo || '',
+              labor: execution.detalles?.costo_labor?.[0]?.labor?.descriptionES
+                || execution.detalles?.costo_labor?.[0]?.labor?.name
+                || execution.tipo
+                || '',
               detalle: `${execution.detalles?.hectareas || 0} ha - ${
                 execution.detalles?.contratista?.nombreCompleto ||
                 execution.detalles?.contratista?.razonSocial ||
@@ -404,73 +408,7 @@ export const CampaignsResultsPage: React.FC = () => {
           });
         }
 
-        // DATOS DE EJEMPLO para demostración (ELIMINAR EN PRODUCCIÓN)
-        const sampleData = [
-          {
-            id: 'sample-contract-1',
-            campaña: selectedCampaign.name || 'Campaña Ejemplo',
-            sociedad: 'Sociedad Agrícola S.A.',
-            contrato: 'CTR-2024-001',
-            campo: 'Campo Norte',
-            lote: 'Lote 1',
-            cultivo: 'Soja',
-            fecha: format(new Date(), 'dd/MM/yyyy'),
-            tipo: 'Contrato',
-            labor: '',
-            detalle: 'Venta de cereal - Entrega puerto',
-            referencia: 'CTR-2024-001',
-            moneda: 'USD',
-            importe: 50000,
-            importeAlternativo: 50000 * factor,
-          },
-          {
-            id: 'sample-expense-1',
-            campaña: selectedCampaign.name || 'Campaña Ejemplo',
-            sociedad: 'Sociedad Agrícola S.A.',
-            contrato: '',
-            campo: 'Campo Norte',
-            lote: 'Lote 1',
-            cultivo: 'Soja',
-            fecha: format(new Date(), 'dd/MM/yyyy'),
-            tipo: 'Gasto',
-            labor: 'Siembra',
-            detalle: 'Semillas certificadas',
-            referencia: 'FAC-2024-123',
-            moneda: 'USD',
-            importe: -15000,
-            importeAlternativo: -15000 * factor,
-          },
-          {
-            id: 'sample-execution-1',
-            campaña: selectedCampaign.name || 'Campaña Ejemplo',
-            sociedad: 'Sociedad Agrícola S.A.',
-            contrato: '',
-            campo: 'Campo Sur',
-            lote: 'Lote 2',
-            cultivo: 'Trigo',
-            fecha: format(new Date(), 'dd/MM/yyyy'),
-            tipo: 'Ejecución',
-            labor: 'Aplicación',
-            detalle: 'Aplicación herbicida - 120 ha',
-            referencia: 'EJE-2024-456',
-            moneda: 'USD',
-            importe: -8000,
-            importeAlternativo: -8000 * factor,
-          },
-        ];
-
-        // Combinar datos reales con datos de ejemplo
         const allData = [...contractsData, ...expensesData, ...executionsData];
-
-        // Si no hay datos reales, usar datos de ejemplo
-        // const finalData = allData.length > 0 ? allData : sampleData;
-
-        // console.log('Final Report Data:', finalData);
-        console.log('Contracts count:', contractsData.length);
-        console.log('Expenses count:', expensesData.length);
-        console.log('Executions count:', executionsData.length);
-        console.log('Using sample data:', allData.length === 0);
-
         setReportData(allData);
       } catch (error) {
         console.error('Error fetching report data:', error);
@@ -481,7 +419,7 @@ export const CampaignsResultsPage: React.FC = () => {
     };
 
     fetchReportData();
-  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses, executions]);
+  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses, executions, fields]);
 
   useEffect(() => {
     if (reportData.length === 0) return;

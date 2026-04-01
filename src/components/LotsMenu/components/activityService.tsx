@@ -87,7 +87,7 @@ export const reserveSupplyStock = async (
     location: dosis.ubicacion,
     supply: dosis.insumo,
     nroLot: dosis.nro_lote,
-    withdrawalAmount: dosis.total,
+    withdrawalAmount: 0,
     originalAmount: dosis.total,
   }
 
