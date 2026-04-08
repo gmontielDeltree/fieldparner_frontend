@@ -20,6 +20,7 @@ import SuppliesForm from '../LotsMenu/forms/PlanForms/SuppliesForm';
 import ServicesForm from '../LotsMenu/forms/PlanForms/ServicesForm';
 import ObservationsForm from '../LotsMenu/forms/PlanForms/ObservationsForm';
 import { NumberFieldWithUnits } from '../LotsMenu/components/NumberField';
+import { normalizeSupplyDoseLine, resolveSupplyDosificacion, resolveSupplyTotal } from '../../utils/supplyDose';
 
 interface ActividadEditorBaseProps {
   tipo: string;
@@ -584,14 +585,19 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   const handleSave = async () => {
     try {
       // Convert supply data (dosis) to planification format
-      const lineasInsumos = (formData.detalles?.dosis || []).map((dosis: any) => ({
-        _id: `planlinsumo:${dosis.uuid || Date.now()}-${Math.random()}`,
-        insumoId: dosis.insumo?._id,
-        dosis: dosis.dosis || 0,
-        totalCantidad: dosis.total || 0,
-        precioUnitario: dosis.precio_estimado || 0,
-        actividadId: actividadDoc._id,
-      }));
+      const planningHectares = Number(formData.detalles?.hectareas || 0);
+      const lineasInsumos = (formData.detalles?.dosis || []).map((dosis: any) => {
+        const normalizedDose = normalizeSupplyDoseLine(dosis, planningHectares);
+        return {
+          _id: `planlinsumo:${dosis.uuid || Date.now()}-${Math.random()}`,
+          insumoId: normalizedDose.insumo?._id,
+          dosis: Number(resolveSupplyDosificacion(normalizedDose, planningHectares) || 0),
+          totalCantidad: Number(resolveSupplyTotal(normalizedDose, planningHectares) || 0),
+          hectareas: planningHectares,
+          precioUnitario: normalizedDose.precio_estimado || 0,
+          actividadId: actividadDoc._id,
+        };
+      });
 
       // Convert service data (servicios) to planification format
       const lineasLabores = (formData.detalles?.servicios || []).map((servicio: any) => ({

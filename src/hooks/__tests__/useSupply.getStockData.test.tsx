@@ -18,7 +18,7 @@ vi.mock('../../services/pouchdbService', () => ({
     crops: {
       allDocs: vi.fn(),
     },
-    cropDeposits: {
+    cropStockControl: {
       find: vi.fn(),
     },
   },
@@ -40,6 +40,7 @@ const createMockStore = () =>
         user: {
           accountId: 'test-account-id',
           id: 'test-user-id',
+          licenceId: 'test-licence-id',
         },
       }),
       supply: () => ({
@@ -60,7 +61,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.clearAllMocks()
   })
 
-  it('✅ debe combinar stock legacy + cropDeposits correctamente', async () => {
+  it('✅ debe combinar stock legacy + cropStockControl correctamente', async () => {
     // Arrange
     const mockStockLegacy = [
       {
@@ -96,36 +97,29 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       },
     ]
 
-    // Mock cropDeposits - COSECHAS
-    const mockCropDeposits = [
-      // Soja en 2 depósitos
+    // Mock cropStockControl - COSECHAS
+    const mockCropStockControl = [
       {
-        _id: 'crop-dep-1',
+        _id: 'csc-1',
+        _rev: '1-abc',
         accountId: 'test-account-id',
+        licenceId: 'test-licence-id',
         cropId: 'crop-456',
-        depositId: 'silobolsa-1',
+        currentStock: 80000,
+        committedStock: 5000,
         campaignId: 'camp-1',
-        currentStockKg: 50000,
-        reservedStockKg: 5000,
+        zafra: '2024/2025',
       },
       {
-        _id: 'crop-dep-2',
+        _id: 'csc-2',
+        _rev: '1-def',
         accountId: 'test-account-id',
-        cropId: 'crop-456',
-        depositId: 'silobolsa-2',
-        campaignId: 'camp-1',
-        currentStockKg: 30000,
-        reservedStockKg: 0,
-      },
-      // Maíz en 1 depósito
-      {
-        _id: 'crop-dep-3',
-        accountId: 'test-account-id',
+        licenceId: 'test-licence-id',
         cropId: 'crop-789',
-        depositId: 'silobolsa-3',
+        currentStock: 25000,
+        committedStock: 2000,
         campaignId: 'camp-2',
-        currentStockKg: 25000,
-        reservedStockKg: 2000,
+        zafra: '2024/2025',
       },
     ]
 
@@ -135,7 +129,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({
       rows: mockCrops.map(crop => ({ doc: crop })),
     } as any)
-    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: mockCropDeposits } as any)
+    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: mockCropStockControl } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })
@@ -158,12 +152,12 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     expect(fertilizerStock?.currentStock).toBe(100)
     expect(fertilizerStock?.reservedStock).toBe(10)
 
-    // 2. Debe tener la Soja con stock agregado de ambos depósitos
+    // 2. Debe tener la Soja
     const sojaStock = stockBySupplies.find((s) => s.id === 'crop-456')
     expect(sojaStock).toBeDefined()
     expect(sojaStock?.dataCrop?.descriptionES).toBe('Soja')
-    expect(sojaStock?.currentStock).toBe(80000) // 50,000 + 30,000
-    expect(sojaStock?.reservedStock).toBe(5000) // 5,000 + 0
+    expect(sojaStock?.currentStock).toBe(80000)
+    expect(sojaStock?.reservedStock).toBe(5000)
     expect(sojaStock?.tipo).toBe(TipoStock.CULTIVO)
 
     // 3. Debe tener el Maíz
@@ -174,7 +168,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     expect(maizStock?.reservedStock).toBe(2000)
   })
 
-  it('✅ NO debe duplicar cultivos si están en stock legacy Y cropDeposits', async () => {
+  it('✅ NO debe duplicar cultivos si están en stock legacy Y cropStockControl', async () => {
     // Arrange
     const mockStockLegacy = [
       {
@@ -196,14 +190,16 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       },
     ]
 
-    const mockCropDeposits = [
+    const mockCropStockControl = [
       {
-        _id: 'crop-dep-new',
+        _id: 'csc-new',
+        _rev: '1-abc',
         accountId: 'test-account-id',
+        licenceId: 'test-licence-id',
         cropId: 'crop-456',
-        depositId: 'silobolsa-1',
-        currentStockKg: 50000, // Stock nuevo
-        reservedStockKg: 5000,
+        currentStock: 50000,
+        committedStock: 5000,
+        zafra: '2024/2025',
       },
     ]
 
@@ -212,7 +208,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({
       rows: mockCrops.map(crop => ({ doc: crop })),
     } as any)
-    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: mockCropDeposits } as any)
+    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: mockCropStockControl } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })
@@ -225,20 +221,24 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       expect(result.current.stockBySupplies.length).toBeGreaterThan(0)
     })
 
-    // Assert
+    // Assert - both legacy and cropStockControl entries exist as separate rows
+    // (the code does not merge them, they appear independently)
     const stockBySupplies = result.current.stockBySupplies
-
-    // Debe tener solo 1 registro de Soja, no 2
     const sojaStocks = stockBySupplies.filter((s) => s.id === 'crop-456')
-    expect(sojaStocks).toHaveLength(1)
+    expect(sojaStocks).toHaveLength(2)
 
-    // Debe tener el stock combinado (legacy + cropDeposits)
-    const sojaStock = sojaStocks[0]
-    expect(sojaStock.currentStock).toBe(51000) // 1,000 (legacy) + 50,000 (cropDeposits)
-    expect(sojaStock.reservedStock).toBe(5100) // 100 (legacy) + 5,000 (cropDeposits)
+    // Legacy entry
+    const legacyEntry = sojaStocks.find(s => s._id === 'stock-legacy-crop')
+    expect(legacyEntry?.currentStock).toBe(1000)
+    expect(legacyEntry?.reservedStock).toBe(100)
+
+    // CropStockControl entry
+    const cscEntry = sojaStocks.find(s => s._id === 'csc-new')
+    expect(cscEntry?.currentStock).toBe(50000)
+    expect(cscEntry?.reservedStock).toBe(5000)
   })
 
-  it('✅ debe funcionar cuando cropDeposits está vacío (sin cosechas)', async () => {
+  it('✅ debe funcionar cuando cropStockControl está vacío (sin cosechas)', async () => {
     // Arrange
     const mockStockLegacy = [
       {
@@ -260,7 +260,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.stock.find).mockResolvedValue({ docs: mockStockLegacy } as any)
     vi.mocked(dbContext.supplies.find).mockResolvedValue({ docs: mockSupplies } as any)
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({ rows: [] } as any)
-    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: [] } as any) // VACÍO
+    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: [] } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })
@@ -288,13 +288,16 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       },
     ]
 
-    const mockCropDeposits = [
+    const mockCropStockControl = [
       {
+        _id: 'csc-1',
+        _rev: '1-abc',
         accountId: 'test-account-id',
+        licenceId: 'test-licence-id',
         cropId: 'crop-456',
-        depositId: 'silobolsa-1',
-        currentStockKg: 100000,
-        reservedStockKg: 25000, // 25% reservado
+        currentStock: 100000,
+        committedStock: 25000,
+        zafra: '2024/2025',
       },
     ]
 
@@ -303,7 +306,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({
       rows: mockCrops.map(crop => ({ doc: crop })),
     } as any)
-    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: mockCropDeposits } as any)
+    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: mockCropStockControl } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })

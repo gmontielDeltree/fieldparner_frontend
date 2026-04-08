@@ -186,6 +186,7 @@ function SuppliesForm({ lot, db, formData, setFormData, mode = 'execute' }: Supp
     const newRow = {
       insumo: selectedSupply, // Changed from selectedOption to insumo
       dosificacion,
+      dosis: dosificacion,
       total,
       deposito, // Always include deposito for both plan and execute modes
       ...(mode !== 'plan' && {

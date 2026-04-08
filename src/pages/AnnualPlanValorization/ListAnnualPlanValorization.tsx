@@ -64,7 +64,7 @@ export const ListAnnualPlanValorization: React.FC = () => {
   }, [dataLoaded, campaigns.length, fields.length, crops.length]);
 
   const formatCurrency = (value: number) => {
-    const isBrazil = i18n.language === 'pt';
+    const isBrazil = i18n.language.startsWith('pt');
     return new Intl.NumberFormat(isBrazil ? 'pt-BR' : 'es-AR', {
       style: 'currency',
       currency: isBrazil ? 'BRL' : 'ARS',

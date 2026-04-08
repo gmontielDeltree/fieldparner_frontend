@@ -49,6 +49,7 @@ import { useTranslation } from "react-i18next";
 import CreateCampaignModal from "../components/CreateCampaign";
 import { dbContext } from "../services";
 import { uuidv7 } from "uuidv7";
+import { resolveSupplyDosificacion } from "../utils/supplyDose";
 import { NotificationService } from "../services/notificationService";
 
 const ItemMemo = React.memo(ItemPlanificationByField);
@@ -350,6 +351,7 @@ export const PlanificationPage: React.FC = () => {
         // Create line docs from executed details
         const newInsumoIds: string[] = [];
         const newLaborIds: string[] = [];
+        const area = ea.detalles?.hectareas || ea.detalles?.superficie || 0;
 
         for (const dosis of (ea.detalles?.dosis || [])) {
           const newId = `planlinsumo:${uuidv7()}`;
@@ -357,8 +359,9 @@ export const PlanificationPage: React.FC = () => {
           newDocs.push({
             _id: newId,
             insumoId: dosis.insumo?._id,
-            dosis: dosis.dosis || 0,
+            dosis: resolveSupplyDosificacion(dosis, area) || 0,
             totalCantidad: dosis.total || 0,
+            hectareas: area,
             precioUnitario: dosis.precio_estimado || 0,
           });
         }
@@ -377,7 +380,6 @@ export const PlanificationPage: React.FC = () => {
 
         const newActId = `planactividad:${uuidv7()}`;
         const plannedFecha = ea.detalles?.fecha_ejecucion_tentativa || ea.detalles?.fecha_ejecucion || new Date().toISOString();
-        const area = ea.detalles?.hectareas || ea.detalles?.superficie || 0;
         const newAct = {
           _id: newActId,
           tipo: ea.tipo,

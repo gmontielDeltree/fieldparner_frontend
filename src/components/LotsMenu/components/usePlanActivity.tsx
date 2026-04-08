@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getEmptyActivity, Actividad } from '../../../interfaces/activity'
 import { useSupply } from '../../../hooks'
+import { normalizeSupplyDoseLines } from '../../../utils/supplyDose'
 
 interface UsePlanActivityParams {
   activityType: string
@@ -60,6 +61,12 @@ export const usePlanActivity = (
         
         // Use the original planification data if available, otherwise use the mapped data
         const sourceData = existingActivity._originalPlanifData || existingActivity;
+        const plannedHectares =
+          sourceData.area || existingActivity.detalles?.hectareas || lot.properties.hectareas
+        const normalizedPlannedDosis = normalizeSupplyDoseLines(
+          existingActivity.detalles?.dosis || sourceData.dosis || [],
+          plannedHectares,
+        )
         console.log('📋 SOURCE DATA FOR PLANNED ACTIVITY:', sourceData);
         
         // Create a properly structured activity from planned activity data
@@ -87,14 +94,14 @@ export const usePlanActivity = (
             
             // Basic fields
             fecha_ejecucion_tentativa: sourceData.fecha || existingActivity.detalles?.fecha_ejecucion_tentativa,
-            hectareas: sourceData.area || existingActivity.detalles?.hectareas || lot.properties.hectareas,
+            hectareas: plannedHectares,
             cultivo: sourceData.cultivo || existingActivity.detalles?.cultivo,
             contratista: sourceData.contratista || existingActivity.detalles?.contratista,
             ingeniero: sourceData.ingeniero || existingActivity.detalles?.ingeniero || existingActivity.ingeniero,
             business: sourceData.ingeniero || sourceData.accountId || existingActivity.detalles?.business || existingActivity.detalles?.ingeniero || 'ffdfs',
             
             // Supply and service data - use the mapped data from index.tsx
-            dosis: existingActivity.detalles?.dosis || sourceData.dosis || [],
+            dosis: normalizedPlannedDosis,
             servicios: existingActivity.detalles?.servicios || sourceData.servicios || [],
             
             // Yield estimates
@@ -157,6 +164,12 @@ export const usePlanActivity = (
           : selectedCampaign?.zafra;
         
         const existingZafra = existingActivity.detalles?.zafra || existingActivity.zafra || campaignZafra;
+        const existingHectares =
+          existingActivity.detalles?.hectareas || lot.properties.hectareas
+        const normalizedExistingDosis = normalizeSupplyDoseLines(
+          existingActivity.detalles?.dosis || [],
+          existingHectares,
+        )
         
         const activityData = {
           ...getEmptyActivity(), // Start with empty structure
@@ -164,7 +177,8 @@ export const usePlanActivity = (
           detalles: {
             ...getEmptyActivity().detalles, // Ensure all detail fields exist
             ...(existingActivity.detalles || {}), // Override with existing details
-            hectareas: existingActivity.detalles?.hectareas || lot.properties.hectareas,
+            hectareas: existingHectares,
+            dosis: normalizedExistingDosis,
             zafra: existingZafra, // Ensure zafra is set
           },
           condiciones: {
