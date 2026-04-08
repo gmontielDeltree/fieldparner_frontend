@@ -62,6 +62,52 @@ interface CampaignTotals {
   alternativeResult: number;
 }
 
+const normalizeValue = (value: unknown) => (value ?? '').toString().trim().toLowerCase();
+
+const uniqueIdentifiers = (...values: unknown[]) =>
+  Array.from(
+    new Set(
+      values
+        .map(value => (value ?? '').toString().trim())
+        .filter(Boolean),
+    ),
+  );
+
+const getFieldIdentifiers = (field: any, fallback?: string) =>
+  uniqueIdentifiers(
+    fallback,
+    field?._id,
+    field?.uuid,
+    field?.id,
+    field?.nombre,
+    field?.name,
+    field?.properties?.nombre,
+    field?.properties?.name,
+  );
+
+const getLotIdentifiers = (lot: any, fallback?: string) =>
+  uniqueIdentifiers(
+    fallback,
+    lot?.id,
+    lot?._id,
+    lot?.uuid,
+    lot?.properties?.uuid,
+    lot?.properties?.id,
+    lot?.properties?.nombre,
+    lot?.properties?.name,
+    lot?.properties?.description,
+  );
+
+const getCampaignIdentifiers = (campaign: any, fallback?: string) =>
+  uniqueIdentifiers(
+    fallback,
+    campaign?._id,
+    campaign?.campaignId,
+    campaign?.id,
+    campaign?.name,
+    campaign?.description,
+  );
+
 const calculateTotals = (data: TableRow[], isMultiply: boolean, rate: number): CampaignTotals => {
   const contracts = data
     .filter(item => item.tipo === 'Contrato')
@@ -163,6 +209,7 @@ const TotalsSummary: React.FC<{ totals: CampaignTotals }> = ({ totals }) => {
 
 export const CampaignsResultsPage: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAppSelector(state => state.auth);
   const { campaigns = [], getCampaigns } = useCampaign();
   const { contractsSaleCerealsFull = [], getContractsSaleCereals } = useContractSaleCereals();
   const { campaingExpenses = [], getCampaingExpenses } = useCampaingExpenses();
@@ -182,21 +229,88 @@ export const CampaignsResultsPage: React.FC = () => {
     cultivo: '',
   });
   const [fields, setFields] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
 
-  const resolveLotInfo = (loteUuid: string) => {
-    for (const field of fields) {
-      if (!field?.features) continue;
-      const lot = field.features.find(
-        (f: any) => f.properties?.uuid === loteUuid || f.id === loteUuid
-      );
-      if (lot) {
+  const resolveFieldLotInfo = (fieldValue?: string, lotValue?: string) => {
+    const normalizedFieldValue = normalizeValue(fieldValue);
+    const normalizedLotValue = normalizeValue(lotValue);
+
+    const orderedFields = normalizedFieldValue
+      ? [
+          ...fields.filter(field =>
+            getFieldIdentifiers(field).some(identifier => normalizeValue(identifier) === normalizedFieldValue),
+          ),
+          ...fields.filter(
+            field =>
+              !getFieldIdentifiers(field).some(
+                identifier => normalizeValue(identifier) === normalizedFieldValue,
+              ),
+          ),
+        ]
+      : fields;
+
+    for (const field of orderedFields) {
+      const lotes = Array.isArray(field?.lotes) ? field.lotes : [];
+      const fieldName =
+        field?.nombre || field?.properties?.nombre || field?.name || field?.properties?.name || '';
+
+      if (normalizedLotValue) {
+        const lot = lotes.find((candidateLot: any) =>
+          getLotIdentifiers(candidateLot).some(
+            identifier => normalizeValue(identifier) === normalizedLotValue,
+          ),
+        );
+
+        if (lot) {
+          const lotId = lot.id || lot.properties?.uuid || lot.properties?.id || lotValue || '';
+          return {
+            fieldName,
+            fieldId: field?._id || field?.uuid || field?.id || fieldValue || '',
+            lotId,
+            lotName:
+              lot.properties?.nombre ||
+              lot.properties?.name ||
+              lot.properties?.description ||
+              lotId,
+          };
+        }
+      }
+
+      if (
+        normalizedFieldValue &&
+        getFieldIdentifiers(field).some(identifier => normalizeValue(identifier) === normalizedFieldValue)
+      ) {
         return {
-          lotName: lot.properties?.nombre || lot.properties?.name || loteUuid,
-          fieldName: field.properties?.nombre || field.properties?.name || field.name || '',
+          fieldName,
+          fieldId: field?._id || field?.uuid || field?.id || fieldValue || '',
+          lotId: lotValue || '',
+          lotName: lotValue || '',
         };
       }
     }
-    return { lotName: loteUuid, fieldName: '' };
+
+    return {
+      fieldName: fieldValue || '',
+      fieldId: fieldValue || '',
+      lotId: lotValue || '',
+      lotName: lotValue || '',
+    };
+  };
+
+  const resolveCompanyName = (companyValue?: string) => {
+    if (!companyValue) return '';
+
+    const company = companies.find((currentCompany: any) =>
+      uniqueIdentifiers(
+        currentCompany?._id,
+        currentCompany?.companyId,
+        currentCompany?.socialReason,
+        currentCompany?.fantasyName,
+        currentCompany?.name,
+      ).some(identifier => normalizeValue(identifier) === normalizeValue(companyValue)),
+    );
+
+    return company?.socialReason || company?.fantasyName || company?.name || companyValue;
   };
 
   const columns = [
@@ -240,8 +354,31 @@ export const CampaignsResultsPage: React.FC = () => {
           getContractsSaleCereals(),
           getCampaingExpenses(),
           getExecutions(),
+          dbContext.companies.allDocs({ include_docs: true }).then(result => {
+            setCompanies(
+              result.rows
+                .map(row => row.doc as any)
+                .filter(doc => {
+                  if (!doc) return false;
+                  if (doc._id?.startsWith('_')) return false;
+                  if (user?.accountId && doc.accountId !== user.accountId) return false;
+                  if (user?.licenceId && doc.licenceId && doc.licenceId !== user.licenceId) return false;
+                  return true;
+                }),
+            );
+          }),
           dbContext.fields.allDocs({ include_docs: true }).then(result => {
-            setFields(result.rows.map(row => row.doc).filter(Boolean));
+            setFields(
+              result.rows
+                .filter(row => {
+                  const doc = row.doc as any;
+                  if (!doc) return false;
+                  if (!row.id?.includes('campos_')) return false;
+                  if (user?.accountId && doc.accountId && doc.accountId !== user.accountId) return false;
+                  return Array.isArray(doc.lotes);
+                })
+                .map(row => row.doc),
+            );
           }),
         ]);
       } catch (error) {
@@ -253,7 +390,7 @@ export const CampaignsResultsPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [user?.accountId, user?.licenceId]);
 
   useEffect(() => {
     if (campaigns && campaigns.length > 0 && !campaign) {
@@ -278,17 +415,32 @@ export const CampaignsResultsPage: React.FC = () => {
 
         const rate = parseFloat(altCurrency) || 1;
         const factor = isMultiply ? rate : 1 / rate;
+        const selectedCampaignIdentifiers = getCampaignIdentifiers(selectedCampaign, campaign);
+        const matchesSelectedCampaign = (...values: unknown[]) =>
+          values
+            .flatMap(value => {
+              if (value && typeof value === 'object') {
+                return getCampaignIdentifiers(value);
+              }
+              return [(value ?? '').toString().trim()];
+            })
+            .filter(Boolean)
+            .some(candidate =>
+              selectedCampaignIdentifiers.some(
+                identifier => normalizeValue(identifier) === normalizeValue(candidate),
+              ),
+            );
 
         // Procesar contratos
         let contractsData = [];
+        const filteredContracts =
+          contractsSaleCerealsFull && contractsSaleCerealsFull.length > 0
+            ? contractsSaleCerealsFull.filter(
+                contract => contract && matchesSelectedCampaign(contract.campaignId, contract.campaign),
+              )
+            : [];
         console.log('Contracts Sale Cereals:', contractsSaleCerealsFull);
-        if (contractsSaleCerealsFull && contractsSaleCerealsFull.length > 0) {
-          const filteredContracts = contractsSaleCerealsFull.filter(
-            contract =>
-              contract &&
-              (contract.campaignId === campaign ||
-                (contract.campaign && contract.campaign._id === campaign)),
-          );
+        if (filteredContracts.length > 0) {
           console.log('Filtered Contracts:', filteredContracts);
           contractsData = filteredContracts.map(contract => ({
             id: contract._id,
@@ -313,7 +465,7 @@ export const CampaignsResultsPage: React.FC = () => {
         console.log('Campaign Expenses:', campaingExpenses);
         if (campaingExpenses && campaingExpenses.length > 0) {
           const filteredExpenses = campaingExpenses.filter(
-            expense => expense && expense.campaign === campaign,
+            expense => expense && matchesSelectedCampaign(expense.campaign),
           );
           console.log('Filtered Expenses:', filteredExpenses);
           expensesData = filteredExpenses.flatMap(expense => {
@@ -321,13 +473,15 @@ export const CampaignsResultsPage: React.FC = () => {
               return [];
             }
 
+            const expenseFieldLotInfo = resolveFieldLotInfo(expense.field, expense.lot);
+
             return expense.listCamapingExpeses.map((item: ListCampingExpeses) => ({
               id: expense._id + '-' + item.id,
               campaña: selectedCampaign.name || '',
-              sociedad: item.company || '',
+              sociedad: resolveCompanyName(item.company),
               contrato: '',
-              campo: expense.field || '',
-              lote: expense.lot || '',
+              campo: expenseFieldLotInfo.fieldName || expense.field || '',
+              lote: expenseFieldLotInfo.lotId || expense.lot || '',
               cultivo: '',
               fecha: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : '',
               tipo: t('_expense_type'),
@@ -348,11 +502,7 @@ export const CampaignsResultsPage: React.FC = () => {
           const filteredExecutions = executions.filter(execution => {
             if (!execution || !execution.campaña) return false;
             const campaignObj = execution.campaña;
-            return (
-              campaignObj.campaignId === selectedCampaign.campaignId ||
-              campaignObj._id === campaign ||
-              campaignObj.name === selectedCampaign.name
-            );
+            return matchesSelectedCampaign(campaignObj);
           });
           console.log('Filtered Executions:', filteredExecutions.length);
           executionsData = filteredExecutions.map(execution => {
@@ -375,14 +525,53 @@ export const CampaignsResultsPage: React.FC = () => {
               });
             }
 
-            const lotInfo = resolveLotInfo(execution.lote_uuid || '');
+            const cropIdentifiers = uniqueIdentifiers(
+              execution.detalles?.cultivo?._id,
+              execution.detalles?.cultivo?.cropId,
+              execution.detalles?.cultivo?.descriptionES,
+              execution.detalles?.cultivo?.name,
+              execution.detalles?.cultivo?.nombre,
+            );
+
+            const relatedContract =
+              filteredContracts.find(contract => {
+                const contractCropIdentifiers = uniqueIdentifiers(
+                  contract.cropId,
+                  contract.crop?._id,
+                  contract.crop?.cropId,
+                  contract.crop?.descriptionES,
+                  contract.crop?.name,
+                  contract.crop?.nombre,
+                );
+
+                return (
+                  cropIdentifiers.length > 0 &&
+                  contractCropIdentifiers.some(contractIdentifier =>
+                    cropIdentifiers.some(
+                      executionIdentifier =>
+                        normalizeValue(contractIdentifier) === normalizeValue(executionIdentifier),
+                    ),
+                  )
+                );
+              }) ||
+              (filteredContracts.length === 1 ? filteredContracts[0] : undefined);
+
+            const lotInfo = resolveFieldLotInfo(undefined, execution.lote_uuid || '');
             return {
               id: execution._id,
               campaña: selectedCampaign.name || '',
-              sociedad: '',
-              contrato: '',
+              sociedad:
+                relatedContract?.company?.socialReason ||
+                relatedContract?.company?.name ||
+                execution.detalles?.contratista?.razonSocial ||
+                execution.detalles?.contratista?.nombreCompleto ||
+                execution.contratista?.razonSocial ||
+                execution.contratista?.nombreCompleto ||
+                execution.contratista?.nombre ||
+                '',
+              contrato: relatedContract?.contractSaleNumber || '',
               campo: lotInfo.fieldName,
-              lote: lotInfo.lotName,
+              lote: lotInfo.lotId || execution.lote_uuid || '',
               cultivo:
                 execution.detalles?.cultivo?.descriptionES ||
                 execution.detalles?.cultivo?.name ||
@@ -419,7 +608,7 @@ export const CampaignsResultsPage: React.FC = () => {
     };
 
     fetchReportData();
-  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses, executions, fields]);
+  }, [campaign, campaigns, contractsSaleCerealsFull, campaingExpenses, executions, fields, companies]);
 
   useEffect(() => {
     if (reportData.length === 0) return;
