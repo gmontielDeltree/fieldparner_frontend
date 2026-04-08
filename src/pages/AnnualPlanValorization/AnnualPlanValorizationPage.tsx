@@ -404,13 +404,63 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const zafra = cicloDoc.zafra ||
         (Array.isArray(campaign?.zafra) ? campaign.zafra[0] : campaign?.zafra) || '';
 
-      // Get crop name - match by multiple possible identifiers (same as hook)
+      // Get crop name - exhaustive search matching how the planification dropdown stores cultivoId
       const cultivoNorm = normalizeId(cicloDoc.cultivoId);
-      const crop = crops.find((c: any) =>
-        [c?._id, (c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
-          .some(val => normalizeId(val) === cultivoNorm)
-      );
-      const cropName = (crop as any)?.crop || (crop as any)?.descriptionES || (crop as any)?.name || (crop as any)?.nombre || '';
+      console.log('[Valorization] Looking for cultivoId:', cicloDoc.cultivoId, '(normalized:', cultivoNorm, ')');
+      console.log('[Valorization] Available crops:', crops.length, crops.slice(0, 5).map((c: any) => ({ _id: c._id, crop: c.crop, descES: c.descriptionES })));
+
+      let cropName = '';
+
+      // 1. Try direct _id match (most common)
+      let crop: any = crops.find((c: any) => normalizeId(c?._id) === cultivoNorm);
+
+      // 2. Try other ID fields
+      if (!crop) {
+        crop = crops.find((c: any) =>
+          [(c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
+            .some(val => val && normalizeId(val) === cultivoNorm)
+        );
+      }
+
+      // 3. Try matching cultivoId against crop name/description (in case cultivoId is stored as a name)
+      if (!crop && cultivoNorm) {
+        crop = crops.find((c: any) =>
+          normalizeId((c as any)?.crop) === cultivoNorm ||
+          normalizeId((c as any)?.descriptionES) === cultivoNorm ||
+          normalizeId((c as any)?.descriptionPT) === cultivoNorm ||
+          normalizeId((c as any)?.descriptionEN) === cultivoNorm
+        );
+      }
+
+      // 4. If the ciclo has an embedded cultivo object (some activities store the full object)
+      if (!crop && (cicloDoc as any).cultivo) {
+        const embedded = (cicloDoc as any).cultivo;
+        console.log('[Valorization] Ciclo has embedded cultivo:', embedded);
+        const embeddedId = normalizeId(embedded._id || embedded.id);
+        if (embeddedId) {
+          crop = crops.find((c: any) => normalizeId(c?._id) === embeddedId);
+        }
+        if (!crop) {
+          // Use embedded name directly
+          cropName = embedded.crop || embedded.descriptionES || embedded.name || embedded.nombre || '';
+        }
+      }
+
+      // 5. Last resort: load directly from crops DB by cultivoId
+      if (!crop && !cropName && cultivoNorm) {
+        try {
+          const directCrop = await dbContext.crops.get(cicloDoc.cultivoId) as any;
+          cropName = directCrop?.crop || directCrop?.descriptionES || directCrop?.name || '';
+          console.log('[Valorization] Direct DB lookup result:', cropName);
+        } catch (e) {
+          console.warn('[Valorization] Could not load crop directly:', cicloDoc.cultivoId);
+        }
+      }
+
+      if (crop) {
+        cropName = (crop as any)?.crop || (crop as any)?.descriptionES || (crop as any)?.name || (crop as any)?.nombre || '';
+      }
+      console.log('[Valorization] Crop result:', crop ? { _id: crop._id } : 'NOT IN ARRAY', 'name:', cropName);
       setCultivoNombre(cropName);
 
       // Set form data with real values from the ciclo
@@ -442,7 +492,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     }
   };
 
-  const handleLoteChange = (loteValue: string) => {
+  const handleLoteChange = async (loteValue: string) => {
     console.log(`🔄 handleLoteChange: ${loteValue}`);
 
     const selectedField = fields.find(f => f._id === formData.campoId);
@@ -466,11 +516,32 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       if (matchingCiclo) {
         setAnnualPlan(matchingCiclo);
         const mcCultivoNorm = normalizeId(matchingCiclo.cultivoId);
-        const crop = crops.find((c: any) =>
-          [c?._id, (c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
-            .some(val => normalizeId(val) === mcCultivoNorm)
-        );
-        setCultivoNombre((crop as any)?.crop || (crop as any)?.descriptionES || (crop as any)?.name || (crop as any)?.nombre || '');
+        let mcCrop: any = crops.find((c: any) => normalizeId(c?._id) === mcCultivoNorm);
+        if (!mcCrop) {
+          mcCrop = crops.find((c: any) =>
+            [(c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
+              .some(val => val && normalizeId(val) === mcCultivoNorm)
+          );
+        }
+        if (!mcCrop && mcCultivoNorm) {
+          mcCrop = crops.find((c: any) =>
+            normalizeId((c as any)?.crop) === mcCultivoNorm ||
+            normalizeId((c as any)?.descriptionES) === mcCultivoNorm
+          );
+        }
+        // Fallback: try embedded cultivo or direct DB lookup
+        let mcCropName = mcCrop?.crop || mcCrop?.descriptionES || mcCrop?.name || mcCrop?.nombre || '';
+        if (!mcCropName && (matchingCiclo as any).cultivo) {
+          const emb = (matchingCiclo as any).cultivo;
+          mcCropName = emb.crop || emb.descriptionES || emb.name || '';
+        }
+        if (!mcCropName && matchingCiclo.cultivoId) {
+          try {
+            const directCrop = await dbContext.crops.get(matchingCiclo.cultivoId) as any;
+            mcCropName = directCrop?.crop || directCrop?.descriptionES || '';
+          } catch (_) {}
+        }
+        setCultivoNombre(mcCropName);
         setFormData((prev) => ({
           ...prev,
           loteId: loteValue,
