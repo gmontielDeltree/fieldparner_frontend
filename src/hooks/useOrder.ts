@@ -35,6 +35,27 @@ export const useOrder = () => {
     const [error, setError] = useState({});
     const { t } = useTranslation();
 
+    const findStockDocsForOrderItem = async (item: {
+        supplyId: string;
+        depositId: string;
+        nroLot?: string;
+        location?: string;
+    }) => {
+        if (!user) return [];
+
+        const selector: any = {
+            accountId: user.accountId,
+            id: item.supplyId,
+            depositId: item.depositId,
+            ...(item.nroLot ? { nroLot: item.nroLot } : {}),
+        };
+
+        const stockResult = await dbContext.stock.find({ selector });
+        return stockResult.docs.filter((stock: any) =>
+            !item.location || (stock.location || '') === item.location
+        );
+    }
+
     const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
             const response = await dbContext.numerators.find({
@@ -182,16 +203,9 @@ export const useOrder = () => {
             // Update stock.reservedStock for each supply in the order
             for (const item of inputsToBeWithdrawan) {
                 try {
-                    const stockResult = await dbContext.stock.find({
-                        selector: {
-                            accountId: user.accountId,
-                            id: item.supplyId,
-                            depositId: item.depositId,
-                            nroLot: item.nroLot || '',
-                        }
-                    });
-                    if (stockResult.docs.length > 0) {
-                        const stockDoc = stockResult.docs[0];
+                    const stockDocs = await findStockDocsForOrderItem(item);
+                    if (stockDocs.length > 0) {
+                        const stockDoc = stockDocs[0];
                         stockDoc.reservedStock = (stockDoc.reservedStock || 0) + Number(item.originalAmount || 0);
                         stockDoc.lastUpdate = new Date().toISOString();
                         await dbContext.stock.put(stockDoc);
@@ -469,16 +483,9 @@ export const useOrder = () => {
                     const withdrawnAmount = Number(w.amount || 0);
                     if (withdrawnAmount <= 0) continue;
 
-                    const stockResult = await dbContext.stock.find({
-                        selector: {
-                            accountId: user.accountId,
-                            id: w.supplyId,
-                            depositId: w.depositId,
-                            nroLot: w.nroLot || '',
-                        }
-                    });
-                    if (stockResult.docs.length > 0) {
-                        const stockDoc = stockResult.docs[0];
+                    const stockDocs = await findStockDocsForOrderItem(w);
+                    if (stockDocs.length > 0) {
+                        const stockDoc = stockDocs[0];
                         stockDoc.reservedStock = Math.max(0, (stockDoc.reservedStock || 0) - withdrawnAmount);
                         stockDoc.currentStock = (stockDoc.currentStock || 0) - withdrawnAmount;
                         stockDoc.lastUpdate = new Date().toISOString();
@@ -580,16 +587,9 @@ export const useOrder = () => {
                 if (reservedAmount <= 0) continue;
 
                 try {
-                    const stockResult = await dbContext.stock.find({
-                        selector: {
-                            accountId: user.accountId,
-                            id: dso.supplyId,
-                            depositId: dso.depositId,
-                            nroLot: dso.nroLot || '',
-                        }
-                    });
-                    if (stockResult.docs.length > 0) {
-                        const stockDoc = stockResult.docs[0];
+                    const stockDocs = await findStockDocsForOrderItem(dso);
+                    if (stockDocs.length > 0) {
+                        const stockDoc = stockDocs[0];
                         stockDoc.reservedStock = Math.max(0, (stockDoc.reservedStock || 0) - reservedAmount);
                         stockDoc.lastUpdate = new Date().toISOString();
                         await dbContext.stock.put(stockDoc);

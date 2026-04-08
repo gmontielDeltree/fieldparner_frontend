@@ -283,6 +283,40 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     return Number(lote?.properties?.hectareas || 0);
   };
 
+  // Resolve crop name from a cultivoId using all available strategies
+  const resolveCropName = async (cultivoId: string): Promise<string> => {
+    if (!cultivoId) return '';
+    const norm = normalizeId(cultivoId);
+
+    // 1. By _id
+    let crop: any = crops.find((c: any) => normalizeId(c?._id) === norm);
+    // 2. By alt fields
+    if (!crop) {
+      crop = crops.find((c: any) =>
+        [(c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code]
+          .some(val => val && normalizeId(val) === norm)
+      );
+    }
+    // 3. By name match
+    if (!crop) {
+      crop = crops.find((c: any) =>
+        normalizeId((c as any)?.crop) === norm ||
+        normalizeId((c as any)?.descriptionES) === norm ||
+        normalizeId((c as any)?.descriptionPT) === norm
+      );
+    }
+    if (crop) {
+      return (crop as any)?.crop || (crop as any)?.descriptionES || (crop as any)?.name || '';
+    }
+    // 4. Direct DB lookup
+    try {
+      const doc = await dbContext.crops.get(cultivoId) as any;
+      return doc?.crop || doc?.descriptionES || doc?.name || '';
+    } catch (_) {
+      return '';
+    }
+  };
+
   // Form data
   const [formData, setFormData] = useState<FormData>({
     campanaId: '',
@@ -307,6 +341,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
   const [availableZafras, setAvailableZafras] = useState<any[]>([]);
   const [availableCampos, setAvailableCampos] = useState<Field[]>([]);
   const [availableLotes, setAvailableLotes] = useState<Lot[]>([]);
+  const [availableCultivos, setAvailableCultivos] = useState<{ ciclo: ICiclosPlanificacion; cropName: string }[]>([]);
 
   // Define steps for the valorization flow
   const steps = [
@@ -491,6 +526,33 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     }
   };
 
+  // When user selects a cultivo from the dropdown (multiple ciclos for the same lot)
+  const handleCultivoChange = async (cultivoId: string) => {
+    const selected = availableCultivos.find(c => c.ciclo.cultivoId === cultivoId);
+    if (!selected) return;
+
+    const ciclo = selected.ciclo;
+    setAnnualPlan(ciclo);
+    setCultivoNombre(selected.cropName);
+    setFormData((prev) => ({
+      ...prev,
+      zafra: ciclo.zafra || prev.zafra,
+      rindeHistorico: (ciclo as any).rindeHistorico || '',
+      cotizFutCer: (ciclo as any).cotizFutCer || '',
+      monedaAlterId: (ciclo as any).monedaAlterId || '',
+      cotizMonAlt: (ciclo as any).cotizMonAlt || 0,
+      operacMonAlt: (ciclo as any).operacMonAlt || 'multiplicar',
+    }));
+
+    loadPlanificationData(
+      formData.campanaId,
+      formData.campoId,
+      formData.loteId,
+      ciclo.zafra || formData.zafra,
+      [ciclo],
+    );
+  };
+
   const handleLoteChange = async (loteValue: string) => {
     console.log(`🔄 handleLoteChange: ${loteValue}`);
 
@@ -502,44 +564,18 @@ export const AnnualPlanValorizationPage: React.FC = () => {
     if (selectedLot) {
       const newHectareas = selectedLot.properties.hectareas || 0;
 
-      // Find the matching ciclo using all possible lot identifiers
-      const matchingCiclo = findMatchingCiclo({
-        campanaId: formData.campanaId,
-        campoId: formData.campoId,
-        zafra: formData.zafra,
-        lot: selectedLot,
-        loteValue,
-        cultivoId: annualPlan?.cultivoId,
-      });
+      // Find ALL matching ciclos for this lot (could be multiple crops)
+      const candidateLotIds = getLotIdentifiers(selectedLot, loteValue);
+      const allMatches = getCyclesForSelection(formData.campanaId, formData.zafra, formData.campoId)
+        .filter((ciclo) => candidateLotIds.includes(normalizeId(ciclo.loteId)));
 
-      if (matchingCiclo) {
+      if (allMatches.length === 1) {
+        // Single ciclo → auto-select
+        const matchingCiclo = allMatches[0];
+        setAvailableCultivos([]);
         setAnnualPlan(matchingCiclo);
-        const mcCultivoNorm = normalizeId(matchingCiclo.cultivoId);
-        let mcCrop: any = crops.find((c: any) => normalizeId(c?._id) === mcCultivoNorm);
-        if (!mcCrop) {
-          mcCrop = crops.find((c: any) =>
-            [(c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
-              .some(val => val && normalizeId(val) === mcCultivoNorm)
-          );
-        }
-        if (!mcCrop && mcCultivoNorm) {
-          mcCrop = crops.find((c: any) =>
-            normalizeId((c as any)?.crop) === mcCultivoNorm ||
-            normalizeId((c as any)?.descriptionES) === mcCultivoNorm
-          );
-        }
-        let mcCropName = mcCrop?.crop || mcCrop?.descriptionES || mcCrop?.name || mcCrop?.nombre || '';
-        if (!mcCropName && (matchingCiclo as any).cultivo) {
-          const emb = (matchingCiclo as any).cultivo;
-          mcCropName = emb.crop || emb.descriptionES || emb.name || '';
-        }
-        if (!mcCropName && matchingCiclo.cultivoId) {
-          try {
-            const directCrop = await dbContext.crops.get(matchingCiclo.cultivoId) as any;
-            mcCropName = directCrop?.crop || directCrop?.descriptionES || '';
-          } catch (_) {}
-        }
-        setCultivoNombre(mcCropName);
+        const cropName = await resolveCropName(matchingCiclo.cultivoId);
+        setCultivoNombre(cropName);
         setFormData((prev) => ({
           ...prev,
           loteId: loteValue,
@@ -552,7 +588,6 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           operacMonAlt: (matchingCiclo as any).operacMonAlt || 'multiplicar',
         }));
 
-        // Load planification data for this specific ciclo ONLY
         loadPlanificationData(
           formData.campanaId,
           formData.campoId,
@@ -560,9 +595,28 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           matchingCiclo.zafra || formData.zafra,
           [matchingCiclo],
         );
+      } else if (allMatches.length > 1) {
+        // Multiple ciclos → show cultivo dropdown for user to pick
+        const cultivoOptions = await Promise.all(
+          allMatches.map(async (ciclo) => ({
+            ciclo,
+            cropName: await resolveCropName(ciclo.cultivoId) || ciclo.cultivoId,
+          }))
+        );
+        setAvailableCultivos(cultivoOptions);
+        setAnnualPlan(null);
+        setCultivoNombre('');
+        setFormData((prev) => ({
+          ...prev,
+          loteId: loteValue,
+          has: newHectareas,
+        }));
+        setInsumos([]);
+        setServicios([]);
       } else {
-        // No matching ciclo found - CLEAR stale data instead of keeping old insumos
-        console.log('⚠️ No matching ciclo found for lote, clearing insumos/servicios');
+        // No matching ciclo found
+        console.log('⚠️ No matching ciclo found for lote');
+        setAvailableCultivos([]);
         setAnnualPlan(null);
         setFormData((prev) => ({
           ...prev,
@@ -1637,13 +1691,30 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           />
         </Grid>
         <Grid item xs={12} md={2}>
-          <TextField
-            fullWidth
-            size="small"
-            label={t("crop")}
-            value={getCropName()}
-            InputProps={{ readOnly: true }}
-          />
+          {availableCultivos.length > 0 && !isEditMode ? (
+            <FormControl fullWidth size="small">
+              <InputLabel>{t("crop")}</InputLabel>
+              <Select
+                value={annualPlan?.cultivoId || ''}
+                onChange={(e) => handleCultivoChange(e.target.value as string)}
+                label={t("crop")}
+              >
+                {availableCultivos.map((opt) => (
+                  <MenuItem key={opt.ciclo.cultivoId} value={opt.ciclo.cultivoId}>
+                    {opt.cropName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          ) : (
+            <TextField
+              fullWidth
+              size="small"
+              label={t("crop")}
+              value={getCropName()}
+              InputProps={{ readOnly: true }}
+            />
+          )}
         </Grid>
         <Grid item xs={12} md={3}>
           <TextField

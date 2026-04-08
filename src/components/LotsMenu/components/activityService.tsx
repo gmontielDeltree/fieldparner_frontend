@@ -8,6 +8,7 @@ import {
   WithdrawalOrder,
   OrderStatus,
 } from '../../../types'
+import { normalizeSupplyDoseLine } from '../../../utils/supplyDose'
 
 // Define the standard Spanish activity types
 const ACTIVITY_TYPES = {
@@ -114,7 +115,7 @@ const standardizeSupplyData = (dosis) => {
     dosis.insumo = dosis.selectedOption;
     delete dosis.selectedOption; // Remove the old property
   }
-  return dosis;
+  return normalizeSupplyDoseLine(dosis);
 };
 
 export const saveActivity = async (

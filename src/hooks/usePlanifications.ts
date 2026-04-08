@@ -29,6 +29,7 @@ import { Insumo } from "../interfaces/insumos";
 import { listar_ejecuciones_por_depo } from "../../owncomponents/depositos/depositos-funciones";
 import { useLabores } from "./useLabores";
 import { NotificationService } from "../services/notificationService";
+import { resolveSupplyDosificacion } from "../utils/supplyDose";
 
 export const usePlanActividad = () => {
   let db =
@@ -128,7 +129,8 @@ export const usePlanActividad = () => {
         let nuevaLinea: LineaDosis = {
           insumo: insumo,
           uuid: uuidv7(),
-          dosis: linea.dosis,
+          dosificacion: resolveSupplyDosificacion(linea, actividad.area) || 0,
+          dosis: resolveSupplyDosificacion(linea, actividad.area) || 0,
           total: linea.totalCantidad,
           precio_estimado: linea.precioUnitario,
           deposito: null,

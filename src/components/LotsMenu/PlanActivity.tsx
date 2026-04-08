@@ -17,6 +17,7 @@ import { saveActivity } from './components/activityService'
 import { usePlanActivity } from './components/usePlanActivity'
 import { dbContext } from '../../services'
 import { uuidv7 } from 'uuidv7'
+import { normalizeSupplyDoseLine } from '../../utils/supplyDose'
 import {
   Card,
   CardHeader,
@@ -704,6 +705,7 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
       }
 
       const insumos: any[] = []
+      const plannedHectares = matchingPlan.area || formData.detalles?.hectareas
       if (matchingPlan.insumosLineasIds?.length) {
         const insResp = await db.allDocs({
           keys: matchingPlan.insumosLineasIds,
@@ -720,13 +722,16 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
               console.warn('Supply not found for plan line', line.insumoId, insErr)
             }
           }
-          insumos.push({
+          insumos.push(normalizeSupplyDoseLine({
             insumo: insumoDoc || { _id: line.insumoId, name: line.insumoId },
-            dosificacion: line.dosis ?? '',
-            total: line.totalCantidad ?? '',
+            dosificacion: (line as any).dosificacion,
+            dosis: line.dosis,
+            total: line.totalCantidad,
+            precio_estimado: line.precioUnitario,
             deposito: null,
             uuid: line._id || uuidv7(),
-          })
+            hectareas: line.hectareas,
+          }, plannedHectares))
         }
       }
 

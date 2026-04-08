@@ -218,6 +218,7 @@ function PlanSuppliesForm({
     const newRow = {
       insumo: selectedSupply,
       dosificacion: dosificacion,
+      dosis: dosificacion,
       total: total,
       uuid: uuid4(),
     };

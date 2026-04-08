@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next'
 import { NumberFieldWithUnits } from '../../components/NumberField'
 import { AutocompleteSupplies } from '../../components/AutocompleteSupplies'
 import { AutocompleteDeposito } from '../../components/AutocompleteDeposito'
+import { normalizeSupplyDoseLine, resolveSupplyDosificacion } from '../../../../utils/supplyDose'
 
 const fadeIn = keyframes`
   from {
@@ -124,23 +125,27 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
   const handleEditRow = (index) => {
     const rowToEdit = rows[index]
     if (!rowToEdit) return
+    const normalizedRow = normalizeSupplyDoseLine(
+      rowToEdit,
+      formData?.detalles?.hectareas,
+    )
 
-    console.log('Starting edit for row:', rowToEdit)
+    console.log('Starting edit for row:', normalizedRow)
 
     // Hacer una copia profunda de los datos, cambiando selectedOption a insumo
     const editDataCopy = {
-      insumo: rowToEdit.insumo
-        ? { ...rowToEdit.insumo }
-        : rowToEdit.selectedOption // Fallback to selectedOption if insumo doesn't exist (for backward compatibility)
-          ? { ...rowToEdit.selectedOption }
+      insumo: normalizedRow.insumo
+        ? { ...normalizedRow.insumo }
+        : normalizedRow.selectedOption // Fallback to selectedOption if insumo doesn't exist (for backward compatibility)
+          ? { ...normalizedRow.selectedOption }
           : null,
-      dosificacion: rowToEdit.dosificacion ?? '',
-      nro_lote: rowToEdit.nro_lote ?? '',
-      ubicacion: rowToEdit.ubicacion ?? '',
-      total: rowToEdit.total ?? '',
-      deposito: rowToEdit.deposito ? { ...rowToEdit.deposito } : null,
-      precio: rowToEdit.precio ?? '',
-      uuid: rowToEdit.uuid,
+      dosificacion: normalizedRow.dosificacion ?? '',
+      nro_lote: normalizedRow.nro_lote ?? '',
+      ubicacion: normalizedRow.ubicacion ?? '',
+      total: normalizedRow.total ?? '',
+      deposito: normalizedRow.deposito ? { ...normalizedRow.deposito } : null,
+      precio: normalizedRow.precio ?? '',
+      uuid: normalizedRow.uuid,
     }
 
     console.log('Edit data initialized as:', editDataCopy)
@@ -163,6 +168,10 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
 
   const handleSaveEdit = () => {
     const originalRow = rows[editIndex]
+    const normalizedOriginalRow = normalizeSupplyDoseLine(
+      originalRow,
+      formData?.detalles?.hectareas,
+    )
     console.log('Original row:', originalRow)
     console.log('Edit data:', editData)
 
@@ -178,12 +187,16 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
       dosificacion:
         editData.dosificacion !== ''
           ? editData.dosificacion
-          : originalRow.dosificacion,
+          : normalizedOriginalRow.dosificacion,
+      dosis:
+        editData.dosificacion !== ''
+          ? editData.dosificacion
+          : normalizedOriginalRow.dosificacion,
       nro_lote:
         editData.nro_lote !== '' ? editData.nro_lote : originalRow.nro_lote,
       ubicacion:
         editData.ubicacion !== '' ? editData.ubicacion : originalRow.ubicacion,
-      total: editData.total !== '' ? editData.total : originalRow.total,
+      total: editData.total !== '' ? editData.total : normalizedOriginalRow.total,
       deposito:
         editData.deposito !== null ? editData.deposito : originalRow.deposito,
 
@@ -338,6 +351,10 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
         {rows.map((row, index) => {
           // Get the supply object from either insumo or selectedOption for backward compatibility
           const supply = row.insumo || row.selectedOption;
+          const displayDosificacion = resolveSupplyDosificacion(
+            row,
+            formData?.detalles?.hectareas,
+          );
 
           // If no supply information is available, skip rendering this row
           if (!supply) {
@@ -475,7 +492,7 @@ function SuppliesList({ rows, formData, onUpdateRows }) {
                           <MetaInfo variant="body2">
                             <QrCodeIcon />
                             <strong>{t('quantityPerHectare')}:</strong>{' '}
-                            {row.dosificacion}{' '}
+                            {displayDosificacion}{' '}
                             {abrUnit(supply?.unitMeasurement)}/ha
                           </MetaInfo>
                         </Grid>
