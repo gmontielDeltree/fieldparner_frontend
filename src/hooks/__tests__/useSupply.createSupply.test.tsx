@@ -240,12 +240,14 @@ describe('useSupply - createSupply', () => {
         name: 'Fertilizante Usuario',
         type: 'Fertilizante',
         accountId: 'test-account-id',
+        countryId: 'AR',
       },
       {
         _id: 'supply-2',
         name: 'Herbicida Genérico',
         type: 'Herbicida',
         isDefault: true,
+        countryId: 'AR',
       },
     ]
 

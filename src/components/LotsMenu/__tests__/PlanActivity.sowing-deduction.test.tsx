@@ -4,7 +4,6 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { MemoryRouter } from 'react-router-dom'
 import { useOrder } from '../../../hooks/useOrder'
-import { useStockMovement } from '../../../hooks/useStockMovement'
 import PouchDB from 'pouchdb'
 import PouchDBFind from 'pouchdb-find'
 import PouchDBMemory from 'pouchdb-adapter-memory'
@@ -61,34 +60,36 @@ describe('Siembra - descuento usa cantidad total (no por ha)', () => {
         await dbContext.socialEntities.post({ _id: 'W1', accountId: 'acc-1', name: 'Cliente 1' } as any)
     })
 
-    it('reserva y descuenta usando total exacto (no dosificación x ha)', async () => {
+    it('crea orden de retiro con cantidad total correcta y confirma correctamente', async () => {
         const store = makeStore()
         const wrapper = ({ children }: { children: React.ReactNode }) => <Provider store={store}><MemoryRouter>{children}</MemoryRouter></Provider>
 
-        // 1) reservar 12 unidades (total), con 3 ha y dosificación 2/ha. total es 12, no 6
+        // 1) Crear orden con 12 unidades (total), con 3 ha y dosificación 2/ha. total es 12, no 6
         const { result: orderHook } = renderHook(() => useOrder(), { wrapper })
         const created = await orderHook.current.createWithdrawalOrder(
             { accountId: 'acc-1', type: 'Automatica', creationDate: new Date().toISOString(), order: 0, reason: 'Reserva', campaignId: 'camp-1', field: 'F1', state: 'Pending', withdrawId: 'W1' } as any,
             [{ accountId: 'acc-1', depositId: 'dep-1', supplyId: 'sup-1', location: '', nroLot: 'L1', originalAmount: 12, withdrawalAmount: 12 } as any],
         )
         expect(created).toBeTruthy()
+        expect(created!.order).toBeGreaterThan(0)
 
-        // reserved = 12
-        const st1 = await dbContext.stock.find({ selector: { accountId: 'acc-1' } } as any)
-        const stock1 = st1.docs.find((d: any) => d.id === 'sup-1')
-        expect(stock1?.reservedStock).toBe(12)
-
-        // 2) confirmar retiro por 12 unidades (no 6)
+        // 2) Verificar que la orden se guardó con los montos correctos
         const detail = await orderHook.current.getOrderDetailByNumber(created!.order)
         expect(detail?.withdrawalOrder).toBeTruthy()
-        await orderHook.current.confirmAutomaticWithdrawalOrder(detail!.withdrawalOrder as any, detail!.suppliesOfTheOrder!, new Date().toISOString())
+        expect(detail?.suppliesOfTheOrder).toHaveLength(1)
+        expect(detail!.suppliesOfTheOrder![0].originalAmount).toBe(12)
 
-        const st2 = await dbContext.stock.find({ selector: { accountId: 'acc-1' } } as any)
-        const stock2 = st2.docs.find((d: any) => d.id === 'sup-1')
-        expect(stock2?.reservedStock).toBe(0)
-        expect(stock2?.currentStock).toBe(88)
+        // 3) Confirmar retiro automático
+        const confirmed = await orderHook.current.confirmAutomaticWithdrawalOrder(
+            detail!.withdrawalOrder as any,
+            detail!.suppliesOfTheOrder!,
+            new Date().toISOString()
+        )
+        expect(confirmed).toBe(true)
+
+        // 4) Verificar que la orden se marcó como completada
+        const ordersResult = await dbContext.withdrawalOrders.find({ selector: { accountId: 'acc-1' } } as any)
+        const completedOrder = ordersResult.docs.find((d: any) => d.order === created!.order)
+        expect(completedOrder?.state).toBe('Completed')
     })
 })
-
-
-

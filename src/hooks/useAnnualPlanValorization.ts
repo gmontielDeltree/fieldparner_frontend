@@ -8,10 +8,31 @@ import { dbContext } from "../services/pouchdbService";
 import { useCampaign, useField, useCrops } from "./";
 
 // Helper para buscar en qué campo está un lote dado
-const findFieldForLote = (loteId: string, fields: any[]): { field: any; lote: any } | null => {
+const normalizeValue = (value: unknown) => (value ?? '').toString().trim();
+
+const findFieldForLote = (
+  loteId: string,
+  fields: any[],
+  campoId?: string,
+): { field: any; lote: any } | null => {
   if (!loteId) return null;
 
-  for (const field of fields) {
+  const preferredFields = campoId
+    ? [
+        ...fields.filter((field) =>
+          [field?._id, field?.uuid, (field as any)?.id]
+            .map(normalizeValue)
+            .includes(normalizeValue(campoId)),
+        ),
+        ...fields.filter((field) =>
+          ![field?._id, field?.uuid, (field as any)?.id]
+            .map(normalizeValue)
+            .includes(normalizeValue(campoId)),
+        ),
+      ]
+    : fields;
+
+  for (const field of preferredFields) {
     if (!field.lotes || !Array.isArray(field.lotes)) continue;
     for (const lote of field.lotes) {
       // Buscar por múltiples identificadores posibles:
@@ -27,7 +48,7 @@ const findFieldForLote = (loteId: string, fields: any[]): { field: any; lote: an
       // Comparar con todos los identificadores posibles
       const matches = [loteGeoId, loteUuid, loteNombre, lotePouchId]
         .filter(Boolean)
-        .some(id => id === loteId);
+        .some((id) => normalizeValue(id) === normalizeValue(loteId));
 
       if (matches) {
         return { field, lote };
@@ -131,7 +152,7 @@ export const useAnnualPlanValorization = () => {
         console.log('[useAnnualPlanValorization] Sample ciclo:', ciclos[0]);
         // Debug: intentar encontrar el campo para el primer ciclo
         const sampleCiclo = ciclos[0];
-        const sampleFieldData = findFieldForLote(sampleCiclo.loteId, currentFields);
+        const sampleFieldData = findFieldForLote(sampleCiclo.loteId, currentFields, sampleCiclo.campoId);
         console.log('[useAnnualPlanValorization] Sample ciclo loteId:', sampleCiclo.loteId);
         console.log('[useAnnualPlanValorization] Found field for sample:', sampleFieldData ? {
           fieldId: sampleFieldData.field?._id,
@@ -160,7 +181,7 @@ export const useAnnualPlanValorization = () => {
           );
           
           // Derivar el campo desde el loteId buscando en todos los campos
-          const fieldData = findFieldForLote(ciclo.loteId, currentFields);
+          const fieldData = findFieldForLote(ciclo.loteId, currentFields, ciclo.campoId);
           const field = fieldData?.field;
           const lote = fieldData?.lote;
 
