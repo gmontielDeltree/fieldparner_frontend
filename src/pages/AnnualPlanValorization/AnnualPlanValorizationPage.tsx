@@ -404,12 +404,13 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const zafra = cicloDoc.zafra ||
         (Array.isArray(campaign?.zafra) ? campaign.zafra[0] : campaign?.zafra) || '';
 
-      // Get crop name
+      // Get crop name - match by multiple possible identifiers (same as hook)
+      const cultivoNorm = normalizeId(cicloDoc.cultivoId);
       const crop = crops.find((c: any) =>
-        c._id === cicloDoc.cultivoId ||
-        (c as any)?.id === cicloDoc.cultivoId
+        [c?._id, (c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
+          .some(val => normalizeId(val) === cultivoNorm)
       );
-      const cropName = (crop as any)?.crop || (crop as any)?.name || (crop as any)?.nombre || '';
+      const cropName = (crop as any)?.crop || (crop as any)?.descriptionES || (crop as any)?.name || (crop as any)?.nombre || '';
       setCultivoNombre(cropName);
 
       // Set form data with real values from the ciclo
@@ -464,8 +465,12 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
       if (matchingCiclo) {
         setAnnualPlan(matchingCiclo);
-        const crop = crops.find((c: any) => c._id === matchingCiclo.cultivoId);
-        setCultivoNombre((crop as any)?.crop || (crop as any)?.name || (crop as any)?.nombre || '');
+        const mcCultivoNorm = normalizeId(matchingCiclo.cultivoId);
+        const crop = crops.find((c: any) =>
+          [c?._id, (c as any)?.id, (c as any)?.uuid, (c as any)?.codigo, (c as any)?.code, (c as any)?.cultivoId]
+            .some(val => normalizeId(val) === mcCultivoNorm)
+        );
+        setCultivoNombre((crop as any)?.crop || (crop as any)?.descriptionES || (crop as any)?.name || (crop as any)?.nombre || '');
         setFormData((prev) => ({
           ...prev,
           loteId: loteValue,
