@@ -439,9 +439,7 @@ export const CampaignsResultsPage: React.FC = () => {
                 contract => contract && matchesSelectedCampaign(contract.campaignId, contract.campaign),
               )
             : [];
-        console.log('Contracts Sale Cereals:', contractsSaleCerealsFull);
         if (filteredContracts.length > 0) {
-          console.log('Filtered Contracts:', filteredContracts);
           contractsData = filteredContracts.map(contract => ({
             id: contract._id,
             campaña: selectedCampaign.name || '',
@@ -479,9 +477,9 @@ export const CampaignsResultsPage: React.FC = () => {
               id: expense._id + '-' + item.id,
               campaña: selectedCampaign.name || '',
               sociedad: resolveCompanyName(item.company),
-              contrato: '',
+              contrato: (item as any).contractSaleNumber || (item as any).contrato || (expense as any).contractSaleNumber || (expense as any).contrato || '',
               campo: expenseFieldLotInfo.fieldName || expense.field || '',
-              lote: expenseFieldLotInfo.lotId || expense.lot || '',
+              lote: expenseFieldLotInfo.lotName || expense.lot || '',
               cultivo: '',
               fecha: item.date ? format(new Date(item.date), 'dd/MM/yyyy') : '',
               tipo: t('_expense_type'),
@@ -569,9 +567,9 @@ export const CampaignsResultsPage: React.FC = () => {
                 execution.contratista?.nombreCompleto ||
                 execution.contratista?.nombre ||
                 '',
-              contrato: relatedContract?.contractSaleNumber || '',
+              contrato: relatedContract?.contractSaleNumber || (execution as any).contractSaleNumber || (execution as any).contrato || '',
               campo: lotInfo.fieldName,
-              lote: lotInfo.lotId || execution.lote_uuid || '',
+              lote: lotInfo.lotName || execution.lote_uuid || '',
               cultivo:
                 execution.detalles?.cultivo?.descriptionES ||
                 execution.detalles?.cultivo?.name ||
