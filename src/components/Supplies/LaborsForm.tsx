@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import uuid4 from "uuid4";
 import { IsSeed } from "../../utils/helper";
+import { useAppSelector } from "../../hooks";
 
 export interface LaborsFormProps {
   formValues: Supply;
@@ -51,14 +52,14 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
   setFileUpload,
   setFormValues,
 }) => {
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+  const { t } = useTranslation();
+  const currentLanguage = useAppSelector((state) => state.auth.user?.language) || 'en'; //USAR LENGUAGE DEL USUARIO DESDE EL STORE, POR DEFECTO ENGLISH
   const [originalFileName, setOriginalFileName] = React.useState<string>("");
   const [initialDocumentFile, setInitialDocumentFile] = React.useState<string>("");
   const [initialDocumentFileName, setInitialDocumentFileName] = React.useState<string>("");
 
   const { type, name, description, barCode, stockByLot, brand, senasaId, documentFile, documentFileName } = formValues;
-  
+
   React.useEffect(() => {
     // Si existe documentFileName, usarlo (nuevo formato)
     if (documentFileName) {
@@ -66,7 +67,7 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
       if (!initialDocumentFileName) {
         setInitialDocumentFileName(documentFileName);
       }
-    } 
+    }
     // Si no existe documentFileName pero sí documentFile, mostrar el documentFile
     // (para compatibilidad con supplies existentes)
     else if (documentFile) {
@@ -107,10 +108,10 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
       const newFileName = `supply_${uuid4()}${fileType}`;
       const renamedFile = new File([file], newFileName, { type: file.type });
       setFileUpload(renamedFile);
-      setFormValues(prevState => ({ 
-        ...prevState, 
+      setFormValues(prevState => ({
+        ...prevState,
         documentFile: newFileName,
-        documentFileName: fileNameOriginal 
+        documentFileName: fileNameOriginal
       }));
     }
   };
@@ -120,18 +121,18 @@ export const LaborsForm: React.FC<LaborsFormProps> = ({
     // Si había un archivo inicial, restaurarlo
     if (initialDocumentFileName || initialDocumentFile) {
       setOriginalFileName(initialDocumentFileName || initialDocumentFile);
-      setFormValues(prevState => ({ 
-        ...prevState, 
+      setFormValues(prevState => ({
+        ...prevState,
         documentFile: initialDocumentFile,
-        documentFileName: initialDocumentFileName 
+        documentFileName: initialDocumentFileName
       }));
     } else {
       // Si no había archivo inicial, limpiar todo
       setOriginalFileName("");
-      setFormValues(prevState => ({ 
-        ...prevState, 
+      setFormValues(prevState => ({
+        ...prevState,
         documentFile: "",
-        documentFileName: "" 
+        documentFileName: ""
       }));
     }
   }

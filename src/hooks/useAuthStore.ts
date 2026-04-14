@@ -23,6 +23,7 @@ import { convertTimestampToDate } from '../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { useUser } from './useUsers';
 import { NotificationService } from '../services/notificationService';
+import { startSync, syncManager } from '../services';
 
 const controller = '/auth';
 
@@ -54,6 +55,7 @@ export const useAuthStore = () => {
         );
         localStorage.setItem('user_session', JSON.stringify(user));
         dispatch(onLogin({ user, modules }));
+        startSync();
       }
       dispatch(finishLoading());
       dispatch(clearErrorMessage());
@@ -165,6 +167,7 @@ export const useAuthStore = () => {
         const modules = await getModulesByUserId(userLogin.id);
         
         dispatch(onLogin({ user: userLogin, modules }));
+        startSync();
         const lastPath = localStorage.getItem('lastPath') || '/';
         navigate(lastPath, { replace: true });
       }
@@ -216,6 +219,8 @@ export const useAuthStore = () => {
 
   const startLogout = async () => {
     dispatch(startLoading());
+    // Cancelar todas las syncs activas antes de limpiar la sesión
+    syncManager.cancelAll();
     try {
       const userSession = localStorage.getItem('user_session');
       if (userSession) {

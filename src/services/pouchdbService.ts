@@ -56,13 +56,6 @@ export const isEnvSTG = () => {
   return environment === 'stg' ? '_stg' : '';
 };
 
-export const opts: PouchDB.Replication.SyncOptions = {
-  live: true,
-  retry: true,
-  //  filter: 'app/by_account',
-  //  query_params: { "agent": agent }
-};
-
 const dbNames = Object.freeze({
   vehicles: `vehicles${isEnvSTG()}`,
   deposits: `deposits${isEnvSTG()}`,
@@ -172,61 +165,159 @@ export const dbContext = Object.freeze({
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
-// para no sincronizar todos los docs the TODOS los usuarios (accountId's)
+// para no sincronizar todos los docs de TODOS los usuarios (accountId's)
 
-// #region SINCRONIZACION DE BASES DE DATOS
-dbContext.fields.sync(`${remoteCouchDBUrl}${dbNames.fields}`, opts);
-dbContext.vehicles.sync(`${remoteCouchDBUrl}${dbNames.vehicles}`, opts);
-dbContext.deposits.sync(`${remoteCouchDBUrl}${dbNames.deposits}`, opts);
-dbContext.zipCodeARG.sync(`${remoteCouchDBUrl}${dbNames.zipCodeARG}`, opts);
-dbContext.zipCodePRY.sync(`${remoteCouchDBUrl}${dbNames.zipCodePRY}`, opts);
-dbContext.supplies.sync(`${remoteCouchDBUrl}${dbNames.supplies}`, opts);
-dbContext.typeVehicles.sync(`${remoteCouchDBUrl}${dbNames.typeVehicles}`, opts);
-dbContext.socialEntities.sync(`${remoteCouchDBUrl}${dbNames.socialEntities}`, opts);
-dbContext.categories.sync(`${remoteCouchDBUrl}${dbNames.categories}`, opts);
-dbContext.stockMovements.sync(`${remoteCouchDBUrl}${dbNames.stockMovements}`, opts);
-dbContext.stock.sync(`${remoteCouchDBUrl}${dbNames.stock}`, opts);
-dbContext.exitFields.sync(`${remoteCouchDBUrl}${dbNames.exitFields}`, opts);
-dbContext.campaigns.sync(`${remoteCouchDBUrl}${dbNames.campaigns}`, opts);
-dbContext.users.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
-dbContext.originsDestinations.sync(`${remoteCouchDBUrl}${dbNames.originsDestinations}`, opts);
-dbContext.withdrawalOrders.sync(`${remoteCouchDBUrl}${dbNames.withdrawalOrders}`, opts);
-dbContext.numerators.sync(`${remoteCouchDBUrl}${dbNames.numerators}`, opts);
-dbContext.depositSupplyOrder.sync(`${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`, opts);
-dbContext.withdrawalsByDepositSupply.sync(
-  `${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`,
-  opts,
-);
-dbContext.movementsType.sync(`${remoteCouchDBUrl}${dbNames.movementsType}`, opts);
-dbContext.platform.sync(`${remoteCouchDBUrl}${dbNames.platform}`, opts);
-// dbContext.platformSupplies.sync(`${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`, opts); //TODO: Verificar si se necesita
-dbContext.crops.sync(`${remoteCouchDBUrl}${dbNames.crops}`, opts);
-dbContext.zones.sync(`${remoteCouchDBUrl}${dbNames.zones}`, opts);
-dbContext.laborsServices.sync(`${remoteCouchDBUrl}${dbNames.laborsServices}`, opts);
-dbContext.purchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.purchaseOrder}`, opts);
-dbContext.detailPurchaseOrder.sync(`${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`, opts);
-dbContext.countries.sync(`${remoteCouchDBUrl}${dbNames.countries}`, opts);
-dbContext.menuModules.sync(`${remoteCouchDBUrl}${dbNames.menuModules}`, opts);
-dbContext.modulesUsers.sync(`${remoteCouchDBUrl}${dbNames.modulesUsers}`, opts);
-dbContext.licencesUse.sync(`${remoteCouchDBUrl}${dbNames.licencesUse}`, opts);
-dbContext.transportDocument.sync(`${remoteCouchDBUrl}${dbNames.transportDocument}`, opts);
-dbContext.companies.sync(`${remoteCouchDBUrl}${dbNames.companies}`, opts);
-dbContext.corporateContract.sync(`${remoteCouchDBUrl}${dbNames.corporateContract}`, opts);
-dbContext.certificateDeposit.sync(`${remoteCouchDBUrl}${dbNames.certificateDeposit}`, opts);
-dbContext.transportDocumentCertificateDeposit.sync(
-  `${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`,
-  opts,
-);
-dbContext.productiveUnits.sync(`${remoteCouchDBUrl}${dbNames.productiveUnits}`, opts);
-dbContext.contractSaleCereals.sync(`${remoteCouchDBUrl}${dbNames.contractSaleCereals}`, opts);
-dbContext.contractDeliveryDates.sync(`${remoteCouchDBUrl}${dbNames.contractDeliveryDates}`, opts);
-dbContext.costsExpenses.sync(`${remoteCouchDBUrl}${dbNames.costsExpenses}`, opts);
-dbContext.campaingExpenses.sync(`${remoteCouchDBUrl}${dbNames.campaingExpenses}`, opts);
-dbContext.cropStockControl.sync(`${remoteCouchDBUrl}${dbNames.cropStockControl}`, opts);
-dbContext.cropMovements.sync(`${remoteCouchDBUrl}${dbNames.cropMovements}`, opts);
-// dbContext.cropDeposits.sync(`${remoteCouchDBUrl}${dbNames.cropDeposits}`, opts);
-dbContext.companiesByContract.sync(`${remoteCouchDBUrl}${dbNames.companiesByContract}`, opts);
-dbContext.fieldsByProductUnit.sync(`${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`, opts);
-dbContext.system.sync(`${remoteCouchDBUrl}${dbNames.system}`, opts);
+// #region ÍNDICES
+// Crear índices para las queries más frecuentes. Se ejecuta una vez al arrancar;
+// PouchDB ignora la llamada si el índice ya existe.
+const createIndexes = async () => {
+  await Promise.all([
+    // supplies: filtrar por accountId + countryId + isDefault (usado en getSupplies y getStockData)
+    dbContext.supplies.createIndex({ index: { fields: ['accountId', 'countryId', 'isDefault'] } }),
+    // stock: filtrar por accountId + depositId (usado en getStockByDeposits y getStockBySupplyAndDeposit)
+    dbContext.stock.createIndex({ index: { fields: ['accountId', 'depositId'] } }),
+    // stock: filtrar por accountId + id (supplyId/cropId) (usado en getStockBySupplyActive)
+    dbContext.stock.createIndex({ index: { fields: ['accountId', 'id'] } }),
+    // stockMovements: filtrar por supplyId + accountId (usado en getStockBySupplyActive)
+    dbContext.stockMovements.createIndex({ index: { fields: ['supplyId', 'accountId'] } }),
+    // cropStockControl: filtrar por accountId + licenceId
+    dbContext.cropStockControl.createIndex({ index: { fields: ['accountId', 'licenceId'] } }),
+    // deposits: filtrar por accountId
+    dbContext.deposits.createIndex({ index: { fields: ['accountId'] } }),
+  ]);
+};
 
+createIndexes().catch((err) => console.error('[pouchdbService] Error creating indexes:', err));
+// #endregion
+
+// #region SYNC MANAGER
+/**
+ * SyncManager — repositorio singleton de todos los handlers de sincronización.
+ *
+ * Responsabilidades:
+ * - Registrar y almacenar cada handler de sync (permite cancelarlos individualmente o todos a la vez)
+ * - Añadir event listeners de error y estado a cada sync
+ * - Control de batch_size para evitar saturar CouchDB con DBs grandes
+ *
+ * Uso externo:
+ *   import { syncManager } from '../services';
+ *   syncManager.cancel('supplies');   // pausar una DB
+ *   syncManager.cancelAll();          // pausar todo (ej: al hacer logout)
+ */
+class SyncManager {
+  private syncs = new Map<string, PouchDB.Replication.Sync<any>>();
+
+  register<T>(
+    name: string,
+    local: PouchDB.Database<T>,
+    remoteUrl: string,
+    opts: PouchDB.Replication.SyncOptions = {},
+  ) {
+    const handler = local
+      .sync(remoteUrl, { live: true, retry: true, batch_size: 100, batches_limit: 5, ...opts })
+      .on('active', () => console.debug(`[sync:${name}] active`))
+      .on('paused', (err) => {
+        if (err) console.warn(`[sync:${name}] paused with error:`, err);
+      })
+      .on('error', (err) => console.error(`[sync:${name}] error:`, err));
+
+    this.syncs.set(name, handler);
+    return handler;
+  }
+
+  cancel(name: string) {
+    this.syncs.get(name)?.cancel();
+    this.syncs.delete(name);
+  }
+
+  cancelAll() {
+    this.syncs.forEach((s) => s.cancel());
+    this.syncs.clear();
+  }
+}
+
+export const syncManager = new SyncManager();
+// #endregion
+
+// #region SINCRONIZACIÓN POR PRIORIDAD
+// Las DBs se inician en 3 grupos escalonados para evitar saturar CouchDB al arrancar.
+
+// Prioridad ALTA: datos críticos para la operación diaria → se inician inmediatamente
+const syncHighPriority = () => {
+  syncManager.register('fields', dbContext.fields, `${remoteCouchDBUrl}${dbNames.fields}`);
+  syncManager.register('campaigns', dbContext.campaigns, `${remoteCouchDBUrl}${dbNames.campaigns}`);
+  syncManager.register('supplies', dbContext.supplies, `${remoteCouchDBUrl}${dbNames.supplies}`);
+  syncManager.register('deposits', dbContext.deposits, `${remoteCouchDBUrl}${dbNames.deposits}`);
+  syncManager.register('users', dbContext.users, `${remoteCouchDBUrl}${dbNames.users}`);
+  syncManager.register('stock', dbContext.stock, `${remoteCouchDBUrl}${dbNames.stock}`);
+  syncManager.register('stockMovements', dbContext.stockMovements, `${remoteCouchDBUrl}${dbNames.stockMovements}`);
+};
+
+// Prioridad MEDIA: datos operativos secundarios → se inician después de 1.5s
+const syncMediumPriority = () => {
+  syncManager.register('vehicles', dbContext.vehicles, `${remoteCouchDBUrl}${dbNames.vehicles}`);
+  syncManager.register('exitFields', dbContext.exitFields, `${remoteCouchDBUrl}${dbNames.exitFields}`);
+  syncManager.register('withdrawalOrders', dbContext.withdrawalOrders, `${remoteCouchDBUrl}${dbNames.withdrawalOrders}`);
+  syncManager.register('numerators', dbContext.numerators, `${remoteCouchDBUrl}${dbNames.numerators}`);
+  syncManager.register('originsDestinations', dbContext.originsDestinations, `${remoteCouchDBUrl}${dbNames.originsDestinations}`);
+  syncManager.register('zones', dbContext.zones, `${remoteCouchDBUrl}${dbNames.zones}`);
+  syncManager.register('crops', dbContext.crops, `${remoteCouchDBUrl}${dbNames.crops}`);
+  syncManager.register('cropStockControl', dbContext.cropStockControl, `${remoteCouchDBUrl}${dbNames.cropStockControl}`);
+  syncManager.register('cropMovements', dbContext.cropMovements, `${remoteCouchDBUrl}${dbNames.cropMovements}`);
+  syncManager.register('depositSupplyOrder', dbContext.depositSupplyOrder, `${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
+  syncManager.register('withdrawalsByDepositSupply', dbContext.withdrawalsByDepositSupply, `${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
+  syncManager.register('purchaseOrder', dbContext.purchaseOrder, `${remoteCouchDBUrl}${dbNames.purchaseOrder}`);
+  syncManager.register('detailPurchaseOrder', dbContext.detailPurchaseOrder, `${remoteCouchDBUrl}${dbNames.detailPurchaseOrder}`);
+  syncManager.register('laborsServices', dbContext.laborsServices, `${remoteCouchDBUrl}${dbNames.laborsServices}`);
+  syncManager.register('socialEntities', dbContext.socialEntities, `${remoteCouchDBUrl}${dbNames.socialEntities}`);
+  syncManager.register('categories', dbContext.categories, `${remoteCouchDBUrl}${dbNames.categories}`);
+};
+
+// Prioridad BAJA: datos de referencia y configuración → se inician después de 3.5s
+const syncLowPriority = () => {
+  syncManager.register('typeVehicles', dbContext.typeVehicles, `${remoteCouchDBUrl}${dbNames.typeVehicles}`);
+  syncManager.register('movementsType', dbContext.movementsType, `${remoteCouchDBUrl}${dbNames.movementsType}`);
+  syncManager.register('zipCodeARG', dbContext.zipCodeARG, `${remoteCouchDBUrl}${dbNames.zipCodeARG}`);
+  syncManager.register('zipCodePRY', dbContext.zipCodePRY, `${remoteCouchDBUrl}${dbNames.zipCodePRY}`);
+  syncManager.register('countries', dbContext.countries, `${remoteCouchDBUrl}${dbNames.countries}`);
+  syncManager.register('menuModules', dbContext.menuModules, `${remoteCouchDBUrl}${dbNames.menuModules}`);
+  syncManager.register('modulesUsers', dbContext.modulesUsers, `${remoteCouchDBUrl}${dbNames.modulesUsers}`);
+  syncManager.register('licencesUse', dbContext.licencesUse, `${remoteCouchDBUrl}${dbNames.licencesUse}`);
+  syncManager.register('platform', dbContext.platform, `${remoteCouchDBUrl}${dbNames.platform}`);
+  // syncManager.register('platformSupplies', dbContext.platformSupplies, `${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`); //TODO: Verificar si se necesita
+  syncManager.register('transportDocument', dbContext.transportDocument, `${remoteCouchDBUrl}${dbNames.transportDocument}`);
+  syncManager.register('companies', dbContext.companies, `${remoteCouchDBUrl}${dbNames.companies}`);
+  syncManager.register('companiesByContract', dbContext.companiesByContract, `${remoteCouchDBUrl}${dbNames.companiesByContract}`);
+  syncManager.register('corporateContract', dbContext.corporateContract, `${remoteCouchDBUrl}${dbNames.corporateContract}`);
+  syncManager.register('certificateDeposit', dbContext.certificateDeposit, `${remoteCouchDBUrl}${dbNames.certificateDeposit}`);
+  syncManager.register('transportDocumentCertificateDeposit', dbContext.transportDocumentCertificateDeposit, `${remoteCouchDBUrl}${dbNames.transportDocumentCertificateDeposit}`);
+  syncManager.register('productiveUnits', dbContext.productiveUnits, `${remoteCouchDBUrl}${dbNames.productiveUnits}`);
+  syncManager.register('contractSaleCereals', dbContext.contractSaleCereals, `${remoteCouchDBUrl}${dbNames.contractSaleCereals}`);
+  syncManager.register('contractDeliveryDates', dbContext.contractDeliveryDates, `${remoteCouchDBUrl}${dbNames.contractDeliveryDates}`);
+  syncManager.register('costsExpenses', dbContext.costsExpenses, `${remoteCouchDBUrl}${dbNames.costsExpenses}`);
+  syncManager.register('campaingExpenses', dbContext.campaingExpenses, `${remoteCouchDBUrl}${dbNames.campaingExpenses}`);
+  syncManager.register('fieldsByProductUnit', dbContext.fieldsByProductUnit, `${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`);
+  syncManager.register('system', dbContext.system, `${remoteCouchDBUrl}${dbNames.system}`);
+  // syncManager.register('cropDeposits', dbContext.cropDeposits, `${remoteCouchDBUrl}${dbNames.cropDeposits}`);
+};
+
+// Timers internos para poder cancelarlos si se llama startSync antes de que disparen
+let mediumTimer: ReturnType<typeof setTimeout> | null = null;
+let lowTimer: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * Inicia todas las sincronizaciones en 3 grupos escalonados.
+ * Debe llamarse una única vez, después de que el usuario se autenticó.
+ * Si ya hay syncs activas (ej: doble llamada accidental), las cancela primero.
+ */
+export const startSync = () => {
+  // Cancelar syncs previas y timers pendientes antes de reiniciar
+  if (mediumTimer) clearTimeout(mediumTimer);
+  if (lowTimer) clearTimeout(lowTimer);
+  syncManager.cancelAll();
+
+  syncHighPriority();
+  mediumTimer = setTimeout(syncMediumPriority, 1500);
+  lowTimer = setTimeout(syncLowPriority, 3500);
+};
 // #endregion
