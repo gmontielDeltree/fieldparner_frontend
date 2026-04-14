@@ -103,14 +103,13 @@ export const useSupply = () => {
             const responseStock = await dbContext.stock.find({
                 selector: {
                     "$and": [
-                        // { "id": supplyId },
                         { "accountId": user?.accountId },
                         { "depositId": depositId },
+                        { "id": supplyId },
                     ],
                 }
             });
-            const stockSupplyAndDeposits = responseStock.docs;
-            stockSupplyAndDeposits.filter(x => x.id === supplyId).forEach((stock) => {
+            responseStock.docs.forEach((stock) => {
                 supplyByDeposits.push(stock);
             });
             setStockSupplyAndDeposit(supplyByDeposits);
@@ -438,58 +437,58 @@ export const useSupply = () => {
         }
     }
 
-    const addReservedStock = async (supplyId: string, quantity: number) => {
-        setIsLoading(true);
-        try {
-            const supply = supplies.find(supply => supply._id === supplyId);
-            if (!supply) {
-                console.error(t("supply_not_found_with_id", { id: supplyId }));
-                throw new Error(t("supply_not_found"));
-            }
+    // const addReservedStock = async (supplyId: string, quantity: number) => {
+    //     setIsLoading(true);
+    //     try {
+    //         const supply = supplies.find(supply => supply._id === supplyId);
+    //         if (!supply) {
+    //             console.error(t("supply_not_found_with_id", { id: supplyId }));
+    //             throw new Error(t("supply_not_found"));
+    //         }
 
-            const updatedSupply: Supply = {
-                ...supply,
-                reservedStock: supply.reservedStock + quantity
-            };
+    //         const updatedSupply: Supply = {
+    //             ...supply,
+    //             reservedStock: supply.reservedStock + quantity
+    //         };
 
-            const response = await dbContext.supplies.put(updatedSupply);
-            if (response.ok) {
-                setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
-                NotificationService.showSuccess(t("reserved_stock_added"), { name: supply.name }, t("supply_label"));
-            }
-            setIsLoading(false);
-        } catch (error) {
-            console.log(t("error_adding_reserved_stock"), error);
-            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
-            setIsLoading(false);
-        }
-    };
+    //         const response = await dbContext.supplies.put(updatedSupply);
+    //         if (response.ok) {
+    //             setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
+    //             NotificationService.showSuccess(t("reserved_stock_added"), { name: supply.name }, t("supply_label"));
+    //         }
+    //         setIsLoading(false);
+    //     } catch (error) {
+    //         console.log(t("error_adding_reserved_stock"), error);
+    //         NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
+    //         setIsLoading(false);
+    //     }
+    // };
 
-    const removeReservedStock = async (supplyId: string, quantity: number) => {
-        setIsLoading(true);
-        try {
-            const supply = supplies.find(supply => supply._id === supplyId);
-            if (!supply) throw new Error(t("supply_not_found"));
-            if (supply.reservedStock < quantity) throw new Error(t("insufficient_reserved_stock"));
+    // const removeReservedStock = async (supplyId: string, quantity: number) => {
+    //     setIsLoading(true);
+    //     try {
+    //         const supply = supplies.find(supply => supply._id === supplyId);
+    //         if (!supply) throw new Error(t("supply_not_found"));
+    //         if (supply.reservedStock < quantity) throw new Error(t("insufficient_reserved_stock"));
 
-            const updatedSupply: Supply = {
-                ...supply,
-                reservedStock: supply.reservedStock - quantity,
-                currentStock: supply.currentStock - quantity
-            };
+    //         const updatedSupply: Supply = {
+    //             ...supply,
+    //             reservedStock: supply.reservedStock - quantity,
+    //             currentStock: supply.currentStock - quantity
+    //         };
 
-            const response = await dbContext.supplies.put(updatedSupply);
-            if (response.ok) {
-                setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
-                NotificationService.showSuccess(t("reserved_stock_removed"), { name: supply.name }, t("supply_label"));
-            }
-            setIsLoading(false);
-        } catch (error) {
-            console.log(t("error_removing_reserved_stock"), error);
-            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
-            setIsLoading(false);
-        }
-    };
+    //         const response = await dbContext.supplies.put(updatedSupply);
+    //         if (response.ok) {
+    //             setSupplies(supplies.map(s => (s._id === supplyId ? updatedSupply : s)));
+    //             NotificationService.showSuccess(t("reserved_stock_removed"), { name: supply.name }, t("supply_label"));
+    //         }
+    //         setIsLoading(false);
+    //     } catch (error) {
+    //         console.log(t("error_removing_reserved_stock"), error);
+    //         NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
+    //         setIsLoading(false);
+    //     }
+    // };
 
     return {
         supplies,
@@ -504,8 +503,8 @@ export const useSupply = () => {
         updateSupply,
         deleteSupply,
         setSupplyError,
-        addReservedStock,
-        removeReservedStock,
+        // addReservedStock,
+        // removeReservedStock,
         getStockBySupplyActive,
         getStockData,
         getStockByDeposits,
