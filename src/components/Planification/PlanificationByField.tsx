@@ -184,6 +184,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
                 _id: newId,
                 _rev: undefined,
                 totalCantidad: (src.totalCantidad || 0) * scaleHa,
+                ordenRetiro: undefined,
               });
             }
             for (const row of (labResp.rows || [])) {

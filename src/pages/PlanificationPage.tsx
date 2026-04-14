@@ -255,7 +255,7 @@ export const PlanificationPage: React.FC = () => {
         if (!row.doc) continue;
         const newId = `planlinsumo:${uuidv7()}`;
         newInsumoIds.push(newId);
-        newDocs.push({ ...row.doc, _id: newId, _rev: undefined });
+        newDocs.push({ ...row.doc, _id: newId, _rev: undefined, ordenRetiro: undefined });
       }
       for (const row of (labResp.rows || [])) {
         if (!row.doc) continue;
@@ -363,6 +363,11 @@ export const PlanificationPage: React.FC = () => {
             totalCantidad: dosis.total || 0,
             hectareas: area,
             precioUnitario: dosis.precio_estimado || 0,
+            deposito: dosis.deposito || null,
+            depositoId: dosis.deposito?._id,
+            ubicacion: dosis.ubicacion || '',
+            nroLote: dosis.nro_lote || '',
+            ordenRetiro: undefined,
           });
         }
         for (const serv of (ea.detalles?.servicios || [])) {
