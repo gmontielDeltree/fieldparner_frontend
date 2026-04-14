@@ -339,7 +339,11 @@ export const useAnnualPlanValorization = () => {
     }
   };
 
-  const updateAnnualPlanValorization = async (valorization: IAnnualPlan) => {
+  const updateAnnualPlanValorization = async (
+    valorization: IAnnualPlan,
+    valorizacionInsumos?: Record<string, number>,
+    valorizacionServicios?: Record<string, number>,
+  ) => {
     try {
       // Actualizar el ciclo en dbContext.fields con los datos de valorización
       const ciclo = await db.get(valorization._id!) as unknown as ICiclosPlanificacion;
@@ -352,6 +356,9 @@ export const useAnnualPlanValorization = () => {
         operacMonAlt: valorization.operacMonAlt,
         cotizFutCer: valorization.cotizFutCer,
         valorizada: true,
+        // Persist insumo/servicio unit prices so they survive page reload
+        ...(valorizacionInsumos && { valorizacionInsumos }),
+        ...(valorizacionServicios && { valorizacionServicios }),
       };
 
       await db.put(updatedCiclo as any);
