@@ -37,8 +37,8 @@ export const getMatchingSupplyStocks = (
   return stocks
     .filter((stock) => normalizeValue(stock.id) === supplyId)
     .filter((stock) => normalizeValue(stock.depositId) === depositId)
-    .filter((stock) => !location || normalizeValue(stock.location) === location)
-    .filter((stock) => !nroLot || normalizeValue(stock.nroLot) === nroLot)
+    .filter((stock) => !location || !normalizeValue(stock.location) || normalizeValue(stock.location) === location)
+    .filter((stock) => !nroLot || !normalizeValue(stock.nroLot) || normalizeValue(stock.nroLot) === nroLot)
     .sort((a, b) => {
       const campaignScoreA = campaignId && normalizeValue(a.campaignId) === campaignId ? 1 : 0;
       const campaignScoreB = campaignId && normalizeValue(b.campaignId) === campaignId ? 1 : 0;
