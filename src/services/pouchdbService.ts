@@ -280,6 +280,7 @@ const syncLowPriority = () => {
   syncManager.register('zipCodeARG', dbContext.zipCodeARG, `${remoteCouchDBUrl}${dbNames.zipCodeARG}`);
   syncManager.register('zipCodePRY', dbContext.zipCodePRY, `${remoteCouchDBUrl}${dbNames.zipCodePRY}`);
   syncManager.register('countries', dbContext.countries, `${remoteCouchDBUrl}${dbNames.countries}`);
+  syncManager.register('modules', dbContext.modules, `${remoteCouchDBUrl}${dbNames.modules}`);
   syncManager.register('menuModules', dbContext.menuModules, `${remoteCouchDBUrl}${dbNames.menuModules}`);
   syncManager.register('modulesUsers', dbContext.modulesUsers, `${remoteCouchDBUrl}${dbNames.modulesUsers}`);
   syncManager.register('licencesUse', dbContext.licencesUse, `${remoteCouchDBUrl}${dbNames.licencesUse}`);
