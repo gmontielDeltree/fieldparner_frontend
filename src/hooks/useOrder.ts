@@ -35,6 +35,27 @@ export const useOrder = () => {
     const [error, setError] = useState({});
     const { t } = useTranslation();
 
+    const findStockDocsForOrderItem = async (item: {
+        supplyId: string;
+        depositId: string;
+        nroLot?: string;
+        location?: string;
+    }) => {
+        if (!user) return [];
+
+        const selector: any = {
+            accountId: user.accountId,
+            id: item.supplyId,
+            depositId: item.depositId,
+            ...(item.nroLot ? { nroLot: item.nroLot } : {}),
+        };
+
+        const stockResult = await dbContext.stock.find({ selector });
+        return stockResult.docs.filter((stock: any) =>
+            !item.location || (stock.location || '') === item.location
+        );
+    }
+
     const getLastNumerator = async (accountId: string, type: NumeratorType) => {
         try {
             const response = await dbContext.numerators.find({
@@ -179,6 +200,21 @@ export const useOrder = () => {
                 putLastNumerator(lastNumerator),
             ]);
 
+            // Update stock.reservedStock for each supply in the order
+            for (const item of inputsToBeWithdrawan) {
+                try {
+                    const stockDocs = await findStockDocsForOrderItem(item);
+                    if (stockDocs.length > 0) {
+                        const stockDoc = stockDocs[0];
+                        stockDoc.reservedStock = (stockDoc.reservedStock || 0) + Number(item.originalAmount || 0);
+                        stockDoc.lastUpdate = new Date().toISOString();
+                        await dbContext.stock.put(stockDoc);
+                    }
+                } catch (stockError) {
+                    console.error('Error updating reserved stock:', stockError);
+                }
+            }
+
             setIsLoading(false);
 
             if (response) {
@@ -264,6 +300,7 @@ export const useOrder = () => {
                         ...d,
                         deposit,
                         supply,
+                        amount: Number(d.originalAmount || 0) - Number(d.withdrawalAmount || 0),
                     } as DepositSupplyOrderItem;
                 });
                 setDepositsSuppliesOrder(suppliesOfTheOrder);
@@ -440,6 +477,25 @@ export const useOrder = () => {
                 dbContext.depositSupplyOrder.bulkDocs(updateDepositSupplies),
             ]);
 
+            // Update stock: decrement reservedStock and currentStock
+            for (const w of listWithdrawals) {
+                try {
+                    const withdrawnAmount = Number(w.amount || 0);
+                    if (withdrawnAmount <= 0) continue;
+
+                    const stockDocs = await findStockDocsForOrderItem(w);
+                    if (stockDocs.length > 0) {
+                        const stockDoc = stockDocs[0];
+                        stockDoc.reservedStock = Math.max(0, (stockDoc.reservedStock || 0) - withdrawnAmount);
+                        stockDoc.currentStock = (stockDoc.currentStock || 0) - withdrawnAmount;
+                        stockDoc.lastUpdate = new Date().toISOString();
+                        await dbContext.stock.put(stockDoc);
+                    }
+                } catch (stockError) {
+                    console.error('Error updating stock on withdrawal confirmation:', stockError);
+                }
+            }
+
             //Una vez q se confirma la orden automatica, se marca como completada
             let updateOrder = { ...withdrawalOrder, state: OrderStatus.Completed };
             await dbContext.withdrawalOrders.put(updateOrder);
@@ -513,7 +569,55 @@ export const useOrder = () => {
         }
     }
 
-    const deleteWithdrawalOrder = () => { }
+    const deleteWithdrawalOrder = async (withdrawalOrder: WithdrawalOrder) => {
+        try {
+            if (!user) throw new Error(t("user_not_found"));
+
+            // Get deposit supply orders for this order
+            const depositSupplyResult = await dbContext.depositSupplyOrder.find({
+                selector: {
+                    accountId: user.accountId,
+                    order: withdrawalOrder.order,
+                }
+            });
+
+            // Release reserved stock for each supply
+            for (const dso of depositSupplyResult.docs) {
+                const reservedAmount = Number(dso.originalAmount || 0) - Number(dso.withdrawalAmount || 0);
+                if (reservedAmount <= 0) continue;
+
+                try {
+                    const stockDocs = await findStockDocsForOrderItem(dso);
+                    if (stockDocs.length > 0) {
+                        const stockDoc = stockDocs[0];
+                        stockDoc.reservedStock = Math.max(0, (stockDoc.reservedStock || 0) - reservedAmount);
+                        stockDoc.lastUpdate = new Date().toISOString();
+                        await dbContext.stock.put(stockDoc);
+                    }
+                } catch (stockError) {
+                    console.error('Error releasing reserved stock:', stockError);
+                }
+            }
+
+            // Delete deposit supply orders
+            const docsToDelete = depositSupplyResult.docs.map(d => ({ ...d, _deleted: true }));
+            if (docsToDelete.length > 0) {
+                await dbContext.depositSupplyOrder.bulkDocs(docsToDelete);
+            }
+
+            // Delete the withdrawal order itself
+            await dbContext.withdrawalOrders.remove(withdrawalOrder._id, withdrawalOrder._rev);
+
+            NotificationService.showSuccess(
+                t("withdrawal_order_deleted_successfully"),
+                {},
+                t("withdrawal_order_label")
+            );
+        } catch (error) {
+            console.error('Error deleting withdrawal order:', error);
+            NotificationService.showError(t("unexpected_error"), {}, t("oops_label"));
+        }
+    }
 
     return {
         orders,

@@ -234,6 +234,14 @@ const ProfileDrawer: React.FC<ProfileDrawerProps> = ({
         >
           {loading ? t("loading") : t("save_changes")}
         </Button>
+
+        <Typography
+          variant="caption"
+          color="text.disabled"
+          sx={{ display: 'block', textAlign: 'center', mt: 3 }}
+        >
+          Fieldpartner v1.0.0
+        </Typography>
       </Box>
     </Drawer>
   );

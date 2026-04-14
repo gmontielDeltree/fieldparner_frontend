@@ -7,17 +7,18 @@ import {
     useCampaign,
     useForm,
     useOrder,
-    useStockMovement,
 } from '../../hooks';
 import { Loading, TemplateLayout } from '../../components';
 import { Box, Button, FormControl, Grid, InputAdornment, InputLabel, MenuItem, Paper, Select, TextField, Typography } from '@mui/material';
 import { Assignment as AssignmentIcon } from '@mui/icons-material';
 import { OrderStatus, DepositSupplyOrder, TransformSupply, WithdrawalOrderType, WithdrawalOrder, Campaign } from '../../types';
 import { getShortDate } from '../../helpers/dates';
-import { Stock, TipoStock } from '../../interfaces/stock';
+import { Stock } from '../../interfaces/stock';
 import { TableNewWithdrawalOrder } from '../../components/WithdrawalOrder/TableNewWithdrawalOrder';
 import { AutocompleteCampaign } from '../../components/Autocomplete';
 import { useTranslation } from 'react-i18next';
+import { dbContext } from '../../services';
+import { allocateStockWithdrawal, getMatchingSupplyStocks } from '../../utils/stockAllocation';
 
 //TODO: actualizar los alerts a NotificationService
 const initialForm = {
@@ -40,7 +41,6 @@ export const WithdrawalOrdersPage: React.FC = () => {
     const [campaignSelected, setCampaignSelected] = useState<Campaign | null>(null);
     const { getCampaigns } = useCampaign();
     const { businesses: socialEntities, getBusinesses } = useBusiness();
-    const { getStock } = useStockMovement();
     const {
         formulario: formValues,
         handleInputChange,
@@ -56,7 +56,41 @@ export const WithdrawalOrdersPage: React.FC = () => {
             navigate("/init/overview/list-orders");
     }
 
-    const onClickGenerate = () => {
+    const getStockAllocations = async (item: TransformSupply) => {
+        const supplyId = item.supply?._id;
+        const depositId = item.deposit?._id;
+
+        if (!user || !supplyId || !depositId) {
+            return {
+                allocations: [],
+                totalAvailable: 0,
+                remaining: Number(item.amount || 0),
+            };
+        }
+
+        const stockResult = await dbContext.stock.find({
+            selector: {
+                accountId: user.accountId,
+                id: supplyId,
+                depositId,
+            }
+        });
+
+        const matchingStocks = getMatchingSupplyStocks(
+            stockResult.docs as Stock[],
+            {
+                supplyId,
+                depositId,
+                campaignId: formValues.campaignId,
+                location: item.location,
+                nroLot: item.nroLot,
+            },
+        );
+
+        return allocateStockWithdrawal(matchingStocks, Number(item.amount || 0));
+    }
+
+    const onClickGenerate = async () => {
         const withdraw = socialEntities.find(s => s._id === formValues.withdrawId);
 
         if (!user || !campaignSelected || !withdraw) {
@@ -64,19 +98,37 @@ export const WithdrawalOrdersPage: React.FC = () => {
             return;
         }
 
-        let newDepositSupplyOrders: DepositSupplyOrder[] = suppliesToAdd.map(s => ({
-            accountId: user?.accountId,
-            depositId: s.deposit?._id || "",
-            supplyId: s.supply?._id || "",
-            crop: null,
-            location: s.location,
-            nroLot: s.nroLot,
-            order: 0, // Se genera en createWithdrawalOrder()
-            withdrawalAmount: 0,
-            originalAmount: Number(s.amount),
-        }));
+        const newDepositSupplyOrders: DepositSupplyOrder[] = [];
 
-        addNewWithdrawalOrder({
+        for (const supplyToAdd of suppliesToAdd) {
+            const allocation = await getStockAllocations(supplyToAdd);
+
+            if (allocation.totalAvailable <= 0) {
+                Swal.fire('Stock insuficiente.', `No tiene stock del insumo ${supplyToAdd.supply?.name || ''}.`, 'error');
+                return;
+            }
+
+            if (allocation.remaining > 0 || allocation.allocations.length === 0) {
+                Swal.fire('Stock insuficiente.', `La cantidad del insumo ${supplyToAdd.supply?.name || ''} supera al stock disponible.`, 'error');
+                return;
+            }
+
+            allocation.allocations.forEach(({ stock, amount }) => {
+                newDepositSupplyOrders.push({
+                    accountId: user.accountId,
+                    depositId: stock.depositId || supplyToAdd.deposit?._id || "",
+                    supplyId: stock.id || supplyToAdd.supply?._id || "",
+                    crop: null,
+                    location: stock.location || "",
+                    nroLot: stock.nroLot || "",
+                    order: 0,
+                    withdrawalAmount: 0,
+                    originalAmount: Number(amount),
+                } as DepositSupplyOrder);
+            });
+        }
+
+        await addNewWithdrawalOrder({
             type: WithdrawalOrderType.Manual,
             campaignId: formValues.campaignId,
             creationDate: formValues.creationDate,
@@ -91,35 +143,20 @@ export const WithdrawalOrdersPage: React.FC = () => {
 
     const validateStock = async (newSupply: TransformSupply) => {
         try {
-            const { supply, deposit } = newSupply;
-            const id = supply?._id;
-            const depositId = deposit?._id;
-            if (!id && !depositId) return false;
+            const allocation = await getStockAllocations(newSupply);
+            console.log('stock del insumo:', allocation);
 
-            let result = await getStock(
-                {
-                    campaignId: formValues.campaignId,
-                    tipo: TipoStock.INSUMO,
-                    id,
-                    depositId,
-                    location: newSupply.location,
-                    nroLot: newSupply.nroLot
-                }
-            );
-            console.log('stock del insumo:', result)
-            if (result && result[0]?.currentStock > 0) {
-                let supplyStock: Stock = result[0];
-                const newCurrentStock = (Number(supplyStock.currentStock) - Number(newSupply.amount));
-                if (newCurrentStock <= 0) {
-                    Swal.fire('Stock insuficiente.', 'La cantidad supera al stock actual.', 'error');
-                    return false;
-                }
-                return true;
-            }
-            else {
+            if (allocation.totalAvailable <= 0) {
                 Swal.fire('Stock insuficiente.', 'No tiene stock del insumo.', 'error');
                 return false;
             }
+
+            if (allocation.remaining > 0) {
+                Swal.fire('Stock insuficiente.', 'La cantidad supera al stock disponible.', 'error');
+                return false;
+            }
+
+            return true;
         } catch (error) {
             console.log('error', error);
             return false;
