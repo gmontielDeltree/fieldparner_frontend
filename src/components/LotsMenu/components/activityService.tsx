@@ -207,11 +207,21 @@ export const saveActivity = async (
             try {
               // Log the dosis object for debugging
               console.log("saveActivity: Processing supply:", dosis);
+
+              if (dosis?.orden_de_retiro?.order) {
+                console.log("saveActivity: Existing withdrawal order found, skipping new reservation:", dosis.orden_de_retiro);
+                continue;
+              }
               
               // Check if we have the necessary data
               if (!dosis.insumo) {
                 console.warn("saveActivity: Supply missing insumo property:", dosis);
                 continue; // Skip this supply
+              }
+
+              if (!dosis.deposito?._id) {
+                console.warn("saveActivity: Supply missing deposit, reservation skipped:", dosis);
+                continue;
               }
               
               const supplyName = dosis.insumo?.name || 'unnamed supply';

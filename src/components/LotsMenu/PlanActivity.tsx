@@ -715,11 +715,19 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
           const line: any = row.doc
           if (!line) continue
           let insumoDoc = null
+          let depositDoc = line.deposito || null
           if (line.insumoId) {
             try {
               insumoDoc = await dbContext.supplies.get(line.insumoId)
             } catch (insErr) {
               console.warn('Supply not found for plan line', line.insumoId, insErr)
+            }
+          }
+          if (!depositDoc && (line.depositoId || line.deposito?._id)) {
+            try {
+              depositDoc = await dbContext.deposits.get(line.depositoId || line.deposito?._id)
+            } catch (depositErr) {
+              console.warn('Deposit not found for plan line', line.depositoId || line.deposito?._id, depositErr)
             }
           }
           insumos.push(normalizeSupplyDoseLine({
@@ -728,7 +736,10 @@ const PlanActivity: React.FC<PlanActivityProps> = ({
             dosis: line.dosis,
             total: line.totalCantidad,
             precio_estimado: line.precioUnitario,
-            deposito: null,
+            deposito: depositDoc || null,
+            ubicacion: line.ubicacion || '',
+            nro_lote: line.nroLote || line.nroLot || '',
+            orden_de_retiro: line.ordenRetiro || null,
             uuid: line._id || uuidv7(),
             hectareas: line.hectareas,
           }, plannedHectares))

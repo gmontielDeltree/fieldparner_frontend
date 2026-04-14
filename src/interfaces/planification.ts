@@ -1,6 +1,7 @@
 import PouchDB from 'pouchdb';
 import { CreatedTag, LastUpdateTag } from './activity';
 import { Business } from '@types';
+import type { Deposit, WithdrawalOrder } from '../types';
 
 export enum TTipoActividadPlanificada {
     SIEMBRA = "siembra",
@@ -24,7 +25,13 @@ export interface IInsumosPlanificacion extends FPDocument {
     totalCantidad: number,
     hectareas: number,
     precioUnitario : number,
-    totalCosto:number
+    totalCosto:number,
+    actividadId?: string,
+    deposito?: Partial<Deposit> | null,
+    depositoId?: string,
+    ubicacion?: string,
+    nroLote?: string,
+    ordenRetiro?: WithdrawalOrder | null,
 }
 
 export interface ILaboresPlanificacion extends FPDocument {

@@ -13,6 +13,8 @@ import { CiclosContext } from "./contexts/CiclosContext";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { Button as RsButton, Spinner } from 'reactstrap';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { dbContext } from "../../services";
+import { NotificationService } from "../../services/notificationService";
 
 // Import the labor forms
 import PersonalForm from '../LotsMenu/forms/PlanForms/PersonalForm';
@@ -21,6 +23,20 @@ import ServicesForm from '../LotsMenu/forms/PlanForms/ServicesForm';
 import ObservationsForm from '../LotsMenu/forms/PlanForms/ObservationsForm';
 import { NumberFieldWithUnits } from '../LotsMenu/components/NumberField';
 import { normalizeSupplyDoseLine, resolveSupplyDosificacion, resolveSupplyTotal } from '../../utils/supplyDose';
+
+const isSowingPlanActivity = (tipo?: string) => {
+  const normalizedType = (tipo || '').toLowerCase();
+  return normalizedType === 'siembra' || normalizedType === 'sowing';
+};
+
+const resolvePlanLineId = (prefix: string, rawId?: string) => {
+  if (rawId && rawId.startsWith(`${prefix}:`)) {
+    return rawId;
+  }
+
+  const suffix = rawId || `${Date.now()}-${Math.random()}`;
+  return `${prefix}:${suffix}`;
+};
 
 interface ActividadEditorBaseProps {
   tipo: string;
@@ -323,12 +339,116 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
   const [formData, setFormData] = useState(convertToLaborFormat(actividadDoc));
   const [activeStep, setActiveStep] = useState(0);
   const [completed, setCompleted] = useState<{ [k: number]: boolean }>({});
+  const requiresReservationDetails = isSowingPlanActivity(formData.tipo);
 
   const steps = [t('general'), t('supplies'), t('services'), t('observations')];
 
   useEffect(() => {
-    const converted = convertToLaborFormat(actividadDoc);
-    setFormData(converted);
+    let cancelled = false;
+
+    const loadActivityIntoForm = async () => {
+      const converted = convertToLaborFormat(actividadDoc);
+
+      const insumoLineIds = actividadDoc?.insumosLineasIds || [];
+      const laborLineIds = actividadDoc?.laboresLineasIds || [];
+
+      if (!insumoLineIds.length && !laborLineIds.length) {
+        if (!cancelled) {
+          setFormData(converted);
+        }
+        return;
+      }
+
+      try {
+        const [insumosResp, laboresResp] = await Promise.all([
+          insumoLineIds.length
+            ? dbContext.fields.allDocs({ include_docs: true, keys: insumoLineIds })
+            : Promise.resolve({ rows: [] } as any),
+          laborLineIds.length
+            ? dbContext.fields.allDocs({ include_docs: true, keys: laborLineIds })
+            : Promise.resolve({ rows: [] } as any),
+        ]);
+
+        const dosis = await Promise.all(
+          (insumosResp.rows || [])
+            .filter((row: any) => row.doc && !row.error)
+            .map(async (row: any) => {
+              const line = row.doc as any;
+
+              let insumoDoc = null;
+              if (line?.insumoId) {
+                try {
+                  insumoDoc = await dbContext.supplies.get(line.insumoId);
+                } catch (error) {
+                  console.warn('Could not load supply for annual plan line', line.insumoId, error);
+                }
+              }
+
+              let depositoDoc = line?.deposito || null;
+              const depositId = line?.depositoId || line?.deposito?._id;
+              if (!depositoDoc && depositId) {
+                try {
+                  depositoDoc = await dbContext.deposits.get(depositId);
+                } catch (error) {
+                  console.warn('Could not load deposit for annual plan line', depositId, error);
+                }
+              }
+
+              return normalizeSupplyDoseLine({
+                insumo: insumoDoc || { _id: line.insumoId, name: line.insumoId },
+                dosificacion: line?.dosificacion,
+                dosis: line?.dosis,
+                total: line?.totalCantidad,
+                precio_estimado: line?.precioUnitario,
+                deposito: depositoDoc || null,
+                ubicacion: line?.ubicacion || '',
+                nro_lote: line?.nroLote || line?.nroLot || '',
+                orden_de_retiro: line?.ordenRetiro || null,
+                uuid: line?._id,
+                hectareas: line?.hectareas,
+              }, actividadDoc.area);
+            }),
+        );
+
+        const servicios = (laboresResp.rows || [])
+          .filter((row: any) => row.doc && !row.error)
+          .map((row: any) => {
+            const line = row.doc as any;
+            return {
+              uuid: line?._id,
+              laborId: line?.laborId,
+              servicio: line?.laborNombre || 'Servicio',
+              contratista: actividadDoc?.contratista || null,
+              costo_total: line?.totalCosto || 0,
+              comentario: line?.comentario || '',
+              unidades: actividadDoc?.area || converted.detalles?.hectareas || 0,
+              precio_unidad: line?.costoPorHectarea || 0,
+            };
+          });
+
+        if (!cancelled) {
+          setFormData({
+            ...converted,
+            detalles: {
+              ...converted.detalles,
+              dosis,
+              servicios,
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Error loading annual plan lines into editor:', error);
+        if (!cancelled) {
+          setFormData(converted);
+        }
+      }
+    };
+
+    loadActivityIntoForm();
+
+    return () => {
+      cancelled = true;
+    };
   }, [actividadDoc]);
 
   // Populate crop and zafra from cycle if available
@@ -541,15 +661,18 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
           </Alert>
         ) : (
           <>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              <strong>{t('Planning Mode')}:</strong> {t('Stock validation and deposit location are not required for planning')}
+            <Alert severity={requiresReservationDetails ? "warning" : "info"} sx={{ mb: 2 }}>
+              <strong>{t('Planning Mode')}:</strong>{' '}
+              {requiresReservationDetails
+                ? 'La siembra anual reserva stock al guardar, por lo que cada insumo necesita depósito.'
+                : t('Stock validation and deposit location are not required for planning')}
             </Alert>
             <SuppliesForm
               lot={{ properties: { hectareas: formData.detalles?.hectareas || 0 } }}
               db={null}
               formData={formData}
               setFormData={setFormData}
-              mode="plan"
+              mode={requiresReservationDetails ? 'execute' : 'plan'}
             />
           </>
         );
@@ -584,24 +707,53 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
 
   const handleSave = async () => {
     try {
+      if (requiresReservationDetails) {
+        const contractorId = formData.detalles?.contratista?._id;
+        if (!contractorId) {
+          NotificationService.showError(
+            'La siembra anual necesita un contratista válido para reservar stock.',
+            {},
+            t('error_label')
+          );
+          setActiveStep(0);
+          return;
+        }
+
+        const missingDeposit = (formData.detalles?.dosis || []).find((dosis: any) => !dosis?.deposito?._id);
+        if (missingDeposit) {
+          NotificationService.showError(
+            'La siembra anual necesita un depósito por insumo para reservar stock.',
+            {},
+            t('error_label')
+          );
+          setActiveStep(1);
+          return;
+        }
+      }
+
       // Convert supply data (dosis) to planification format
       const planningHectares = Number(formData.detalles?.hectareas || 0);
       const lineasInsumos = (formData.detalles?.dosis || []).map((dosis: any) => {
         const normalizedDose = normalizeSupplyDoseLine(dosis, planningHectares);
         return {
-          _id: `planlinsumo:${dosis.uuid || Date.now()}-${Math.random()}`,
+          _id: resolvePlanLineId('planlinsumo', dosis.uuid),
           insumoId: normalizedDose.insumo?._id,
           dosis: Number(resolveSupplyDosificacion(normalizedDose, planningHectares) || 0),
           totalCantidad: Number(resolveSupplyTotal(normalizedDose, planningHectares) || 0),
           hectareas: planningHectares,
           precioUnitario: normalizedDose.precio_estimado || 0,
           actividadId: actividadDoc._id,
+          deposito: normalizedDose.deposito || null,
+          depositoId: normalizedDose.deposito?._id,
+          ubicacion: normalizedDose.ubicacion || '',
+          nroLote: normalizedDose.nro_lote || '',
+          ordenRetiro: normalizedDose.orden_de_retiro || null,
         };
       });
 
       // Convert service data (servicios) to planification format
       const lineasLabores = (formData.detalles?.servicios || []).map((servicio: any) => ({
-        _id: `planlabor:${servicio.uuid || Date.now()}-${Math.random()}`,
+        _id: resolvePlanLineId('planlabor', servicio.uuid),
         laborId: servicio.laborId || 'default-labor',
         laborNombre: servicio.servicio || 'Servicio',
         totalCosto: servicio.costo_total || 0,
