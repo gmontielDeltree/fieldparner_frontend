@@ -18,7 +18,6 @@ import { MoreVert } from "@mui/icons-material";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
-import uuid4 from "uuid4";
 import CancelIcon from "@mui/icons-material/Close";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { format } from "date-fns";
@@ -54,9 +53,18 @@ function a11yProps(index: number) {
   };
 }
 
-const LoteAccordion: React.FC = ({
+interface LoteAccordionProps {
+  lote: any;
+  name?: string;
+  fieldName?: string;
+  expanded: boolean;
+  cicloSelected: string;
+}
+
+const LoteAccordion: React.FC<LoteAccordionProps> = ({
   lote,
   name,
+  fieldName,
   expanded,
   cicloSelected,
 }) => {
@@ -140,9 +148,10 @@ const LoteAccordion: React.FC = ({
         {ciclos.map((c, i) => {
           return (
             <Ciclo
-              key={lote.id + uuid4()}
+              key={c._id || `${lote.id}-${i}`}
               ciclo={c}
               loteId={lote.id}
+              fieldName={fieldName}
               lote={lote}
               expanded={true}
             ></Ciclo>
@@ -153,6 +162,16 @@ const LoteAccordion: React.FC = ({
   );
 };
 
+interface PlanificationByFieldForLotPageProps {
+  name?: string;
+  fieldId?: string;
+  loteId?: string;
+  loteSelected?: string;
+  cicloSelected?: string;
+  onClose: () => void;
+  onlyLoteSelected?: boolean;
+}
+
 export const PlanificationByFieldForLotPage = ({
   name,
   fieldId,
@@ -161,7 +180,7 @@ export const PlanificationByFieldForLotPage = ({
   cicloSelected,
   onClose,
   onlyLoteSelected,
-}) => {
+}: PlanificationByFieldForLotPageProps) => {
   // Lista de Campañas
   // Planificaciones por campaña
   //
@@ -215,6 +234,7 @@ export const PlanificationByFieldForLotPage = ({
           key={lote.id}
           lote={lote}
           name={name}
+          fieldName={field?.nombre || field?.properties?.nombre || fieldId}
           expanded={true}
           cicloSelected={cicloSelected}
         />

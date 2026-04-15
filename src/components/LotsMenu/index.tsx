@@ -17,6 +17,10 @@ import { isBefore, parseISO } from 'date-fns'
 import AssignCampaignsToActivities from './AssignCampaignsToActivities'
 import LotMenuContent from './components/LotMenuContent'
 import ActivitiesBar from './components/ActivitiesBar'
+import {
+  getLotActivitiesWithCounts,
+  invalidateLotActivitiesSnapshot,
+} from '../../services/lotActivitiesSnapshot'
 
 interface LotsMenuProps {
   lot: any
@@ -55,118 +59,60 @@ const LotsMenu: React.FC<LotsMenuProps> = ({ lot, field, isOpen, toggle }) => {
   const backToActivites = () => {
     setSelectedCategory(null)
     if (lot && lot.id) {
-      getActivities(lot.id).then((res) => setActivities(res))
+      invalidateLotActivitiesSnapshot()
+      loadLotActivities(lot.id)
     }
   }
 
-  const getActivities = async (uuid_del_lote: string) => {
+  const loadLotActivities = async (uuid_del_lote: string) => {
     try {
-      // Primero obtener las actividades normales como siempre
-      let acts = await gbl_docs_starting(
-        'actividad',
-        true,
-        true,
-        true
-      ).then(only_docs) as any[]
+      const { activities: lotActivities, plannedActivitiesCount: plannedCount } =
+        await getLotActivitiesWithCounts(uuid_del_lote, db)
 
-      let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
-      let _actividades_docs = s.reverse()
+      const respuesta = [...lotActivities]
 
-      // Contar actividades planificadas para el banner (sin cargarlas en la lista)
-      try {
-        let planificadasResponse = await gbl_docs_starting(
-          'planactividad',
-          true,
-          true,
-          true
-        )
-        let planificadas = only_docs(planificadasResponse) || []
-        const count = planificadas.filter((doc: any) => doc && doc.loteId === uuid_del_lote).length
-        setPlannedActivitiesCount(count)
-      } catch (err) {
-        console.log('Error contando actividades planificadas:', err)
-        setPlannedActivitiesCount(0)
-      }
+      respuesta.sort((a, b) => {
+        let fecha_1_str = a.ejecucion_id
+          ? a.ejecucion_id.split(':')[1]
+          : a.actividad.tipo === 'nota'
+            ? a.actividad.fecha
+            : a.actividad.detalles?.fecha_ejecucion_tentativa
 
-      let result = await db.allDocs({
-        startkey: 'ejecucion:',
-        endkey: 'ejecucion:\ufff0',
+        let fecha_2_str = b.ejecucion_id
+          ? b.ejecucion_id.split(':')[1]
+          : b.actividad.tipo === 'nota'
+            ? b.actividad.fecha
+            : b.actividad.detalles?.fecha_ejecucion_tentativa
+
+        // Validar que las fechas existan antes de parsear
+        if (!fecha_1_str || !fecha_2_str) return 0
+
+        try {
+          let fecha_1 = parseISO(fecha_1_str as string)
+          let fecha_2 = parseISO(fecha_2_str as string)
+          return isBefore(fecha_1, fecha_2) ? 1 : -1
+        } catch (e) {
+          return 0
+        }
       })
 
-      let respuesta: { actividad: any; ejecucion_id: string | undefined }[] = []
-      if (result.rows) {
-        _actividades_docs.forEach((actividad: any) => {
-          let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid))
-          respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id })
-        })
-
-        // Ordenar por fecha
-        respuesta.sort((a, b) => {
-          let fecha_1_str = a.ejecucion_id
-            ? a.ejecucion_id.split(':')[1]
-            : a.actividad.tipo === 'nota'
-              ? a.actividad.fecha
-              : a.actividad.detalles?.fecha_ejecucion_tentativa
-
-          let fecha_2_str = b.ejecucion_id
-            ? b.ejecucion_id.split(':')[1]
-            : b.actividad.tipo === 'nota'
-              ? b.actividad.fecha
-              : b.actividad.detalles?.fecha_ejecucion_tentativa
-
-          // Validar que las fechas existan antes de parsear
-          if (!fecha_1_str || !fecha_2_str) return 0
-
-          try {
-            let fecha_1 = parseISO(fecha_1_str as string)
-            let fecha_2 = parseISO(fecha_2_str as string)
-            return isBefore(fecha_1, fecha_2) ? 1 : -1
-          } catch (e) {
-            return 0
-          }
-        })
-      }
-
-      return respuesta ? respuesta : null
+      setPlannedActivitiesCount(plannedCount)
+      setActivities(respuesta)
+      return respuesta
     } catch (error) {
       console.error('Error general en getActivities:', error)
+      setPlannedActivitiesCount(0)
+      setActivities(null)
       return null
-    }
-  }
-
-  const gbl_docs_starting = async (
-    key: string,
-    devolver_docs: boolean = false,
-    attachments: boolean = false,
-    binary: boolean = false
-  ) => {
-    return db
-      .allDocs({
-        include_docs: devolver_docs,
-        attachments: attachments,
-        binary: binary,
-        startkey: key,
-        endkey: key + '\ufff0',
-      })
-      .then((result) => {
-        return result
-      })
-  }
-
-  const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
-    if (alldocs.rows.length > 0) {
-      return alldocs.rows.map((row) => row.doc)
-    } else {
-      return []
     }
   }
 
   useEffect(() => {
     if (lot && lot.id) {
-      getActivities(lot.id).then((res) => setActivities(res))
+      loadLotActivities(lot.id)
       dispatch(setLotActive(lot))
     }
-  }, [lot, selectedCategory, dispatch, selectedCampaign])
+  }, [lot, dispatch])
 
   // La función handleEditActivity establece la categoría según el tipo de edición
   const handleEditActivity = (

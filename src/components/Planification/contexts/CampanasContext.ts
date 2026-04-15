@@ -1,22 +1,22 @@
 import React, { createContext, useEffect } from "react";
 import { useCampaign } from "../../../hooks";
 
+export const buildCampanasContextValue = (campaigns = []) => {
+  const getCampanaDesc = (id) => {
+    const campaign = campaigns.find((c) => c._id === id);
+    return campaign?.name || id;
+  };
+
+  return { getCampanaDesc };
+};
+
 export const useListaCampanas = () => {
   const { campaigns, getCampaigns } = useCampaign();
-
-  const getCampanaDesc = (id) => {
-    let c = campaigns.find((c) => c._id === id);
-    if (c) {
-      return c.name;
-    } else {
-      return id;
-    }
-  };
   useEffect(() => {
     getCampaigns();
   }, []);
 
-  return { getCampanaDesc };
+  return buildCampanasContextValue(campaigns);
 };
 
 export const CampanasContext = createContext();

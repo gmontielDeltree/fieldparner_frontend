@@ -25,6 +25,7 @@ import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
 } from "@mui/icons-material";
 import { StockItem } from "../../../interfaces/stock";
+import { formatNumber } from "../../../helpers/helper";
 
 const columns: ColumnProps[] = [
   { text: "", align: "center" },
@@ -64,10 +65,10 @@ const Row: React.FC<RowProps> = ({ row }) => {
         <TableCellStyled align="center">{row.nroLot}</TableCellStyled>
         {/* <TableCellStyled align="center">{row.}</TableCellStyled> */}
         <TableCellStyled align="center">{row.dataSupply?.unitMeasurement}</TableCellStyled>
-        <TableCellStyled align="center">{row.currentStock}</TableCellStyled>
-        <TableCellStyled align="center">{row.reservedStock}</TableCellStyled>
+        <TableCellStyled align="center">{formatNumber(row.currentStock)}</TableCellStyled>
+        <TableCellStyled align="center">{formatNumber(row.reservedStock)}</TableCellStyled>
         <TableCellStyled align="center">
-          {row.currentStock - row.reservedStock}
+          {formatNumber(Number(row.currentStock || 0) - Number(row.reservedStock || 0))}
         </TableCellStyled>
       </ItemRow>
       <ItemRow>
@@ -108,7 +109,7 @@ const Row: React.FC<RowProps> = ({ row }) => {
                       </TableCell>
                       <TableCell align="left">{movement.detail}</TableCell>
                       <TableCell align="left">{movement.operationDate}</TableCell>
-                      <TableCell align="right">{movement.amount}</TableCell>
+                      <TableCell align="right">{formatNumber(movement.amount)}</TableCell>
                       <TableCell align="right">{movement.voucher}</TableCell>
                     </TableRow>
                   ))}

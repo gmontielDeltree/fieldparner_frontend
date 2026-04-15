@@ -31,11 +31,13 @@ export const Ciclo = ({
   loteId,
   expanded,
   lote,
+  fieldName,
 }: {
   ciclo: ICiclosPlanificacion;
   loteId: string;
   expanded: boolean;
   lote: Lot;
+  fieldName?: string;
 }) => {
   const [expan, setExpan] = useState(expanded);
   const { t } = useTranslation();
@@ -169,7 +171,11 @@ export const Ciclo = ({
                 overflow: "hidden",
                 marginBottom: "4px" // Added margin bottom for better spacing between cards
               }}>
-                <ActividadCardBase actividadId={a} />
+                <ActividadCardBase
+                  actividadId={a}
+                  fieldName={fieldName}
+                  lotName={lote?.properties?.nombre || lote?.id}
+                />
               </Box>
             );
           })}

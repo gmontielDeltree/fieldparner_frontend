@@ -103,6 +103,8 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
   const [fieldsMap, setFieldsMap] = useState<Map<string, any>>(new Map())
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([])
   const [fieldsWithActivities, setFieldsWithActivities] = useState<Map<string, string>>(new Map())
+  const [mapsReady, setMapsReady] = useState(false)
+  const [activitiesReloadTick, setActivitiesReloadTick] = useState(0)
 
   const selectedCampaign = useAppSelector((state) => state.campaign.selectedCampaign)
   const effectiveCampaignId = campaignId || selectedCampaign?._id
@@ -110,16 +112,15 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
   const locale = i18n.language === 'es' ? es : i18n.language === 'pt' ? ptBR : enUS
 
   useEffect(() => {
+    setMapsReady(false)
     loadFieldsAndLots()
-    loadActivities()
   }, [effectiveCampaignId])
 
-  // Reload activities when fields and lots are loaded
   useEffect(() => {
-    if (fieldsMap.size > 0 || lotsMap.size > 0) {
+    if (mapsReady) {
       loadActivities()
     }
-  }, [fieldsMap, lotsMap])
+  }, [mapsReady, fieldsMap, lotsMap, activitiesReloadTick, effectiveCampaignId])
 
   // Listen for database changes to reload activities
   useEffect(() => {
@@ -131,12 +132,17 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
       include_docs: false
     }).on('change', (change) => {
       // Reload when activities or campos are modified
-      if (change.id.startsWith('actividad:') ||
-          change.id.startsWith('planactividad:') ||
-          change.id.startsWith('campos_')) {
+      if (change.id.startsWith('campos_')) {
         console.log('Database change detected, reloading...')
+        setMapsReady(false)
         loadFieldsAndLots()
-        loadActivities()
+        return
+      }
+
+      if (change.id.startsWith('actividad:') ||
+          change.id.startsWith('planactividad:')) {
+        console.log('Activity database change detected, reloading activities...')
+        setActivitiesReloadTick((prev) => prev + 1)
       }
     })
 
@@ -188,8 +194,10 @@ const ActivitiesCalendar: React.FC<ActivitiesCalendarProps> = ({ campaignId, onC
       console.log('Total lotes in map:', newLotsMap.size)
       setFieldsMap(newFieldsMap)
       setLotsMap(newLotsMap)
+      setMapsReady(true)
     } catch (error) {
       console.error('Error loading fields and lots:', error)
+      setMapsReady(true)
     }
   }
 

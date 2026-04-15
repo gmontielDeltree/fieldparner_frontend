@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PlanificationByField } from "../components/Planification/PlanificationByField";
 import { Grid, Paper } from "@mui/material";
 import { useField } from "../hooks/useField";
@@ -8,7 +8,7 @@ import { CultivoContext } from "../components/Planification/contexts/CultivosCon
 import { useCrops } from "../hooks/useCrops";
 import {
   CampanasContext,
-  useListaCampanas,
+  buildCampanasContextValue,
 } from "../components/Planification/contexts/CampanasContext";
 import {
   InsumosContext,
@@ -37,6 +37,10 @@ export const PlanificationByLotPage: React.FC = () => {
 
   const { fields, getFields } = useField();
   const { campaigns, getCampaigns } = useCampaign();
+  const campanasContextValue = useMemo(
+    () => buildCampanasContextValue(campaigns),
+    [campaigns],
+  );
 
   const [selCampanaId, setSelCampanaId] = useState();
   const [selCampoId, setSelCampoId] = useState();
@@ -49,6 +53,7 @@ export const PlanificationByLotPage: React.FC = () => {
 
   useEffect(() => {
     getFields();
+    getCampaigns();
   }, []);
 
   useEffect(() => {
@@ -75,7 +80,7 @@ export const PlanificationByLotPage: React.FC = () => {
 
   return (
     <CultivoContext.Provider value={crops}>
-      <CampanasContext.Provider value={useListaCampanas()}>
+      <CampanasContext.Provider value={campanasContextValue}>
         <InsumosContext.Provider value={useInsumos()}>
           <LaboresContext.Provider value={useLabores()}>
             <CiclosContext.Provider value={useListaDeCiclos()}>

@@ -8,7 +8,7 @@ import {
   Typography,
   alpha,
 } from "@mui/material";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { TreeView } from "@mui/x-tree-view/TreeView";
@@ -30,7 +30,6 @@ import {
   usePlanActividad,
   usePlanificationActividad,
 } from "../../hooks/usePlanifications";
-import { useField } from "../../hooks/useField";
 import { InsumosContext } from "./contexts/InsumosContext";
 import { LaboresContext } from "./contexts/LaboresContext";
 import { CiclosContext } from "./contexts/CiclosContext";
@@ -50,16 +49,19 @@ const calcTotal = (
 export const ActividadCardBase: React.FC = ({
   actividadId,
   selectionMode,
+  fieldName,
+  lotName,
 }: {
   actividadId: string;
   selectionMode?: boolean;
+  fieldName?: string;
+  lotName?: string;
 }) => {
   const { t } = useTranslation();
   // const actividad = usePlanificationActividad(actividadId)
   const { removeActividad } = usePlanActividad();
   const { getInsumoFromId } = useContext(InsumosContext);
   const { getLaborLabelFromId } = useContext(LaboresContext);
-  const { fields, getFields } = useField();
 
   const { refreshCiclos } = useContext(CiclosContext); // useCiclos(ciclo.campanaId,loteId)
 
@@ -103,32 +105,11 @@ export const ActividadCardBase: React.FC = ({
   const totalLaboresHectareas =
     lineasLabores?.reduce((acc, lin: any) => acc + Number(lin.hectareas || 0), 0) || 0;
   const resolvedNames = useMemo(() => {
-    const fieldFound = (fields || []).find((f: any) => f?._id === campoId);
-    const lotFound = fieldFound?.lotes?.find((l: any) =>
-      l?.id === loteId ||
-      l?.properties?.uuid === loteId ||
-      l?.properties?.nombre === loteId,
-    );
-
     return {
-      fieldName:
-        fieldFound?.nombre ||
-        fieldFound?.name ||
-        fieldFound?.description ||
-        campoId ||
-        "",
-      lotName:
-        lotFound?.properties?.nombre ||
-        lotFound?.properties?.name ||
-        lotFound?.id ||
-        loteId ||
-        "",
+      fieldName: fieldName || campoId || "",
+      lotName: lotName || loteId || "",
     };
-  }, [fields, campoId, loteId]);
-
-  useEffect(() => {
-    getFields();
-  }, []);
+  }, [fieldName, campoId, lotName, loteId]);
 
   if (loading) return <div>Loading</div>;
   return (

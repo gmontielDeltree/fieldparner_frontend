@@ -84,9 +84,19 @@ export default function CicloEditorDialog({
   }, [invalidRanges]);
 
   useEffect(() => {
-    getCrops();
-    getCampaigns();
-  }, []);
+    if (!open) return;
+
+    if (!crops?.length) {
+      getCrops();
+    }
+
+    if (!campaigns.length) {
+      getCampaigns();
+    }
+    // getCrops/getCampaigns come from custom hooks and are not memoized.
+    // We only want to load dependencies when the dialog is actually opened.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, crops?.length, campaigns.length]);
 
   // Cargar zafras cuando se abre el diálogo y se tienen las campañas
   useEffect(() => {

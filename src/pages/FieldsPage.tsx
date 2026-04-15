@@ -15,9 +15,14 @@ import { addDepositosToMap } from '../../owncomponents/mapa-principal/depositos-
 import { useDeposit, useField } from '../hooks'
 import useResizeObserver from '@react-hook/resize-observer'
 import { dbContext } from '../services'
+import {
+  getLotActivitiesWithCounts,
+  invalidateLotActivitiesSnapshot,
+  isLotActivitiesSnapshotDocId,
+  LotActivityPair,
+} from '../services/lotActivitiesSnapshot'
 import { touchEvent } from '../../owncomponents/helpers'
 import { useTranslation } from 'react-i18next'
-import { Actividad } from '../interfaces/activity'
 import { format, isBefore, parseISO } from 'date-fns'
 import '../classes/engine/Engine'
 import { selectSyncStatus } from '../redux/syncStatus'
@@ -26,8 +31,7 @@ export const FieldsPage: React.FC = () => {
   const map = useSelector(selectMap)
   const { fields, getFields } = useField()
   // Cache con TTL para refrescar actividades rápidamente al crear/ejecutar
-  type ActivityPair = { actividad: Actividad; ejecucion_id: string | undefined }
-  type ActivityCacheEntry = { data: ActivityPair[]; ts: number }
+  type ActivityCacheEntry = { data: LotActivityPair[]; ts: number }
   const [activitiesCache, setActivitiesCache] = useState<{ [key: string]: ActivityCacheEntry }>({})
   const CACHE_TTL_MS = 5000
   // const [hoveredLotId, setHoveredLotId] = useState<string | null>(null)
@@ -73,6 +77,7 @@ export const FieldsPage: React.FC = () => {
   useEffect(() => {
     getFields()
     getDeposits()
+    invalidateLotActivitiesSnapshot()
     setActivitiesCache({})
     console.log('FieldsPage - Updating by sync')
   }, [syncStatus])
@@ -85,11 +90,8 @@ export const FieldsPage: React.FC = () => {
         .changes({ since: 'now', live: true, include_docs: true })
         .on('change', (change: any) => {
           const id: string = change?.id || ''
-          if (
-            id.startsWith('actividad:') ||
-            id.startsWith('ejecucion:') ||
-            id.startsWith('planactividad:')
-          ) {
+          if (isLotActivitiesSnapshotDocId(id)) {
+            invalidateLotActivitiesSnapshot()
             setActivitiesCache({})
           }
         })
@@ -102,35 +104,6 @@ export const FieldsPage: React.FC = () => {
     }
   }, [db])
 
-  const only_docs = (alldocs: PouchDB.Core.AllDocsResponse<{}>) => {
-    if (alldocs.rows.length > 0) {
-      return alldocs.rows.map((row) => {
-        return row.doc
-      })
-    } else {
-      return []
-    }
-  }
-
-  const gbl_docs_starting = async (
-    key: string,
-    devolver_docs: boolean = false,
-    attachments: boolean = false,
-    binary: boolean = false,
-  ) => {
-    return db
-      .allDocs({
-        include_docs: devolver_docs,
-        attachments: attachments,
-        binary: binary,
-        startkey: key,
-        endkey: key + '\ufff0',
-      })
-      .then((result) => {
-        return result
-      })
-  }
-
   // Helper para parsear fechas (string | Date | undefined) a string ISO
   const toIsoDateString = (d: string | Date | undefined): string => {
     if (!d) return new Date().toISOString()
@@ -138,54 +111,32 @@ export const FieldsPage: React.FC = () => {
   }
 
   const getActivities = async (uuid_del_lote: string) => {
-    const actsRaw = await gbl_docs_starting(
-      'actividad',
-      true,
-      true,
-      true,
-    ).then(only_docs)
-    const acts: Actividad[] = (actsRaw as any[]).filter(Boolean) as Actividad[]
+    const { activities } = await getLotActivitiesWithCounts(uuid_del_lote, db)
+    const respuesta = [...activities]
 
-    let s = acts.filter(({ lote_uuid }) => lote_uuid === uuid_del_lote)
-    let _actividades_docs = s.reverse()
-
-    let result = await db.allDocs({
-      startkey: 'ejecucion:',
-      endkey: 'ejecucion:\ufff0',
+    respuesta.sort((a, b) => {
+      let fecha_1 = a.ejecucion_id
+        ? parseISO(a.ejecucion_id.split(':')[1])
+        : parseISO(
+          toIsoDateString(
+            a.actividad.tipo === 'nota'
+              ? (a.actividad.fecha as any)
+              : (a.actividad.detalles as any).fecha_ejecucion_tentativa,
+          ),
+        )
+      let fecha_2 = b.ejecucion_id
+        ? parseISO(b.ejecucion_id.split(':')[1])
+        : parseISO(
+          toIsoDateString(
+            b.actividad.tipo === 'nota'
+              ? (b.actividad.fecha as any)
+              : (b.actividad.detalles as any).fecha_ejecucion_tentativa,
+          ),
+        )
+      return isBefore(fecha_1, fecha_2) ? 1 : -1
     })
 
-    let respuesta: { actividad: Actividad; ejecucion_id: string | undefined }[] = []
-
-    if (result.rows) {
-      _actividades_docs.forEach((actividad) => {
-        let midoc = result.rows.find((doc) => doc.id.includes(actividad.uuid))
-        respuesta.push({ actividad: actividad, ejecucion_id: midoc?.id })
-      })
-
-      respuesta.sort((a, b) => {
-        let fecha_1 = a.ejecucion_id
-          ? parseISO(a.ejecucion_id.split(':')[1])
-          : parseISO(
-            toIsoDateString(
-              a.actividad.tipo === 'nota'
-                ? (a.actividad.fecha as any)
-                : (a.actividad.detalles as any).fecha_ejecucion_tentativa,
-            ),
-          )
-        let fecha_2 = b.ejecucion_id
-          ? parseISO(b.ejecucion_id.split(':')[1])
-          : parseISO(
-            toIsoDateString(
-              b.actividad.tipo === 'nota'
-                ? (b.actividad.fecha as any)
-                : (b.actividad.detalles as any).fecha_ejecucion_tentativa,
-            ),
-          )
-        return isBefore(fecha_1, fecha_2) ? 1 : -1
-      })
-    }
-
-    return respuesta ? respuesta : []
+    return respuesta
   }
 
   const getActivitiesWithCache = async (uuid_del_lote: string) => {

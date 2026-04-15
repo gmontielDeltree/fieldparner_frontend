@@ -20,7 +20,6 @@ import { MoreVert, Campaign, Autorenew } from "@mui/icons-material";
 import { CiclosContext } from "./contexts/CiclosContext";
 import { CampanasContext } from "./contexts/CampanasContext";
 import { useCiclos } from "../../hooks/usePlanifications";
-import uuid4 from "uuid4";
 import CancelIcon from "@mui/icons-material/Close";
 import { CultivoContext } from "./contexts/CultivosContext";
 import { format } from "date-fns";
@@ -75,6 +74,7 @@ interface LoteAccordionProps {
   lote: any;
   allLotes: any[];
   name?: string;
+  fieldName?: string;
   expanded: boolean;
   cicloSelected: string;
   campanaId: string;
@@ -85,6 +85,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
   lote,
   allLotes,
   name,
+  fieldName,
   expanded,
   cicloSelected,
   campanaId,
@@ -184,6 +185,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
                 _id: newId,
                 _rev: undefined,
                 totalCantidad: (src.totalCantidad || 0) * scaleHa,
+                ordenRetiro: undefined,
               });
             }
             for (const row of (labResp.rows || [])) {
@@ -330,9 +332,10 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
         {ciclos.map((c, i) => {
           return (
             <Ciclo
-              key={lote.id + uuid4()}
+              key={c._id || `${lote.id}-${i}`}
               ciclo={c}
               loteId={lote.id}
+              fieldName={fieldName}
               expanded={cicloSelected === c._id}
               lote={lote}
             ></Ciclo>
@@ -368,6 +371,7 @@ const LoteAccordion: React.FC<LoteAccordionProps> = ({
 interface PlanificationByFieldProps {
   name?: string;
   fieldId: string;
+  fieldsData?: any[];
   loteSelected: string;
   cicloSelected: string;
   onClose: () => void;
@@ -381,6 +385,7 @@ interface PlanificationByFieldProps {
 export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
   name,
   fieldId,
+  fieldsData,
   loteSelected,
   cicloSelected,
   onClose,
@@ -400,6 +405,7 @@ export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
   const [lotes, setLotes] = useState<any[]>([]);
 
   const { fields, getFields } = useField();
+  const resolvedFields = fieldsData || fields;
 
   const [input, setIn] = useState<number>(0);
   const [out, setOut] = useState<number>(0);
@@ -407,16 +413,25 @@ export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
   const { ciclos, getCiclosFromCampanaAndLote } = useContext(CiclosContext);
 
   useEffect(() => {
-    getFields();
-  }, []);
+    if (!fieldsData) {
+      getFields();
+    }
+  }, [fieldsData, getFields]);
 
   const handleClose = () => {
     onClose();
   };
 
+  const resolvedFieldName =
+    campo?.nombre ||
+    campo?.properties?.nombre ||
+    campo?.name ||
+    fieldId ||
+    "";
+
   useEffect(() => {
-    if (fields && fieldId) {
-      let campoEste = fields.find((f) => f._id === fieldId);
+    if (resolvedFields && fieldId) {
+      let campoEste = resolvedFields.find((f) => f._id === fieldId);
       if (campoEste) {
         setCampo(campoEste);
         setLotes(campoEste.lotes);
@@ -431,7 +446,7 @@ export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
 
       console.log("casdsdd", campo, campoEste);
     }
-  }, [fields, fieldId]);
+  }, [resolvedFields, fieldId]);
 
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
@@ -518,6 +533,7 @@ export const PlanificationByField: React.FC<PlanificationByFieldProps> = ({
               key={lote.id}
               lote={lote}
               allLotes={lotes}
+              fieldName={resolvedFieldName}
               campanaId={campaignId}
               expanded={loteSelected === lote.id}
               cicloSelected={cicloSelected}

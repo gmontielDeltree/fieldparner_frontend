@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PlanificationByField } from "../components/Planification/PlanificationByField";
 import {
   Box,
@@ -30,7 +30,7 @@ import { CultivoContext } from "../components/Planification/contexts/CultivosCon
 import { useCrops } from "../hooks/useCrops";
 import {
   CampanasContext,
-  useListaCampanas,
+  buildCampanasContextValue,
 } from "../components/Planification/contexts/CampanasContext";
 import {
   InsumosContext,
@@ -103,6 +103,10 @@ export const PlanificationPage: React.FC = () => {
 
   const ciclos = useListaDeCiclos();
   const crops = useCrops();
+  const campanasContextValue = useMemo(
+    () => buildCampanasContextValue(campaigns),
+    [campaigns],
+  );
 
   const { selectedCampaign } = useAppSelector((state) => state.campaign);
 
@@ -255,7 +259,7 @@ export const PlanificationPage: React.FC = () => {
         if (!row.doc) continue;
         const newId = `planlinsumo:${uuidv7()}`;
         newInsumoIds.push(newId);
-        newDocs.push({ ...row.doc, _id: newId, _rev: undefined });
+        newDocs.push({ ...row.doc, _id: newId, _rev: undefined, ordenRetiro: undefined });
       }
       for (const row of (labResp.rows || [])) {
         if (!row.doc) continue;
@@ -363,6 +367,11 @@ export const PlanificationPage: React.FC = () => {
             totalCantidad: dosis.total || 0,
             hectareas: area,
             precioUnitario: dosis.precio_estimado || 0,
+            deposito: dosis.deposito || null,
+            depositoId: dosis.deposito?._id,
+            ubicacion: dosis.ubicacion || '',
+            nroLote: dosis.nro_lote || '',
+            ordenRetiro: undefined,
           });
         }
         for (const serv of (ea.detalles?.servicios || [])) {
@@ -409,7 +418,7 @@ export const PlanificationPage: React.FC = () => {
 
   return (
     <CultivoContext.Provider value={crops}>
-      <CampanasContext.Provider value={useListaCampanas()}>
+      <CampanasContext.Provider value={campanasContextValue}>
         <InsumosContext.Provider value={useInsumos()}>
           <LaboresContext.Provider value={useLabores()}>
             <CiclosContext.Provider value={ciclos}>
@@ -680,6 +689,7 @@ export const PlanificationPage: React.FC = () => {
                         <PlanificationByField
                           campaignId={selectedCampaignForPlanning}
                           fieldId={selCampoId}
+                          fieldsData={fields}
                           loteSelected={selLoteId}
                           cicloSelected={selCicloId === "no-cycle" ? "" : selCicloId}
                           isCampaignClosed={String(getSelectedCampaignData()?.state) === 'closed'}

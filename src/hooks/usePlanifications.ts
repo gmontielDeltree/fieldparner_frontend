@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { dbContext } from "../services";
 import { useAppSelector } from ".";
+import { useOrder } from "./useOrder";
 import {
   IActividadPlanificacion,
   ICiclosPlanificacion,
@@ -30,6 +31,45 @@ import { listar_ejecuciones_por_depo } from "../../owncomponents/depositos/depos
 import { useLabores } from "./useLabores";
 import { NotificationService } from "../services/notificationService";
 import { resolveSupplyDosificacion } from "../utils/supplyDose";
+import { getMatchingSupplyStocks } from "../utils/stockAllocation";
+import {
+  OrderStatus,
+  WithdrawalOrder,
+  WithdrawalOrderType,
+} from "../types";
+import { Stock } from "../interfaces/stock";
+
+const isSowingPlanActivity = (actividad?: Partial<IActividadPlanificacion> | null) =>
+  (actividad?.tipo || "").toLowerCase() === "siembra";
+
+const getPlanLineDepositId = (linea?: Partial<IInsumosPlanificacion> | null) =>
+  linea?.depositoId || (linea?.deposito as any)?._id || "";
+
+const getPlanLineNroLote = (linea?: Partial<IInsumosPlanificacion> | null) =>
+  (linea?.nroLote || "").toString().trim();
+
+const getPlanLineUbicacion = (linea?: Partial<IInsumosPlanificacion> | null) =>
+  (linea?.ubicacion || "").toString().trim();
+
+const normalizeReservationValue = (value?: string | number | null) =>
+  String(value ?? "").trim().toLowerCase();
+
+const hasSameReservationData = (
+  previousLine: Partial<IInsumosPlanificacion> | null,
+  nextLine: Partial<IInsumosPlanificacion> | null,
+) => {
+  if (!previousLine || !nextLine) return false;
+
+  return (
+    String(previousLine.insumoId || "") === String(nextLine.insumoId || "") &&
+    Number(previousLine.totalCantidad || 0) === Number(nextLine.totalCantidad || 0) &&
+    Number(previousLine.dosis || 0) === Number(nextLine.dosis || 0) &&
+    Number(previousLine.hectareas || 0) === Number(nextLine.hectareas || 0) &&
+    getPlanLineDepositId(previousLine) === getPlanLineDepositId(nextLine) &&
+    getPlanLineUbicacion(previousLine) === getPlanLineUbicacion(nextLine) &&
+    getPlanLineNroLote(previousLine) === getPlanLineNroLote(nextLine)
+  );
+};
 
 export const usePlanActividad = () => {
   let db =
@@ -39,40 +79,403 @@ export const usePlanActividad = () => {
 
   const { t } = useTranslation();
   const { getLaborFromId } = useLabores();
+  const { createWithdrawalOrder } = useOrder();
+
+  const getPlanSupplyLines = async (lineasIds: string[] = []) => {
+    if (!lineasIds.length) return [] as IInsumosPlanificacion[];
+
+    const response = await db.allDocs({
+      keys: lineasIds,
+      include_docs: true,
+    });
+
+    return response.rows
+      .map((row) => row.doc)
+      .filter(Boolean) as IInsumosPlanificacion[];
+  };
+
+  const getPlanServiceLines = async (lineasIds: string[] = []) => {
+    if (!lineasIds.length) return [] as ILaboresPlanificacion[];
+
+    const response = await db.allDocs({
+      keys: lineasIds,
+      include_docs: true,
+    });
+
+    return response.rows
+      .map((row) => row.doc)
+      .filter(Boolean) as ILaboresPlanificacion[];
+  };
+
+  const getWithdrawalCampaignId = async (campanaId?: string) => {
+    if (!campanaId) return "";
+
+    try {
+      const campaign = await dbContext.campaigns.get(campanaId);
+      return campaign.campaignId || campaign._id || campanaId;
+    } catch (error) {
+      try {
+        const response = await dbContext.campaigns.find({
+          selector: {
+            campaignId: campanaId,
+          },
+        } as any);
+        const campaign = response.docs[0] as any;
+        return campaign?.campaignId || campaign?._id || campanaId;
+      } catch {
+        return campanaId;
+      }
+    }
+  };
+
+  const hasAppliedReservation = async (
+    withdrawalOrder?: WithdrawalOrder | null,
+    linea?: Partial<IInsumosPlanificacion> | null,
+  ) => {
+    if (!user || !withdrawalOrder?.order || !linea?.insumoId || !getPlanLineDepositId(linea)) {
+      return false;
+    }
+
+    try {
+      const orderNumber = withdrawalOrder.order;
+      const latestOrder = withdrawalOrder._id
+        ? await dbContext.withdrawalOrders.get(withdrawalOrder._id).catch(() => withdrawalOrder)
+        : withdrawalOrder;
+
+      const depositSupplyResult = await dbContext.depositSupplyOrder.find({
+        selector: {
+          accountId: user.accountId,
+          order: orderNumber,
+        },
+      } as any);
+
+      const matchingOrderLine = (depositSupplyResult.docs as any[]).find((doc) =>
+        normalizeReservationValue(doc.supplyId) === normalizeReservationValue(linea.insumoId) &&
+        normalizeReservationValue(doc.depositId) === normalizeReservationValue(getPlanLineDepositId(linea)) &&
+        normalizeReservationValue(doc.location) === normalizeReservationValue(getPlanLineUbicacion(linea)) &&
+        normalizeReservationValue(doc.nroLot) === normalizeReservationValue(getPlanLineNroLote(linea))
+      );
+
+      if (!matchingOrderLine) {
+        return false;
+      }
+
+      const reservedAmount =
+        Number(matchingOrderLine.originalAmount || 0) -
+        Number(matchingOrderLine.withdrawalAmount || 0);
+
+      if (reservedAmount <= 0) {
+        return false;
+      }
+
+      const stockResult = await dbContext.stock.find({
+        selector: {
+          accountId: user.accountId,
+          id: matchingOrderLine.supplyId,
+          depositId: matchingOrderLine.depositId,
+        },
+      } as any);
+
+      const matchingStock = getMatchingSupplyStocks(
+        stockResult.docs as Stock[],
+        {
+          supplyId: matchingOrderLine.supplyId,
+          depositId: matchingOrderLine.depositId,
+          campaignId: latestOrder?.campaignId,
+          location: matchingOrderLine.location,
+          nroLot: matchingOrderLine.nroLot ? String(matchingOrderLine.nroLot) : "",
+        },
+      )[0];
+
+      return Number(matchingStock?.reservedStock || 0) >= reservedAmount;
+    } catch (error) {
+      console.warn("Could not validate existing reservation state for annual planning line", error);
+      return false;
+    }
+  };
+
+  const releasePlannedWithdrawalOrder = async (withdrawalOrder?: WithdrawalOrder | null) => {
+    if (!withdrawalOrder?._id || !withdrawalOrder?.order || !user) return;
+
+    try {
+      const latestOrder = await dbContext.withdrawalOrders.get(withdrawalOrder._id);
+      const depositSupplyResult = await dbContext.depositSupplyOrder.find({
+        selector: {
+          accountId: user.accountId,
+          order: latestOrder.order,
+        },
+      });
+
+      for (const depositSupply of depositSupplyResult.docs as any[]) {
+        const reservedAmount =
+          Number(depositSupply.originalAmount || 0) -
+          Number(depositSupply.withdrawalAmount || 0);
+
+        if (reservedAmount <= 0) continue;
+
+        try {
+          const stockResult = await dbContext.stock.find({
+            selector: {
+              accountId: user.accountId,
+              id: depositSupply.supplyId,
+              depositId: depositSupply.depositId,
+            },
+          } as any);
+
+          const stockDoc = getMatchingSupplyStocks(
+            stockResult.docs as Stock[],
+            {
+              supplyId: depositSupply.supplyId,
+              depositId: depositSupply.depositId,
+              campaignId: latestOrder.campaignId,
+              location: depositSupply.location,
+              nroLot: depositSupply.nroLot ? String(depositSupply.nroLot) : "",
+            },
+          )[0] as any;
+
+          if (stockDoc) {
+            stockDoc.reservedStock = Math.max(
+              0,
+              Number(stockDoc.reservedStock || 0) - reservedAmount,
+            );
+            stockDoc.lastUpdate = new Date().toISOString();
+            await dbContext.stock.put(stockDoc);
+          }
+        } catch (stockError) {
+          console.error("Error releasing reserved stock for planned activity:", stockError);
+        }
+      }
+
+      const docsToDelete = depositSupplyResult.docs.map((doc: any) => ({
+        ...doc,
+        _deleted: true,
+      }));
+
+      if (docsToDelete.length) {
+        await dbContext.depositSupplyOrder.bulkDocs(docsToDelete);
+      }
+
+      await dbContext.withdrawalOrders.remove(latestOrder);
+    } catch (error) {
+      console.error("Error releasing planned withdrawal order:", error);
+    }
+  };
+
+  const reserveStockForPlannedLines = async (
+    actividadDoc: IActividadPlanificacion,
+    lineasInsumos: IInsumosPlanificacion[] = [],
+  ) => {
+    if (!user || !lineasInsumos.length || !isSowingPlanActivity(actividadDoc)) {
+      return lineasInsumos;
+    }
+
+    const campaignId = await getWithdrawalCampaignId(actividadDoc.campanaId);
+
+    for (const linea of lineasInsumos) {
+      if (linea.ordenRetiro?._id) continue;
+
+      const depositId = getPlanLineDepositId(linea);
+      if (!depositId) continue;
+
+      try {
+        const createdOrder = await createWithdrawalOrder(
+          {
+            accountId: user.accountId,
+            type: WithdrawalOrderType.Automatica,
+            creationDate: new Date().toISOString(),
+            order: 0,
+            reason: "Reserva de stock",
+            campaignId,
+            field: actividadDoc.campoId || "",
+            state: OrderStatus.Pending,
+            withdrawId: actividadDoc.contratista?._id || "",
+          },
+          [
+            {
+              accountId: user.accountId,
+              order: 0,
+              depositId,
+              location: getPlanLineUbicacion(linea),
+              supplyId: linea.insumoId,
+              nroLot: getPlanLineNroLote(linea),
+              withdrawalAmount: 0,
+              originalAmount: Number(linea.totalCantidad || 0),
+            } as any,
+          ],
+          WithdrawalOrderType.Automatica,
+        );
+
+        if (createdOrder) {
+          linea.ordenRetiro = createdOrder;
+        }
+      } catch (error) {
+        console.error("Error reserving stock for annual plan line:", error);
+      }
+    }
+
+    return lineasInsumos;
+  };
 
   const saveActividad = async (
     actividadDoc: IActividadPlanificacion,
     lineasInsumos?,
     lineasLabores?,
   ) => {
-    await db.put(actividadDoc);
-    await db.get(actividadDoc.cicloId).then((doc) => {
-      let d = doc as unknown as ICiclosPlanificacion;
-      d.actividadesIds = [...new Set([...d.actividadesIds, actividadDoc._id])];
-      db.put(d);
-    });
-    if (lineasInsumos) {
-      await db
-        .bulkDocs(lineasInsumos)
-        .then(() => console.log(t("inputLinesStoredLog"), lineasInsumos));
+    const nextSupplyLines = (lineasInsumos || []) as IInsumosPlanificacion[];
+    const nextServiceLines = (lineasLabores || []) as ILaboresPlanificacion[];
+    const actividadDocToPersist = { ...actividadDoc };
+
+    let previousActivity: IActividadPlanificacion | null = null;
+    try {
+      previousActivity = await db.get(actividadDoc._id);
+      actividadDocToPersist._rev = previousActivity._rev;
+    } catch (error: any) {
+      if (error?.name !== "not_found") {
+        throw error;
+      }
     }
-    if (lineasLabores) {
+
+    const previousSupplyLines = previousActivity
+      ? await getPlanSupplyLines(previousActivity.insumosLineasIds || [])
+      : [];
+    const previousServiceLines = previousActivity
+      ? await getPlanServiceLines(previousActivity.laboresLineasIds || [])
+      : [];
+
+    const previousSupplyLineMap = new Map(
+      previousSupplyLines.map((linea) => [linea._id, linea]),
+    );
+    const previousServiceLineMap = new Map(
+      previousServiceLines.map((linea) => [linea._id, linea]),
+    );
+
+    const previousContextChanged = Boolean(
+      previousActivity &&
+      (
+        String(previousActivity.campanaId || "") !== String(actividadDocToPersist.campanaId || "") ||
+        String(previousActivity.campoId || "") !== String(actividadDocToPersist.campoId || "") ||
+        String(previousActivity.contratista?._id || "") !== String(actividadDocToPersist.contratista?._id || "")
+      ),
+    );
+
+    const ordersToRelease = new Map<string, WithdrawalOrder>();
+    const linesNeedingReservation = new Set<string>();
+
+    const mergedSupplyLines: IInsumosPlanificacion[] = [];
+
+    for (const linea of nextSupplyLines) {
+      const previousLine = previousSupplyLineMap.get(linea._id);
+      const mergedLine = previousLine
+        ? { ...previousLine, ...linea, _id: previousLine._id, _rev: previousLine._rev }
+        : { ...linea };
+
+      const reservationShouldBeReusable =
+        isSowingPlanActivity(actividadDocToPersist) &&
+        !previousContextChanged &&
+        previousLine?.ordenRetiro &&
+        hasSameReservationData(previousLine, mergedLine);
+
+      const reservationIsApplied = reservationShouldBeReusable
+        ? await hasAppliedReservation(previousLine?.ordenRetiro, mergedLine)
+        : false;
+
+      if (reservationShouldBeReusable && reservationIsApplied) {
+        mergedLine.ordenRetiro = previousLine?.ordenRetiro || null;
+      } else {
+        if (previousLine?.ordenRetiro) {
+          const orderKey = previousLine.ordenRetiro._id || String(previousLine.ordenRetiro.order);
+          ordersToRelease.set(orderKey, previousLine.ordenRetiro);
+        }
+        mergedLine.ordenRetiro = null;
+      }
+
+      if (isSowingPlanActivity(actividadDocToPersist) && getPlanLineDepositId(mergedLine)) {
+        if (!mergedLine.ordenRetiro?._id) {
+          linesNeedingReservation.add(mergedLine._id);
+        }
+      }
+
+      if (!isSowingPlanActivity(actividadDocToPersist)) {
+        mergedLine.ordenRetiro = null;
+      }
+
+      mergedSupplyLines.push(mergedLine);
+    }
+
+    for (const previousLine of previousSupplyLines) {
+      const stillExists = mergedSupplyLines.some((linea) => linea._id === previousLine._id);
+      if (!stillExists && previousLine.ordenRetiro) {
+        const orderKey = previousLine.ordenRetiro._id || String(previousLine.ordenRetiro.order);
+        ordersToRelease.set(orderKey, previousLine.ordenRetiro);
+      }
+    }
+
+    for (const withdrawalOrder of ordersToRelease.values()) {
+      await releasePlannedWithdrawalOrder(withdrawalOrder);
+    }
+
+    await db.put(actividadDocToPersist);
+    await db.get(actividadDocToPersist.cicloId).then((doc) => {
+      let d = doc as unknown as ICiclosPlanificacion;
+      d.actividadesIds = [...new Set([...d.actividadesIds, actividadDocToPersist._id])];
+      return db.put(d);
+    });
+
+    if (mergedSupplyLines.length) {
+      const response = await db.bulkDocs(mergedSupplyLines);
+      response.forEach((result, index) => {
+        if (result.ok && result.rev) {
+          mergedSupplyLines[index]._rev = result.rev;
+        }
+      });
+      console.log(t("inputLinesStoredLog"), mergedSupplyLines);
+    }
+
+    if (nextServiceLines.length) {
+      const mergedServiceLines = nextServiceLines.map((linea) => {
+        const previousLine = previousServiceLineMap.get(linea._id);
+        return previousLine
+          ? { ...previousLine, ...linea, _id: previousLine._id, _rev: previousLine._rev }
+          : { ...linea };
+      });
+
       await db
-        .bulkDocs(lineasLabores)
-        .then(() => console.log(t("workLinesStoredLog"), lineasLabores));
+        .bulkDocs(mergedServiceLines)
+        .then(() => console.log(t("workLinesStoredLog"), mergedServiceLines));
+    }
+
+    const removedSupplyLines = previousSupplyLines
+      .filter((linea) => !mergedSupplyLines.some((nextLine) => nextLine._id === linea._id))
+      .map((linea) => ({ ...linea, _deleted: true }));
+
+    if (removedSupplyLines.length) {
+      await db.bulkDocs(removedSupplyLines);
+    }
+
+    const removedServiceLines = previousServiceLines
+      .filter((linea) => !nextServiceLines.some((nextLine) => nextLine._id === linea._id))
+      .map((linea) => ({ ...linea, _deleted: true }));
+
+    if (removedServiceLines.length) {
+      await db.bulkDocs(removedServiceLines);
+    }
+
+    const linesToReserve = mergedSupplyLines.filter((linea) =>
+      linesNeedingReservation.has(linea._id),
+    );
+
+    if (linesToReserve.length) {
+      await reserveStockForPlannedLines(actividadDocToPersist, linesToReserve);
+      await db.bulkDocs(linesToReserve);
     }
   };
 
   const getLineasInsumos = async (lineasIds: string[]) => {
-    let d = await db.allDocs({ keys: lineasIds, include_docs: true });
-    let docs = d.rows.map((r) => r.doc);
-    return docs as IInsumosPlanificacion[];
+    return getPlanSupplyLines(lineasIds);
   };
 
   const getLineasServicios = async (lineasIds: string[]) => {
-    let d = await db.allDocs({ keys: lineasIds, include_docs: true });
-    let docs = d.rows.map((r) => r.doc);
-    return docs as ILaboresPlanificacion[];
+    return getPlanServiceLines(lineasIds);
   };
   const getActividadesByCiclo = (cicloId) => { };
 
@@ -83,17 +486,29 @@ export const usePlanActividad = () => {
       (id) => id !== actividadId,
     );
     // Update cicloParent
-    db.put(cicloParent);
+    await db.put(cicloParent);
 
     // Remove Lineas de insumos
     let lineas = only_docs(
       await db.allDocs({ include_docs: true, keys: act.insumosLineasIds }),
     );
+
+    const releaseCandidates = (lineas as IInsumosPlanificacion[])
+      .map((linea) => linea?.ordenRetiro)
+      .filter(Boolean) as WithdrawalOrder[];
+    const uniqueOrders = new Map(
+      releaseCandidates.map((order) => [order._id || String(order.order), order]),
+    );
+
+    for (const withdrawalOrder of uniqueOrders.values()) {
+      await releasePlannedWithdrawalOrder(withdrawalOrder);
+    }
+
     lineas = lineas.map((l) => {
       l["_deleted"] = true;
       return l;
     });
-    db.bulkDocs(lineas);
+    await db.bulkDocs(lineas);
 
     // Remove Lineas de labores
     lineas = only_docs(
@@ -103,10 +518,10 @@ export const usePlanActividad = () => {
       l["_deleted"] = true;
       return l;
     });
-    db.bulkDocs(lineas);
+    await db.bulkDocs(lineas);
 
     // Finally remove the doc
-    db.remove(act);
+    await db.remove(act);
   };
 
   const programarActividadPlanificada = async (
@@ -125,6 +540,15 @@ export const usePlanActividad = () => {
       actividad.insumosLineasIds.map(async (id) => {
         let linea: IInsumosPlanificacion = await dbContext.fields.get(id);
         let insumo: Insumo = await dbContext.supplies.get(linea.insumoId);
+        let deposito = linea.deposito || null;
+
+        if (!deposito && getPlanLineDepositId(linea)) {
+          try {
+            deposito = await dbContext.deposits.get(getPlanLineDepositId(linea));
+          } catch (error) {
+            console.warn("Could not load deposit for planned activity line", error);
+          }
+        }
 
         let nuevaLinea: LineaDosis = {
           insumo: insumo,
@@ -133,7 +557,10 @@ export const usePlanActividad = () => {
           dosis: resolveSupplyDosificacion(linea, actividad.area) || 0,
           total: linea.totalCantidad,
           precio_estimado: linea.precioUnitario,
-          deposito: null,
+          deposito: deposito,
+          ubicacion: linea.ubicacion || "",
+          nro_lote: linea.nroLote || "",
+          orden_de_retiro: linea.ordenRetiro || null,
         };
 
         dosis.push(nuevaLinea);
