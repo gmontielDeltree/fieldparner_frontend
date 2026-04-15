@@ -79,6 +79,7 @@ export const useSidebar = (): UseSidebarReturn => {
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation();
   const { user, modules: userModules, status: authStatus } = useAppSelector((s: any) => s.auth || {});
+  const syncStatus = useAppSelector((s: any) => s.syncStatus?.syncStatus ?? 0);
   const { getSystem, system } = useSystem();
   const version = getFieldPartnerVersion(system);
 
@@ -96,7 +97,7 @@ export const useSidebar = (): UseSidebarReturn => {
     getMenuModules();
     getSystem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [syncStatus]);
 
   useEffect(() => console.debug('[useSidebar] modules count', modules?.length), [modules]);
   useEffect(

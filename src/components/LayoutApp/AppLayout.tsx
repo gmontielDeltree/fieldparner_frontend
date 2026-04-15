@@ -22,13 +22,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { openSideBar } = useAppSelector((state) => state.ui);
+  const syncStatus = useAppSelector((state) => state.syncStatus.syncStatus);
   const { fields, getFields } = useField();
   const isFieldsMenuVisible = useSelector((state: RootState) => state.fieldList.isVisible);
 
-  // Load fields on mount for the global FieldsSideMenu
+  // Refresh global fields whenever the local PouchDB replica receives new data.
   useEffect(() => {
     getFields();
-  }, [getFields]);
+  }, [getFields, syncStatus]);
 
   const handleSideBarOpen = useCallback(() => {
     // setOpen(true);
