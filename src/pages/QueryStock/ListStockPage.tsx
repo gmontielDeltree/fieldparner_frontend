@@ -36,6 +36,7 @@ import { setSupplyActive } from "../../redux/supply";
 import { useTranslation } from "react-i18next";
 import { StockItem } from "../../interfaces/stock";
 import { dbContext } from "../../services";
+import { formatNumber } from "../../helpers/helper";
 
 
 
@@ -59,7 +60,7 @@ function CustomTabPanel(props: TabPanelProps) {
     >
       {value === index && (
         <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
+          {children}
         </Box>
       )}
     </div>
@@ -356,18 +357,20 @@ export const ListStockPage: React.FC = () => {
                           </TableCellStyled>
                           <TableCellStyled align="center">
                             <Chip
-                              label={stock?.currentStock}
+                              label={formatNumber(stock?.currentStock)}
                               variant="filled"
                               color="primary"
                               onClick={() => stock.dataSupply && onClickSupply(stock.dataSupply)}
                             />
                           </TableCellStyled>
                           <TableCellStyled align="center">
-                            <Chip label={stock.reservedStock} variant="outlined" />
+                            <Chip label={formatNumber(stock.reservedStock)} variant="outlined" />
                           </TableCellStyled>
                           <TableCellStyled align="center">
                             <Chip
-                              label={stock?.currentStock - stock?.reservedStock}
+                              label={formatNumber(
+                                Number(stock?.currentStock || 0) - Number(stock?.reservedStock || 0)
+                              )}
                               color="success"
                             />
                           </TableCellStyled>
@@ -523,18 +526,20 @@ export const ListStockPage: React.FC = () => {
                           </TableCellStyled>
                           <TableCellStyled align="center">
                             <Chip
-                              label={row.currentStock}
+                              label={formatNumber(row.currentStock)}
                               variant="filled"
                               color="primary"
                               onClick={() => row && onClickDeposit(row)}
                             />
                           </TableCellStyled>
                           <TableCellStyled align="center">
-                            <Chip label={row.reservedStock} variant="outlined" />
+                            <Chip label={formatNumber(row.reservedStock)} variant="outlined" />
                           </TableCellStyled>
                           <TableCellStyled align="center">
                             <Chip
-                              label={row.currentStock - row.reservedStock}
+                              label={formatNumber(
+                                Number(row.currentStock || 0) - Number(row.reservedStock || 0)
+                              )}
                               color="success"
                             />
                           </TableCellStyled>
@@ -568,19 +573,19 @@ export const ListStockPage: React.FC = () => {
                         <TableCellStyled align="center">{row.campaign}</TableCellStyled>
                         <TableCellStyled align="center">{row.zafra}</TableCellStyled>
                         <TableCellStyled align="center">
-                          <Chip label={row.currentStock} variant="filled" color="primary" />
+                          <Chip label={formatNumber(row.currentStock)} variant="filled" color="primary" />
                         </TableCellStyled>
                         <TableCellStyled align="center">
-                          <Chip label={row.committedStock} variant="outlined" color="warning" />
+                          <Chip label={formatNumber(row.committedStock)} variant="outlined" color="warning" />
                         </TableCellStyled>
                         <TableCellStyled align="center">
-                          <Chip label={row.deliveredStock} variant="outlined" color="success" />
+                          <Chip label={formatNumber(row.deliveredStock)} variant="outlined" color="success" />
                         </TableCellStyled>
                         <TableCellStyled align="center">
-                          <Chip label={row.available} color={row.available > 0 ? "success" : "error"} />
+                          <Chip label={formatNumber(row.available)} color={row.available > 0 ? "success" : "error"} />
                         </TableCellStyled>
                         <TableCellStyled align="center">
-                          <Chip label={row.pending} color={row.pending > 0 ? "warning" : "default"} />
+                          <Chip label={formatNumber(row.pending)} color={row.pending > 0 ? "warning" : "default"} />
                         </TableCellStyled>
                       </ItemRow>
                     ))}

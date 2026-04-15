@@ -99,6 +99,11 @@ const createPlanSupplyLine = (totalCantidad: number) => ({
   ordenRetiro: null,
 } as any)
 
+const createPlanSupplyLineWithLot = (totalCantidad: number, nroLote: string | number) => ({
+  ...createPlanSupplyLine(totalCantidad),
+  nroLote,
+} as any)
+
 let databases: PouchDB.Database<any>[] = []
 let dbNamePrefix = ''
 
@@ -286,5 +291,85 @@ describe('usePlanActividad - annual sowing reservations', () => {
       keys: ['planlinsumo:1', 'planactividad:1'],
     })
     expect(lineDocs.rows.every((row) => !row.doc)).toBe(true)
+  })
+
+  it('reserves stock when plan lot number is string and stock lot number is stored as numeric-like value', async () => {
+    const stock = await dbContext.stock.get('stock:1')
+    await dbContext.stock.put({
+      ...stock,
+      nroLot: 123 as any,
+    })
+
+    const { result } = renderHook(() => usePlanActividad(), { wrapper })
+
+    await act(async () => {
+      await result.current.saveActividad(
+        createPlanActivity(),
+        [createPlanSupplyLineWithLot(10, '123')],
+        [],
+      )
+    })
+
+    await waitFor(async () => {
+      const updatedStock = await dbContext.stock.get('stock:1')
+      expect(updatedStock.reservedStock).toBe(10)
+    })
+  })
+
+  it('repairs an existing broken reservation when the activity is saved again', async () => {
+    await dbContext.withdrawalOrders.post({
+      _id: 'wo-broken',
+      accountId: 'acc-1',
+      type: 'Automatica',
+      creationDate: '2026-04-14T00:00:00.000Z',
+      order: 99,
+      reason: 'Reserva de stock',
+      campaignId: 'camp-1',
+      field: 'field-1',
+      state: 'Pendiente',
+      withdrawId: 'contr-1',
+    } as any)
+
+    await dbContext.depositSupplyOrder.post({
+      _id: 'dso-broken',
+      accountId: 'acc-1',
+      order: 99,
+      depositId: 'dep-1',
+      supplyId: 'sup-1',
+      location: '',
+      nroLot: 'L1',
+      withdrawalAmount: 0,
+      originalAmount: 10,
+    } as any)
+
+    await dbContext.fields.post({
+      ...createPlanSupplyLine(10),
+      ordenRetiro: {
+        _id: 'wo-broken',
+        order: 99,
+        campaignId: 'camp-1',
+      },
+    } as any)
+
+    await dbContext.fields.post(createPlanActivity())
+
+    const { result } = renderHook(() => usePlanActividad(), { wrapper })
+
+    await act(async () => {
+      await result.current.saveActividad(
+        createPlanActivity(),
+        [createPlanSupplyLine(10)],
+        [],
+      )
+    })
+
+    await waitFor(async () => {
+      const updatedStock = await dbContext.stock.get('stock:1')
+      expect(updatedStock.reservedStock).toBe(10)
+    })
+
+    await expect(dbContext.withdrawalOrders.get('wo-broken')).rejects.toMatchObject({
+      name: 'not_found',
+    })
   })
 })
