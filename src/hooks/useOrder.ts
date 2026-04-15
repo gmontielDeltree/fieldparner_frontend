@@ -22,6 +22,8 @@ import { onLogout } from '../redux/auth';
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 import { Business } from "../interfaces/socialEntity";
+import { Stock } from "../interfaces/stock";
+import { getMatchingSupplyStocks } from "../utils/stockAllocation";
 
 export const useOrder = () => {
     const navigate = useNavigate();
@@ -40,19 +42,27 @@ export const useOrder = () => {
         depositId: string;
         nroLot?: string;
         location?: string;
+        campaignId?: string;
     }) => {
         if (!user) return [];
 
-        const selector: any = {
+        const stockResult = await dbContext.stock.find({
+            selector: {
             accountId: user.accountId,
             id: item.supplyId,
             depositId: item.depositId,
-            ...(item.nroLot ? { nroLot: item.nroLot } : {}),
-        };
+            },
+        } as any);
 
-        const stockResult = await dbContext.stock.find({ selector });
-        return stockResult.docs.filter((stock: any) =>
-            !item.location || (stock.location || '') === item.location
+        return getMatchingSupplyStocks(
+            stockResult.docs as Stock[],
+            {
+                supplyId: item.supplyId,
+                depositId: item.depositId,
+                campaignId: item.campaignId,
+                location: item.location,
+                nroLot: item.nroLot ? String(item.nroLot) : "",
+            },
         );
     }
 
@@ -203,7 +213,10 @@ export const useOrder = () => {
             // Update stock.reservedStock for each supply in the order
             for (const item of inputsToBeWithdrawan) {
                 try {
-                    const stockDocs = await findStockDocsForOrderItem(item);
+                    const stockDocs = await findStockDocsForOrderItem({
+                        ...item,
+                        campaignId: newOrder.campaignId,
+                    });
                     if (stockDocs.length > 0) {
                         const stockDoc = stockDocs[0];
                         stockDoc.reservedStock = (stockDoc.reservedStock || 0) + Number(item.originalAmount || 0);
@@ -483,7 +496,10 @@ export const useOrder = () => {
                     const withdrawnAmount = Number(w.amount || 0);
                     if (withdrawnAmount <= 0) continue;
 
-                    const stockDocs = await findStockDocsForOrderItem(w);
+                    const stockDocs = await findStockDocsForOrderItem({
+                        ...w,
+                        campaignId: withdrawalOrder.campaignId,
+                    });
                     if (stockDocs.length > 0) {
                         const stockDoc = stockDocs[0];
                         stockDoc.reservedStock = Math.max(0, (stockDoc.reservedStock || 0) - withdrawnAmount);
@@ -587,7 +603,10 @@ export const useOrder = () => {
                 if (reservedAmount <= 0) continue;
 
                 try {
-                    const stockDocs = await findStockDocsForOrderItem(dso);
+                    const stockDocs = await findStockDocsForOrderItem({
+                        ...dso,
+                        campaignId: withdrawalOrder.campaignId,
+                    });
                     if (stockDocs.length > 0) {
                         const stockDoc = stockDocs[0];
                         stockDoc.reservedStock = Math.max(0, (stockDoc.reservedStock || 0) - reservedAmount);

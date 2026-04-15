@@ -11,6 +11,7 @@ import { ColumnProps, DisplayModals } from "../../../types";
 import { uiCloseModal } from "../../../redux/ui";
 import { DataTable, ItemRow, TableCellStyled } from "../..";
 import { StockItem } from "../../../interfaces/stock";
+import { formatNumber } from "../../../helpers/helper";
 
 const columns: ColumnProps[] = [
   { text: "Ubicacion", align: "center" },
@@ -75,13 +76,13 @@ export const StockSupplyModal: React.FC<StockSupplyModalProps> = ({
                 {selectedRow?.dataSupply?.unitMeasurement || "-"}
               </TableCellStyled>
               <TableCellStyled align="center">
-                {lotStock.currentStock}
+                {formatNumber(lotStock.currentStock)}
               </TableCellStyled>
               <TableCellStyled align="center">
-                {lotStock.reservedStock}
+                {formatNumber(lotStock.reservedStock)}
               </TableCellStyled>
               <TableCellStyled align="center">
-                {lotStock.currentStock - lotStock.reservedStock}
+                {formatNumber(Number(lotStock.currentStock || 0) - Number(lotStock.reservedStock || 0))}
               </TableCellStyled>
             </ItemRow>
           ))}

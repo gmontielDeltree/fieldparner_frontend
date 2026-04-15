@@ -31,11 +31,13 @@ import { listar_ejecuciones_por_depo } from "../../owncomponents/depositos/depos
 import { useLabores } from "./useLabores";
 import { NotificationService } from "../services/notificationService";
 import { resolveSupplyDosificacion } from "../utils/supplyDose";
+import { getMatchingSupplyStocks } from "../utils/stockAllocation";
 import {
   OrderStatus,
   WithdrawalOrder,
   WithdrawalOrderType,
 } from "../types";
+import { Stock } from "../interfaces/stock";
 
 const isSowingPlanActivity = (actividad?: Partial<IActividadPlanificacion> | null) =>
   (actividad?.tipo || "").toLowerCase() === "siembra";
@@ -48,6 +50,9 @@ const getPlanLineNroLote = (linea?: Partial<IInsumosPlanificacion> | null) =>
 
 const getPlanLineUbicacion = (linea?: Partial<IInsumosPlanificacion> | null) =>
   (linea?.ubicacion || "").toString().trim();
+
+const normalizeReservationValue = (value?: string | number | null) =>
+  String(value ?? "").trim().toLowerCase();
 
 const hasSameReservationData = (
   previousLine: Partial<IInsumosPlanificacion> | null,
@@ -123,6 +128,72 @@ export const usePlanActividad = () => {
     }
   };
 
+  const hasAppliedReservation = async (
+    withdrawalOrder?: WithdrawalOrder | null,
+    linea?: Partial<IInsumosPlanificacion> | null,
+  ) => {
+    if (!user || !withdrawalOrder?.order || !linea?.insumoId || !getPlanLineDepositId(linea)) {
+      return false;
+    }
+
+    try {
+      const orderNumber = withdrawalOrder.order;
+      const latestOrder = withdrawalOrder._id
+        ? await dbContext.withdrawalOrders.get(withdrawalOrder._id).catch(() => withdrawalOrder)
+        : withdrawalOrder;
+
+      const depositSupplyResult = await dbContext.depositSupplyOrder.find({
+        selector: {
+          accountId: user.accountId,
+          order: orderNumber,
+        },
+      } as any);
+
+      const matchingOrderLine = (depositSupplyResult.docs as any[]).find((doc) =>
+        normalizeReservationValue(doc.supplyId) === normalizeReservationValue(linea.insumoId) &&
+        normalizeReservationValue(doc.depositId) === normalizeReservationValue(getPlanLineDepositId(linea)) &&
+        normalizeReservationValue(doc.location) === normalizeReservationValue(getPlanLineUbicacion(linea)) &&
+        normalizeReservationValue(doc.nroLot) === normalizeReservationValue(getPlanLineNroLote(linea))
+      );
+
+      if (!matchingOrderLine) {
+        return false;
+      }
+
+      const reservedAmount =
+        Number(matchingOrderLine.originalAmount || 0) -
+        Number(matchingOrderLine.withdrawalAmount || 0);
+
+      if (reservedAmount <= 0) {
+        return false;
+      }
+
+      const stockResult = await dbContext.stock.find({
+        selector: {
+          accountId: user.accountId,
+          id: matchingOrderLine.supplyId,
+          depositId: matchingOrderLine.depositId,
+        },
+      } as any);
+
+      const matchingStock = getMatchingSupplyStocks(
+        stockResult.docs as Stock[],
+        {
+          supplyId: matchingOrderLine.supplyId,
+          depositId: matchingOrderLine.depositId,
+          campaignId: latestOrder?.campaignId,
+          location: matchingOrderLine.location,
+          nroLot: matchingOrderLine.nroLot ? String(matchingOrderLine.nroLot) : "",
+        },
+      )[0];
+
+      return Number(matchingStock?.reservedStock || 0) >= reservedAmount;
+    } catch (error) {
+      console.warn("Could not validate existing reservation state for annual planning line", error);
+      return false;
+    }
+  };
+
   const releasePlannedWithdrawalOrder = async (withdrawalOrder?: WithdrawalOrder | null) => {
     if (!withdrawalOrder?._id || !withdrawalOrder?.order || !user) return;
 
@@ -148,15 +219,19 @@ export const usePlanActividad = () => {
               accountId: user.accountId,
               id: depositSupply.supplyId,
               depositId: depositSupply.depositId,
-              ...(depositSupply.nroLot ? { nroLot: depositSupply.nroLot } : {}),
             },
           } as any);
 
-          const stockDoc = stockResult.docs.find(
-            (stock: any) =>
-              !depositSupply.location ||
-              (stock.location || "") === (depositSupply.location || ""),
-          ) as any;
+          const stockDoc = getMatchingSupplyStocks(
+            stockResult.docs as Stock[],
+            {
+              supplyId: depositSupply.supplyId,
+              depositId: depositSupply.depositId,
+              campaignId: latestOrder.campaignId,
+              location: depositSupply.location,
+              nroLot: depositSupply.nroLot ? String(depositSupply.nroLot) : "",
+            },
+          )[0] as any;
 
           if (stockDoc) {
             stockDoc.reservedStock = Math.max(
@@ -286,19 +361,25 @@ export const usePlanActividad = () => {
     const ordersToRelease = new Map<string, WithdrawalOrder>();
     const linesNeedingReservation = new Set<string>();
 
-    const mergedSupplyLines = nextSupplyLines.map((linea) => {
+    const mergedSupplyLines: IInsumosPlanificacion[] = [];
+
+    for (const linea of nextSupplyLines) {
       const previousLine = previousSupplyLineMap.get(linea._id);
       const mergedLine = previousLine
         ? { ...previousLine, ...linea, _id: previousLine._id, _rev: previousLine._rev }
         : { ...linea };
 
-      const canKeepReservation =
+      const reservationShouldBeReusable =
         isSowingPlanActivity(actividadDocToPersist) &&
         !previousContextChanged &&
         previousLine?.ordenRetiro &&
         hasSameReservationData(previousLine, mergedLine);
 
-      if (canKeepReservation) {
+      const reservationIsApplied = reservationShouldBeReusable
+        ? await hasAppliedReservation(previousLine?.ordenRetiro, mergedLine)
+        : false;
+
+      if (reservationShouldBeReusable && reservationIsApplied) {
         mergedLine.ordenRetiro = previousLine?.ordenRetiro || null;
       } else {
         if (previousLine?.ordenRetiro) {
@@ -318,8 +399,8 @@ export const usePlanActividad = () => {
         mergedLine.ordenRetiro = null;
       }
 
-      return mergedLine;
-    });
+      mergedSupplyLines.push(mergedLine);
+    }
 
     for (const previousLine of previousSupplyLines) {
       const stillExists = mergedSupplyLines.some((linea) => linea._id === previousLine._id);
