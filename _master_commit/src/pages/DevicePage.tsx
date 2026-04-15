@@ -1,0 +1,56 @@
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { selectMap } from '../redux/map/mapSlice'
+import { Splash } from '../components/Satellite/Splash'
+import { DailyTelemetryCard } from '../interfaces/sensores'
+import { Devices } from '../components/Sensors/sensores'
+import { useSelector } from 'react-redux'
+import SensoresClass from '../components/Sensors/SensoresClass'
+
+export const DevicePage: React.FC = () => {
+  const [loading, setLoading] = useState(true)
+  const [deviceCard, setDeviceCard] = useState<DailyTelemetryCard>()
+  const map = useSelector(selectMap)
+  const navigate = useNavigate()
+
+  let { deviceId } = useParams()
+  let { date } = useParams()
+
+  useEffect(() => {
+    if (deviceId) {
+      let d = new Devices()
+      d.get_device_daily_card(deviceId, date).then((d) => {
+        setDeviceCard(d)
+
+        console.log('Device Card Loaded', d)
+        setLoading(false)
+      })
+    }
+  }, [deviceId])
+
+  return (
+    <>
+      <div
+        id="device-sidebar-container"
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: '25%',
+        }}
+      >
+        {loading ? (
+          <Splash />
+        ) : (
+          <SensoresClass
+            onClose={() => navigate('/init/overview/fields')}
+            map={map}
+            uuid={deviceId}
+            selectedDeviceCard={deviceCard}
+          />
+        )}
+      </div>
+    </>
+  )
+}

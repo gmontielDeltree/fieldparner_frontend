@@ -1,6 +1,8 @@
 import PouchDB from 'pouchdb';
 import PouchDBFind from 'pouchdb-find';
 import { getEnvVariables } from '../helpers/getEnvVariables';
+import store from '../redux/store';
+import { incrementSyncCounter } from '../redux/syncStatus';
 import {
   Category,
   Deposit,
@@ -47,9 +49,19 @@ import { CompanyByContract, CorporateContract } from '../interfaces/corporateCon
 
 PouchDB.plugin(PouchDBFind);
 
-export const remoteCouchDBUrl = Object.freeze(getEnvVariables().VITE_COUCHDB_URL);
+const normalizeRemoteUrl = (value?: string) => {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
+};
+
+export const remoteCouchDBUrl = Object.freeze(
+  normalizeRemoteUrl(getEnvVariables().VITE_COUCHDB_URL as string | undefined),
+);
 // const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
-const environment = getEnvVariables().VITE_ENVIRONMENT;
+const environment = String(getEnvVariables().VITE_ENVIRONMENT || 'stg')
+  .trim()
+  .toLowerCase();
 
 //TODO: ajustar para varios ambientes
 export const isEnvSTG = () => {
@@ -191,6 +203,17 @@ createIndexes().catch((err) => console.error('[pouchdbService] Error creating in
 // #endregion
 
 // #region SYNC MANAGER
+let syncRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+const scheduleSyncRefresh = () => {
+  if (syncRefreshTimer) return;
+
+  syncRefreshTimer = setTimeout(() => {
+    syncRefreshTimer = null;
+    store.dispatch(incrementSyncCounter());
+  }, 500);
+};
+
 /**
  * SyncManager — repositorio singleton de todos los handlers de sincronización.
  *
@@ -216,8 +239,12 @@ class SyncManager {
     const handler = local
       .sync(remoteUrl, { live: true, retry: true, batch_size: 100, batches_limit: 5, ...opts })
       .on('active', () => console.debug(`[sync:${name}] active`))
+      .on('change', () => {
+        scheduleSyncRefresh();
+      })
       .on('paused', (err) => {
         if (err) console.warn(`[sync:${name}] paused with error:`, err);
+        scheduleSyncRefresh();
       })
       .on('error', (err) => console.error(`[sync:${name}] error:`, err));
 
@@ -255,6 +282,9 @@ const syncHighPriority = () => {
   syncManager.register('users', dbContext.users, `${remoteCouchDBUrl}${dbNames.users}`);
   syncManager.register('stock', dbContext.stock, `${remoteCouchDBUrl}${dbNames.stock}`);
   syncManager.register('stockMovements', dbContext.stockMovements, `${remoteCouchDBUrl}${dbNames.stockMovements}`);
+  syncManager.register('modules', dbContext.modules, `${remoteCouchDBUrl}${dbNames.modules}`);
+  syncManager.register('menuModules', dbContext.menuModules, `${remoteCouchDBUrl}${dbNames.menuModules}`);
+  syncManager.register('system', dbContext.system, `${remoteCouchDBUrl}${dbNames.system}`);
 };
 
 // Prioridad MEDIA: datos operativos secundarios → se inician después de 1.5s
@@ -316,6 +346,13 @@ export const startSync = () => {
   if (mediumTimer) clearTimeout(mediumTimer);
   if (lowTimer) clearTimeout(lowTimer);
   syncManager.cancelAll();
+
+  if (!remoteCouchDBUrl) {
+    console.error(
+      '[pouchdbService] Missing VITE_COUCHDB_URL. PouchDB sync was not started in this build.',
+    );
+    return;
+  }
 
   syncHighPriority();
   mediumTimer = setTimeout(syncMediumPriority, 1500);

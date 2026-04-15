@@ -1,0 +1,1 @@
+export { ModulePermissionsSelector } from './ModulePermissionsSelector';

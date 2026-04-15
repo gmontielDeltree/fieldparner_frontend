@@ -1,0 +1,114 @@
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, IconButton, Tooltip } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { useAppDispatch, useBusiness } from '../../hooks';
+import { setBusinessActive } from '../../redux/business';
+import { useTranslation } from 'react-i18next';
+import { Business, BusinessItem } from '../../interfaces/socialEntity';
+import { GenericListPage } from '../../components';
+import { GridRenderCellParams } from '@mui/x-data-grid';
+
+export const ListBusinessesPage: React.FC = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isLoading, businesses, getBusinesses, deleteBusiness, setBusinesses, replicate } =
+    useBusiness();
+  const { t } = useTranslation();
+  useEffect(() => {
+    getBusinesses();
+  }, []);
+
+  const columns = [
+    { field: 'tipoEntidad', headerName: t('entity_type'), flex: 1 },
+    {
+      field: 'nombreOrazon',
+      headerName: t('name_negal_name'),
+      flex: 1,
+      valueGetter: (params: GridRenderCellParams) => {
+        const { tipoEntidad, nombreCompleto, razonSocial } = params.row;
+        if (tipoEntidad === 'fisica') {
+          return `${nombreCompleto || ''}`;
+        }
+        return razonSocial || '-';
+      },
+    },
+    {
+      field: 'cuit',
+      headerName: t('tax_id_identification_number'),
+      flex: 1,
+      valueGetter: (params: GridRenderCellParams) => {
+        const { tipoEntidad, documento, cuit } = params.row;
+        return tipoEntidad?.toLowerCase() === 'fisica' ? documento || '—' : cuit || '—';
+      },
+    },
+    { field: 'email', headerName: t('Email'), flex: 1 },
+    {
+      field: 'country',
+      headerName: t('id_country'),
+      flex: 1,
+      valueGetter: (params: GridRenderCellParams) => params.row.country?.descriptionES || '-',
+    },
+    {
+      field: 'actions',
+      headerName: '',
+      flex: 1,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box display='flex' justifyContent='center'>
+          <Tooltip title={t('icon_edit')}>
+            <IconButton
+              aria-label={t('icon_edit')}
+              onClick={() => onClickUpdateBusiness(params.row)}
+              sx={{
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('icon_delete')}>
+            <IconButton
+              aria-label={t('icon_delete')}
+              onClick={() => handleDeleteBusiness(params.row)}
+              sx={{
+                transition: 'transform 0.2s',
+                '&:hover': { transform: 'scale(1.2)' },
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      ),
+    },
+  ];
+
+  const onClickUpdateBusiness = (item: BusinessItem) => {
+    const { country, ...rest } = item;
+    dispatch(setBusinessActive(rest));
+    navigate(`/init/overview/business/${item._id}`);
+  };
+
+  const handleDeleteBusiness = (item: Business) => {
+    if (item._id && item._rev) {
+      deleteBusiness(item._id, item._rev);
+      getBusinesses();
+    }
+  };
+
+  return (
+    <GenericListPage
+      moduleRoute='/init/overview/business'
+      data={businesses}
+      columns={columns}
+      getData={getBusinesses}
+      deleteData={deleteBusiness}
+      setActiveItem={setBusinessActive}
+      newItemPath='/init/overview/business/new'
+      editItemPath={id => `/init/overview/business/${id}`}
+      isLoading={isLoading}
+    />
+  );
+};
