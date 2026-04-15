@@ -55,13 +55,18 @@ const normalizeRemoteUrl = (value?: string) => {
   return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
 };
 
+const normalizeEnvironment = (value?: string) => {
+  const trimmed = String(value || 'stg').trim().toLowerCase();
+  return trimmed.replace(/^['"]+|['"]+$/g, '');
+};
+
 export const remoteCouchDBUrl = Object.freeze(
   normalizeRemoteUrl(getEnvVariables().VITE_COUCHDB_URL as string | undefined),
 );
 // const remoteCouchDBQTSServerURL = Object.freeze(getEnvVariables().VITE_COUCHDB_QTS_URL);
-const environment = String(getEnvVariables().VITE_ENVIRONMENT || 'stg')
-  .trim()
-  .toLowerCase();
+const environment = normalizeEnvironment(
+  getEnvVariables().VITE_ENVIRONMENT as string | undefined,
+);
 
 //TODO: ajustar para varios ambientes
 export const isEnvSTG = () => {
@@ -282,9 +287,6 @@ const syncHighPriority = () => {
   syncManager.register('users', dbContext.users, `${remoteCouchDBUrl}${dbNames.users}`);
   syncManager.register('stock', dbContext.stock, `${remoteCouchDBUrl}${dbNames.stock}`);
   syncManager.register('stockMovements', dbContext.stockMovements, `${remoteCouchDBUrl}${dbNames.stockMovements}`);
-  syncManager.register('modules', dbContext.modules, `${remoteCouchDBUrl}${dbNames.modules}`);
-  syncManager.register('menuModules', dbContext.menuModules, `${remoteCouchDBUrl}${dbNames.menuModules}`);
-  syncManager.register('system', dbContext.system, `${remoteCouchDBUrl}${dbNames.system}`);
 };
 
 // Prioridad MEDIA: datos operativos secundarios → se inician después de 1.5s
