@@ -207,7 +207,7 @@ createIndexes().catch((err) => console.error('[pouchdbService] Error creating in
 class SyncManager {
   private syncs = new Map<string, PouchDB.Replication.Sync<any>>();
 
-  register<T>(
+  register<T extends Record<string, any>>(
     name: string,
     local: PouchDB.Database<T>,
     remoteUrl: string,
@@ -244,6 +244,10 @@ export const syncManager = new SyncManager();
 
 // Prioridad ALTA: datos críticos para la operación diaria → se inician inmediatamente
 const syncHighPriority = () => {
+  syncManager.register('modules', dbContext.modules, `${remoteCouchDBUrl}${dbNames.modules}`);
+  syncManager.register('menuModules', dbContext.menuModules, `${remoteCouchDBUrl}${dbNames.menuModules}`);
+  syncManager.register('modulesUsers', dbContext.modulesUsers, `${remoteCouchDBUrl}${dbNames.modulesUsers}`);
+  syncManager.register('system', dbContext.system, `${remoteCouchDBUrl}${dbNames.system}`);
   syncManager.register('fields', dbContext.fields, `${remoteCouchDBUrl}${dbNames.fields}`);
   syncManager.register('campaigns', dbContext.campaigns, `${remoteCouchDBUrl}${dbNames.campaigns}`);
   syncManager.register('supplies', dbContext.supplies, `${remoteCouchDBUrl}${dbNames.supplies}`);
@@ -280,9 +284,6 @@ const syncLowPriority = () => {
   syncManager.register('zipCodeARG', dbContext.zipCodeARG, `${remoteCouchDBUrl}${dbNames.zipCodeARG}`);
   syncManager.register('zipCodePRY', dbContext.zipCodePRY, `${remoteCouchDBUrl}${dbNames.zipCodePRY}`);
   syncManager.register('countries', dbContext.countries, `${remoteCouchDBUrl}${dbNames.countries}`);
-  syncManager.register('modules', dbContext.modules, `${remoteCouchDBUrl}${dbNames.modules}`);
-  syncManager.register('menuModules', dbContext.menuModules, `${remoteCouchDBUrl}${dbNames.menuModules}`);
-  syncManager.register('modulesUsers', dbContext.modulesUsers, `${remoteCouchDBUrl}${dbNames.modulesUsers}`);
   syncManager.register('licencesUse', dbContext.licencesUse, `${remoteCouchDBUrl}${dbNames.licencesUse}`);
   syncManager.register('platform', dbContext.platform, `${remoteCouchDBUrl}${dbNames.platform}`);
   // syncManager.register('platformSupplies', dbContext.platformSupplies, `${remoteCouchDBQTSServerURL}${dbNames.platformSupplies}`); //TODO: Verificar si se necesita
@@ -298,7 +299,6 @@ const syncLowPriority = () => {
   syncManager.register('costsExpenses', dbContext.costsExpenses, `${remoteCouchDBUrl}${dbNames.costsExpenses}`);
   syncManager.register('campaingExpenses', dbContext.campaingExpenses, `${remoteCouchDBUrl}${dbNames.campaingExpenses}`);
   syncManager.register('fieldsByProductUnit', dbContext.fieldsByProductUnit, `${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`);
-  syncManager.register('system', dbContext.system, `${remoteCouchDBUrl}${dbNames.system}`);
   // syncManager.register('cropDeposits', dbContext.cropDeposits, `${remoteCouchDBUrl}${dbNames.cropDeposits}`);
 };
 
