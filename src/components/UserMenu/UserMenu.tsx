@@ -126,7 +126,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
             <LogoutIcon fontSize="small" color="error" />
           </ListItemIcon>
           <ListItemText>
-            <Typography color="error">Cerrar sesión</Typography>
+            <Typography color="error">{t("title_close_session")}</Typography>
           </ListItemText>
         </MenuItem>
       </Menu>
