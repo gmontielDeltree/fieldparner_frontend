@@ -43,10 +43,10 @@ const initialForm: FormValueState<TransportDocument> = {
   cuitRepresentanteEntrega: { value: "", required: false, isError: false, message: "" },
   cuitRepresentanteRecibidor: { value: "", required: false, isError: false, message: "" },
   cpGenerador: { value: "", required: false, isError: false, message: "" },
-  kgEstimado: { value: 0, required: true, isError: false, message: "" },
-  kgBruto: { value: 0, required: true, isError: false, message: "" },
-  kgTara: { value: 0, required: true, isError: false, message: "" },
-  kgNeto: { value: 0, required: false, isError: false, message: "" },
+  kgEstimado: { value: "", required: true, isError: false, message: "" },
+  kgBruto: { value: "", required: true, isError: false, message: "" },
+  kgTara: { value: "", required: true, isError: false, message: "" },
+  kgNeto: { value: "", required: false, isError: false, message: "" },
   cuitComprador: { value: "", required: true, isError: false, message: "" },
   cuitAsignadorCupo: { value: "", required: false, isError: false, message: "" },
   nroCupo: { value: "", required: false, isError: false, message: "" },
@@ -67,10 +67,10 @@ const initialForm: FormValueState<TransportDocument> = {
   vehiculoIdAcoplado1: { value: "", required: false, isError: false, message: "" },
   vehiculoIdAcoplado2: { value: "", required: false, isError: false, message: "" },
   razonSocialChofer: { value: "", required: false, isError: false, message: "" },
-  kmARecorrer: { value: 0, required: false, isError: false, message: "" },
+  kmARecorrer: { value: "", required: false, isError: false, message: "" },
   tipoFlete: { value: EnumTipoFlete.APAGAR, required: false, isError: false, message: "" },
-  tarifaRef: { value: 0, required: false, isError: false, message: "" },
-  tarifaTT: { value: 0, required: false, isError: false, message: "" },
+  tarifaRef: { value: "", required: false, isError: false, message: "" },
+  tarifaTT: { value: "", required: false, isError: false, message: "" },
   calidadEnvoltura: { value: "", required: false, isError: false, message: "" },
   calidad: { value: "", required: false, isError: false, message: "" },
   fechaPartida: { value: "", required: false, isError: false, message: "" },
@@ -309,8 +309,7 @@ export const TransportDocumentPage: React.FC = () => {
     event.preventDefault();
     event.stopPropagation();
     const form = event.currentTarget;
-    // if (validateForm(form)) handleNext();
-    handleNext();
+    if (validateForm(form)) handleNext();
   };
 
   useEffect(() => {
