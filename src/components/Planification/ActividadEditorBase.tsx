@@ -22,6 +22,7 @@ import SuppliesForm from '../LotsMenu/forms/PlanForms/SuppliesForm';
 import ServicesForm from '../LotsMenu/forms/PlanForms/ServicesForm';
 import ObservationsForm from '../LotsMenu/forms/PlanForms/ObservationsForm';
 import { NumberFieldWithUnits } from '../LotsMenu/components/NumberField';
+import { resolveLaborServiceName } from '../../utils/laborService';
 import { normalizeSupplyDoseLine, resolveSupplyDosificacion, resolveSupplyTotal } from '../../utils/supplyDose';
 
 const isSowingPlanActivity = (tipo?: string) => {
@@ -417,7 +418,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
             return {
               uuid: line?._id,
               laborId: line?.laborId,
-              servicio: line?.laborNombre || 'Servicio',
+              servicio: resolveLaborServiceName(line?.laborNombre) || 'Servicio',
               contratista: actividadDoc?.contratista || null,
               costo_total: line?.totalCosto || 0,
               comentario: line?.comentario || '',
@@ -755,7 +756,7 @@ export const ActividadEditorBase: React.FC<ActividadEditorBaseProps> = ({
       const lineasLabores = (formData.detalles?.servicios || []).map((servicio: any) => ({
         _id: resolvePlanLineId('planlabor', servicio.uuid),
         laborId: servicio.laborId || 'default-labor',
-        laborNombre: servicio.servicio || 'Servicio',
+        laborNombre: resolveLaborServiceName(servicio.servicio) || 'Servicio',
         totalCosto: servicio.costo_total || 0,
         costoPorHectarea: servicio.precio_unidad || 0,
         comentario: servicio.comentario || '',

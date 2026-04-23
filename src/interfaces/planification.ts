@@ -36,6 +36,7 @@ export interface IInsumosPlanificacion extends FPDocument {
 
 export interface ILaboresPlanificacion extends FPDocument {
     laborId: string,
+    laborNombre?: string,
     costoPorHectarea:number,
     hectareas: number,
     totalCosto: number,
