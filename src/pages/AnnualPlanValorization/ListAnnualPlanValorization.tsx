@@ -331,7 +331,7 @@ export const ListAnnualPlanValorization: React.FC = () => {
         getData={getAnnualPlanValorizations}
         deleteData={deleteAnnualPlanValorization}
         setActiveItem={setActiveItem}
-        newItemPath='/init/overview/annual-plan-valorization/new'
+        newItemPath=''
         editItemPath={id => `/init/overview/annual-plan-valorization/edit/${id}`}
         isLoading={isLoading}
       />
