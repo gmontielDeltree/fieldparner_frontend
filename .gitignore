@@ -130,5 +130,9 @@ credencialesField.js
 /undefinedzip-code-pry/
 /undefinedzones/
 
+# PouchDB con prefijo "stg" (cuando VITE_ENVIRONMENT=stg)
+/*_stg/
+/*_stg-mrview-*/
+
 # Directorio temporal para tests
 /test-dbs/
