@@ -82,6 +82,9 @@ credencialesField.js
 /zip-code-arg/
 /zip-code-pry/
 /zones/
+/*_stg/
+/*_stg-mrview-*/
+/tmp_*_stg.json
 
 # PouchDB con prefijo "undefined" (cuando VITE_ENVIRONMENT no está definido)
 /undefinedcampaigns/

@@ -50,6 +50,8 @@ export * from './SalesCereals/ListSalesCerealsPage';
 export * from './CostsExpenses/ListCostsExpenses';
 export * from './CostsExpenses/NewCostsExpenses';
 export * from './Campaigns/CampaignsResultsPage';
+export * from './CampaignExpenses/CampaignExpensesPage';
+export * from './CampaignExpenses/ListCampaignExpensesPage';
 export * from './AnnualPlanValorization/ListAnnualPlanValorization';
 export * from './AnnualPlanValorization/AnnualPlanValorizationPage';
 export * from './AnnualPlanValorization/ValorizationAnalysisPage';

@@ -77,6 +77,7 @@ import {
 } from "../../interfaces/planification";
 import { Campaign, Field, Lot } from "../../types";
 import { dbContext } from "../../services";
+import { resolveLaborServiceName } from "../../utils/laborService";
 
 interface FormData {
   // Sección 1
@@ -1135,16 +1136,48 @@ export const AnnualPlanValorizationPage: React.FC = () => {
       const uniqueActivitiesIds = [...new Set(allActivitiesIds)];
 
       const planDb = dbContext.fields as PouchDB.Database<IActividadPlanificacion>;
-      const actividadesResult = await planDb.allDocs({
-        keys: uniqueActivitiesIds,
-        include_docs: true
-      });
+      const cycleIds = allCampaignCycles.map((cycle) => cycle?._id).filter(Boolean);
+      const actividadesResult = uniqueActivitiesIds.length > 0
+        ? await planDb.allDocs({
+            keys: uniqueActivitiesIds,
+            include_docs: true
+          })
+        : { rows: [] };
+      const actividadesByCicloResult = cycleIds.length > 0
+        ? await planDb.allDocs({
+            include_docs: true,
+            startkey: 'planactividad:',
+            endkey: 'planactividad:\ufff0',
+          })
+        : { rows: [] };
 
-      const validActivities = actividadesResult.rows.filter(row => row.doc && !row.error);
+      const validActivitiesMap = new Map<string, typeof actividadesResult.rows[number]>();
+
+      actividadesResult.rows
+        .filter((row) => row.doc && !row.error)
+        .forEach((row) => {
+          if (row.doc?._id) {
+            validActivitiesMap.set(row.doc._id, row);
+          }
+        });
+
+      if (validActivitiesMap.size === 0) {
+        actividadesByCicloResult.rows
+          .filter((row) => row.doc && !row.error && cycleIds.includes((row.doc as IActividadPlanificacion).cicloId))
+          .forEach((row) => {
+            if (row.doc?._id) {
+              validActivitiesMap.set(row.doc._id, row as typeof actividadesResult.rows[number]);
+            }
+          });
+      }
+
+      const validActivities = Array.from(validActivitiesMap.values());
 
       // Collect insumo and servicio line IDs
       let allInsumosIds: string[] = [];
       let allServiciosIds: string[] = [];
+      let insumosData: IInsumosxAnnualPlan[] = [];
+      let serviciosData: IServicxAnnualPlan[] = [];
 
       for (const row of validActivities) {
         if (row.doc) {
@@ -1162,10 +1195,10 @@ export const AnnualPlanValorizationPage: React.FC = () => {
         // Agrupar insumos por ID de insumo para consolidar cantidades
         const insumosGrouped = new Map<string, {
           insumoId: string;
+          activityType: string;
           name: string;
           totalCantidad: number;
           totalHectareas: number;
-          labores: Set<string>;
         }>();
 
         await Promise.all(
@@ -1193,19 +1226,19 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             const labor = getActivityTypeForLine(linea, validActivities);
             const cantidad = Number(linea.totalCantidad ?? linea.dosis ?? 0);
             const hectareasAplicadas = Number(linea.hectareas || activity?.area || formData.has || 0);
+            const groupKey = `${linea.insumoId}::${labor}`;
 
-            if (insumosGrouped.has(linea.insumoId)) {
-              const existing = insumosGrouped.get(linea.insumoId)!;
+            if (insumosGrouped.has(groupKey)) {
+              const existing = insumosGrouped.get(groupKey)!;
               existing.totalCantidad += cantidad;
               existing.totalHectareas += hectareasAplicadas;
-              existing.labores.add(labor);
             } else {
-              insumosGrouped.set(linea.insumoId, {
+              insumosGrouped.set(groupKey, {
                 insumoId: linea.insumoId,
+                activityType: labor,
                 name: insumoName,
                 totalCantidad: cantidad,
                 totalHectareas: hectareasAplicadas,
-                labores: new Set([labor])
               });
             }
           })
@@ -1213,7 +1246,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
         // Convertir a array de IInsumosxAnnualPlan
         console.log('📋 Converting to final insumos array...');
-        const insumosData: IInsumosxAnnualPlan[] = Array.from(insumosGrouped.values()).map((item, index) => {
+        insumosData = Array.from(insumosGrouped.values()).map((item, index) => {
           const cantidadPorHa = item.totalHectareas > 0 ? item.totalCantidad / item.totalHectareas : item.totalCantidad;
           const savedPrice = savedInsumosPrices[item.insumoId] || 0;
           const valorTotal = savedPrice * item.totalCantidad;
@@ -1221,7 +1254,7 @@ export const AnnualPlanValorizationPage: React.FC = () => {
           return {
             _id: `valorization_insumo_${index}`,
             annualPlanId: 'temp_plan_id',
-            labor: Array.from(item.labores).join(', '),
+            labor: item.activityType,
             item: item.name,
             insumoId: item.insumoId,
             cantidad: item.totalCantidad,
@@ -1233,10 +1266,6 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             modified: { userId: '', date: '' },
           };
         });
-
-        setInsumos(insumosData);
-      } else {
-        setInsumos([]);
       }
 
       // Load servicio lines
@@ -1246,54 +1275,61 @@ export const AnnualPlanValorizationPage: React.FC = () => {
 
         const serviciosGrouped = new Map<string, {
           laborId: string;
+          activityType: string;
           name: string;
           descripcion: string;
           totalHectareas: number;
-          activityTypes: Set<string>;
         }>();
 
         await Promise.all(
           validServicios.map(async (linea, index) => {
             if (!linea.laborId) return;
 
-            let laborName = `${t('service')} ${index + 1}`;
-            try {
-              const laborDoc = await dbContext.laborsServices.get(linea.laborId) as any;
-              laborName = laborDoc?.service || laborDoc?.name || laborDoc?.description || laborName;
-            } catch {
-              const labor = getLaborFromId(linea.laborId);
-              laborName = labor?.displayName || labor?.name || laborName;
+            const persistedLaborValue = (linea as any).laborNombre ?? (linea as any).servicio ?? (linea as any).labor;
+            let laborName = resolveLaborServiceName(persistedLaborValue);
+            if (!laborName) {
+              try {
+                const laborDoc = await dbContext.laborsServices.get(linea.laborId) as any;
+                laborName = resolveLaborServiceName(laborDoc);
+              } catch {
+                const labor = getLaborFromId(linea.laborId);
+                laborName = resolveLaborServiceName(labor);
+              }
+            }
+
+            if (!laborName) {
+              laborName = `${t('service')} ${index + 1}`;
             }
 
             const activity = getActivityForLine(linea, validActivities);
             const activityType = getActivityTypeForLine(linea, validActivities);
             const hectareasAplicadas = Number(linea.hectareas || activity?.area || formData.has || 0);
+            const groupKey = `${linea.laborId}::${activityType}`;
 
-            if (serviciosGrouped.has(linea.laborId)) {
-              const existing = serviciosGrouped.get(linea.laborId)!;
+            if (serviciosGrouped.has(groupKey)) {
+              const existing = serviciosGrouped.get(groupKey)!;
               existing.totalHectareas += hectareasAplicadas;
-              existing.activityTypes.add(activityType);
               if (linea.comentario) existing.descripcion = linea.comentario;
             } else {
-              serviciosGrouped.set(linea.laborId, {
+              serviciosGrouped.set(groupKey, {
                 laborId: linea.laborId,
+                activityType,
                 name: laborName,
                 descripcion: linea.comentario || t('service'),
                 totalHectareas: hectareasAplicadas,
-                activityTypes: new Set([activityType])
               });
             }
           })
         );
 
         // Convertir a array de IServicxAnnualPlan
-        const serviciosData: IServicxAnnualPlan[] = Array.from(serviciosGrouped.values()).map((item, index) => {
+        serviciosData = Array.from(serviciosGrouped.values()).map((item, index) => {
           const savedPrice = savedServiciosPrices[item.laborId] || 0;
           const valorTotal = savedPrice * item.totalHectareas;
           return {
             _id: `valorization_servicio_${index}`,
             annualPlanId: 'temp_plan_id',
-            labor: Array.from(item.activityTypes).join(', '),
+            labor: item.activityType,
             item: item.name,
             servicioId: item.laborId,
             descripcion: item.descripcion,
@@ -1306,16 +1342,11 @@ export const AnnualPlanValorizationPage: React.FC = () => {
             modified: { userId: '', date: '' },
           };
         });
-
-        setServicios(serviciosData);
-
-        // Recalculate totals with loaded prices
-        recalcularTotalesConDatos(insumosData, serviciosData);
-      } else {
-        setServicios([]);
-        // Still recalculate with whatever insumos were loaded
-        recalcularTotalesConDatos(insumos, []);
       }
+
+      setInsumos(insumosData);
+      setServicios(serviciosData);
+      recalcularTotalesConDatos(insumosData, serviciosData);
 
     } catch (error) {
       console.error('Error loading planification data:', error);
