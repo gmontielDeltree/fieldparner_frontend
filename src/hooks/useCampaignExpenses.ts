@@ -1,7 +1,12 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
+import { dbContext } from '../services/pouchdbService';
 import { useAppDispatch, useAppSelector } from './useRedux';
 import { onLogout } from '../redux/auth';
-import { dbContext } from '../services';
+import { NotificationService } from '../services/notificationService';
+
 import { CampaingExpenses } from '../interfaces/campaignExpenses';
 import {
     IActividadPlanificacion,
@@ -9,9 +14,25 @@ import {
     IInsumosPlanificacion,
     ILaboresPlanificacion,
 } from '../interfaces/planification';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { NotificationService } from '../services/notificationService';
+
+const createCampaignExpenseId = () => {
+    const randomId =
+        globalThis.crypto?.randomUUID?.() ??
+        `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
+    return `campaign-expense:${randomId}`;
+};
+
+const normalizeCampaignExpense = (expense: CampaingExpenses): CampaingExpenses => ({
+    ...expense,
+    zafra: expense.zafra || '',
+    partial: expense.partial || '',
+    listCamapingExpeses: Array.isArray(expense.listCamapingExpeses) ? expense.listCamapingExpeses : [],
+    insumosLabor: Array.isArray(expense.insumosLabor) ? expense.insumosLabor : [],
+    serviciosLabor: Array.isArray(expense.serviciosLabor) ? expense.serviciosLabor : [],
+    detalleGastos: Array.isArray(expense.detalleGastos) ? expense.detalleGastos : [],
+    cosechaLine: expense.cosechaLine ?? null,
+});
 
 export interface ExecutedLaborInsumoLine {
     actividadId: string;
@@ -45,183 +66,181 @@ export interface ExecutedLaborsContext {
     /** ¿Hay alguna labor de cosecha ejecutada en este contexto? */
     hasHarvest: boolean;
     harvestActividadId?: string;
-    /** Hectáreas tomadas del lote (si están disponibles desde el GeoJSON). */
+    /** Hectáreas tomadas de la actividad (si están disponibles). */
     hectareas?: number;
     cultivoId?: string;
 }
 
 export const useCampaingExpenses = () => {
-    const dispatch = useAppDispatch();
-    const { user } = useAppSelector((state) => state.auth);
-    const [campaingExpenses, setCampaingExpenses] = useState<CampaingExpenses[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<any>(null);
-    const [listCampingExpeses, setListCampingExpeses] = useState<any[]>([]);
-    const [conceptoError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const { user } = useAppSelector(state => state.auth);
+    const [error, setError] = useState<unknown>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [campaingExpenses, setCampaingExpenses] = useState<CampaingExpenses[]>([]);
     const { t } = useTranslation();
+
+    const handleDatabaseError = (currentError: unknown, notificationLabel?: string) => {
+        console.error(t('databaseErrorLog'), currentError);
+        NotificationService.showError(
+            t('databaseError', {
+                error: currentError instanceof Error ? currentError.message : t('unexpectedError'),
+            }),
+            currentError,
+            notificationLabel || t('error_label'),
+        );
+        setError(currentError);
+    };
+
+    const ensureUser = () => {
+        if (!user) {
+            dispatch(onLogout(t('sessionExpired')));
+            throw new Error(t('sessionExpired'));
+        }
+        return user;
+    };
 
     const getCampaingExpenses = async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            if (!user) {
-                dispatch(onLogout("Session expired."));
-                setIsLoading(false);
-                return false;
-            }
-
-            if (!dbContext) {
-                console.error("Database context is not initialized");
-                setIsLoading(false);
-                return false;
-            }
-
-            if (!dbContext.campaingExpenses) {
-                console.error("campaingExpenses database is not available");
-                setIsLoading(false);
-                return false;
-            }
-
-            const selector = {
+            const currentUser = ensureUser();
+            const response = await dbContext.campaingExpenses.find({
                 selector: {
-                    accountId: user.accountId,
-                    licenceId: user.licenceId
-                }
-            };
-            const response = await dbContext.campaingExpenses.find(selector);
+                    accountId: currentUser.accountId,
+                    licenceId: currentUser.licenceId,
+                },
+            });
 
-            if (response && response.docs) {
-                const expenses = response.docs.map(doc => doc as CampaingExpenses);
-                setCampaingExpenses(expenses);
-                setIsLoading(false);
-                return true;
-            } else {
-                setCampaingExpenses([]);
-                setIsLoading(false);
-                return false;
-            }
-        } catch (err) {
-            console.error("Error durante getCampaingExpenses:", err);
-            setError(err);
+            const documents = response.docs.map(doc =>
+                normalizeCampaignExpense(doc as CampaingExpenses),
+            );
+            setCampaingExpenses(documents);
+            return documents;
+        } catch (currentError) {
+            handleDatabaseError(currentError, t('campaign_expense_label'));
+            setCampaingExpenses([]);
+            return [];
+        } finally {
             setIsLoading(false);
-            return false;
         }
     };
 
-    const handleDatabaseError = (err: any) => {
-        console.error('Database error:', err);
-        NotificationService.showError(
-            t("database_error", { error: err.message || t("unexpected_error") }),
-            {},
-            t("error_label")
-        );
-        setIsLoading(false);
-        setError(err);
-    };
+    const getCampaingExpenseById = async (id: string) => {
+        setIsLoading(true);
+        setError(null);
 
-    const getCampaingExpenseById = async (id: string): Promise<CampaingExpenses | null> => {
         try {
-            if (!dbContext?.campaingExpenses) return null;
-            const doc = await dbContext.campaingExpenses.get(id);
-            return doc as CampaingExpenses;
-        } catch (err: any) {
-            if (err?.name !== 'not_found') {
-                console.error('Error fetching campaign expense by id:', err);
+            const currentUser = ensureUser();
+            const document = normalizeCampaignExpense(
+                (await dbContext.campaingExpenses.get(id)) as CampaingExpenses,
+            );
+
+            if (
+                document.accountId &&
+                document.licenceId &&
+                (document.accountId !== currentUser.accountId ||
+                    document.licenceId !== currentUser.licenceId)
+            ) {
+                throw new Error(t('expense_not_found'));
             }
+
+            return document;
+        } catch (currentError) {
+            handleDatabaseError(currentError, t('campaign_expense_label'));
             return null;
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const stamp = (doc: CampaingExpenses): CampaingExpenses => {
+    const buildCampaignExpenseDocument = (draft: CampaingExpenses) => {
+        const currentUser = ensureUser();
         const now = new Date().toISOString();
-        return {
-            ...doc,
-            accountId: doc.accountId || user?.accountId,
-            licenceId: doc.licenceId || user?.licenceId,
-            creationDate: doc.creationDate || now,
-            lastUpdate: now,
-        };
+
+        return normalizeCampaignExpense({
+            ...draft,
+            _id: draft._id || createCampaignExpenseId(),
+            accountId: currentUser.accountId,
+            licenceId: currentUser.licenceId,
+            createdAt: draft.createdAt || now,
+            updatedAt: now,
+        });
     };
 
-    const createCampingExpeses = async (newCampaingExpenses: CampaingExpenses) => {
+    const createCampingExpeses = async (draft: CampaingExpenses) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            if (!dbContext || !dbContext.campaingExpenses) {
-                throw new Error("Database context is not initialized properly");
-            }
+            const document = buildCampaignExpenseDocument(draft);
+            const response = await dbContext.campaingExpenses.put(document);
 
-            const response = await dbContext.campaingExpenses.post(stamp(newCampaingExpenses));
             if (response.ok) {
-                NotificationService.showAdded({}, t("campaign_expense_label"));
+                NotificationService.showAdded(document, t('campaign_expense_label'));
                 navigate('/init/overview/campaign-expenses');
                 return true;
-            } else {
-                NotificationService.showError(t("operation_failed"), {}, t("campaign_expense_label"));
-                return false;
             }
-        } catch (err) {
-            handleDatabaseError(err);
+
+            NotificationService.showError(t('genericError'), null, t('campaign_expense_label'));
+            return false;
+        } catch (currentError) {
+            handleDatabaseError(currentError, t('campaign_expense_label'));
             return false;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const updateCampingExpeses = async (doc: CampaingExpenses) => {
+    const updateCampingExpeses = async (draft: CampaingExpenses) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            if (!dbContext?.campaingExpenses) {
-                throw new Error("Database context is not initialized properly");
-            }
-            if (!doc._id || !doc._rev) {
-                throw new Error("Missing _id/_rev for update");
+            if (!draft._id?.trim()) {
+                throw new Error(t('noIdError'));
             }
 
-            const response = await dbContext.campaingExpenses.put(stamp(doc));
+            const document = buildCampaignExpenseDocument(draft);
+            const response = await dbContext.campaingExpenses.put(document);
+
             if (response.ok) {
-                NotificationService.showUpdated({}, t("campaign_expense_label"));
+                NotificationService.showUpdated(document, t('campaign_expense_label'));
                 navigate('/init/overview/campaign-expenses');
                 return true;
             }
-            NotificationService.showError(t("operation_failed"), {}, t("campaign_expense_label"));
+
+            NotificationService.showError(t('updateError'), null, t('campaign_expense_label'));
             return false;
-        } catch (err) {
-            handleDatabaseError(err);
+        } catch (currentError) {
+            handleDatabaseError(currentError, t('campaign_expense_label'));
             return false;
         } finally {
             setIsLoading(false);
         }
     };
 
-    const removeCampingExpeses = async (CampingExpesesId: string, removeCampingExpeses: string) => {
+    const removeCampingExpeses = async (campaignExpenseId: string, campaignExpenseRev: string) => {
         setIsLoading(true);
         setError(null);
 
         try {
-            if (!dbContext || !dbContext.campaingExpenses) {
-                throw new Error("Database context is not initialized properly");
-            }
-
-            const response = await dbContext.campaingExpenses.remove(CampingExpesesId, removeCampingExpeses);
+            const response = await dbContext.campaingExpenses.remove(
+                campaignExpenseId,
+                campaignExpenseRev,
+            );
 
             if (response.ok) {
-                NotificationService.showDeleted({}, t("campaign_expense_label"));
+                NotificationService.showDeleted({ id: campaignExpenseId }, t('campaign_expense_label'));
                 await getCampaingExpenses();
                 return true;
-            } else {
-                NotificationService.showError(t("delete_failed"), {}, t("campaign_expense_label"));
-                return false;
             }
-        } catch (err) {
-            console.error("Error removing campaign expense:", err);
-            NotificationService.showError(t("expense_not_found"), {}, t("campaign_expense_label"));
-            setError(err);
+
+            NotificationService.showError(t('delete_failed'), null, t('campaign_expense_label'));
+            return false;
+        } catch (currentError) {
+            handleDatabaseError(currentError, t('campaign_expense_label'));
             return false;
         } finally {
             setIsLoading(false);
@@ -233,15 +252,15 @@ export const useCampaingExpenses = () => {
      * para una combinacion campaña/campo/lote, mirando la planificacion
      * existente (ICiclosPlanificacion -> IActividadPlanificacion -> lineas).
      *
-     * Mantiene cero efectos colaterales: solo lectura.
+     * Solo lectura: no muta la planificacion.
      */
     const getExecutedLaborsContext = async (
         campanaId: string,
-        campoId: string,
+        _campoId: string,
         loteId: string,
     ): Promise<ExecutedLaborsContext> => {
         const empty: ExecutedLaborsContext = { insumos: [], servicios: [], hasHarvest: false };
-        if (!campanaId || !campoId || !loteId) return empty;
+        if (!campanaId || !loteId) return empty;
 
         const db = dbContext.fields as unknown as PouchDB.Database<any>;
         try {
@@ -256,9 +275,9 @@ export const useCampaingExpenses = () => {
                 .map((r: any) => r.doc)
                 .filter(Boolean) as ICiclosPlanificacion[];
 
-            const cultivoId = ciclos.find((c) => !!c.cultivoId)?.cultivoId;
+            const cultivoId = ciclos.find(c => !!c.cultivoId)?.cultivoId;
 
-            const actividadIds = ciclos.flatMap((c) => c.actividadesIds || []);
+            const actividadIds = ciclos.flatMap(c => c.actividadesIds || []);
             if (!actividadIds.length) return { ...empty, cultivoId };
 
             const actividadesResp = await db.allDocs({
@@ -269,13 +288,13 @@ export const useCampaingExpenses = () => {
                 .map((r: any) => r.doc)
                 .filter(Boolean) as IActividadPlanificacion[];
 
-            const actividadesEjecutadas = actividades.filter((a) => a?.ejecutada);
+            const actividadesEjecutadas = actividades.filter(a => a?.ejecutada);
 
             const insumoIds: string[] = [];
             const laborLineIds: string[] = [];
-            actividadesEjecutadas.forEach((a) => {
-                (a.insumosLineasIds || []).forEach((id) => insumoIds.push(id));
-                (a.laboresLineasIds || []).forEach((id) => laborLineIds.push(id));
+            actividadesEjecutadas.forEach(a => {
+                (a.insumosLineasIds || []).forEach(id => insumoIds.push(id));
+                (a.laboresLineasIds || []).forEach(id => laborLineIds.push(id));
             });
 
             const [insumosResp, serviciosResp] = await Promise.all([
@@ -295,13 +314,16 @@ export const useCampaingExpenses = () => {
                 .filter(Boolean) as ILaboresPlanificacion[];
 
             const actividadById = new Map<string, IActividadPlanificacion>();
-            actividadesEjecutadas.forEach((a) => actividadById.set(a._id, a));
+            actividadesEjecutadas.forEach(a => actividadById.set(a._id, a));
 
             const insumos: ExecutedLaborInsumoLine[] = insumosDocs
-                .map((linea) => {
-                    const actividadId = linea.actividadId
-                        || actividadesEjecutadas.find((a) => a.insumosLineasIds?.includes(linea._id))?._id
-                        || '';
+                .map(linea => {
+                    const actividadId =
+                        linea.actividadId ||
+                        actividadesEjecutadas.find(a =>
+                            a.insumosLineasIds?.includes(linea._id),
+                        )?._id ||
+                        '';
                     const actividad = actividadId ? actividadById.get(actividadId) : undefined;
                     if (!actividad) return null;
                     return {
@@ -318,8 +340,8 @@ export const useCampaingExpenses = () => {
                 .filter(Boolean) as ExecutedLaborInsumoLine[];
 
             const servicios: ExecutedLaborServiceLine[] = laboresDocs
-                .map((linea) => {
-                    const actividadId = actividadesEjecutadas.find((a) =>
+                .map(linea => {
+                    const actividadId = actividadesEjecutadas.find(a =>
                         a.laboresLineasIds?.includes(linea._id),
                     )?._id || '';
                     const actividad = actividadId ? actividadById.get(actividadId) : undefined;
@@ -330,7 +352,8 @@ export const useCampaingExpenses = () => {
                         laborId: linea.laborId,
                         laborNombre: linea.laborNombre || actividad.tipo,
                         servicio: linea.laborNombre || actividad.tipo,
-                        contratante: actividad.contratista?.name || actividad.contratista?.fantasyName || '',
+                        contratante:
+                            actividad.contratista?.name || actividad.contratista?.fantasyName || '',
                         unidadPorHa: Number(linea.costoPorHectarea || 0),
                         hectareas: Number(linea.hectareas || actividad.area || 0),
                         fecha: actividad.fecha,
@@ -338,13 +361,13 @@ export const useCampaingExpenses = () => {
                 })
                 .filter(Boolean) as ExecutedLaborServiceLine[];
 
-            const harvestActividad = actividadesEjecutadas.find((a) =>
-                String(a.tipo || '').toLowerCase() === 'cosecha',
+            const harvestActividad = actividadesEjecutadas.find(
+                a => String(a.tipo || '').toLowerCase() === 'cosecha',
             );
 
             const hectareas = actividadesEjecutadas
-                .map((a) => Number(a.area || 0))
-                .find((n) => n > 0);
+                .map(a => Number(a.area || 0))
+                .find(n => n > 0);
 
             return {
                 insumos,
@@ -365,16 +388,13 @@ export const useCampaingExpenses = () => {
         error,
         isLoading,
         campaingExpenses,
-        listCampingExpeses,
-        conceptoError,
         // Methods
-        setListCampingExpeses,
         createCampingExpeses,
-        updateCampingExpeses,
         getCampaingExpenses,
         getCampaingExpenseById,
         getExecutedLaborsContext,
         setCampaingExpenses,
+        updateCampingExpeses,
         removeCampingExpeses,
     };
 };

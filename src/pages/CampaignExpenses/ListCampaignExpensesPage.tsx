@@ -11,12 +11,34 @@ import { useTranslation } from 'react-i18next';
 import Swal from 'sweetalert2';
 
 import { GenericListPage } from '../../components';
-import { useCampaingExpenses } from '../../hooks/useCampaignExpenses';
-import { CampaingExpenses, isCampaignExpenseClosed } from '../../interfaces/campaignExpenses';
+import { useCampaign, useCampaingExpenses, useCompany, useField } from '../../hooks';
+import {
+    CampaingExpenses,
+    isCampaignExpenseClosed,
+} from '../../interfaces/campaignExpenses';
+import {
+    formatAmount,
+    getCampaignDisplayName,
+    getCompanyDisplayName,
+    getExpenseItemsCount,
+    getExpenseTotalAmount,
+    getFieldDisplayName,
+    getLotDisplayName,
+} from './helpers';
+
+const formatDate = (value?: string) => {
+    if (!value) return '-';
+    const parsedDate = new Date(value);
+    if (Number.isNaN(parsedDate.getTime())) return value;
+    return parsedDate.toLocaleDateString('es-AR');
+};
 
 export const ListCampaignExpensesPage: React.FC = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const { campaigns, getCampaigns } = useCampaign();
+    const { fields, getFields } = useField();
+    const { companies, getCompanies } = useCompany();
     const {
         campaingExpenses,
         getCampaingExpenses,
@@ -25,25 +47,36 @@ export const ListCampaignExpensesPage: React.FC = () => {
     } = useCampaingExpenses();
 
     useEffect(() => {
-        getCampaingExpenses();
+        const loadPage = async () => {
+            await Promise.all([
+                getCampaigns(),
+                getFields(),
+                getCompanies(),
+                getCampaingExpenses(),
+            ]);
+        };
+        loadPage();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleDelete = useCallback(
         async (id: string, rev: string) => {
-            const item = campaingExpenses.find((c) => c._id === id);
+            const item = campaingExpenses.find(c => c._id === id);
             if (isCampaignExpenseClosed(item)) {
                 Swal.fire(
                     t('warning') || 'Advertencia',
-                    t('campaign_expense_closed_no_delete') || 'No se puede eliminar: la campaña está cerrada.',
+                    t('campaign_expense_closed_no_delete') ||
+                        'No se puede eliminar: la campaña está cerrada.',
                     'warning',
                 );
                 return;
             }
             const result = await Swal.fire({
-                title: t('confirm_delete_title') || '¿Estás seguro?',
-                text: t('confirm_delete_campaign_expense') || 'Se eliminará el gasto de campaña',
                 icon: 'warning',
+                title: t('confirm_delete_title') || 'Eliminar gasto de campaña',
+                text:
+                    t('confirm_delete_campaign_expense') ||
+                    'Esta acción eliminará el registro completo con todos sus ítems.',
                 showCancelButton: true,
                 confirmButtonText: t('delete') || 'Eliminar',
                 cancelButtonText: t('cancel') || 'Cancelar',
@@ -58,72 +91,126 @@ export const ListCampaignExpensesPage: React.FC = () => {
     const columns: GridColDef[] = useMemo(
         () => [
             {
-                field: 'campaignName',
+                field: 'campaign',
                 headerName: t('campaign') || 'Campaña',
                 flex: 1,
-                minWidth: 120,
-                valueGetter: (params) =>
-                    params.row?.campaignName || params.row?.campaign || '',
+                minWidth: 160,
+                renderCell: params =>
+                    (params.row as CampaingExpenses).campaignName ||
+                    getCampaignDisplayName(campaigns, (params.row as CampaingExpenses).campaign) ||
+                    '-',
             },
             {
                 field: 'zafra',
                 headerName: t('harvest') || 'Zafra',
-                flex: 1,
-                minWidth: 120,
+                flex: 0.7,
+                minWidth: 110,
+                renderCell: params => (params.row as CampaingExpenses).zafra || '-',
             },
             {
-                field: 'fieldName',
+                field: 'field',
                 headerName: t('field') || 'Campo',
                 flex: 1,
-                minWidth: 140,
-                valueGetter: (params) =>
-                    params.row?.fieldName || params.row?.field || '',
+                minWidth: 160,
+                renderCell: params =>
+                    (params.row as CampaingExpenses).fieldName ||
+                    getFieldDisplayName(fields, (params.row as CampaingExpenses).field) ||
+                    '-',
             },
             {
-                field: 'lotName',
+                field: 'lot',
                 headerName: t('lot') || 'Lote',
-                flex: 1,
+                flex: 0.9,
                 minWidth: 140,
-                valueGetter: (params) =>
-                    params.row?.lotName || params.row?.lot || '',
+                renderCell: params => {
+                    const row = params.row as CampaingExpenses;
+                    return (
+                        row.lotName ||
+                        getLotDisplayName(fields, row.field, row.lot) ||
+                        '-'
+                    );
+                },
             },
             {
-                field: 'hectareas',
+                field: 'hectares',
                 headerName: t('hectares') || 'Has',
                 flex: 0.6,
                 minWidth: 90,
-                type: 'number',
-                valueGetter: (params) => {
-                    const v = params.row?.hectareas;
-                    if (typeof v === 'number') return v;
-                    const parsed = Number(params.row?.hectares);
-                    return Number.isFinite(parsed) ? parsed : 0;
+                renderCell: params => {
+                    const row = params.row as CampaingExpenses;
+                    if (typeof row.hectareas === 'number' && row.hectareas > 0) {
+                        return row.hectareas.toFixed(2);
+                    }
+                    return row.hectares || '-';
                 },
-                valueFormatter: ({ value }) =>
-                    typeof value === 'number' ? value.toFixed(2) : '0,00',
             },
             {
                 field: 'cropName',
                 headerName: t('crop') || 'Cultivo',
                 flex: 0.8,
                 minWidth: 110,
+                renderCell: params => (params.row as CampaingExpenses).cropName || '-',
+            },
+            {
+                field: 'detailsCount',
+                headerName: t('items') || 'Ítems',
+                flex: 0.5,
+                minWidth: 80,
+                sortable: false,
+                renderCell: params => `${getExpenseItemsCount(params.row as CampaingExpenses)}`,
+            },
+            {
+                field: 'totalAmount',
+                headerName: t('total') || 'Total',
+                flex: 0.8,
+                minWidth: 130,
+                sortable: false,
+                renderCell: params =>
+                    `$ ${formatAmount(getExpenseTotalAmount(params.row as CampaingExpenses))}`,
+            },
+            {
+                field: 'lastCompany',
+                headerName: t('last_company') || 'Última sociedad',
+                flex: 1,
+                minWidth: 180,
+                sortable: false,
+                renderCell: params => {
+                    const row = params.row as CampaingExpenses;
+                    const lastDetalle = row.detalleGastos?.[row.detalleGastos.length - 1];
+                    if (lastDetalle?.sociedadNombre) return lastDetalle.sociedadNombre;
+                    const legacy = (row.listCamapingExpeses || [])[
+                        (row.listCamapingExpeses || []).length - 1
+                    ];
+                    return getCompanyDisplayName(companies, legacy?.company) || '-';
+                },
+            },
+            {
+                field: 'updatedAt',
+                headerName: t('updated_at') || 'Actualizado',
+                flex: 0.8,
+                minWidth: 120,
+                renderCell: params => {
+                    const row = params.row as CampaingExpenses;
+                    return formatDate(row.updatedAt || row.createdAt);
+                },
             },
             {
                 field: 'actions',
-                headerName: '',
-                width: 160,
+                headerName: t('actions') || 'Acciones',
+                width: 170,
                 sortable: false,
-                renderCell: (params) => {
+                filterable: false,
+                renderCell: params => {
                     const row = params.row as CampaingExpenses;
                     const closed = isCampaignExpenseClosed(row);
                     return (
-                        <Box display="flex" gap={0.5}>
+                        <Box display="flex" justifyContent="center" gap={0.5}>
                             <Tooltip title={t('view') || 'Ver'}>
                                 <IconButton
                                     size="small"
                                     color="primary"
                                     onClick={() =>
-                                        navigate(`/init/overview/campaign-expenses/view/${row._id}`)
+                                        navigate(`/init/overview/campaign-expenses/${row._id}/view`)
                                     }
                                 >
                                     <VisibilityIcon fontSize="small" />
@@ -141,7 +228,7 @@ export const ListCampaignExpensesPage: React.FC = () => {
                                         size="small"
                                         disabled={closed}
                                         onClick={() =>
-                                            navigate(`/init/overview/campaign-expenses/edit/${row._id}`)
+                                            navigate(`/init/overview/campaign-expenses/${row._id}`)
                                         }
                                     >
                                         <EditIcon fontSize="small" />
@@ -160,7 +247,9 @@ export const ListCampaignExpensesPage: React.FC = () => {
                                         size="small"
                                         disabled={closed}
                                         color="error"
-                                        onClick={() => handleDelete(row._id || '', row._rev || '')}
+                                        onClick={() =>
+                                            handleDelete(row._id || '', row._rev || '')
+                                        }
                                     >
                                         <DeleteIcon fontSize="small" />
                                     </IconButton>
@@ -171,7 +260,7 @@ export const ListCampaignExpensesPage: React.FC = () => {
                 },
             },
         ],
-        [handleDelete, navigate, t],
+        [campaigns, companies, fields, handleDelete, navigate, t],
     );
 
     return (
@@ -183,10 +272,10 @@ export const ListCampaignExpensesPage: React.FC = () => {
             deleteData={handleDelete}
             setActiveItem={() => undefined}
             newItemPath="/init/overview/campaign-expenses/new"
-            editItemPath={(id) => `/init/overview/campaign-expenses/edit/${id}`}
+            editItemPath={id => `/init/overview/campaign-expenses/${id}`}
             isLoading={isLoading}
             showAddButton
-            moduleRoute="init/overview/campaign-expenses"
+            moduleRoute="/init/overview/campaign-expenses"
         />
     );
 };

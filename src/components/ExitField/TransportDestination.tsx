@@ -52,10 +52,13 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
     const adjustedTareWeight = Math.min(safeTareWeight, safeGrossWeight);
 
     // Calculate net weight (ensuring it's never negative)
+    console.log('safeGrossWeight', safeGrossWeight, "safeTareWeight", safeTareWeight);
     const netWeight = Math.max(0, safeGrossWeight - adjustedTareWeight);
 
     // Calculate kg net (ensuring it's never negative)
+    console.log('netWeight', netWeight, 'totalMerma', totalMerma);
     const kgNet = Math.max(0, netWeight - ((netWeight * Math.min(100, totalMerma)) / 100));
+    console.log('kgNet', kgNet);
     const { t, i18n } = useTranslation();
 
     // Helper function to determine if a field has an error
@@ -127,7 +130,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
         }
 
         // For tareWeight, ensure it doesn't exceed grossWeight
-        if (name === "tareWeight" && formValues.grossWeight && numValue > formValues.grossWeight) {
+        if (name === "tareWeight" && formValues.grossWeight && numValue > Number(formValues.grossWeight)) {
             // Limit tareWeight to grossWeight
             event.target.value = formValues.grossWeight.toString();
 
@@ -503,7 +506,7 @@ export const TransportDestination: React.FC<TransportDestinationProps> = ({
                         type="number"
                         label={t("net_kg")}
                         name="kgNet"
-                        value={Math.max(0, kgNet)}
+                        value={kgNet}
                         InputProps={{
                             startAdornment: <InputAdornment position="start" />,
                         }}

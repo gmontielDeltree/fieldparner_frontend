@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
+    Autocomplete,
     Box,
     Button,
     Card,
@@ -8,13 +9,9 @@ import {
     CardHeader,
     Container,
     Divider,
-    FormControl,
     Grid,
     IconButton,
-    InputLabel,
-    MenuItem,
     Paper,
-    Select,
     Stack,
     Step,
     StepLabel,
@@ -38,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { uuidv7 } from 'uuidv7';
+import Swal from 'sweetalert2';
 
 import { TemplateLayout, Loading, CloseButtonPage } from '../../components';
 import {
@@ -48,7 +46,10 @@ import {
     useCorporateContract,
     useCostsExpensess,
 } from '../../hooks';
-import { useCampaingExpenses, ExecutedLaborsContext } from '../../hooks/useCampaignExpenses';
+import {
+    useCampaingExpenses,
+    ExecutedLaborsContext,
+} from '../../hooks/useCampaignExpenses';
 import {
     CampaingExpenses,
     CosechaLine,
@@ -57,7 +58,22 @@ import {
     ServicioLaborLine,
     isCampaignExpenseClosed,
 } from '../../interfaces/campaignExpenses';
+import { Campaign, Field, Lot } from '../../types';
+import { Company } from '../../interfaces/company';
+import { CostsExpenses } from '../../interfaces/costsExpenses';
+import { CorporateContract } from '../../interfaces/corporateContract';
 import { useAppSelector } from '../../hooks/useRedux';
+import { loadCampaignFromLS } from '../../helpers/persistence';
+import {
+    findCampaignByStoredValue,
+    findCompanyByStoredValue,
+    findFieldByStoredValue,
+    findLotByStoredValue,
+    getCampaignCandidates,
+    getFieldCandidates,
+    getLotCandidates,
+    matchesStoredValue,
+} from './helpers';
 
 type Mode = 'new' | 'edit' | 'view';
 
@@ -83,6 +99,20 @@ const formatMoney = (v: number): string =>
           }).format(v)
         : '0,00';
 
+const lotStoredValue = (lot: Lot | null) =>
+    (lot as any)?.id ||
+    (lot as any)?.properties?.uuid ||
+    (lot as any)?.properties?.id ||
+    (lot as any)?.properties?.nombre ||
+    (lot as any)?._id ||
+    '';
+
+const fieldStoredValue = (field: Field | null) =>
+    field?._id || field?.uuid || (field as any)?.nombre || '';
+
+const campaignStoredValue = (campaign: Campaign | null) =>
+    campaign?._id || campaign?.campaignId || campaign?.name || '';
+
 interface Props {
     mode?: Mode;
 }
@@ -91,7 +121,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     const { id } = useParams<{ id?: string }>();
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { user } = useAppSelector((state) => state.auth);
+    const { user } = useAppSelector(state => state.auth);
 
     const mode: Mode = modeProp || (id ? 'edit' : 'new');
     const isView = mode === 'view';
@@ -107,6 +137,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     const { listCorporateContract, getCorporateContract } = useCorporateContract();
     const { costsExpenses, getCostsExpenses } = useCostsExpensess();
     const {
+        campaingExpenses,
+        getCampaingExpenses,
         getCampaingExpenseById,
         createCampingExpeses,
         updateCampingExpeses,
@@ -122,6 +154,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         field: '',
         lot: '',
         hectares: '',
+        partial: '',
+        listCamapingExpeses: [],
         campaignName: '',
         zafra: '',
         fieldId: '',
@@ -142,19 +176,41 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
 
     // ---- Carga de dependencias --------------------------------------------
     useEffect(() => {
-        getCampaigns();
-        getFields();
-        getCrops();
-        getCompanies();
-        getCorporateContract();
-        getCostsExpenses();
+        const loadDeps = async () => {
+            await Promise.all([
+                getCampaigns(),
+                getFields(),
+                getCrops(),
+                getCompanies(),
+                getCorporateContract(),
+                getCostsExpenses(),
+                getCampaingExpenses(),
+            ]);
+        };
+        loadDeps();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // ---- Carga del documento existente ------------------------------------
     useEffect(() => {
         const load = async () => {
-            if (!id) return;
+            if (!id) {
+                // En modo new, precargar campaña desde LS si hay alguna seleccionada.
+                const stored = loadCampaignFromLS();
+                if (stored) {
+                    const defaultZafra = Array.isArray(stored.zafra)
+                        ? stored.zafra[0] || ''
+                        : stored.zafra || '';
+                    setDoc(prev => ({
+                        ...prev,
+                        campaign: stored._id || stored.campaignId || stored.name || '',
+                        campaignName: stored.name || '',
+                        zafra: defaultZafra,
+                    }));
+                }
+                return;
+            }
+
             setLoadingDoc(true);
             const found = await getCampaingExpenseById(id);
             if (found) {
@@ -163,6 +219,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                     cosechaLine: null,
                     serviciosLabor: [],
                     detalleGastos: [],
+                    listCamapingExpeses: [],
                     ...found,
                 });
             }
@@ -172,9 +229,9 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
-    // ---- Selección encadenada ---------------------------------------------
+    // ---- Resolución encadenada (vía helpers, robusta a IDs heterogéneos) --
     const selectedCampaign = useMemo(
-        () => campaigns.find((c) => c._id === doc.campaign),
+        () => findCampaignByStoredValue(campaigns, doc.campaign) || null,
         [campaigns, doc.campaign],
     );
 
@@ -186,44 +243,40 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     }, [selectedCampaign]);
 
     const selectedField = useMemo(
-        () => fields.find((f) => f._id === doc.fieldId),
-        [fields, doc.fieldId],
+        () =>
+            findFieldByStoredValue(fields, doc.fieldId) ||
+            findFieldByStoredValue(fields, doc.field) ||
+            null,
+        [fields, doc.fieldId, doc.field],
     );
 
     const lotOptions = useMemo(() => selectedField?.lotes || [], [selectedField]);
 
     const selectedLot = useMemo(
         () =>
-            lotOptions.find((l: any) => {
-                const candidates = [
-                    l?.id,
-                    l?.properties?.uuid,
-                    l?.properties?.nombre,
-                ];
-                return candidates.some((c) => c && c === doc.lotId);
-            }),
-        [lotOptions, doc.lotId],
+            findLotByStoredValue(selectedField, doc.lotId) ||
+            findLotByStoredValue(selectedField, doc.lot) ||
+            null,
+        [selectedField, doc.lotId, doc.lot],
     );
 
     // ---- Trae labores ejecutadas cuando cambia campaña/campo/lote ---------
     useEffect(() => {
         const run = async () => {
-            if (!doc.campaign || !doc.fieldId || !doc.lotId) return;
-            // En modo edit/view el doc ya trae los datos persistidos. Solo
-            // poblamos automáticamente cuando estamos creando uno nuevo.
             if (mode !== 'new') return;
+            if (!selectedCampaign || !selectedField || !selectedLot) return;
 
             const ctx: ExecutedLaborsContext = await getExecutedLaborsContext(
-                doc.campaign,
-                doc.fieldId,
-                doc.lotId,
+                campaignStoredValue(selectedCampaign),
+                fieldStoredValue(selectedField),
+                lotStoredValue(selectedLot),
             );
 
             const cropFromCtx = ctx.cultivoId
                 ? crops.find((c: any) => c._id === ctx.cultivoId)
                 : undefined;
 
-            const insumosLabor: InsumoLaborLine[] = ctx.insumos.map((i) => ({
+            const insumosLabor: InsumoLaborLine[] = ctx.insumos.map(i => ({
                 id: uuidv7(),
                 actividadId: i.actividadId,
                 insumoLineaId: i.insumoLineaId,
@@ -237,7 +290,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                 valorTotalMonAlt: 0,
             }));
 
-            const serviciosLabor: ServicioLaborLine[] = ctx.servicios.map((s) => ({
+            const serviciosLabor: ServicioLaborLine[] = ctx.servicios.map(s => ({
                 id: uuidv7(),
                 actividadId: s.actividadId,
                 laborLineaId: s.laborLineaId,
@@ -268,9 +321,11 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                   }
                 : null;
 
-            setDoc((prev) => ({
+            const lotHa = Number((selectedLot as any)?.properties?.hectareas) || 0;
+
+            setDoc(prev => ({
                 ...prev,
-                hectareas: ctx.hectareas ?? Number(selectedLot?.properties?.hectareas) ?? 0,
+                hectareas: ctx.hectareas ?? lotHa ?? 0,
                 cropId: ctx.cultivoId || prev.cropId,
                 cropName:
                     (cropFromCtx as any)?.descriptionES ||
@@ -283,15 +338,15 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         };
         run();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [doc.campaign, doc.fieldId, doc.lotId, mode]);
+    }, [selectedCampaign?._id, selectedField?._id, selectedLot, mode]);
 
     // ---- Recálculo de Valor Total / MonAlt --------------------------------
     const cotMonAlt = safeNum(doc.cotizacionMonedaAlternativa);
     const hectareas = safeNum(doc.hectareas);
 
     useEffect(() => {
-        setDoc((prev) => {
-            const nextInsumos = (prev.insumosLabor || []).map((line) => {
+        setDoc(prev => {
+            const nextInsumos = (prev.insumosLabor || []).map(line => {
                 const valorTotal =
                     safeNum(line.cantidadPorHa) * hectareas * safeNum(line.valorUnidad);
                 return {
@@ -312,8 +367,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                       };
                   })()
                 : prev.cosechaLine;
-            const nextServicios = (prev.serviciosLabor || []).map((line) => {
-                // Doc dice literal: ValorTotal = UnidadPorHa × ValorUnidad
+            const nextServicios = (prev.serviciosLabor || []).map(line => {
+                // Doc literal: ValorTotal = UnidadPorHa × ValorUnidad
                 const valorTotal = safeNum(line.unidadPorHa) * safeNum(line.valorUnidad);
                 return {
                     ...line,
@@ -330,7 +385,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         });
     }, [hectareas, cotMonAlt]);
 
-    // ---- Calculados de cabecera (Gastos / Tendencia) ----------------------
+    // ---- Cálculos de cabecera (Gastos / Tendencia) ------------------------
     const totalGastos = useMemo(
         () => sumValorTotal(doc.insumosLabor || []),
         [doc.insumosLabor],
@@ -339,10 +394,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         () => safeNum(doc.cosechaLine?.valorTotal),
         [doc.cosechaLine],
     );
-    // Doc literal: Tendencia = Gastos - Valor Total Cosecha. Para coloreado
-    // usamos el sentido económico (ganancia neta = Cosecha - Gastos): si
-    // Cosecha > Gastos ponemos verde sobre tendencia, si Gastos > Cosecha
-    // ponemos rojo sobre Gastos.
+    // Doc literal: Tendencia = Gastos − Valor Total Cosecha. Para coloreado
+    // usamos el sentido económico (ganancia neta = Cosecha − Gastos).
     const tendencia = totalGastos - totalCosecha;
     const gastosIsRed = totalGastos > totalCosecha && totalCosecha > 0;
     const tendenciaIsGreen = totalCosecha > totalGastos;
@@ -351,8 +404,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     const sectionAValid = useMemo(() => {
         if (!doc.campaign) return false;
         if (zafraOptions.length > 0 && !doc.zafra) return false;
-        if (!doc.fieldId) return false;
-        if (!doc.lotId) return false;
+        if (!doc.fieldId && !doc.field) return false;
+        if (!doc.lotId && !doc.lot) return false;
         if (doc.monedaAlternativa && !(safeNum(doc.cotizacionMonedaAlternativa) > 0)) {
             return false;
         }
@@ -361,7 +414,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
 
     const step1Valid = useMemo(() => {
         const insumosOk = (doc.insumosLabor || []).every(
-            (l) => safeNum(l.valorUnidad) > 0 && !!l.sociedadId,
+            l => safeNum(l.valorUnidad) > 0 && !!l.sociedadId,
         );
         const cosechaOk = !doc.cosechaLine
             ? true
@@ -370,31 +423,52 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     }, [doc, sectionAValid]);
 
     const step2Valid = useMemo(() => {
-        return (doc.serviciosLabor || []).every((l) => safeNum(l.valorUnidad) >= 0);
+        return (doc.serviciosLabor || []).every(l => safeNum(l.valorUnidad) >= 0);
     }, [doc]);
+
+    // Detección de duplicados (mismo campaña/zafra/campo/lote).
+    const findDuplicate = (): CampaingExpenses | undefined => {
+        return campaingExpenses.find(other => {
+            if (!other._id || other._id === doc._id) return false;
+            const sameCampaign = matchesStoredValue(
+                other.campaign,
+                selectedCampaign ? getCampaignCandidates(selectedCampaign) : [doc.campaign],
+            );
+            const sameField = matchesStoredValue(
+                other.field,
+                selectedField ? getFieldCandidates(selectedField) : [doc.field, doc.fieldId || ''],
+            );
+            const sameLot = matchesStoredValue(
+                other.lot,
+                selectedLot ? getLotCandidates(selectedLot) : [doc.lot, doc.lotId || ''],
+            );
+            const sameZafra = matchesStoredValue(doc.zafra, [other.zafra || '']);
+            return sameCampaign && sameField && sameLot && sameZafra;
+        });
+    };
 
     // ---- Handlers ---------------------------------------------------------
     const setSection = (patch: Partial<CampaingExpenses>) =>
-        setDoc((prev) => ({ ...prev, ...patch }));
+        setDoc(prev => ({ ...prev, ...patch }));
 
     const updateInsumoLine = (lineId: string, patch: Partial<InsumoLaborLine>) =>
-        setDoc((prev) => ({
+        setDoc(prev => ({
             ...prev,
-            insumosLabor: (prev.insumosLabor || []).map((l) =>
+            insumosLabor: (prev.insumosLabor || []).map(l =>
                 l.id === lineId ? { ...l, ...patch } : l,
             ),
         }));
 
     const updateServicioLine = (lineId: string, patch: Partial<ServicioLaborLine>) =>
-        setDoc((prev) => ({
+        setDoc(prev => ({
             ...prev,
-            serviciosLabor: (prev.serviciosLabor || []).map((l) =>
+            serviciosLabor: (prev.serviciosLabor || []).map(l =>
                 l.id === lineId ? { ...l, ...patch } : l,
             ),
         }));
 
     const updateCosecha = (patch: Partial<CosechaLine>) =>
-        setDoc((prev) => ({
+        setDoc(prev => ({
             ...prev,
             cosechaLine: prev.cosechaLine ? { ...prev.cosechaLine, ...patch } : prev.cosechaLine,
         }));
@@ -421,15 +495,15 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         if (!detalleDraftValid) return;
         const newLine: DetalleGastoLine = { ...detalleDraft };
         if (editingDetalleId) {
-            setDoc((prev) => ({
+            setDoc(prev => ({
                 ...prev,
-                detalleGastos: (prev.detalleGastos || []).map((d) =>
+                detalleGastos: (prev.detalleGastos || []).map(d =>
                     d.id === editingDetalleId ? { ...newLine, id: editingDetalleId } : d,
                 ),
             }));
             setEditingDetalleId(null);
         } else {
-            setDoc((prev) => ({
+            setDoc(prev => ({
                 ...prev,
                 detalleGastos: [...(prev.detalleGastos || []), newLine],
             }));
@@ -443,33 +517,48 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     };
 
     const handleDeleteDetalle = (lineId: string) =>
-        setDoc((prev) => ({
+        setDoc(prev => ({
             ...prev,
-            detalleGastos: (prev.detalleGastos || []).filter((d) => d.id !== lineId),
+            detalleGastos: (prev.detalleGastos || []).filter(d => d.id !== lineId),
         }));
 
     // ---- Guardar ----------------------------------------------------------
     const buildPayload = (): CampaingExpenses => {
-        const cName = selectedCampaign?.name || '';
-        const fName = (selectedField as any)?.nombre || '';
+        const cName = selectedCampaign?.name || doc.campaignName || '';
+        const fName = (selectedField as any)?.nombre || doc.fieldName || '';
         const lName =
             (selectedLot as any)?.properties?.nombre ||
             (selectedLot as any)?.properties?.uuid ||
+            doc.lotName ||
             '';
         return {
             ...doc,
+            campaign: campaignStoredValue(selectedCampaign) || doc.campaign,
+            field: fieldStoredValue(selectedField) || doc.field,
+            lot: lotStoredValue(selectedLot) || doc.lot,
             campaignName: cName,
             fieldName: fName,
             lotName: lName,
-            // Mantengo los campos viejos en sync para compatibilidad.
-            campaign: doc.campaign,
-            field: fName,
-            lot: lName,
+            fieldId: fieldStoredValue(selectedField) || doc.fieldId,
+            lotId: lotStoredValue(selectedLot) || doc.lotId,
             hectares: String(doc.hectareas ?? 0),
         };
     };
 
     const handleSave = async () => {
+        if (!sectionAValid || !step1Valid) return;
+
+        const dup = findDuplicate();
+        if (dup) {
+            await Swal.fire(
+                t('duplicate_record_title') || 'Registro duplicado',
+                t('duplicate_record_text') ||
+                    'Ya existe un gasto de campaña para esa combinación de campaña, zafra, campo y lote.',
+                'error',
+            );
+            return;
+        }
+
         const payload = buildPayload();
         if (mode === 'new') {
             await createCampingExpeses(payload);
@@ -478,8 +567,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
         }
     };
 
-    const handleNext = () => setActiveStep((s) => Math.min(s + 1, STEPS.length - 1));
-    const handlePrev = () => setActiveStep((s) => Math.max(s - 1, 0));
+    const handleNext = () => setActiveStep(s => Math.min(s + 1, STEPS.length - 1));
+    const handlePrev = () => setActiveStep(s => Math.max(s - 1, 0));
 
     const closed = isCampaignExpenseClosed(doc);
     const formDisabled = isView || closed;
@@ -492,100 +581,88 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
             </Typography>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
-                    <FormControl fullWidth size="small">
-                        <InputLabel>{t('campaign') || 'Campaña'}</InputLabel>
-                        <Select
-                            label={t('campaign') || 'Campaña'}
-                            value={doc.campaign || ''}
-                            disabled={!editable || formDisabled}
-                            onChange={(e) =>
-                                setSection({
-                                    campaign: e.target.value,
-                                    zafra: '',
-                                })
-                            }
-                        >
-                            {campaigns.map((c) => (
-                                <MenuItem key={c._id} value={c._id}>
-                                    {c.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        value={selectedCampaign}
+                        options={campaigns}
+                        disabled={!editable || formDisabled}
+                        getOptionLabel={(option: Campaign) => option?.name || ''}
+                        isOptionEqualToValue={(option, value) => option?._id === value?._id}
+                        onChange={(_, value: Campaign | null) =>
+                            setSection({
+                                campaign: campaignStoredValue(value),
+                                campaignName: value?.name || '',
+                                zafra: '',
+                            })
+                        }
+                        renderInput={params => (
+                            <TextField {...params} label={t('campaign') || 'Campaña'} />
+                        )}
+                    />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <FormControl fullWidth size="small" disabled={!zafraOptions.length}>
-                        <InputLabel>{t('harvest') || 'Zafra'}</InputLabel>
-                        <Select
-                            label={t('harvest') || 'Zafra'}
-                            value={doc.zafra || ''}
-                            disabled={!editable || formDisabled || !zafraOptions.length}
-                            onChange={(e) => setSection({ zafra: e.target.value })}
-                        >
-                            {zafraOptions.map((z) => (
-                                <MenuItem key={z} value={z}>
-                                    {z}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        value={doc.zafra || null}
+                        options={zafraOptions}
+                        disabled={!editable || formDisabled || !zafraOptions.length}
+                        onChange={(_, value: string | null) =>
+                            setSection({ zafra: value || '' })
+                        }
+                        renderInput={params => (
+                            <TextField {...params} label={t('harvest') || 'Zafra'} />
+                        )}
+                    />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <FormControl fullWidth size="small">
-                        <InputLabel>{t('field') || 'Campo'}</InputLabel>
-                        <Select
-                            label={t('field') || 'Campo'}
-                            value={doc.fieldId || ''}
-                            disabled={!editable || formDisabled}
-                            onChange={(e) =>
-                                setSection({
-                                    fieldId: e.target.value,
-                                    lotId: '',
-                                    lotName: '',
-                                })
-                            }
-                        >
-                            {fields.map((f) => (
-                                <MenuItem key={f._id} value={f._id}>
-                                    {(f as any).nombre || f._id}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        value={selectedField}
+                        options={fields}
+                        disabled={!editable || formDisabled}
+                        getOptionLabel={(option: Field) => (option as any)?.nombre || ''}
+                        isOptionEqualToValue={(option, value) => option?._id === value?._id}
+                        onChange={(_, value: Field | null) =>
+                            setSection({
+                                fieldId: fieldStoredValue(value),
+                                fieldName: (value as any)?.nombre || '',
+                                field: fieldStoredValue(value),
+                                lotId: '',
+                                lotName: '',
+                                lot: '',
+                            })
+                        }
+                        renderInput={params => (
+                            <TextField {...params} label={t('field') || 'Campo'} />
+                        )}
+                    />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <FormControl fullWidth size="small" disabled={!lotOptions.length}>
-                        <InputLabel>{t('lot') || 'Lote'}</InputLabel>
-                        <Select
-                            label={t('lot') || 'Lote'}
-                            value={doc.lotId || ''}
-                            disabled={!editable || formDisabled || !lotOptions.length}
-                            onChange={(e) => {
-                                const lote = lotOptions.find((l: any) => {
-                                    const candidates = [
-                                        l?.id,
-                                        l?.properties?.uuid,
-                                        l?.properties?.nombre,
-                                    ];
-                                    return candidates.some((c) => c === e.target.value);
-                                });
-                                setSection({
-                                    lotId: e.target.value,
-                                    lotName: (lote as any)?.properties?.nombre || '',
-                                    hectareas: Number((lote as any)?.properties?.hectareas) || doc.hectareas || 0,
-                                });
-                            }}
-                        >
-                            {lotOptions.map((l: any) => {
-                                const value = l?.id || l?.properties?.uuid || l?.properties?.nombre;
-                                return (
-                                    <MenuItem key={value} value={value}>
-                                        {l?.properties?.nombre || value}
-                                    </MenuItem>
-                                );
-                            })}
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        value={selectedLot}
+                        options={lotOptions as Lot[]}
+                        disabled={!editable || formDisabled || !lotOptions.length}
+                        getOptionLabel={(option: any) => option?.properties?.nombre || ''}
+                        isOptionEqualToValue={(a, b) =>
+                            lotStoredValue(a as any) === lotStoredValue(b as any)
+                        }
+                        onChange={(_, value: Lot | null) => {
+                            const v = lotStoredValue(value);
+                            setSection({
+                                lotId: v,
+                                lot: v,
+                                lotName: (value as any)?.properties?.nombre || '',
+                                hectareas:
+                                    Number((value as any)?.properties?.hectareas) ||
+                                    doc.hectareas ||
+                                    0,
+                            });
+                        }}
+                        renderInput={params => (
+                            <TextField {...params} label={t('lot') || 'Lote'} />
+                        )}
+                    />
                 </Grid>
 
                 <Grid item xs={6} md={2}>
@@ -614,9 +691,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                         label={t('alternative_currency') || 'Moneda Alt'}
                         value={doc.monedaAlternativa || ''}
                         disabled={!editable || formDisabled}
-                        onChange={(e) =>
-                            setSection({ monedaAlternativa: e.target.value })
-                        }
+                        onChange={e => setSection({ monedaAlternativa: e.target.value })}
                     />
                 </Grid>
                 <Grid item xs={6} md={2}>
@@ -628,8 +703,10 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                         value={doc.cotizacionMonedaAlternativa || 0}
                         disabled={!editable || formDisabled}
                         required={Boolean(doc.monedaAlternativa)}
-                        onChange={(e) =>
-                            setSection({ cotizacionMonedaAlternativa: safeNum(e.target.value) })
+                        onChange={e =>
+                            setSection({
+                                cotizacionMonedaAlternativa: safeNum(e.target.value),
+                            })
                         }
                     />
                 </Grid>
@@ -653,7 +730,9 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                         value={formatMoney(tendencia)}
                         InputProps={{
                             readOnly: true,
-                            sx: tendenciaIsGreen ? { color: '#388e3c', fontWeight: 'bold' } : {},
+                            sx: tendenciaIsGreen
+                                ? { color: '#388e3c', fontWeight: 'bold' }
+                                : {},
                         }}
                     />
                 </Grid>
@@ -671,7 +750,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                 </Typography>
                 {(doc.insumosLabor || []).length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
-                        {t('no_executed_labors') || 'No hay labores ejecutadas para esta combinación.'}
+                        {t('no_executed_labors') ||
+                            'No hay labores ejecutadas para esta combinación.'}
                     </Typography>
                 ) : (
                     <Table size="small">
@@ -679,72 +759,96 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                             <TableRow>
                                 <TableCell>{t('labor') || 'Labor'}</TableCell>
                                 <TableCell>{t('supply') || 'Insumo'}</TableCell>
-                                <TableCell align="right">{t('qty_per_ha') || 'Cant/Ha'}</TableCell>
-                                <TableCell>{t('company') || 'Sociedad'}</TableCell>
-                                <TableCell>{t('contract') || 'Contrato'}</TableCell>
-                                <TableCell align="right">{t('unit_value') || 'Valor Unidad'}</TableCell>
-                                <TableCell align="right">{t('total_value') || 'Valor Total'}</TableCell>
+                                <TableCell align="right">
+                                    {t('qty_per_ha') || 'Cant/Ha'}
+                                </TableCell>
+                                <TableCell sx={{ minWidth: 180 }}>
+                                    {t('company') || 'Sociedad'}
+                                </TableCell>
+                                <TableCell sx={{ minWidth: 180 }}>
+                                    {t('contract') || 'Contrato'}
+                                </TableCell>
+                                <TableCell align="right">
+                                    {t('unit_value') || 'Valor Unidad'}
+                                </TableCell>
+                                <TableCell align="right">
+                                    {t('total_value') || 'Valor Total'}
+                                </TableCell>
                                 <TableCell align="right">
                                     {t('total_value_alt') || 'V.T. Mon Alt'}
                                 </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(doc.insumosLabor || []).map((line) => (
+                            {(doc.insumosLabor || []).map(line => (
                                 <TableRow key={line.id}>
                                     <TableCell>{line.laborNombre || '-'}</TableCell>
                                     <TableCell>{line.insumoNombre || line.insumoId || '-'}</TableCell>
                                     <TableCell align="right">
                                         {safeNum(line.cantidadPorHa).toFixed(2)}
                                     </TableCell>
-                                    <TableCell sx={{ minWidth: 160 }}>
-                                        <Select
+                                    <TableCell>
+                                        <Autocomplete
                                             size="small"
-                                            fullWidth
-                                            value={line.sociedadId || ''}
+                                            value={
+                                                companies.find(
+                                                    (c: Company) => c._id === line.sociedadId,
+                                                ) ||
+                                                findCompanyByStoredValue(
+                                                    companies,
+                                                    line.sociedadId,
+                                                ) ||
+                                                null
+                                            }
+                                            options={companies}
                                             disabled={formDisabled}
-                                            onChange={(e) => {
-                                                const company = companies.find(
-                                                    (c) => c._id === e.target.value,
-                                                );
+                                            getOptionLabel={(option: Company) =>
+                                                option?.socialReason ||
+                                                option?.fantasyName ||
+                                                option?.name ||
+                                                ''
+                                            }
+                                            onChange={(_, value: Company | null) =>
                                                 updateInsumoLine(line.id, {
-                                                    sociedadId: e.target.value,
-                                                    sociedadNombre: company?.name || '',
-                                                });
-                                            }}
-                                        >
-                                            {companies.map((c) => (
-                                                <MenuItem key={c._id} value={c._id}>
-                                                    {c.name}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
+                                                    sociedadId: value?._id || '',
+                                                    sociedadNombre:
+                                                        value?.socialReason ||
+                                                        value?.fantasyName ||
+                                                        value?.name ||
+                                                        '',
+                                                })
+                                            }
+                                            renderInput={params => (
+                                                <TextField {...params} placeholder="Sociedad" />
+                                            )}
+                                        />
                                     </TableCell>
-                                    <TableCell sx={{ minWidth: 160 }}>
-                                        <Select
+                                    <TableCell>
+                                        <Autocomplete
                                             size="small"
-                                            fullWidth
-                                            value={line.contratoId || ''}
+                                            value={
+                                                listCorporateContract.find(
+                                                    (c: CorporateContract) =>
+                                                        c._id === line.contratoId,
+                                                ) || null
+                                            }
+                                            options={listCorporateContract}
                                             disabled={formDisabled}
-                                            onChange={(e) => {
-                                                const contract = listCorporateContract.find(
-                                                    (c) => c._id === e.target.value,
-                                                );
+                                            getOptionLabel={(option: CorporateContract) =>
+                                                option?.idContract
+                                                    ? `${option.idContract} — ${option.description || ''}`
+                                                    : ''
+                                            }
+                                            onChange={(_, value: CorporateContract | null) =>
                                                 updateInsumoLine(line.id, {
-                                                    contratoId: e.target.value,
-                                                    contratoNombre: contract?.idContract || '',
-                                                });
-                                            }}
-                                        >
-                                            <MenuItem value="">
-                                                <em>{t('none') || '—'}</em>
-                                            </MenuItem>
-                                            {listCorporateContract.map((c) => (
-                                                <MenuItem key={c._id} value={c._id}>
-                                                    {c.idContract} — {c.description}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
+                                                    contratoId: value?._id || '',
+                                                    contratoNombre: value?.idContract || '',
+                                                })
+                                            }
+                                            renderInput={params => (
+                                                <TextField {...params} placeholder="Contrato" />
+                                            )}
+                                        />
                                     </TableCell>
                                     <TableCell align="right" sx={{ minWidth: 130 }}>
                                         <TextField
@@ -752,7 +856,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                             type="number"
                                             value={line.valorUnidad || 0}
                                             disabled={formDisabled}
-                                            onChange={(e) =>
+                                            onChange={e =>
                                                 updateInsumoLine(line.id, {
                                                     valorUnidad: safeNum(e.target.value),
                                                 })
@@ -796,63 +900,74 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                 label={t('yield') || 'Rinde'}
                                 value={doc.cosechaLine.rindeCantidad || 0}
                                 disabled={formDisabled}
-                                onChange={(e) =>
-                                    updateCosecha({ rindeCantidad: safeNum(e.target.value) })
+                                onChange={e =>
+                                    updateCosecha({
+                                        rindeCantidad: safeNum(e.target.value),
+                                    })
                                 }
                             />
                         </Grid>
                         <Grid item xs={6} md={2}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>{t('company') || 'Sociedad'}</InputLabel>
-                                <Select
-                                    label={t('company') || 'Sociedad'}
-                                    value={doc.cosechaLine.sociedadId || ''}
-                                    disabled={formDisabled}
-                                    onChange={(e) => {
-                                        const company = companies.find(
-                                            (c) => c._id === e.target.value,
-                                        );
-                                        updateCosecha({
-                                            sociedadId: e.target.value,
-                                            sociedadNombre: company?.name || '',
-                                        });
-                                    }}
-                                >
-                                    {companies.map((c) => (
-                                        <MenuItem key={c._id} value={c._id}>
-                                            {c.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <Autocomplete
+                                size="small"
+                                value={
+                                    companies.find(
+                                        (c: Company) => c._id === doc.cosechaLine?.sociedadId,
+                                    ) || null
+                                }
+                                options={companies}
+                                disabled={formDisabled}
+                                getOptionLabel={(option: Company) =>
+                                    option?.socialReason ||
+                                    option?.fantasyName ||
+                                    option?.name ||
+                                    ''
+                                }
+                                onChange={(_, value: Company | null) =>
+                                    updateCosecha({
+                                        sociedadId: value?._id || '',
+                                        sociedadNombre:
+                                            value?.socialReason ||
+                                            value?.fantasyName ||
+                                            value?.name ||
+                                            '',
+                                    })
+                                }
+                                renderInput={params => (
+                                    <TextField
+                                        {...params}
+                                        label={t('company') || 'Sociedad'}
+                                    />
+                                )}
+                            />
                         </Grid>
                         <Grid item xs={6} md={2}>
-                            <FormControl fullWidth size="small">
-                                <InputLabel>{t('contract') || 'Contrato'}</InputLabel>
-                                <Select
-                                    label={t('contract') || 'Contrato'}
-                                    value={doc.cosechaLine.contratoId || ''}
-                                    disabled={formDisabled}
-                                    onChange={(e) => {
-                                        const contract = listCorporateContract.find(
-                                            (c) => c._id === e.target.value,
-                                        );
-                                        updateCosecha({
-                                            contratoId: e.target.value,
-                                            contratoNombre: contract?.idContract || '',
-                                        });
-                                    }}
-                                >
-                                    <MenuItem value="">
-                                        <em>{t('none') || '—'}</em>
-                                    </MenuItem>
-                                    {listCorporateContract.map((c) => (
-                                        <MenuItem key={c._id} value={c._id}>
-                                            {c.idContract}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <Autocomplete
+                                size="small"
+                                value={
+                                    listCorporateContract.find(
+                                        (c: CorporateContract) =>
+                                            c._id === doc.cosechaLine?.contratoId,
+                                    ) || null
+                                }
+                                options={listCorporateContract}
+                                disabled={formDisabled}
+                                getOptionLabel={(option: CorporateContract) =>
+                                    option?.idContract || ''
+                                }
+                                onChange={(_, value: CorporateContract | null) =>
+                                    updateCosecha({
+                                        contratoId: value?._id || '',
+                                        contratoNombre: value?.idContract || '',
+                                    })
+                                }
+                                renderInput={params => (
+                                    <TextField
+                                        {...params}
+                                        label={t('contract') || 'Contrato'}
+                                    />
+                                )}
+                            />
                         </Grid>
                         <Grid item xs={6} md={2}>
                             <TextField
@@ -862,7 +977,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                 label={t('unit_value') || 'Valor Unidad'}
                                 value={doc.cosechaLine.valorUnidad || 0}
                                 disabled={formDisabled}
-                                onChange={(e) =>
+                                onChange={e =>
                                     updateCosecha({ valorUnidad: safeNum(e.target.value) })
                                 }
                             />
@@ -900,7 +1015,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                 </Typography>
                 {(doc.serviciosLabor || []).length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
-                        {t('no_executed_services') || 'No hay servicios cargados en labores ejecutadas.'}
+                        {t('no_executed_services') ||
+                            'No hay servicios cargados en labores ejecutadas.'}
                     </Typography>
                 ) : (
                     <Table size="small">
@@ -910,7 +1026,9 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                 <TableCell>{t('labor') || 'Labor'}</TableCell>
                                 <TableCell>{t('service') || 'Servicio'}</TableCell>
                                 <TableCell>{t('contractor') || 'Contratante'}</TableCell>
-                                <TableCell align="right">{t('units_per_ha') || 'Unid/Ha'}</TableCell>
+                                <TableCell align="right">
+                                    {t('units_per_ha') || 'Unid/Ha'}
+                                </TableCell>
                                 <TableCell align="right">{t('hectares') || 'Has'}</TableCell>
                                 <TableCell align="right">
                                     {t('unit_value') || 'Valor Unidad'}
@@ -924,7 +1042,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(doc.serviciosLabor || []).map((line) => (
+                            {(doc.serviciosLabor || []).map(line => (
                                 <TableRow key={line.id}>
                                     <TableCell>
                                         {line.fecha
@@ -946,7 +1064,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                             type="number"
                                             value={line.valorUnidad || 0}
                                             disabled={formDisabled}
-                                            onChange={(e) =>
+                                            onChange={e =>
                                                 updateServicioLine(line.id, {
                                                     valorUnidad: Math.max(
                                                         0,
@@ -977,152 +1095,177 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
             {renderSectionA(false)}
 
             {/* Sección E - Carga de gasto adicional */}
-            <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
-                    {t('section_e_add_expense') || 'Sección E — Cargar Gasto Adicional'}
-                </Typography>
-                <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={6} md={2}>
-                        <TextField
-                            size="small"
-                            fullWidth
-                            type="date"
-                            label={t('date') || 'Fecha'}
-                            disabled={formDisabled}
-                            value={detalleDraft.fecha}
-                            onChange={(e) =>
-                                setDetalleDraft((d) => ({ ...d, fecha: e.target.value }))
-                            }
-                            InputLabelProps={{ shrink: true }}
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={2}>
-                        <TextField
-                            size="small"
-                            fullWidth
-                            label={t('labor') || 'Labor'}
-                            disabled={formDisabled}
-                            value={detalleDraft.laborNombre || ''}
-                            onChange={(e) =>
-                                setDetalleDraft((d) => ({
-                                    ...d,
-                                    laborId: e.target.value,
-                                    laborNombre: e.target.value,
-                                }))
-                            }
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={2}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>{t('company') || 'Sociedad'}</InputLabel>
-                            <Select
-                                label={t('company') || 'Sociedad'}
-                                value={detalleDraft.sociedadId || ''}
-                                disabled={formDisabled}
-                                onChange={(e) => {
-                                    const company = companies.find(
-                                        (c) => c._id === e.target.value,
-                                    );
-                                    setDetalleDraft((d) => ({
+            {!formDisabled && (
+                <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, color: '#666' }}>
+                        {t('section_e_add_expense') || 'Sección E — Cargar Gasto Adicional'}
+                    </Typography>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs={6} md={2}>
+                            <TextField
+                                size="small"
+                                fullWidth
+                                type="date"
+                                label={t('date') || 'Fecha'}
+                                value={detalleDraft.fecha}
+                                onChange={e =>
+                                    setDetalleDraft(d => ({ ...d, fecha: e.target.value }))
+                                }
+                                InputLabelProps={{ shrink: true }}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={2}>
+                            <TextField
+                                size="small"
+                                fullWidth
+                                label={t('labor') || 'Labor'}
+                                value={detalleDraft.laborNombre || ''}
+                                onChange={e =>
+                                    setDetalleDraft(d => ({
                                         ...d,
-                                        sociedadId: e.target.value,
-                                        sociedadNombre: company?.name || '',
-                                    }));
-                                }}
-                            >
-                                {companies.map((c) => (
-                                    <MenuItem key={c._id} value={c._id}>
-                                        {c.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Grid>
-                    <Grid item xs={6} md={2}>
-                        <FormControl fullWidth size="small">
-                            <InputLabel>{t('expense_type') || 'Tipo Gasto'}</InputLabel>
-                            <Select
-                                label={t('expense_type') || 'Tipo Gasto'}
-                                value={detalleDraft.tipoGastoId || ''}
-                                disabled={formDisabled}
-                                onChange={(e) => {
-                                    const cost = costsExpenses.find(
-                                        (c) => c._id === e.target.value,
-                                    );
-                                    setDetalleDraft((d) => ({
+                                        laborId: e.target.value,
+                                        laborNombre: e.target.value,
+                                    }))
+                                }
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={2}>
+                            <Autocomplete
+                                size="small"
+                                value={
+                                    companies.find(
+                                        (c: Company) => c._id === detalleDraft.sociedadId,
+                                    ) || null
+                                }
+                                options={companies}
+                                getOptionLabel={(option: Company) =>
+                                    option?.socialReason ||
+                                    option?.fantasyName ||
+                                    option?.name ||
+                                    ''
+                                }
+                                onChange={(_, value: Company | null) =>
+                                    setDetalleDraft(d => ({
                                         ...d,
-                                        tipoGastoId: e.target.value,
-                                        tipoGastoNombre:
-                                            cost?.description || cost?.costCode || 'Otros Gastos',
-                                    }));
+                                        sociedadId: value?._id || '',
+                                        sociedadNombre:
+                                            value?.socialReason ||
+                                            value?.fantasyName ||
+                                            value?.name ||
+                                            '',
+                                    }))
+                                }
+                                renderInput={params => (
+                                    <TextField {...params} label={t('company') || 'Sociedad'} />
+                                )}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={2}>
+                            <Autocomplete<CostsExpenses, false, false, true>
+                                size="small"
+                                value={
+                                    costsExpenses.find(
+                                        (c: CostsExpenses) =>
+                                            c._id === detalleDraft.tipoGastoId,
+                                    ) || null
+                                }
+                                options={costsExpenses}
+                                getOptionLabel={(option) =>
+                                    typeof option === 'string'
+                                        ? option
+                                        : option?.description || option?.costCode || ''
+                                }
+                                onChange={(_, value) => {
+                                    if (typeof value === 'string') {
+                                        setDetalleDraft(d => ({
+                                            ...d,
+                                            tipoGastoId: '__otros__',
+                                            tipoGastoNombre:
+                                                value || t('other_expenses') || 'Otros Gastos',
+                                        }));
+                                    } else {
+                                        setDetalleDraft(d => ({
+                                            ...d,
+                                            tipoGastoId: value?._id || '__otros__',
+                                            tipoGastoNombre:
+                                                value?.description ||
+                                                value?.costCode ||
+                                                t('other_expenses') ||
+                                                'Otros Gastos',
+                                        }));
+                                    }
                                 }}
+                                freeSolo
+                                renderInput={params => (
+                                    <TextField
+                                        {...params}
+                                        label={t('expense_type') || 'Tipo Gasto'}
+                                    />
+                                )}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={2}>
+                            <TextField
+                                size="small"
+                                fullWidth
+                                label={t('expense') || 'Gasto'}
+                                value={detalleDraft.gasto || ''}
+                                onChange={e =>
+                                    setDetalleDraft(d => ({ ...d, gasto: e.target.value }))
+                                }
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={1}>
+                            <TextField
+                                size="small"
+                                fullWidth
+                                type="number"
+                                label={t('amount') || 'Importe'}
+                                value={detalleDraft.importe || 0}
+                                onChange={e =>
+                                    setDetalleDraft(d => ({
+                                        ...d,
+                                        importe: safeNum(e.target.value),
+                                    }))
+                                }
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={2}>
+                            <TextField
+                                size="small"
+                                fullWidth
+                                label={t('reference') || 'Referencia'}
+                                value={detalleDraft.referencia || ''}
+                                onChange={e =>
+                                    setDetalleDraft(d => ({
+                                        ...d,
+                                        referencia: e.target.value,
+                                    }))
+                                }
+                            />
+                        </Grid>
+                        <Grid item xs={12} md={1} textAlign="right">
+                            <Tooltip
+                                title={
+                                    editingDetalleId
+                                        ? t('save') || 'Guardar'
+                                        : t('add') || 'Agregar'
+                                }
                             >
-                                {costsExpenses.map((c) => (
-                                    <MenuItem key={c._id} value={c._id}>
-                                        {c.description || c.costCode}
-                                    </MenuItem>
-                                ))}
-                                <MenuItem value="__otros__">{t('other_expenses') || 'Otros Gastos'}</MenuItem>
-                            </Select>
-                        </FormControl>
+                                <span>
+                                    <IconButton
+                                        color="success"
+                                        disabled={!detalleDraftValid}
+                                        onClick={handleAddDetalle}
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                        </Grid>
                     </Grid>
-                    <Grid item xs={6} md={2}>
-                        <TextField
-                            size="small"
-                            fullWidth
-                            label={t('expense') || 'Gasto'}
-                            disabled={formDisabled}
-                            value={detalleDraft.gasto || ''}
-                            onChange={(e) =>
-                                setDetalleDraft((d) => ({ ...d, gasto: e.target.value }))
-                            }
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={1}>
-                        <TextField
-                            size="small"
-                            fullWidth
-                            type="number"
-                            label={t('amount') || 'Importe'}
-                            disabled={formDisabled}
-                            value={detalleDraft.importe || 0}
-                            onChange={(e) =>
-                                setDetalleDraft((d) => ({
-                                    ...d,
-                                    importe: safeNum(e.target.value),
-                                }))
-                            }
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={2}>
-                        <TextField
-                            size="small"
-                            fullWidth
-                            label={t('reference') || 'Referencia'}
-                            disabled={formDisabled}
-                            value={detalleDraft.referencia || ''}
-                            onChange={(e) =>
-                                setDetalleDraft((d) => ({ ...d, referencia: e.target.value }))
-                            }
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={1} textAlign="right">
-                        <Tooltip
-                            title={editingDetalleId ? t('save') || 'Guardar' : t('add') || 'Agregar'}
-                        >
-                            <span>
-                                <IconButton
-                                    color="success"
-                                    disabled={formDisabled || !detalleDraftValid}
-                                    onClick={handleAddDetalle}
-                                >
-                                    <AddIcon />
-                                </IconButton>
-                            </span>
-                        </Tooltip>
-                    </Grid>
-                </Grid>
-            </Paper>
+                </Paper>
+            )}
 
             {/* Sección F - lista */}
             <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
@@ -1131,7 +1274,8 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                 </Typography>
                 {(doc.detalleGastos || []).length === 0 ? (
                     <Typography variant="body2" color="text.secondary">
-                        {t('no_additional_expenses') || 'Aún no se cargaron gastos adicionales.'}
+                        {t('no_additional_expenses') ||
+                            'Aún no se cargaron gastos adicionales.'}
                     </Typography>
                 ) : (
                     <Table size="small">
@@ -1145,12 +1289,12 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                 <TableCell align="right">{t('amount') || 'Importe'}</TableCell>
                                 <TableCell>{t('reference') || 'Referencia'}</TableCell>
                                 <TableCell align="right">
-                                    {!formDisabled ? (t('actions') || 'Acciones') : ''}
+                                    {!formDisabled ? t('actions') || 'Acciones' : ''}
                                 </TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(doc.detalleGastos || []).map((line) => (
+                            {(doc.detalleGastos || []).map(line => (
                                 <TableRow key={line.id}>
                                     <TableCell>
                                         {line.fecha
@@ -1200,7 +1344,11 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
     };
 
     const canGoNext =
-        activeStep === 0 ? sectionAValid && step1Valid : activeStep === 1 ? step2Valid : true;
+        activeStep === 0
+            ? sectionAValid && step1Valid
+            : activeStep === 1
+                ? step2Valid
+                : true;
 
     return (
         <TemplateLayout key="overview-campaign-expenses-wizard" viewMap={false}>
@@ -1228,7 +1376,7 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                     />
                     <CardContent>
                         <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>
-                            {STEPS.map((label) => (
+                            {STEPS.map(label => (
                                 <Step key={label}>
                                     <StepLabel>{t(label) || label}</StepLabel>
                                 </Step>
@@ -1252,7 +1400,9 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                             <Box display="flex" gap={2}>
                                 <Button
                                     variant="text"
-                                    onClick={() => navigate('/init/overview/campaign-expenses')}
+                                    onClick={() =>
+                                        navigate('/init/overview/campaign-expenses')
+                                    }
                                 >
                                     {t('cancel') || 'Cancelar'}
                                 </Button>
@@ -1270,7 +1420,9 @@ export const CampaignExpensesWizardPage: React.FC<Props> = ({ mode: modeProp }) 
                                         variant="contained"
                                         color="success"
                                         startIcon={<SaveIcon />}
-                                        disabled={formDisabled || !sectionAValid || !step1Valid}
+                                        disabled={
+                                            formDisabled || !sectionAValid || !step1Valid
+                                        }
                                         onClick={handleSave}
                                     >
                                         {t('save') || 'Guardar'}

@@ -248,8 +248,10 @@ export const GranoTransportadoForm: React.FC<TransportDocumentFormProps> = ({
               primary={<Typography variant='subtitle2'>{t('net')}</Typography>}
               sx={{ backgroundColor: "#f4f4f4", px: 1 }}
               secondary={
-                <Typography letterSpacing={1} variant='subtitle1'>
-                  {formatNumber(formValues.kgBruto.value - formValues.kgTara.value) || "-"}
+                <Typography letterSpacing={1} variant='subtitle1' sx={{ textAlign: 'right' }}>
+                  {(formValues.kgBruto.value !== "" && formValues.kgTara.value !== "")
+                    ? formatNumber(Number(formValues.kgBruto.value) - Number(formValues.kgTara.value))
+                    : "-"}
                 </Typography>}
             />
           </FormControl>

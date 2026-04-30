@@ -10,14 +10,14 @@ import { Document } from "@types";
  * backend puede denormalizar como prefiera. Ese es el contrato pragmatico.
  *
  * Los campos de la primera version (campaign, field, lot, hectares,
- * partial, listCamapingExpeses) se preservan como opcionales para no
- * romper documentos previos.
+ * partial, listCamapingExpeses) se preservan para no romper documentos
+ * previos: se siguen escribiendo y el List page los muestra como fallback.
  */
 export interface CampaingExpenses extends Document {
     accountId?: string;
     licenceId?: string;
 
-    // Compatibilidad con la version inicial.
+    // Forma original (se sigue escribiendo para compatibilidad).
     campaign: string;
     field: string;
     lot: string;
@@ -45,9 +45,9 @@ export interface CampaingExpenses extends Document {
     serviciosLabor?: ServicioLaborLine[];
     detalleGastos?: DetalleGastoLine[];
 
-    // Auditoria.
-    creationDate?: string;
-    lastUpdate?: string;
+    // Auditoria. createdAt/updatedAt vienen de la version previa de master.
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 /** Forma vieja, se conserva para no romper docs sincronizados. */

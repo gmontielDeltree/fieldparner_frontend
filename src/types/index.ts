@@ -509,18 +509,18 @@ export interface ExitField extends Document {
   vehicleId: string;
   truckTrailerId: string;
   chassis: string;
-  grossWeight: number;
-  tareWeight: number;
-  netWeight: number;
+  grossWeight: string;
+  tareWeight: string;
+  netWeight: string;
   depositId: string;
   location: string;
   additionalInformation: string;
-  humidityPercentage: number;
-  mermaPercentage: number;
-  volatilePercentage: number;
-  otherPercentage: number;
-  totalMerma: number;
-  kgNet: number;
+  humidityPercentage: string;
+  mermaPercentage: string;
+  volatilePercentage: string;
+  otherPercentage: string;
+  totalMerma: string;
+  kgNet: string;
   harvesterId: string;
   destination: string;
 }
