@@ -78,8 +78,46 @@ export const getCompanyDisplayName = (companies: Company[], storedValue?: string
   return company?.socialReason || company?.fantasyName || company?.name || storedValue || '';
 };
 
-export const getExpenseTotalAmount = (expense: CampaingExpenses) =>
-  (expense.listCamapingExpeses || []).reduce((sum, current) => sum + (parseFloat(current.amount || '0') || 0), 0);
+/**
+ * Total economico del documento.
+ *
+ * Para docs viejos (formato A079 v1) suma `listCamapingExpeses`. Para docs
+ * con el shape A079 v2 suma Sección B (insumos), C (cosecha), D (servicios)
+ * y F (detalleGastos).
+ */
+export const getExpenseTotalAmount = (expense: CampaingExpenses) => {
+  const legacyTotal = (expense.listCamapingExpeses || []).reduce(
+    (sum, current) => sum + (parseFloat(current.amount || '0') || 0),
+    0,
+  );
+
+  const insumosTotal = (expense.insumosLabor || []).reduce(
+    (sum, line) => sum + (Number(line.valorTotal) || 0),
+    0,
+  );
+
+  const cosechaTotal = Number(expense.cosechaLine?.valorTotal) || 0;
+
+  const serviciosTotal = (expense.serviciosLabor || []).reduce(
+    (sum, line) => sum + (Number(line.valorTotal) || 0),
+    0,
+  );
+
+  const detalleTotal = (expense.detalleGastos || []).reduce(
+    (sum, line) => sum + (Number(line.importe) || 0),
+    0,
+  );
+
+  return legacyTotal + insumosTotal + cosechaTotal + serviciosTotal + detalleTotal;
+};
+
+/** Cantidad total de items cargados (formato viejo + secciones nuevas). */
+export const getExpenseItemsCount = (expense: CampaingExpenses) =>
+  (expense.listCamapingExpeses?.length || 0) +
+  (expense.insumosLabor?.length || 0) +
+  (expense.serviciosLabor?.length || 0) +
+  (expense.detalleGastos?.length || 0) +
+  (expense.cosechaLine ? 1 : 0);
 
 export const formatAmount = (amount: number) =>
   amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -103,6 +141,11 @@ export const buildEmptyExpense = (): CampaingExpenses => ({
   hectares: '',
   partial: '',
   listCamapingExpeses: [],
+  insumosLabor: [],
+  serviciosLabor: [],
+  detalleGastos: [],
+  cosechaLine: null,
+  estaCerrada: false,
 });
 
 export const createDetailId = () =>
