@@ -50,8 +50,8 @@ import {
   ListCostsExpenses,
   NewCostsExpenses,
   CampaignsResultsPage,
-  CampaignExpensesPage,
   ListCampaignExpensesPage,
+  CampaignExpensesWizardPage,
   ListAnnualPlanValorization,
   AnnualPlanValorizationPage,
   ValorizationAnalysisPage,
@@ -167,9 +167,9 @@ export const OverviewRoutes: React.FC = () => {
 
         <Route path="/overview/campaign-results" element={<CampaignsResultsPage />} />
         <Route path="/overview/campaign-expenses" element={<ListCampaignExpensesPage />} />
-        <Route path="/overview/campaign-expenses/new" element={<CampaignExpensesPage />} />
-        <Route path="/overview/campaign-expenses/:id" element={<CampaignExpensesPage />} />
-        <Route path="/overview/campaign-expenses/:id/view" element={<CampaignExpensesPage />} />
+        <Route path="/overview/campaign-expenses/new" element={<CampaignExpensesWizardPage mode="new" />} />
+        <Route path="/overview/campaign-expenses/:id/view" element={<CampaignExpensesWizardPage mode="view" />} />
+        <Route path="/overview/campaign-expenses/:id" element={<CampaignExpensesWizardPage mode="edit" />} />
 
         <Route path="/overview/satellite/:loteId" element={<SatellitePage />} />
         <Route
