@@ -179,7 +179,7 @@ export const ListStockPage: React.FC = () => {
     try {
       const [cropsRes, controlRes, campaignsRes] = await Promise.all([
         dbContext.crops.allDocs({ include_docs: true }),
-        dbContext.cropStockControl.find({ selector: { accountId: user.accountId } }),
+        dbContext.cropDeposits.find({ selector: { accountId: user.accountId } }),
         dbContext.campaigns.find({ selector: { accountId: user.accountId } })
       ]);
       const crops = cropsRes.rows.map(r => r.doc);

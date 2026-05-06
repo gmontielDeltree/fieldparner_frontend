@@ -41,9 +41,9 @@ import {
 import { FieldsByProductUnit, ProductUnits } from '../interfaces/productiveUnits';
 import { ContractDeliveyDate, ContractSaleCereal } from '../interfaces/contract-sale-cereals';
 import { CostsExpenses } from '../interfaces/costsExpenses';
-import { CropStockControl, Stock } from '../interfaces/stock';
+import { Stock } from '../interfaces/stock';
 import { CropMovement } from '../interfaces/crop-movement';
-// import { CropDeposit } from '../interfaces/crop-deposit';
+import { CropDeposit } from '../interfaces/crop-deposit';
 import { CampaingExpenses } from '../interfaces/campaignExpenses';
 import { CompanyByContract, CorporateContract } from '../interfaces/corporateContract';
 
@@ -117,7 +117,6 @@ const dbNames = Object.freeze({
   contractSaleCereals: `contract-sale-cereals${isEnvSTG()}`,
   contractDeliveryDates: `contract-delivery-dates${isEnvSTG()}`,
   costsExpenses: `costs-expenses${isEnvSTG()}`,
-  cropStockControl: `crop-stock-control${isEnvSTG()}`,
   campaingExpenses: `campaing-expenses`,
   fieldsByProductUnit: `fields-by-product-unit${isEnvSTG()}`,
   system: `system${isEnvSTG()}`,
@@ -174,11 +173,10 @@ export const dbContext = Object.freeze({
   contractDeliveryDates: new PouchDB<ContractDeliveyDate>(dbNames.contractDeliveryDates),
   costsExpenses: new PouchDB<CostsExpenses>(dbNames.costsExpenses),
   campaingExpenses: new PouchDB<CampaingExpenses>(dbNames.campaingExpenses),
-  cropStockControl: new PouchDB<CropStockControl>(dbNames.cropStockControl),
   fieldsByProductUnit: new PouchDB<FieldsByProductUnit>(dbNames.fieldsByProductUnit),
   system: new PouchDB<System>(dbNames.system),
   cropMovements: new PouchDB<CropMovement>(dbNames.cropMovements),
-  cropDeposits: new PouchDB<any>(dbNames.cropDeposits),
+  cropDeposits: new PouchDB<CropDeposit>(dbNames.cropDeposits),
 });
 
 // TODO Analizar "Filtered Replication" https://pouchdb.com/2015/04/05/filtered-replication.html
@@ -197,8 +195,8 @@ const createIndexes = async () => {
     dbContext.stock.createIndex({ index: { fields: ['accountId', 'id'] } }),
     // stockMovements: filtrar por supplyId + accountId (usado en getStockBySupplyActive)
     dbContext.stockMovements.createIndex({ index: { fields: ['supplyId', 'accountId'] } }),
-    // cropStockControl: filtrar por accountId + licenceId
-    dbContext.cropStockControl.createIndex({ index: { fields: ['accountId', 'licenceId'] } }),
+    // cropDeposits: filtrar por accountId
+    dbContext.cropDeposits.createIndex({ index: { fields: ['accountId'] } }),
     // deposits: filtrar por accountId
     dbContext.deposits.createIndex({ index: { fields: ['accountId'] } }),
   ]);
@@ -287,6 +285,7 @@ const syncHighPriority = () => {
   syncManager.register('users', dbContext.users, `${remoteCouchDBUrl}${dbNames.users}`);
   syncManager.register('stock', dbContext.stock, `${remoteCouchDBUrl}${dbNames.stock}`);
   syncManager.register('stockMovements', dbContext.stockMovements, `${remoteCouchDBUrl}${dbNames.stockMovements}`);
+  syncManager.register('cropDeposits', dbContext.cropDeposits, `${remoteCouchDBUrl}${dbNames.cropDeposits}`);
 };
 
 // Prioridad MEDIA: datos operativos secundarios → se inician después de 1.5s
@@ -298,7 +297,6 @@ const syncMediumPriority = () => {
   syncManager.register('originsDestinations', dbContext.originsDestinations, `${remoteCouchDBUrl}${dbNames.originsDestinations}`);
   syncManager.register('zones', dbContext.zones, `${remoteCouchDBUrl}${dbNames.zones}`);
   syncManager.register('crops', dbContext.crops, `${remoteCouchDBUrl}${dbNames.crops}`);
-  syncManager.register('cropStockControl', dbContext.cropStockControl, `${remoteCouchDBUrl}${dbNames.cropStockControl}`);
   syncManager.register('cropMovements', dbContext.cropMovements, `${remoteCouchDBUrl}${dbNames.cropMovements}`);
   syncManager.register('depositSupplyOrder', dbContext.depositSupplyOrder, `${remoteCouchDBUrl}${dbNames.depositSupplyOrder}`);
   syncManager.register('withdrawalsByDepositSupply', dbContext.withdrawalsByDepositSupply, `${remoteCouchDBUrl}${dbNames.withdrawalsByDepositSupply}`);
@@ -331,7 +329,6 @@ const syncLowPriority = () => {
   syncManager.register('costsExpenses', dbContext.costsExpenses, `${remoteCouchDBUrl}${dbNames.costsExpenses}`);
   syncManager.register('campaingExpenses', dbContext.campaingExpenses, `${remoteCouchDBUrl}${dbNames.campaingExpenses}`);
   syncManager.register('fieldsByProductUnit', dbContext.fieldsByProductUnit, `${remoteCouchDBUrl}${dbNames.fieldsByProductUnit}`);
-  // syncManager.register('cropDeposits', dbContext.cropDeposits, `${remoteCouchDBUrl}${dbNames.cropDeposits}`);
 };
 
 // Timers internos para poder cancelarlos si se llama startSync antes de que disparen

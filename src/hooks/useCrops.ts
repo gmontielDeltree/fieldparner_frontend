@@ -4,7 +4,8 @@ import { Crop } from "../types";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 import { useAppSelector } from "./useRedux";
-import { CropStockControl, CropStockData } from "../interfaces/stock";
+import { CropStockData } from "../interfaces/stock";
+import { CropDeposit } from "../interfaces/crop-deposit";
 
 
 String.prototype.toColor = function () {
@@ -92,10 +93,10 @@ export const useCrops = () => {
           try {
             const [cropsRes,  controlRes] = await Promise.all([
               dbContext.crops.allDocs({ include_docs: true }),
-              dbContext.cropStockControl.find({ selector: { accountId: user.accountId } }),
+              dbContext.cropDeposits.find({ selector: { accountId: user.accountId } }),
             ]);
             const crops = cropsRes.rows.map(r => r.doc as Crop);
-            const controls = controlRes.docs as CropStockControl[];
+            const controls = controlRes.docs as CropDeposit[];
       
             const data: CropStockData[] = controls.map((ctrl) => {
               const crop = crops.find((c: Crop) => c._id === ctrl.cropId);

@@ -111,8 +111,8 @@ export const useExitField = () => {
                     deliveredStock: 0,
                     lastUpdate: new Date().toISOString(),
                 };
-                const created = await dbContext.cropStockControl.post(newStockDoc as any);
-                stockOfCrop = await dbContext.cropStockControl.get(created.id) as any;
+                const created = await dbContext.cropDeposits.post(newStockDoc as any);
+                stockOfCrop = await dbContext.cropDeposits.get(created.id) as any;
             }
 
             // Restar del stock disponible
@@ -171,7 +171,7 @@ export const useExitField = () => {
             const promisesAll = [
                 dbContext.exitFields.post(cleanExitField),
                 dbContext.stockMovements.post(newStockMovement),
-                dbContext.cropStockControl.put(stockOfCrop),
+                dbContext.cropDeposits.put(stockOfCrop),
                 updateCropStockTables(newStockMovement, newExitField.crop, newExitField.deposit, { zafra: newExitField.zafra })
             ]
 

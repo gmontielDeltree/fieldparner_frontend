@@ -18,7 +18,7 @@ vi.mock('../../services/pouchdbService', () => ({
     crops: {
       allDocs: vi.fn(),
     },
-    cropStockControl: {
+    cropDeposits: {
       find: vi.fn(),
     },
   },
@@ -61,7 +61,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.clearAllMocks()
   })
 
-  it('✅ debe combinar stock legacy + cropStockControl correctamente', async () => {
+  it('✅ debe combinar stock legacy + cropDeposits correctamente', async () => {
     // Arrange
     const mockStockLegacy = [
       {
@@ -97,8 +97,8 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       },
     ]
 
-    // Mock cropStockControl - COSECHAS
-    const mockCropStockControl = [
+    // Mock cropDeposits - COSECHAS
+    const mockCropDeposits = [
       {
         _id: 'csc-1',
         _rev: '1-abc',
@@ -129,7 +129,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({
       rows: mockCrops.map(crop => ({ doc: crop })),
     } as any)
-    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: mockCropStockControl } as any)
+    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: mockCropDeposits } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })
@@ -168,7 +168,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     expect(maizStock?.reservedStock).toBe(2000)
   })
 
-  it('✅ NO debe duplicar cultivos si están en stock legacy Y cropStockControl', async () => {
+  it('✅ NO debe duplicar cultivos si están en stock legacy Y cropDeposits', async () => {
     // Arrange
     const mockStockLegacy = [
       {
@@ -190,7 +190,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       },
     ]
 
-    const mockCropStockControl = [
+    const mockCropDeposits = [
       {
         _id: 'csc-new',
         _rev: '1-abc',
@@ -208,7 +208,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({
       rows: mockCrops.map(crop => ({ doc: crop })),
     } as any)
-    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: mockCropStockControl } as any)
+    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: mockCropDeposits } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })
@@ -221,7 +221,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       expect(result.current.stockBySupplies.length).toBeGreaterThan(0)
     })
 
-    // Assert - both legacy and cropStockControl entries exist as separate rows
+    // Assert - both legacy and cropDeposits entries exist as separate rows
     // (the code does not merge them, they appear independently)
     const stockBySupplies = result.current.stockBySupplies
     const sojaStocks = stockBySupplies.filter((s) => s.id === 'crop-456')
@@ -238,7 +238,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     expect(cscEntry?.reservedStock).toBe(5000)
   })
 
-  it('✅ debe funcionar cuando cropStockControl está vacío (sin cosechas)', async () => {
+  it('✅ debe funcionar cuando cropDeposits está vacío (sin cosechas)', async () => {
     // Arrange
     const mockStockLegacy = [
       {
@@ -260,7 +260,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.stock.find).mockResolvedValue({ docs: mockStockLegacy } as any)
     vi.mocked(dbContext.supplies.find).mockResolvedValue({ docs: mockSupplies } as any)
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({ rows: [] } as any)
-    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: [] } as any)
+    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: [] } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })
@@ -288,7 +288,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
       },
     ]
 
-    const mockCropStockControl = [
+    const mockCropDeposits = [
       {
         _id: 'csc-1',
         _rev: '1-abc',
@@ -306,7 +306,7 @@ describe('useSupply - getStockData (Tab 0: Por Insumo)', () => {
     vi.mocked(dbContext.crops.allDocs).mockResolvedValue({
       rows: mockCrops.map(crop => ({ doc: crop })),
     } as any)
-    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: mockCropStockControl } as any)
+    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: mockCropDeposits } as any)
 
     // Act
     const { result } = renderHook(() => useSupply(), { wrapper })

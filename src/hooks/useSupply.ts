@@ -143,13 +143,7 @@ export const useSupply = () => {
                 }),
                 dbContext.crops.allDocs({ include_docs: true }),
                 // ✅ AGREGADO: Leer cropDeposits para incluir cosechas
-                // dbContext.cropDeposits.find({
-                //     selector: {
-                //         "accountId": user?.accountId
-                //     }
-                // }),
-                //Stock de cultivos
-                dbContext.cropStockControl.find({
+                dbContext.cropDeposits.find({
                     selector: {
                         "$and": [
                             { "accountId": user?.accountId },
@@ -159,7 +153,7 @@ export const useSupply = () => {
                 }),
             ]);
 
-            const [resultStock, supplies, crops, cropStockControlResult] = promisesResult;
+            const [resultStock, supplies, crops, cropDepositsResult] = promisesResult;
 
             // Procesar stock legacy (insumos y crops antiguos)
             const stockIds = resultStock?.docs.map(s => s.id) || [];
@@ -196,11 +190,11 @@ export const useSupply = () => {
             });
 
             // ✅ AGREGADO: Procesar cropDeposits (cosechas)
-            const cropIds = cropStockControlResult?.docs.map((cd: any) => cd.cropId) || [];
+            const cropIds = cropDepositsResult?.docs.map((cd: any) => cd.cropId) || [];
             const groupCropIds = Array.from(new Set(cropIds));
 
             groupCropIds.forEach(cropId => {
-                const foundCropDeposits = cropStockControlResult.docs.filter((cd: any) => cd.cropId === cropId);
+                const foundCropDeposits = cropDepositsResult.docs.filter((cd: any) => cd.cropId === cropId);
                 const foundCrop = crops.rows.map(row => row.doc as Crop).find(c => c._id === cropId);
 
                 if (foundCrop) {
@@ -219,7 +213,7 @@ export const useSupply = () => {
                         fieldId: '',
                         fieldLot: '',
                         currentStock: foundCropDeposits[0].currentStock,
-                        reservedStock: foundCropDeposits[0].committedStock,
+                        reservedStock: 0,
                         lastUpdate: foundCropDeposits[0].lastUpdate,
                         dataCrop: foundCrop,
                         zafra: foundCropDeposits[0].zafra || '',

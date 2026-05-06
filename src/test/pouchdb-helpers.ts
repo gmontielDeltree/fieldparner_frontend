@@ -48,7 +48,6 @@ export interface TestDbContext {
   supplies: PouchDB.Database<any>
   crops: PouchDB.Database<any>
   cropDeposits: PouchDB.Database<any>
-  cropStockControl: PouchDB.Database<any>
   cropMovements: PouchDB.Database<any>
 }
 
@@ -62,7 +61,6 @@ export async function createTestDbContext(): Promise<TestDbContext> {
     supplies: createTestDatabase('supplies'),
     crops: createTestDatabase('crops'),
     cropDeposits: createTestDatabase('cropDeposits'),
-    cropStockControl: createTestDatabase('cropStockControl'),
     cropMovements: createTestDatabase('cropMovements'),
   }
 
@@ -104,12 +102,6 @@ async function setupIndexes(context: TestDbContext): Promise<void> {
     },
   })
 
-  // Índice para cropStockControl
-  await context.cropStockControl.createIndex({
-    index: {
-      fields: ['accountId', 'cropId', 'campaignId', 'zafra'],
-    },
-  })
 }
 
 /**
@@ -150,7 +142,6 @@ export async function setupTestEnvironment(data: {
   crops?: any[]
   stock?: any[]
   cropDeposits?: any[]
-  cropStockControl?: any[]
 }): Promise<TestDbContext> {
   const context = await createTestDbContext()
 
@@ -160,8 +151,6 @@ export async function setupTestEnvironment(data: {
   if (data.crops) await populateDatabase(context.crops, data.crops)
   if (data.stock) await populateDatabase(context.stock, data.stock)
   if (data.cropDeposits) await populateDatabase(context.cropDeposits, data.cropDeposits)
-  if (data.cropStockControl)
-    await populateDatabase(context.cropStockControl, data.cropStockControl)
 
   return context
 }

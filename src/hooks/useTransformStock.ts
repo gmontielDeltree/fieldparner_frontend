@@ -116,7 +116,7 @@ export const useTransformStock = () => {
 
             //Neceistamos que los datos de stockByCrops sean los mismos del dbContext (CropStockControl) para hacer el bulkDocs, por eso mapeamos a ese formato.
             if (currentStockCropOrSupply.stockByCrops.length)
-                promisesAll.push(dbContext.cropStockControl.bulkDocs(
+                promisesAll.push(dbContext.cropDeposits.bulkDocs(
                     currentStockCropOrSupply.stockByCrops.map(c => ({
                         _id: c._id,
                         _rev: c._rev,

@@ -119,19 +119,6 @@ describe.skipIf(process.env.RUN_REAL_DB !== '1')('🗄️ REAL DB: Flujo complet
       lastUpdate: new Date().toISOString(),
     }
 
-    const cropStockControl = {
-      _id: 'crop-control-1',
-      accountId,
-      licenceId: 'test-licence',
-      campaignId: 'campaign-2024',
-      zafra: '2024/2025',
-      cropId: 'crop-soja',
-      currentStock: 50000,
-      committedStock: 0,
-      deliveredStock: 0,
-      lastUpdate: new Date().toISOString(),
-    }
-
     const cropMovement = {
       _id: 'crop-movement-1',
       accountId,
@@ -150,7 +137,6 @@ describe.skipIf(process.env.RUN_REAL_DB !== '1')('🗄️ REAL DB: Flujo complet
     }
 
     await db.cropDeposits.put(cropDeposit as any)
-    await db.cropStockControl.put(cropStockControl as any)
     await db.cropMovements.put(cropMovement as any)
 
     console.log('✅ Cosecha registrada en cropDeposits')

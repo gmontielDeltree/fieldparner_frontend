@@ -89,7 +89,6 @@ function initInMemoryDbs() {
         ; (dbContext as any).campaigns = new PouchDB('mem-campaigns', { adapter: 'memory' })
         ; (dbContext as any).crops = new PouchDB('mem-crops', { adapter: 'memory' })
         ; (dbContext as any).cropDeposits = new PouchDB('mem-cropDeposits', { adapter: 'memory' })
-        ; (dbContext as any).cropStockControl = new PouchDB('mem-cropStockControl', { adapter: 'memory' })
         ; (dbContext as any).cropMovements = new PouchDB('mem-cropMovements', { adapter: 'memory' })
         ; (dbContext as any).fields = new PouchDB('mem-fields', { adapter: 'memory' })
         ; (dbContext as any).movementsType = new PouchDB('mem-movementsType', { adapter: 'memory' })
@@ -115,7 +114,7 @@ async function seedDatabases() {
     await dbContext.socialEntities.createIndex({ index: { fields: ['accountId'] } } as any)
     await dbContext.crops.createIndex({ index: { fields: ['_id'] } } as any)
     await dbContext.cropDeposits.createIndex({ index: { fields: ['accountId', 'cropId', 'depositId', 'campaignId', 'zafra'] } } as any)
-    await dbContext.cropStockControl.createIndex({ index: { fields: ['accountId', 'cropId', 'campaignId', 'zafra'] } } as any)
+    await dbContext.cropDeposits.createIndex({ index: { fields: ['accountId', 'cropId', 'campaignId', 'zafra'] } } as any)
 
     // seed base docs
     await dbContext.deposits.post({ _id: 'dep-1', accountId: 'acc-1', description: 'Dep 1' } as any)
@@ -287,7 +286,7 @@ describe('PlanActivity - full sowing flow with stock checks', () => {
         await waitFor(async () => {
             const cdc = await dbContext.cropDeposits.find({ selector: { accountId: 'acc-1', cropId: 'crop-1', depositId: 'dep-1', campaignId: 'camp-1', zafra: '2024/2025' } } as any)
             expect(cdc.docs[0]?.currentStockKg).toBe(1000)
-            const csc = await dbContext.cropStockControl.find({ selector: { accountId: 'acc-1', cropId: 'crop-1', campaignId: 'camp-1', zafra: '2024/2025' } } as any)
+            const csc = await dbContext.cropDeposits.find({ selector: { accountId: 'acc-1', cropId: 'crop-1', campaignId: 'camp-1', zafra: '2024/2025' } } as any)
             expect(csc.docs[0]?.currentStock).toBe(1000)
         })
     })

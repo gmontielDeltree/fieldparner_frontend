@@ -207,7 +207,7 @@ export const useStockMovement = () => {
             ...(request.cropId && { cropId: request.cropId }),
         }
         try {
-            const foundStockCrop = await dbContext.cropStockControl.find({
+            const foundStockCrop = await dbContext.cropDeposits.find({
                 selector: query
             });
             setIsLoading(false);
@@ -409,7 +409,7 @@ export const useStockMovement = () => {
         }
     }
 
-    // Actualizar tablas de stock de cultivos (cropMovements, cropDeposits, cropStockControl)
+    // Actualizar tablas de stock de cultivos (cropMovements, cropDeposits)
     const updateCropStockTables = async (movement: StockMovement, crop: any, deposit: any, extras?: { fieldId?: string, lotId?: string, zafra?: string }) => {
         try {
             if (!user) { dispatch(onLogout(t("session_expired"))); return; }
@@ -464,13 +464,13 @@ export const useStockMovement = () => {
 
             // upsert CropStockControl
             const ctrlQuery = { selector: { accountId: user.accountId, licenceId: user.licenceId, campaignId: movement.campaignId, zafra: extras?.zafra, cropId: crop?._id || movement.cropId || movement.supplyId } } as any;
-            const ctrlFound = await dbContext.cropStockControl.find(ctrlQuery);
+            const ctrlFound = await dbContext.cropDeposits.find(ctrlQuery);
             if (ctrlFound.docs && ctrlFound.docs.length > 0) {
                 const doc = ctrlFound.docs[0];
                 const delta = movement.isIncome ? +Number(movement.amount) : -Number(movement.amount);
-                await dbContext.cropStockControl.put({ ...doc, currentStock: Number(doc.currentStock || 0) + delta, lastUpdate: todayStr });
+                await dbContext.cropDeposits.put({ ...doc, currentStock: Number(doc.currentStock || 0) + delta, lastUpdate: todayStr });
             } else {
-                await dbContext.cropStockControl.post({ accountId: user.accountId, licenceId: user.licenceId, campaignId: movement.campaignId, zafra: extras?.zafra, cropId: crop?._id || movement.cropId || movement.supplyId, currentStock: Number(movement.amount || 0) * (movement.isIncome ? 1 : -1), committedStock: 0, deliveredStock: 0, lastUpdate: todayStr } as any);
+                await dbContext.cropDeposits.post({ accountId: user.accountId, licenceId: user.licenceId, campaignId: movement.campaignId, zafra: extras?.zafra, cropId: crop?._id || movement.cropId || movement.supplyId, currentStock: Number(movement.amount || 0) * (movement.isIncome ? 1 : -1), committedStock: 0, deliveredStock: 0, lastUpdate: todayStr } as any);
             }
 
             // write CropMovement

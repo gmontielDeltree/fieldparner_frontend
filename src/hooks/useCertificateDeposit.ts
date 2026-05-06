@@ -5,7 +5,7 @@ import { dbContext } from '../services';
 import { TransportDocument } from '../interfaces/transportDocument';
 import { Campaign, EnumTransportDocumentStatus, Supply } from '../types';
 import dayjs from 'dayjs';
-import { CropStockControl } from '../interfaces/stock';
+import { CropDeposit } from '../interfaces/crop-deposit';
 import { useTranslation } from 'react-i18next';
 import { NotificationService } from '../services/notificationService';
 
@@ -104,12 +104,12 @@ export const useCertificateDeposit = () => {
                         cropId: newDocument.cultivoId,
                     }
                 };
-                const found = await dbContext.cropStockControl.find(selector);
+                const found = await dbContext.cropDeposits.find(selector);
                 if (found.docs && found.docs.length > 0) {
-                    const doc = found.docs[0] as CropStockControl & PouchDB.Core.IdMeta & PouchDB.Core.RevisionIdMeta;
+                    const doc = found.docs[0] as CropDeposit & PouchDB.Core.IdMeta & PouchDB.Core.RevisionIdMeta;
                     const currentDelivered = Number(doc.deliveredStock || 0);
                     const toAdd = Math.max(0, Number(newDocument.peso?.pesoNeto) || 0);
-                    await dbContext.cropStockControl.put({ ...doc, deliveredStock: currentDelivered + toAdd, lastUpdate: dayjs().toISOString() });
+                    await dbContext.cropDeposits.put({ ...doc, deliveredStock: currentDelivered + toAdd, lastUpdate: dayjs().toISOString() });
                 }
             } catch (e) {
                 console.warn('Crop stock control update skipped', e);

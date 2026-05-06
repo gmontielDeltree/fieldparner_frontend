@@ -41,7 +41,6 @@ vi.mock('../../services/pouchdbService', () => ({
     supplies: { find: vi.fn(), bulkDocs: vi.fn() },
     crops: { allDocs: vi.fn(), bulkDocs: vi.fn() },
     cropDeposits: { find: vi.fn(), put: vi.fn(), post: vi.fn(), bulkDocs: vi.fn() },
-    cropStockControl: { find: vi.fn(), put: vi.fn(), post: vi.fn(), bulkDocs: vi.fn() },
     cropMovements: { post: vi.fn() },
   },
 }))
@@ -95,7 +94,6 @@ describe(`🧪 INTEGRATION REAL DB (${TEST_CONFIG.USE_REAL_DATABASE ? 'ENABLED' 
       ;(dbContext as any).supplies = testDbContext.supplies
       ;(dbContext as any).crops = testDbContext.crops
       ;(dbContext as any).cropDeposits = testDbContext.cropDeposits
-      ;(dbContext as any).cropStockControl = testDbContext.cropStockControl
       ;(dbContext as any).cropMovements = testDbContext.cropMovements
     } else {
       vi.clearAllMocks()
@@ -180,9 +178,9 @@ describe(`🧪 INTEGRATION REAL DB (${TEST_CONFIG.USE_REAL_DATABASE ? 'ENABLED' 
       } as any)
       vi.mocked(dbContext.stock.find).mockResolvedValue({ docs: mockStockLegacy } as any)
       vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: [] } as any)
-      vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({ docs: [] } as any)
+      vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({ docs: [] } as any)
       vi.mocked(dbContext.cropDeposits.post).mockResolvedValue({ ok: true } as any)
-      vi.mocked(dbContext.cropStockControl.post).mockResolvedValue({ ok: true } as any)
+      vi.mocked(dbContext.cropDeposits.post).mockResolvedValue({ ok: true } as any)
       vi.mocked(dbContext.cropMovements.post).mockResolvedValue({ ok: true } as any)
     }
 

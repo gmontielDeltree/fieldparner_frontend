@@ -35,7 +35,7 @@ export const FieldsOverviewPage: React.FC = () => {
             // TODO: traer zafras reales por campaña; por ahora placeholder vacío
             setZafras([]);
             setSelectedZafra('');
-            // KPIs placeholder (se pueden enriquecer con cropStockControl)
+            // KPIs placeholder (se pueden enriquecer con cropDeposits)
             setKpis({ disponibles: 0, comprometidos: 0, entregados: 0, rendimiento: 0 });
         } finally {
             setLoading(false);

@@ -87,7 +87,7 @@ export const NewCropStockAdjustmentPage: React.FC = () => {
             }
 
             // CSC: upsert agregado currentStock (STKReal)
-            const cscFound = await dbContext.cropStockControl.find({
+            const cscFound = await dbContext.cropDeposits.find({
                 selector: {
                     accountId: user.accountId,
                     licenceId: user.licenceId,
@@ -98,9 +98,9 @@ export const NewCropStockAdjustmentPage: React.FC = () => {
             } as any);
             if (cscFound.docs && cscFound.docs.length) {
                 const doc = cscFound.docs[0] as any;
-                await dbContext.cropStockControl.put({ ...doc, currentStock: Number(doc.currentStock || 0) + Number(amount), lastUpdate: now });
+                await dbContext.cropDeposits.put({ ...doc, currentStock: Number(doc.currentStock || 0) + Number(amount), lastUpdate: now });
             } else {
-                await dbContext.cropStockControl.post({ accountId: user.accountId, licenceId: user.licenceId, campaignId, cropId, zafra, currentStock: Number(amount), committedStock: 0, deliveredStock: 0, lastUpdate: now } as any);
+                await dbContext.cropDeposits.post({ accountId: user.accountId, licenceId: user.licenceId, campaignId, cropId, zafra, currentStock: Number(amount), committedStock: 0, deliveredStock: 0, lastUpdate: now } as any);
             }
 
             // CMC: registrar movimiento Ajuste E/S

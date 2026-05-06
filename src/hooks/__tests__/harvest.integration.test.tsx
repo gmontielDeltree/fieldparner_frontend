@@ -45,11 +45,6 @@ vi.mock('../../services/pouchdbService', () => ({
       put: vi.fn(),
       post: vi.fn(),
     },
-    cropStockControl: {
-      find: vi.fn(),
-      put: vi.fn(),
-      post: vi.fn(),
-    },
     cropMovements: {
       post: vi.fn(),
     },
@@ -198,7 +193,7 @@ describe('🧪 INTEGRATION: Flujo completo de cosecha', () => {
       docs: [],
     } as any)
 
-    vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({
+    vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({
       docs: [],
     } as any)
 
@@ -213,7 +208,7 @@ describe('🧪 INTEGRATION: Flujo completo de cosecha', () => {
       return Promise.resolve({ ok: true } as any)
     })
 
-    vi.mocked(dbContext.cropStockControl.post).mockResolvedValue({ ok: true } as any)
+    vi.mocked(dbContext.cropDeposits.post).mockResolvedValue({ ok: true } as any)
     vi.mocked(dbContext.cropMovements.post).mockResolvedValue({ ok: true } as any)
 
     // Ejecutar cosecha

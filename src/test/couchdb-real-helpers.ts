@@ -68,7 +68,6 @@ export interface RealTestDbContext {
   supplies: PouchDB.Database<any>
   crops: PouchDB.Database<any>
   cropDeposits: PouchDB.Database<any>
-  cropStockControl: PouchDB.Database<any>
   cropMovements: PouchDB.Database<any>
   campaigns: PouchDB.Database<any>
   fields: PouchDB.Database<any>
@@ -85,7 +84,6 @@ export async function createRealTestDbContext(): Promise<RealTestDbContext> {
     supplies: createRealTestDatabase('supplies'),
     crops: createRealTestDatabase('crops'),
     cropDeposits: createRealTestDatabase('cropDeposits'),
-    cropStockControl: createRealTestDatabase('cropStockControl'),
     cropMovements: createRealTestDatabase('cropMovements'),
     campaigns: createRealTestDatabase('campaigns'),
     fields: createRealTestDatabase('fields'),
@@ -135,13 +133,6 @@ async function setupRealIndexes(context: RealTestDbContext): Promise<void> {
     await context.cropDeposits.createIndex({
       index: {
         fields: ['accountId', 'cropId', 'depositId', 'campaignId', 'zafra'],
-      },
-    })
-
-    // Índice para cropStockControl
-    await context.cropStockControl.createIndex({
-      index: {
-        fields: ['accountId', 'cropId', 'campaignId', 'zafra', 'licenceId'],
       },
     })
 
@@ -209,7 +200,6 @@ export async function setupRealTestEnvironment(data: {
   crops?: any[]
   stock?: any[]
   cropDeposits?: any[]
-  cropStockControl?: any[]
   campaigns?: any[]
   fields?: any[]
   stockMovements?: any[]
@@ -224,8 +214,6 @@ export async function setupRealTestEnvironment(data: {
   if (data.crops) await populateRealDatabase(context.crops, data.crops)
   if (data.stock) await populateRealDatabase(context.stock, data.stock)
   if (data.cropDeposits) await populateRealDatabase(context.cropDeposits, data.cropDeposits)
-  if (data.cropStockControl)
-    await populateRealDatabase(context.cropStockControl, data.cropStockControl)
   if (data.campaigns) await populateRealDatabase(context.campaigns, data.campaigns)
   if (data.fields) await populateRealDatabase(context.fields, data.fields)
   if (data.stockMovements)

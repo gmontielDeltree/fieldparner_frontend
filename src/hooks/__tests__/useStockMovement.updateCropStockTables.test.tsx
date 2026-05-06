@@ -15,11 +15,6 @@ vi.mock('../../services/pouchdbService', () => ({
       put: vi.fn(),
       post: vi.fn(),
     },
-    cropStockControl: {
-      find: vi.fn(),
-      put: vi.fn(),
-      post: vi.fn(),
-    },
     cropMovements: {
       post: vi.fn(),
     },
@@ -112,14 +107,14 @@ describe('useStockMovement - updateCropStockTables', () => {
         docs: [],
       } as any)
 
-      // Mock: No existe cropStockControl previo
-      vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({
+      // Mock: No existe cropDeposits previo
+      vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({
         docs: [],
       } as any)
 
       // Mock: Creación exitosa
       vi.mocked(dbContext.cropDeposits.post).mockResolvedValue({ ok: true } as any)
-      vi.mocked(dbContext.cropStockControl.post).mockResolvedValue({ ok: true } as any)
+      vi.mocked(dbContext.cropDeposits.post).mockResolvedValue({ ok: true } as any)
       vi.mocked(dbContext.cropMovements.post).mockResolvedValue({ ok: true } as any)
 
       // Act
@@ -146,8 +141,8 @@ describe('useStockMovement - updateCropStockTables', () => {
         })
       )
 
-      // 2. Debe crear cropStockControl
-      expect(dbContext.cropStockControl.post).toHaveBeenCalledWith(
+      // 2. Debe crear cropDeposits
+      expect(dbContext.cropDeposits.post).toHaveBeenCalledWith(
         expect.objectContaining({
           accountId: 'test-account-id',
           licenceId: 'test-licence-id',
@@ -235,7 +230,7 @@ describe('useStockMovement - updateCropStockTables', () => {
         docs: [existingCropDeposit],
       } as any)
 
-      // Mock: Ya existe cropStockControl con 10,000 kg
+      // Mock: Ya existe cropDeposits con 10,000 kg
       const existingCropControl = {
         _id: 'crop-control-1',
         _rev: '1-def',
@@ -249,12 +244,12 @@ describe('useStockMovement - updateCropStockTables', () => {
         deliveredStock: 0,
       }
 
-      vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({
+      vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({
         docs: [existingCropControl],
       } as any)
 
       vi.mocked(dbContext.cropDeposits.put).mockResolvedValue({ ok: true } as any)
-      vi.mocked(dbContext.cropStockControl.put).mockResolvedValue({ ok: true } as any)
+      vi.mocked(dbContext.cropDeposits.put).mockResolvedValue({ ok: true } as any)
       vi.mocked(dbContext.cropMovements.post).mockResolvedValue({ ok: true } as any)
 
       // Act
@@ -273,8 +268,8 @@ describe('useStockMovement - updateCropStockTables', () => {
         })
       )
 
-      // 2. Debe actualizar cropStockControl sumando al stock existente
-      expect(dbContext.cropStockControl.put).toHaveBeenCalledWith(
+      // 2. Debe actualizar cropDeposits sumando al stock existente
+      expect(dbContext.cropDeposits.put).toHaveBeenCalledWith(
         expect.objectContaining({
           ...existingCropControl,
           currentStock: 15000, // 10,000 + 5,000
@@ -291,7 +286,7 @@ describe('useStockMovement - updateCropStockTables', () => {
 
       // 4. NO debe llamar a post (solo put)
       expect(dbContext.cropDeposits.post).not.toHaveBeenCalled()
-      expect(dbContext.cropStockControl.post).not.toHaveBeenCalled()
+      expect(dbContext.cropDeposits.post).not.toHaveBeenCalled()
     })
   })
 
@@ -337,12 +332,12 @@ describe('useStockMovement - updateCropStockTables', () => {
         docs: [existingCropDeposit],
       } as any)
 
-      vi.mocked(dbContext.cropStockControl.find).mockResolvedValue({
+      vi.mocked(dbContext.cropDeposits.find).mockResolvedValue({
         docs: [{ _id: 'ctrl-1', _rev: '1-x', currentStock: 10000 }],
       } as any)
 
       vi.mocked(dbContext.cropDeposits.put).mockResolvedValue({ ok: true } as any)
-      vi.mocked(dbContext.cropStockControl.put).mockResolvedValue({ ok: true } as any)
+      vi.mocked(dbContext.cropDeposits.put).mockResolvedValue({ ok: true } as any)
       vi.mocked(dbContext.cropMovements.post).mockResolvedValue({ ok: true } as any)
 
       // Act
