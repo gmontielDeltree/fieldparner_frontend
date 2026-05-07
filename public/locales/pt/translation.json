@@ -1413,5 +1413,6 @@
   "view": "Ver",
   "labors_step": "Trabalhos",
   "services_step": "Serviços",
-  "additional_expenses_step": "Despesas Adicionais"
+  "additional_expenses_step": "Despesas Adicionais",
+  "unitMeasurement": "Unidade de Medida"
 }

@@ -14,6 +14,7 @@ import { setWithdrawalOrderActive } from '../../redux/withdrawalOrder';
 import { useTranslation } from 'react-i18next';
 import { uiOpenModal } from '../../redux/ui';
 import { HistoryWithdrawOrderModal, GenericListPage } from '../../components';
+import i18n from '../../i18n';
 
 export const ListWithdrawalOrdersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,8 +40,15 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
     // navigate(`/init/overview/order/${row.order}/history`);
   };
 
-   //TODO: Zafra, Cultivo ?"
-   
+  console.log('listWithdrawal', listWithdrawal);
+  const cropName = (row: WithdrawalOrderItem) => {
+    return i18n.language === 'es'
+      ? row.cropData?.descriptionES
+      : i18n.language === 'en'
+      ? row.cropData?.descriptionEN
+      : row.cropData?.descriptionES || row.cropData?.descriptionEN || "-";
+  };
+
   const columns: GridColDef[] = useMemo(
     () => [
       { field: 'order', headerName: "Nro", width: 120 },
@@ -59,6 +67,20 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         width: 150,
         valueGetter: params =>
           params.row.withdraw?.nombreCompleto || params.row.withdraw?.razonSocial,
+      },
+      {
+        field: 'zafra',
+        headerName: t('zafra'),
+        width: 150,
+        valueGetter: params =>
+          params.row.zafra,
+      },
+      {
+        field: 'cropData',
+        headerName: t('crop'),
+        width: 150,
+        valueGetter: params =>
+          cropName(params.row),
       },
       {
         field: 'state',
@@ -110,8 +132,8 @@ export const ListWithdrawalOrdersPage: React.FC = () => {
         data={listWithdrawal}
         columns={columns}
         getData={getWithdrawalOrders}
-        deleteData={() => {}}
-        setActiveItem={() => {}}
+        deleteData={() => { }}
+        setActiveItem={() => { }}
         newItemPath='/init/overview/order'
         editItemPath={id => `/init/overview/order/${id}`}
         isLoading={false}

@@ -13,12 +13,12 @@ import {
 } from '@mui/material';
 import { GeneralData, Loading, TemplateLayout, TransportDestination } from '../../components';
 
-import { useBusiness, useExitField, useForm, useStockMovement, useVehicle } from '../../hooks';
+import { useBusiness, useCrops, useExitField, useForm, useVehicle } from '../../hooks';
 import { Crop, Deposit, ExitFieldItem } from '../../types';
 import { getShortDate } from '../../helpers/dates';
 import { useTranslation } from 'react-i18next';
 import { useField } from '../../hooks/useField';
-import { StockItem, TipoStock } from '../../interfaces/stock';
+// import { StockItem, TipoStock } from '../../interfaces/stock';
 import { validateStep, hasErrors } from '../../helpers/validation';
 import Swal from 'sweetalert2';
 
@@ -69,13 +69,13 @@ export const NewExitFieldPage: React.FC = () => {
   const [errors, setErrors] = useState({});
   const [showErrors, setShowErrors] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  const [stockFromCrops, setStockFromCrops] = useState<StockItem[]>([]);
+  const { stockCrops, isLoading: isLoadingCrops, loadCropStock } = useCrops();
+  // const [stockFromCrops, setStockFromCrops] = useState<StockItem[]>([]);
   const [depositsFromCrop, setDepositsFromCrop] = useState<Deposit[]>([]);
-  const { getStock } = useStockMovement();
+  // const { getStock } = useStockMovement();
   const { businesses: socialEntities, getBusinesses } = useBusiness();
   const { vehicles, getVehicles } = useVehicle();
-  const { isLoading, createExitField } = useExitField();
+  const { isLoading: loadingExitField, createExitField } = useExitField();
   const { fields, getFields } = useField();
 
   const { campaignId, fieldId, lotId, cropId } = formValues;
@@ -95,7 +95,7 @@ export const NewExitFieldPage: React.FC = () => {
             <GeneralData
               key='general-data-exit-field'
               formValues={formValues}
-              crops={stockFromCrops.filter(s => s.dataCrop).map(stock => stock.dataCrop) as Crop[]}
+              crops={stockCrops.filter(s => s.dataCrop).map(stock => stock.dataCrop) as Crop[]}
               deposits={depositsFromCrop}
               listFields={fields}
               handleInputChange={handleInputChange}
@@ -132,7 +132,7 @@ export const NewExitFieldPage: React.FC = () => {
       vehicles,
       socialEntities,
       fields,
-      stockFromCrops,
+      stockCrops,
       errors,
       showErrors,
     ],
@@ -233,40 +233,40 @@ export const NewExitFieldPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const getCropsWithStock = async () => {
-      setLoading(true);
-      const responseStockTypeCrop = await getStock(
-        {
-          tipo: TipoStock.CULTIVO,
-          campaignId: campaignId,
-          fieldId: fieldId,
-          fieldLot: lotId,
-        },
-        true,
-      );
-      if (responseStockTypeCrop?.length) setStockFromCrops(responseStockTypeCrop);
-      setLoading(false);
-    };
+    // const getCropsWithStock = async () => {
+    //   setLoading(true);
+    //   // const responseStockTypeCrop = await getStock(
+    //   //   {
+    //   //     tipo: TipoStock.CULTIVO,
+    //   //     campaignId: campaignId,
+    //   //     fieldId: fieldId,
+    //   //     fieldLot: lotId,
+    //   //   },
+    //   //   true,
+    //   // );
+    //   if (responseStockTypeCrop?.length) setStockFromCrops(responseStockTypeCrop);
+    //   setLoading(false);
+    // };
 
     if (campaignId && fieldId && lotId) {
-      getCropsWithStock();
+      loadCropStock();
     }
   }, [campaignId, fieldId, lotId]);
 
   useEffect(() => {
     const filterDepositsByCrop = () => {
-      const deposits = stockFromCrops
+      const deposits = stockCrops
         .filter(s => s.dataCrop?._id === cropId)
         .map(s => s.dataDeposit) as Deposit[];
       setDepositsFromCrop(deposits);
     };
 
-    if (stockFromCrops.length && cropId) filterDepositsByCrop();
-  }, [stockFromCrops, cropId]);
+    if (stockCrops.length && cropId) filterDepositsByCrop();
+  }, [stockCrops, cropId]);
 
   return (
     <TemplateLayout key='new-exit-field-page' viewMap={true} viewSelector={false}>
-      {isLoading || (loading && <Loading loading={true} />)}
+      {(loadingExitField || isLoadingCrops) && <Loading loading={true} />}
       <Container
         maxWidth='lg'
         sx={{

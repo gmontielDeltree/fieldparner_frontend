@@ -1403,5 +1403,6 @@
   "view": "View",
   "labors_step": "Labors",
   "services_step": "Services",
-  "additional_expenses_step": "Additional Expenses"
+  "additional_expenses_step": "Additional Expenses",
+  "unitMeasurement": "Unit of Measurement"
 }

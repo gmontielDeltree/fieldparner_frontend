@@ -30,12 +30,11 @@ import {
   Warehouse as WarehouseIcon,
   Search as SearchIcon,
 } from "@mui/icons-material";
-import { useAppDispatch, useSupply, useAppSelector } from "../../hooks";
+import { useAppDispatch, useSupply, useCrops, useAppSelector } from "../../hooks";
 import { uiOpenModal } from "../../redux/ui";
 import { setSupplyActive } from "../../redux/supply";
 import { useTranslation } from "react-i18next";
 import { StockItem } from "../../interfaces/stock";
-import { dbContext } from "../../services";
 import { formatNumber } from "../../helpers/helper";
 
 
@@ -82,13 +81,13 @@ export const ListStockPage: React.FC = () => {
     stockBySupplies,
     stockByDeposits,
     getStockByDeposits,
-    getStockData,
+    getStockData, //Stock de insumos
   } = useSupply();
   // const { getStock } = useStockMovement();
   const [tabValue, setTabValue] = React.useState(0);
-  const [cropStockData, setCropStockData] = useState<any[]>([]);
-  const [loadingCrops, setLoadingCrops] = useState(false);
-  const { t } = useTranslation();
+  // const [cropStockData, setCropStockData] = useState<CropDepositItem[]>([]);
+  const { stockCrops, isLoading: isLoadingCrops, loadCropStock } = useCrops();
+  const { t, i18n } = useTranslation();
 
   // Filter states for supplies tab
   const [supplyTypeFilter, setSupplyTypeFilter] = useState("");
@@ -99,7 +98,7 @@ export const ListStockPage: React.FC = () => {
   const [locationFilter, setLocationFilter] = useState("");
   const [depositSupplyTypeFilter, setDepositSupplyTypeFilter] = useState("");
   const [depositSupplyNameFilter, setDepositSupplyNameFilter] = useState("");
-
+  console.log('stockCrops', stockCrops)
   const columnsBySupply: ColumnProps[] = [
     { text: t("_type"), align: "left" },
     { text: t("_supply"), align: "center" },
@@ -173,39 +172,6 @@ export const ListStockPage: React.FC = () => {
     dispatch(uiOpenModal(DisplayModals.SupplyByLots));
   };
 
-  const loadCropStock = async () => {
-    if (!user) return;
-    setLoadingCrops(true);
-    try {
-      const [cropsRes, controlRes, campaignsRes] = await Promise.all([
-        dbContext.crops.allDocs({ include_docs: true }),
-        dbContext.cropDeposits.find({ selector: { accountId: user.accountId } }),
-        dbContext.campaigns.find({ selector: { accountId: user.accountId } })
-      ]);
-      const crops = cropsRes.rows.map(r => r.doc);
-      const controls = controlRes.docs;
-      const campaigns = campaignsRes.docs;
-
-      const data = controls.map((ctrl: any) => {
-        const crop = crops.find((c: any) => c._id === ctrl.cropId);
-        const campaign = campaigns.find((c: any) => c._id === ctrl.campaignId);
-        return {
-          _id: ctrl._id,
-          cropName: crop?.descriptionES || crop?.descriptionEN || ctrl.cropId,
-          campaign: campaign?.name || ctrl.campaignId,
-          zafra: ctrl.zafra || '-',
-          currentStock: ctrl.currentStock || 0,
-          committedStock: ctrl.committedStock || 0,
-          deliveredStock: ctrl.deliveredStock || 0,
-          available: (ctrl.currentStock || 0) - (ctrl.committedStock || 0),
-          pending: (ctrl.committedStock || 0) - (ctrl.deliveredStock || 0),
-        };
-      });
-      setCropStockData(data);
-    } finally {
-      setLoadingCrops(false);
-    }
-  };
 
   useEffect(() => {
     if (tabValue === 0) getStockData();
@@ -551,31 +517,37 @@ export const ListStockPage: React.FC = () => {
             </CustomTabPanel>
             <CustomTabPanel value={tabValue} index={2}>
               <Box component="div">
-                {loadingCrops && <Loading loading={true} />}
+                {isLoadingCrops && <Loading loading={true} />}
                 <Paper elevation={2} sx={{ borderRadius: '12px', overflow: 'hidden' }}>
                   <DataTable
                     key="byCrop"
                     columns={[
                       { text: t("_crop"), align: "left" },
                       { text: t("_campaign"), align: "center" },
-                      { text: "Zafra", align: "center" },
+                      { text: t("_warehouse"), align: "center" },
+                      { text: t("zafra"), align: "center" },
+                      { text: t("unitMeasurement"), align: "center" },
                       { text: t("available"), align: "center" },
-                      { text: t("committed"), align: "center" },
-                      { text: t("delivered"), align: "center" },
-                      { text: t("available_to_sell"), align: "center" },
-                      { text: t("pending_delivery"), align: "center" },
+                      // { text: t("committed"), align: "center" },
+                      // { text: t("delivered"), align: "center" },
+                      // { text: t("available_to_sell"), align: "center" },
+                      // { text: t("pending_delivery"), align: "center" },
                     ]}
-                    isLoading={loadingCrops}
+                    isLoading={isLoadingCrops}
                   >
-                    {cropStockData.map((row) => (
-                      <ItemRow key={row._id} hover>
-                        <TableCellStyled align="left">{row.cropName}</TableCellStyled>
-                        <TableCellStyled align="center">{row.campaign}</TableCellStyled>
-                        <TableCellStyled align="center">{row.zafra}</TableCellStyled>
-                        <TableCellStyled align="center">
-                          <Chip label={formatNumber(row.currentStock)} variant="filled" color="primary" />
-                        </TableCellStyled>
-                        <TableCellStyled align="center">
+                    {stockCrops.map((row) => {
+                      let cropName = i18n.language === 'es' ? row.dataCrop?.descriptionES : i18n.language === 'en' ? row.dataCrop?.descriptionEN : row.dataCrop?.descriptionES || row.dataCrop?.descriptionEN || "-";
+                      return (
+                        <ItemRow key={row._id} hover>
+                          <TableCellStyled align="left">{cropName}</TableCellStyled>
+                          <TableCellStyled align="center">{row.dataCampaign?.name}</TableCellStyled>
+                          <TableCellStyled align="center">{row.dataDeposit?.description}</TableCellStyled>
+                          <TableCellStyled align="center">{row.zafra}</TableCellStyled>
+                          <TableCellStyled align="center">{row.unitMeasurement}</TableCellStyled>
+                          <TableCellStyled align="center">
+                            <Chip label={formatNumber(row.currentStock)} variant="filled" color="primary" />
+                          </TableCellStyled>
+                          {/* <TableCellStyled align="center">
                           <Chip label={formatNumber(row.committedStock)} variant="outlined" color="warning" />
                         </TableCellStyled>
                         <TableCellStyled align="center">
@@ -586,9 +558,9 @@ export const ListStockPage: React.FC = () => {
                         </TableCellStyled>
                         <TableCellStyled align="center">
                           <Chip label={formatNumber(row.pending)} color={row.pending > 0 ? "warning" : "default"} />
-                        </TableCellStyled>
-                      </ItemRow>
-                    ))}
+                        </TableCellStyled> */}
+                        </ItemRow>)
+                    })}
                   </DataTable>
                 </Paper>
               </Box>

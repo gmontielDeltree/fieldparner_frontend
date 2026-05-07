@@ -7,6 +7,7 @@ import { onLogout } from '../redux/auth';
 import { useTranslation } from 'react-i18next';
 import { StockItem, TipoStock } from '../interfaces/stock';
 import { NotificationService } from "../services/notificationService";
+import { CropDeposit } from "../interfaces/crop-deposit";
 
 export const useSupply = () => {
     const { t } = useTranslation();
@@ -190,11 +191,11 @@ export const useSupply = () => {
             });
 
             // ✅ AGREGADO: Procesar cropDeposits (cosechas)
-            const cropIds = cropDepositsResult?.docs.map((cd: any) => cd.cropId) || [];
+            const cropIds = cropDepositsResult?.docs.map((cd: CropDeposit) => cd.cropId) || [];
             const groupCropIds = Array.from(new Set(cropIds));
 
             groupCropIds.forEach(cropId => {
-                const foundCropDeposits = cropDepositsResult.docs.filter((cd: any) => cd.cropId === cropId);
+                const foundCropDeposits = cropDepositsResult.docs.filter((cd: CropDeposit) => cd.cropId === cropId);
                 const foundCrop = crops.rows.map(row => row.doc as Crop).find(c => c._id === cropId);
 
                 if (foundCrop) {
@@ -206,12 +207,12 @@ export const useSupply = () => {
                         id: cropId,
                         tipo: TipoStock.CULTIVO,
                         accountId: user.accountId,
-                        depositId: '',
-                        location: '',
-                        nroLot: '',
+                        depositId: foundCropDeposits[0].depositId,
+                        location: foundCropDeposits[0].location || '',
+                        nroLot: foundCropDeposits[0].lotId || '',
                         campaignId: foundCropDeposits[0].campaignId || '',
-                        fieldId: '',
-                        fieldLot: '',
+                        fieldId: foundCropDeposits[0].fieldId || '',
+                        fieldLot: foundCropDeposits[0].lotId || '',
                         currentStock: foundCropDeposits[0].currentStock,
                         reservedStock: 0,
                         lastUpdate: foundCropDeposits[0].lastUpdate,

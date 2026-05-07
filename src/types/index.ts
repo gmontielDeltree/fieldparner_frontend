@@ -619,6 +619,9 @@ export interface WithdrawalOrder extends Document {
   campaignId: string;
   field: string;
   contractorId?: string;
+  unitMeasurement?: string;
+  zafra?: string;
+  cropData?: Crop;
   labor?: string;
   laborNro?: string;
   state: OrderStatus;

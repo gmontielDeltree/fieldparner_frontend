@@ -41,6 +41,7 @@ const normalizeActivityType = (tipo) => {
 };
 
 export const reserveSupplyStock = async (
+  activity,
   contratista,
   dosis,
   user,
@@ -64,7 +65,8 @@ export const reserveSupplyStock = async (
   const field = dosis.insumo.campo;
 
   console.log('reserveSupplyStock: selectedCampaign data:', selectedCampaign);
-  
+  debugger;
+  console.log("activity details", activity.detalles);
   const newWithdrawalOrder: WithdrawalOrder = {
     accountId: user.accountId,
     type: WithdrawalOrderType.Automatica,
@@ -75,8 +77,12 @@ export const reserveSupplyStock = async (
     field: field, // Use field from insumo
     state: OrderStatus.Pending,
     withdrawId: contratista._id,
+    cropData: activity.detalles?.cultivo,
+    unitMeasurement: dosis.insumo.unitMeasurement || 'unknown',
+    labor: activity.tipo || 'unknown',
+    zafra: activity.detalles?.zafra || selectedCampaign?.zafra || 'unknown',
   }
-  
+
   console.log('reserveSupplyStock: newWithdrawalOrder data:', newWithdrawalOrder);
 
   const newDepositSupplyOrder = {
@@ -128,7 +134,7 @@ export const saveActivity = async (
   backToActivites,
 ) => {
   console.log("saveActivity: Starting to save activity");
-  
+
   // Normalize activity type
   actividad.tipo = normalizeActivityType(actividad.tipo);
   console.log("saveActivity: Activity type normalized:", actividad.tipo);
@@ -143,19 +149,19 @@ export const saveActivity = async (
 
   if (validActivityTypes.includes(actividad.tipo)) {
     actividad.campaña = selectedCampaign;
-    
+
     // Ensure zafra is set from campaign if not already present in activity details
     if (!actividad.detalles?.zafra && selectedCampaign?.zafra) {
       const campaignZafra = Array.isArray(selectedCampaign.zafra)
         ? selectedCampaign.zafra[0]
         : selectedCampaign.zafra;
-      
+
       if (!actividad.detalles) {
         actividad.detalles = {};
       }
       actividad.detalles.zafra = campaignZafra;
       actividad.zafra = campaignZafra;
-      
+
       console.log("saveActivity: Zafra set from campaign:", campaignZafra);
     }
   }
@@ -201,7 +207,7 @@ export const saveActivity = async (
         // Check if there are supplies to process
         if (actividad.detalles && actividad.detalles.dosis && actividad.detalles.dosis.length > 0) {
           console.log("saveActivity: Processing supplies for new activity");
-          
+
           // Process each supply in sequence
           for (const dosis of actividad.detalles.dosis) {
             try {
@@ -212,7 +218,7 @@ export const saveActivity = async (
                 console.log("saveActivity: Existing withdrawal order found, skipping new reservation:", dosis.orden_de_retiro);
                 continue;
               }
-              
+
               // Check if we have the necessary data
               if (!dosis.insumo) {
                 console.warn("saveActivity: Supply missing insumo property:", dosis);
@@ -223,25 +229,26 @@ export const saveActivity = async (
                 console.warn("saveActivity: Supply missing deposit, reservation skipped:", dosis);
                 continue;
               }
-              
+
               const supplyName = dosis.insumo?.name || 'unnamed supply';
               console.log("saveActivity: Reserving stock for supply:", supplyName);
-              
+
               // Attempt to reserve stock
               const withdrawalOrder = await reserveSupplyStock(
+                actividad,
                 actividad.detalles.contratista,
                 dosis,
                 user,
                 selectedCampaign,
                 createWithdrawalOrder,
               )
-              
+
               // IMPORTANT: Asignar la orden de retiro al objeto dosis para que se guarde con la actividad
               if (withdrawalOrder) {
                 dosis.orden_de_retiro = withdrawalOrder;
                 console.log("saveActivity: Withdrawal order assigned to dosis:", withdrawalOrder);
               }
-              
+
               console.log("saveActivity: Stock reserved successfully for:", supplyName);
             } catch (error) {
               // Log error but continue with other supplies
@@ -252,16 +259,16 @@ export const saveActivity = async (
               // Don't return here, continue with other supplies
             }
           }
-          
+
           // IMPORTANT: Actualizar la actividad en la base de datos con las órdenes de retiro
           console.log("saveActivity: Updating activity with withdrawal orders");
           try {
             // Obtener la versión más reciente de la actividad para evitar conflictos
             const latestActivity = await db.get(actividad._id);
-            
+
             // Actualizar solo las dosis con las órdenes de retiro
             latestActivity.detalles.dosis = actividad.detalles.dosis;
-            
+
             await db.put(latestActivity);
             console.log("saveActivity: Activity updated with withdrawal orders");
           } catch (error) {

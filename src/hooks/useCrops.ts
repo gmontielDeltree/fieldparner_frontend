@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { dbContext } from "../services";
-import { Crop } from "../types";
+import { Campaign, Crop, Deposit } from "../types";
 import { useTranslation } from "react-i18next";
 import { NotificationService } from "../services/notificationService";
 import { useAppSelector } from "./useRedux";
 import { CropStockData } from "../interfaces/stock";
-import { CropDeposit } from "../interfaces/crop-deposit";
+import { CropDeposit, CropDepositItem } from "../interfaces/crop-deposit";
 
 
 String.prototype.toColor = function () {
@@ -31,7 +31,7 @@ export const useCrops = () => {
   const { user } = useAppSelector(state => state.auth);
   const [crops, setCrops] = useState<CultivoItem[]>([]);
   const [dataCrops, setDataCrops] = useState<Crop[]>([]);
-  const [stockCrops, setStockCrops] = useState<CropStockData[]>([]);
+  const [stockCrops, setStockCrops] = useState<CropDepositItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<any>(null);
 
@@ -86,38 +86,38 @@ export const useCrops = () => {
     }
   }
 
-  const getCropStock = async (): Promise<CropStockData[]> => {
+ const loadCropStock = async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      const [cropsRes, controlRes, campaignsRes, depositsRes] = await Promise.all([
+        dbContext.crops.allDocs({ include_docs: true }),
+        dbContext.cropDeposits.find({ selector: { accountId: user.accountId } }),
+        dbContext.campaigns.find({ selector: { accountId: user.accountId } }),
+        dbContext.deposits.find({ selector: { accountId: user.accountId } }),
+      ]);
+      const crops = cropsRes.rows.map(r => r.doc);
+      const controls = controlRes.docs;
+      const campaigns = campaignsRes.docs;
+      const deposits = depositsRes.docs;
 
-          if (!user) return [];
-          setIsLoading(true);
-          try {
-            const [cropsRes,  controlRes] = await Promise.all([
-              dbContext.crops.allDocs({ include_docs: true }),
-              dbContext.cropDeposits.find({ selector: { accountId: user.accountId } }),
-            ]);
-            const crops = cropsRes.rows.map(r => r.doc as Crop);
-            const controls = controlRes.docs as CropDeposit[];
-      
-            const data: CropStockData[] = controls.map((ctrl) => {
-              const crop = crops.find((c: Crop) => c._id === ctrl.cropId);
-              return {
-                _id: ctrl._id || '',
-                cropName: i18n.language === "es" ? crop?.descriptionES : i18n.language === "en" ? crop?.descriptionEN : crop?.descriptionPT,
-                campaign: ctrl.campaignId,
-                zafra: ctrl.zafra || '-',
-                currentStock: ctrl.currentStock || 0,
-                committedStock: ctrl.committedStock || 0,
-                deliveredStock: ctrl.deliveredStock || 0,
-                available: (ctrl.currentStock || 0) - (ctrl.committedStock || 0),
-                pending: (ctrl.committedStock || 0) - (ctrl.deliveredStock || 0),
-              };
-            });
-            setStockCrops(data);
-            return data;
-          } finally {
-            setIsLoading(false);
-          }
-        };
+      const data = controls.map((ctrl: CropDeposit) => {
+        const crop = crops.find((c: any) => c._id === ctrl.cropId);
+        const campaign = campaigns.find((c: Campaign) => c.campaignId === ctrl.campaignId);
+        const deposit = deposits.find((d: Deposit) => d._id === ctrl.depositId);
+        return {
+          ...ctrl,
+          dataCrop: crop,
+          dataCampaign: campaign,
+          dataDeposit: deposit,
+        } as CropDepositItem;
+      });
+      setStockCrops(data);
+      return data;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     crops,
@@ -128,6 +128,6 @@ export const useCrops = () => {
     getCrops,
     getCropLabelFromId,
     getCropColorFromId,
-    getCropStock
+    loadCropStock
   };
 };
